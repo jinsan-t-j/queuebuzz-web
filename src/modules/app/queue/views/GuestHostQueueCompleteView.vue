@@ -159,13 +159,15 @@ function handleSendLink() {
 
       <!-- ═══ Ghost link ═══ -->
       <div class="mt-8 text-center">
-        <button
-          class="inline-flex items-center gap-2 font-body text-base font-bold text-plum/50 transition-colors hover:text-plum"
-          @click="emit('continue-without-account')"
-        >
-          Continue without an account
-          <ArrowRightMutedIcon class="h-[11px] w-[13px]" />
-        </button>
+        <router-link to="/">
+          <a
+            class="inline-flex items-center gap-2 font-body text-base font-bold text-plum/50 transition-colors hover:text-plum"
+            @click="emit('continue-without-account')"
+          >
+            Continue without an account
+            <ArrowRightMutedIcon class="h-[11px] w-[13px]" />
+        </a>
+      </router-link>
       </div>
     </div>
   </div>

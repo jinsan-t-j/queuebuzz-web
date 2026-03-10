@@ -20,8 +20,6 @@ import NavActiveQueue from '@/assets/icons/nav-active-queue.svg?component'
 import NavNewQueue from '@/assets/icons/nav-new-queue.svg?component'
 import NavHistory from '@/assets/icons/nav-history.svg?component'
 import NavSettings from '@/assets/icons/nav-settings.svg?component'
-import StarCircle from '@/assets/icons/star-circle.svg?component'
-import StarCircleDark from '@/assets/icons/star-circle-dark.svg?component'
 import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
 import TerminateIcon from '@/assets/icons/terminate.svg?component'
 import DiamondPremium from '@/assets/icons/diamond-premium.svg?component'
@@ -57,7 +55,6 @@ const navItems = computed(() => [
     name: 'Dashboard',
     to: '/dashboard',
     icon: NavDashboard,
-    badge: StarCircle,
     exact: true,
   },
   {
@@ -76,7 +73,6 @@ const navItems = computed(() => [
     name: 'History',
     to: '/dashboard/history',
     icon: NavHistory,
-    badge: StarCircleDark,
   },
   {
     name: 'Settings',

@@ -14,7 +14,13 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 }
   },
-  routes: [...websiteRoutes, ...appRoutes, ...customerRoutes, ...anoymousHostRoutes],
+  routes: [
+    ...websiteRoutes,
+    ...appRoutes,
+    ...customerRoutes,
+    ...anoymousHostRoutes,
+    { path: '/:pathMatch(.*)*', redirect: '/dashboard' }
+  ],
 })
 
 /**

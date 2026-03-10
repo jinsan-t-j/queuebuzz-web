@@ -1,148 +1,258 @@
 <script setup>
 /**
  * @component HistoryQueueView
- * @description Queue history page showing aggregate stats (Total Queues,
- * Total Served, Avg. Wait), a paginated "Past Queues" table,
- * and a "Go Pro" upgrade nudge banner.
- *
- * @prop {Number} totalQueues - Total queue count stat.
- * @prop {String} totalServed - Total served string (e.g. "1,204").
- * @prop {String} avgWait - Average wait time string.
- * @prop {Array} pastQueues - List of past queue row objects.
- * @prop {Number} currentPage - Current pagination page.
- * @prop {Number} totalPages - Total pagination pages.
- * @prop {Number} totalEntries - Total number of history entries.
- * @emits {page-change} - Pagination page changed.
- * @emits {row-click} - A history row was clicked.
- * @emits {go-pro} - "Go Pro" button clicked.
+ * @description Queue history page with server-side pagination, search, sorting, filtering, and export.
+ * Uses Pinia for dummy backend logic and TanStack Vue Query for api state management, caching & debouncing.
  */
 
-// 1. Vue core imports
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useQuery } from '@tanstack/vue-query'
+import { refDebounced, onClickOutside } from '@vueuse/core'
+import { useQueueStore } from '@/modules/app/queue/stores/queue.store'
 
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
 import ChevronRightIcon from '@/assets/icons/chevron-right.svg?component'
-import FilterDownloadIcon from '@/assets/icons/filter-download.svg?component'
+import { Search, ArrowUpDown, Filter, Download, X } from 'lucide-vue-next'
 
-// 6. Props
-const props = defineProps({
-  totalQueues: {
-    type: Number,
-    default: 42,
-  },
-  totalServed: {
-    type: String,
-    default: '1,204',
-  },
-  avgWait: {
-    type: String,
-    default: '14m',
-  },
-  pastQueues: {
-    type: Array,
-    default: () => [
-      { id: 1, date: 'Oct 24, 2023', name: 'Main Service Desk', totalServed: 128, avgWait: '12m 40s' },
-      { id: 2, date: 'Oct 23, 2023', name: 'Express Checkout', totalServed: 342, avgWait: '04m 15s' },
-      { id: 3, date: 'Oct 22, 2023', name: 'Weekend Pop-up', totalServed: 89, avgWait: '18m 22s' },
-      { id: 4, date: 'Oct 21, 2023', name: 'Customer Returns', totalServed: 56, avgWait: '08m 50s' },
-      { id: 5, date: 'Oct 20, 2023', name: 'Main Service Desk', totalServed: 145, avgWait: '11m 15s' },
-    ],
-  },
-  currentPage: {
-    type: Number,
-    default: 1,
-  },
-  totalPages: {
-    type: Number,
-    default: 3,
-  },
-  totalEntries: {
-    type: Number,
-    default: 42,
-  },
+const router = useRouter()
+const queueStore = useQueueStore()
+
+// State
+const searchQuery = ref('')
+const debouncedSearch = refDebounced(searchQuery, 300)
+const sortDirection = ref('desc')
+const filter = ref('All')
+const currentPage = ref(1)
+const itemsPerPage = ref(5)
+const isFilterOpen = ref(false)
+const filterDropdownRef = ref(null)
+
+const filterOptions = ['All', 'Active', 'Paused', 'Completed', 'Terminated']
+
+onClickOutside(filterDropdownRef, () => {
+  if (isFilterOpen.value) isFilterOpen.value = false
 })
 
-// 7. Emits
-const emit = defineEmits(['page-change', 'row-click', 'go-pro'])
+// Fetch using tanstack query
+const { data, isLoading, isFetching } = useQuery({
+  queryKey: computed(() => ['queuesHistory', { 
+    page: currentPage.value, 
+    limit: itemsPerPage.value, 
+    search: debouncedSearch.value,
+    sortDirection: sortDirection.value,
+    filter: filter.value 
+  }]),
+  queryFn: () => queueStore.fetchHistoryQueues({
+    page: currentPage.value,
+    limit: itemsPerPage.value,
+    search: debouncedSearch.value,
+    sortDirection: sortDirection.value,
+    filter: filter.value
+  }),
+  keepPreviousData: true,
+})
 
-// 8. Composable destructuring
+// Quick access computeds
+const pastQueues = computed(() => data.value?.data || [])
+const totalPages = computed(() => data.value?.totalPages || 1)
+const totalEntries = computed(() => data.value?.totalCount || 0)
 
-// 9. Reactive state
+// Dummy stat vars
+const totalQueues = ref(42)
+const totalServed = ref('1,204')
+const avgWait = ref('14m')
 
-// 10. Computed properties
+// Methods
+function toggleSort() {
+  sortDirection.value = sortDirection.value === 'desc' ? 'asc' : 'desc'
+  currentPage.value = 1
+}
 
-// 11. Methods
+function selectFilter(option) {
+  filter.value = option
+  isFilterOpen.value = false
+  currentPage.value = 1
+}
 
-// 12. Lifecycle hooks
+function clearSearch() {
+  searchQuery.value = ''
+}
+
+function handleExport() {
+  if (!pastQueues.value || pastQueues.value.length === 0) return
+  
+  // Define CSV headers
+  const headers = ['ID', 'Date', 'Queue Name', 'Status', 'Total Served', 'Avg Wait']
+  
+  // Format rows matching currently fetched data
+  const rows = pastQueues.value.map(q => [
+    q.id,
+    `"${q.dateFormatted}"`,
+    `"${q.name}"`,
+    `"${q.status}"`,
+    q.totalServed,
+    `"${q.avgWait}"`
+  ])
+  
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(row => row.join(','))
+  ].join('\n')
+  
+  // Create Blob and download
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', 'queues_export.csv')
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
+function goToPage(page) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+function handleRowClick(id) {
+  router.push(`/dashboard/queue/${id}`)
+}
 </script>
 
 <template>
   <div class="relative mx-auto max-w-[752px]">
     <!-- ═══ Stats row ═══ -->
     <div class="flex gap-4">
-      <!-- Total Queues -->
       <div class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">
-          Total Queues
-        </p>
-        <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">
-          {{ totalQueues }}
-        </p>
+        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">Total Queues</p>
+        <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">{{ totalQueues }}</p>
       </div>
-      <!-- Total Served -->
       <div class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">
-          Total Served
-        </p>
-        <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">
-          {{ totalServed }}
-        </p>
+        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">Total Served</p>
+        <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">{{ totalServed }}</p>
       </div>
-      <!-- Avg. Wait -->
       <div class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">
-          Avg. Wait
-        </p>
-        <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-[#4ade80]">
-          {{ avgWait }}
-        </p>
+        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">Avg. Wait</p>
+        <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-[#4ade80]">{{ avgWait }}</p>
       </div>
     </div>
 
-    <!-- ═══ Past Queues table card ═══ -->
+    <!-- ═══ Past Queues TABLE CARD ═══ -->
     <div class="mt-6 rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-      <!-- Table header -->
-      <div class="flex items-center justify-between border-b border-[#f1f5f9] px-6 py-5">
-        <h3 class="font-display text-lg text-plum">Past Queues</h3>
-        <FilterDownloadIcon class="h-8 w-[74px] text-ash" />
+      <!-- Toolbar: Title + Search + Filters -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] px-6 py-5 gap-4">
+        <h3 class="font-display text-lg text-plum w-48">Past Queues</h3>
+        
+        <div class="flex flex-1 items-center justify-end gap-3 w-full">
+          <!-- Interactive Search Bar -->
+          <div class="relative flex-1 max-w-[240px]">
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ash" />
+            <input 
+              v-model="searchQuery" 
+              placeholder="Search queue name..." 
+              class="w-full rounded-full border border-plum/10 pl-9 pr-8 py-2 text-sm font-body text-plum outline-none focus:border-plum transition-colors"
+            />
+            <button 
+              v-if="searchQuery" 
+              @click="clearSearch"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-ash hover:text-plum transition-colors"
+            >
+              <X class="h-4 w-4" />
+            </button>
+          </div>
+
+          <!-- Dropdown Filter -->
+          <div class="relative" ref="filterDropdownRef">
+            <button 
+              @click="isFilterOpen = !isFilterOpen"
+              class="flex items-center gap-2 rounded-full border border-plum/10 px-4 py-2 text-sm font-body font-medium text-plum transition-colors hover:bg-plum/5"
+            >
+              <Filter class="h-4 w-4" />
+              <span class="hidden sm:inline">{{ filter === 'All' ? 'Filter' : filter }}</span>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div 
+              v-if="isFilterOpen" 
+              class="absolute right-0 top-full mt-2 w-48 rounded-lg border border-plum/10 bg-white py-2 shadow-lg z-20"
+            >
+              <button 
+                v-for="opt in filterOptions" 
+                :key="opt"
+                class="w-full px-4 py-2 text-left font-body text-sm text-plum hover:bg-plum/5 transition-colors"
+                :class="{'font-bold bg-plum/5': filter === opt}"
+                @click="selectFilter(opt)"
+              >
+                {{ opt }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Export Option -->
+          <button 
+            @click="handleExport"
+            class="flex items-center gap-2 rounded-full bg-plum/5 px-4 py-2 text-sm font-body font-medium text-plum transition-colors hover:bg-plum/10"
+          >
+            <Download class="h-4 w-4" />
+            <span class="hidden sm:inline">Export</span>
+          </button>
+        </div>
       </div>
 
       <!-- Column headers -->
       <div class="flex items-center bg-sand/50 px-6 py-4">
-        <span class="w-[160px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Date</span>
+        <!-- Sortable Date Column -->
+        <button 
+          @click="toggleSort"
+          class="flex items-center gap-1 w-[160px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b] hover:text-plum transition-colors group cursor-pointer"
+        >
+          DATE
+          <ArrowUpDown class="h-3 w-3 transition-opacity group-hover:opacity-100" :class="sortDirection ? 'opacity-100 text-plum' : 'opacity-40'" />
+        </button>
         <span class="w-[200px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Queue Name</span>
-        <span class="w-[140px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Total Served</span>
+        <span class="w-[120px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Status</span>
+        <span class="w-[120px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Total Served</span>
         <span class="flex-1 font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Avg. Wait</span>
         <span class="w-6" />
       </div>
 
-      <!-- Rows -->
-      <div>
-        <div
+      <!-- Loading / Empty / Rows -->
+      <div class="relative min-h-[200px]">
+        <!-- Loading overlay map to generic spinner -->
+        <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
+           <div class="h-8 w-8 animate-spin rounded-full border-4 border-plum border-t-transparent"></div>
+        </div>
+        
+        <div v-if="!isLoading && pastQueues.length === 0" class="flex items-center justify-center p-12 text-center text-ash font-body">
+            No matching queues found.
+        </div>
+        
+        <div 
+          v-else
           v-for="(queue, idx) in pastQueues"
           :key="queue.id"
-          class="flex cursor-pointer items-center px-6 py-5 transition-colors hover:bg-sand/30"
+          class="flex cursor-pointer items-center px-6 py-5 transition-colors hover:bg-sand/80"
           :class="idx > 0 ? 'border-t border-[#f1f5f9]' : ''"
-          @click="emit('row-click', queue.id)"
+          @click="handleRowClick(queue.id)"
         >
-          <span class="w-[160px] font-body text-sm text-[#475569]">{{ queue.date }}</span>
-          <span class="w-[200px] font-body text-sm font-semibold text-plum">{{ queue.name }}</span>
-          <span class="w-[140px] font-mono text-sm text-plum">{{ queue.totalServed }}</span>
+          <span class="w-[160px] font-body text-sm text-[#475569]">{{ queue.dateFormatted }}</span>
+          <span class="w-[200px] font-body text-sm font-semibold text-plum truncate pr-4">{{ queue.name }}</span>
+          <span class="w-[120px] font-body text-xs font-bold leading-5">
+            <span 
+              class="inline-flex rounded-full px-2.5 py-0.5"
+              :class="{
+                'bg-[#dcfce7] text-[#166534]': queue.status === 'Completed',
+                'bg-[#e0e7ff] text-[#3730a3]': queue.status === 'Active',
+                'bg-[#fef9c3] text-[#854d0e]': queue.status === 'Paused',
+                'bg-[#fee2e2] text-[#991b1b]': queue.status === 'Terminated'
+              }"
+            >
+              {{ queue.status }}
+            </span>
+          </span>
+          <span class="w-[120px] font-mono text-sm text-plum">{{ queue.totalServed }}</span>
           <span class="flex-1 font-mono text-sm text-plum">{{ queue.avgWait }}</span>
           <ChevronRightIcon class="h-[9px] w-[6px] text-ash" />
         </div>
@@ -150,34 +260,34 @@ const emit = defineEmits(['page-change', 'row-click', 'go-pro'])
 
       <!-- Pagination -->
       <div class="flex items-center justify-between border-t border-[#f1f5f9] px-6 py-5">
-        <span class="font-body text-xs text-ash">
-          Showing 1 to {{ pastQueues.length }} of {{ totalEntries }} entries
+        <span class="font-body text-xs text-ash flex items-center gap-2">
+          <span v-if="isFetching && !isLoading" class="h-3 w-3 animate-spin rounded-full border-2 border-ash border-t-transparent"></span>
+          Showing page {{ currentPage }} of {{ totalPages }} ({{ totalEntries }} total)
         </span>
         <div class="flex items-center gap-1">
           <button
-            class="rounded-lg px-3 py-1 font-body text-xs font-bold text-ash transition-colors hover:bg-plum-faint"
-            :disabled="currentPage <= 1"
-            @click="emit('page-change', currentPage - 1)"
+            class="rounded-lg px-3 py-1 font-body text-xs font-bold text-ash transition-colors hover:bg-plum-faint disabled:opacity-50"
+            :disabled="currentPage <= 1 || isLoading"
+            @click="goToPage(currentPage - 1)"
           >
             Prev
           </button>
           <button
             v-for="page in totalPages"
             :key="page"
-            class="flex h-8 w-8 items-center justify-center rounded-lg font-body text-xs font-bold transition-colors"
-            :class="
-              page === currentPage
-                ? 'bg-plum text-white'
-                : 'text-[#475569] hover:bg-plum-faint'
-            "
-            @click="emit('page-change', page)"
+            class="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg font-body text-xs font-bold transition-colors"
+            :class="[
+              page === currentPage ? 'bg-plum text-white' : 'text-[#475569] hover:bg-plum-faint',
+              { 'opacity-50 pointer-events-none': isLoading }
+            ]"
+            @click="goToPage(page)"
           >
             {{ page }}
           </button>
           <button
-            class="rounded-lg px-3 py-1 font-body text-xs font-bold text-[#475569] transition-colors hover:bg-plum-faint"
-            :disabled="currentPage >= totalPages"
-            @click="emit('page-change', currentPage + 1)"
+            class="rounded-lg px-3 py-1 font-body text-xs font-bold text-[#475569] transition-colors hover:bg-plum-faint disabled:opacity-50"
+            :disabled="currentPage >= totalPages || isLoading"
+            @click="goToPage(currentPage + 1)"
           >
             Next
           </button>
@@ -187,7 +297,6 @@ const emit = defineEmits(['page-change', 'row-click', 'go-pro'])
 
     <!-- ═══ Upgrade nudge ═══ -->
     <div class="relative mt-6 overflow-hidden rounded-card bg-plum p-8 shadow-[0_8px_10px_rgba(0,0,0,0.10),0_20px_25px_rgba(0,0,0,0.10)]">
-      <!-- Decorative circles -->
       <div class="absolute -left-10 top-0 h-28 w-36 rounded-full bg-[#4ade80]/5" />
       <div class="absolute -right-10 top-0 h-28 w-28 rounded-full bg-white/5" />
 
@@ -198,12 +307,9 @@ const emit = defineEmits(['page-change', 'row-click', 'go-pro'])
             Upgrade to Pro to export data for the last 12 months.
           </p>
         </div>
-        <button
-          class="rounded-input bg-[#4ade80] px-8 py-3 font-body text-base font-bold text-plum shadow-[0_4px_6px_rgba(74,222,128,0.20),0_10px_15px_rgba(74,222,128,0.20)] transition-colors hover:bg-[#22c55e]"
-          @click="emit('go-pro')"
-        >
+        <router-link to="/premium" class="rounded-input bg-[#4ade80] px-8 py-3 font-body text-base font-bold text-plum shadow-[0_4px_6px_rgba(74,222,128,0.20),0_10px_15px_rgba(74,222,128,0.20)] transition-colors hover:bg-[#22c55e]">
           Go Pro
-        </button>
+        </router-link>
       </div>
     </div>
   </div>
