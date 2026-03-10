@@ -1,0 +1,32 @@
+<svg viewBox="0 0 479 192" fill="none" xmlns="http://www.w3.org/2000/svg" x="0" y="0"><defs><filter id="filter10_dd_1_223" x="227.48000000000002" y="-2" width="82.0801" height="216" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feMorphology radius="4" operator="erode" in="SourceAlpha" result="effect1_dropShadow_1_223"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="3"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0.898039 0 0 0 0 0.627451 0 0 0 0.1 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1_223"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feMorphology radius="3" operator="erode" in="SourceAlpha" result="effect2_dropShadow_1_223"/>
+<feOffset dy="10"/>
+<feGaussianBlur stdDeviation="7.5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0.898039 0 0 0 0 0.627451 0 0 0 0.1 0"/>
+<feBlend mode="normal" in2="effect1_dropShadow_1_223" result="effect2_dropShadow_1_223"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_1_223" result="shape"/>
+</filter></defs><g id="Container_40">
+<path id="Overlay_6" d="M8,146.41c0,-6.627 5.373,-12 12,-12h33.87c6.627,0 12,5.372 12,12v45.59h-57.87z" fill="#1A0A2E" fill-opacity="0.05"/>
+<path id="Overlay_7" d="M65.87,117.61c0,-6.627 5.373,-12 12,-12h33.87c6.628,0 12,5.373 12,12v74.39h-57.87z" fill="#1A0A2E" fill-opacity="0.05"/>
+<path id="Overlay_8" d="M123.74,88.81c0,-6.627 5.373,-12 12,-12h33.87c6.628,0 12,5.373 12,12v103.19h-57.87z" fill="#1A0A2E" fill-opacity="0.1"/>
+<path id="Overlay_9" d="M181.61,40.81c0,-6.627 5.372,-12 12,-12h33.87c6.627,0 12,5.373 12,12v151.19h-57.87z" fill="#1A0A2E" fill-opacity="0.1"/>
+<g id="Background_5">
+<path d="M239.48,12c0,-6.627 5.373,-12 12,-12h33.87c6.627,0 12,5.373 12,12v180h-57.87z" fill="#00E5A0"/>
+<g id="Overlay+Shadow" filter="url(#filter10_dd_1_223)">
+<rect x="239.48000000000002" y="0" width="58.08" height="192" fill="white" fill-opacity="0.01" shape-rendering="crispEdges"/>
+</g>
+</g>
+<path id="Overlay_10" d="M297.35,69.61c0,-6.627 5.373,-12 12,-12h33.87c6.628,0 12,5.373 12,12v122.39h-57.87z" fill="#00E5A0" fill-opacity="0.5"/>
+<path id="Overlay_11" d="M355.22,127.2c0,-6.627 5.372,-12 12,-12h33.87c6.63,0 12,5.373 12,12v64.8h-57.87z" fill="#1A0A2E" fill-opacity="0.05"/>
+<path id="Overlay_12" d="M413.09,165.61c0,-6.627 5.37,-12 12,-12h33.87c6.63,0 12,5.373 12,12v26.39h-57.87z" fill="#1A0A2E" fill-opacity="0.05"/>
+</g></svg>

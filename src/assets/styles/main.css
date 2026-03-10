@@ -1,0 +1,101 @@
+/* ─────────────────────────────────────────────
+   FONT IMPORTS — Fontsource (self-hosted)
+   To change a font: update the @import lines
+   AND the --font-* variable below. That's it.
+   ───────────────────────────────────────────── */
+@import '@fontsource-variable/comfortaa';
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+@import '@fontsource/dm-sans/600.css';
+@import '@fontsource/dm-sans/700.css';
+@import '@fontsource/geist-mono/400.css';
+@import '@fontsource/geist-mono/600.css';
+
+@import 'tailwindcss';
+
+/* ─────────────────────────────────────────────
+   DESIGN TOKENS
+   @theme replaces tailwind.config.js entirely.
+   All --* values here become Tailwind utilities.
+   e.g. --color-mint → bg-mint, text-mint, etc.
+        --font-display → font-display
+   ───────────────────────────────────────────── */
+@theme {
+  /* ── Fonts
+     To swap a font: change the value here only.
+     Every component using font-display / font-body / font-mono updates instantly. */
+  --font-display: 'Comfortaa Variable', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'Courier New', monospace;
+
+  --color-sand: #F7F3EE;
+  --color-plum: #1A0A2E;
+  --color-plum-soft: #2D1B4E;
+  --color-plum-soft-2: #3D2B5E;
+  --color-plum-muted: #7B6B95;
+  --color-plum-faint: #E8E2F0;
+  --color-mint: #00E5A0;
+  --color-mint-light: #D4FFF1;
+  --color-mint-dark: #00B87A;
+  --color-warning: #F97316;
+  --color-danger: #EF4444;
+  --color-white: #FFFFFF;
+
+  --radius-card: 24px;
+  --radius-pill: 100px;
+  --radius-input: 12px;
+
+  --color-ash: #94A3B8;
+  --color-ash-light: #CBD5E1;
+  --color-ash-border: #E2E8F0;
+
+  --radius-login-card: 64px;
+
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-glass: inset 0 0 40px 1px rgba(255, 255, 255, 0.60), 0 40px 100px rgba(0, 0, 0, 0.04);
+}
+
+/* ─────────────────────────────────────────────
+   SHADCN FONT OVERRIDE
+   shadcn-vue uses --font-sans internally.
+   Map it to our body font so primitives match.
+   ───────────────────────────────────────────── */
+@layer base {
+  :root {
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--color-plum);
+    background-color: var(--color-sand);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   CUSTOM UTILITIES
+   ───────────────────────────────────────────── */
+@utility scrollbar-hidden {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@utility main-bg {
+  background:
+    radial-gradient(127.28% 127.28% at 10% 10%, #e3f2fd 0%, rgba(227, 242, 253, 0) 40%),
+    radial-gradient(127.28% 127.28% at 90% 90%, #fff0f5 0%, rgba(255, 240, 245, 0) 40%),
+    radial-gradient(70.71% 70.71% at 50% 50%, rgba(0, 229, 160, 0.06) 0%, rgba(0, 229, 160, 0) 60%),
+    #fdfcfb;
+}
+
+@utility glass-card {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.80);
+}
