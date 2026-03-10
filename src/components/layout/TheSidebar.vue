@@ -6,7 +6,10 @@
  * Used once inside AppLayout.
  *
  * @prop {Boolean} isQueueRunning - Whether a queue session is currently active.
+ * @prop {Boolean} isQueuePaused - Whether the active queue is currently paused.
+ * @prop {String|Date} pausedAt - Timestamp when the queue was paused.
  * @emits {pause-queue} - User clicked "Pause Queue".
+ * @emits {resume-queue} - User clicked "Resume Queue".
  * @emits {terminate-queue} - User clicked "Terminate".
  */
 
@@ -21,21 +24,49 @@ import NavNewQueue from '@/assets/icons/nav-new-queue.svg?component'
 import NavHistory from '@/assets/icons/nav-history.svg?component'
 import NavSettings from '@/assets/icons/nav-settings.svg?component'
 import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
+import { PlayCircle as PlayCircleIcon } from 'lucide-vue-next'
 import TerminateIcon from '@/assets/icons/terminate.svg?component'
 import DiamondPremium from '@/assets/icons/diamond-premium.svg?component'
 import TerminateQueueModal from '@/modules/app/queue/components/TerminateQueueModal.vue'
+import PauseQueueModal from '@/modules/app/queue/components/PauseQueueModal.vue'
+import { useNow } from '@vueuse/core'
 
 const props = defineProps({
   isQueueRunning: {
     type: Boolean,
     default: true,
   },
+  isQueuePaused: {
+    type: Boolean,
+    default: false,
+  },
+  pausedAt: {
+    type: [String, Date],
+    default: null,
+  }
 })
 
-const emit = defineEmits(['pause-queue', 'terminate-queue'])
+const emit = defineEmits(['pause-queue', 'resume-queue', 'terminate-queue'])
 
 const route = useRoute()
 const showTerminateModal = ref(false)
+const showPauseModal = ref(false)
+const now = useNow()
+
+const pausedTimeFormatted = computed(() => {
+  if (!props.isQueuePaused || !props.pausedAt) return '00m 00s'
+  const start = new Date(props.pausedAt).getTime()
+  if (isNaN(start)) return '00m 00s'
+
+  const diffMs = now.value.getTime() - start
+  if (diffMs < 0) return '00m 00s'
+
+  const totalSeconds = Math.floor(diffMs / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  
+  return `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`
+})
 
 function openTerminateModal() {
   showTerminateModal.value = true
@@ -48,6 +79,19 @@ function handleCloseQueue() {
 
 function handleKeepOpen() {
   showTerminateModal.value = false
+}
+
+function openPauseModal() {
+  showPauseModal.value = true
+}
+
+function handlePauseQueue() {
+  showPauseModal.value = false
+  emit('pause-queue')
+}
+
+function handleKeepRunning() {
+  showPauseModal.value = false
 }
 
 const navItems = computed(() => [
@@ -127,18 +171,40 @@ function isActive(item) {
     <!-- Queue Running Status -->
     <div
       v-if="isQueueRunning"
-      class="mx-4 mb-2 rounded-2xl border border-white/10 bg-white/5 p-4"
+      class="mx-4 mb-2 rounded-2xl border bg-white/5 p-4 transition-colors"
+      :class="isQueuePaused ? 'border-warning/30' : 'border-white/10'"
     >
-      <p class="mb-4 font-body text-[10px] font-bold uppercase tracking-[1px] text-white/40">
-        Queue RUNNING
-      </p>
+      <div class="flex items-center justify-between mb-4">
+        <p 
+          class="font-body text-[10px] font-bold uppercase tracking-[1px]"
+          :class="isQueuePaused ? 'text-warning' : 'text-white/40'"
+        >
+          Queue {{ isQueuePaused ? 'PAUSED' : 'RUNNING' }}
+        </p>
+        <span 
+          v-if="isQueuePaused" 
+          class="font-mono text-xs font-bold text-warning"
+        >
+          {{ pausedTimeFormatted }}
+        </span>
+      </div>
+
       <div class="flex flex-col gap-2">
         <button
+          v-if="!isQueuePaused"
           class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-white/80 transition-colors hover:bg-white/10"
-          @click="emit('pause-queue')"
+          @click="openPauseModal"
         >
           <PauseCircleIcon class="h-3 w-3 text-white/80" />
           Pause Queue
+        </button>
+        <button
+          v-else
+          class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-warning transition-colors hover:bg-warning/10"
+          @click="emit('resume-queue')"
+        >
+          <PlayCircleIcon class="h-[14px] w-[14px] text-warning" />
+          Resume Queue
         </button>
         <button
           class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-[#f87171] transition-colors hover:bg-white/10"
@@ -164,6 +230,11 @@ function isActive(item) {
       :is-open="showTerminateModal"
       @close-queue="handleCloseQueue"
       @keep-open="handleKeepOpen"
+    />
+    <PauseQueueModal
+      :is-open="showPauseModal"
+      @pause-queue="handlePauseQueue"
+      @keep-running="handleKeepRunning"
     />
   </aside>
 </template>
