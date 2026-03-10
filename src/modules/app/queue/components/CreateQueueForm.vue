@@ -226,7 +226,7 @@ function copySuccessLink() {
 
           <div v-show="showEmailSection" class="border-t border-[#e8e6ea] px-6 pb-6 pt-6 origin-top transition-all duration-300">
             <input
-              v-model="recoveryEmail"
+              v-model.lazy="recoveryEmail"
               type="email"
               placeholder="your@email.com"
               class="w-full border-none bg-transparent font-body text-base text-plum placeholder:text-[#5c5267]/40 outline-none"
