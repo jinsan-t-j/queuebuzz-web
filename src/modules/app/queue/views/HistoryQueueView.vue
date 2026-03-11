@@ -170,7 +170,6 @@ function handleRowClick(id) {
               class="flex items-center gap-2 rounded-full border border-plum/10 px-4 py-2 text-sm font-body font-medium text-plum transition-colors hover:bg-plum/5"
             >
               <Filter class="h-4 w-4" />
-              <span class="hidden sm:inline">{{ filter === 'All' ? 'Filter' : filter }}</span>
             </button>
 
             <!-- Dropdown Menu -->

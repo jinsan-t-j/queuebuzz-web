@@ -102,8 +102,8 @@ const navItems = computed(() => [
     exact: true,
   },
   {
-    name: 'Active Queue',
-    to: '/dashboard/queue',
+    name: 'Live Queue',
+    to: '/dashboard/queue/live',
     icon: NavActiveQueue,
     exact: true,
   },

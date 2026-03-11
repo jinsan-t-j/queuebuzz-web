@@ -49,10 +49,10 @@ export const appRoutes = [
         meta: { title: 'New Queue' },
       },
       {
-        path: 'queue/:queueId',
-        name: 'queue-active',
-        component: () => import('@/modules/app/queue/views/ActiveQueueView.vue'),
-        meta: { title: 'Active Queue' },
+        path: 'queue/live',
+        name: 'queue-live',
+        component: () => import('@/modules/app/queue/views/LiveQueueView.vue'),
+        meta: { title: 'Live Queue' },
       },
       {
         path: 'history',

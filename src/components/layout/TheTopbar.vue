@@ -6,7 +6,7 @@
  */
 
 // 1. Vue core imports
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 // 2. Router / Pinia imports
 import { useRoute } from 'vue-router'
@@ -18,6 +18,7 @@ import { useAuth } from '@/composables/useAuth'
 
 // 5. Component imports
 import { LogOut, User } from 'lucide-vue-next'
+import LogoutConfirmationModal from '@/modules/app/auth/components/LogoutConfirmationModal.vue'
 
 // 6. Props
 
@@ -28,6 +29,7 @@ const route = useRoute()
 const { user, logout } = useAuth()
 
 // 9. Reactive state
+const isLogoutModalOpen = ref(false)
 
 // 10. Computed properties
 const pageTitle = computed(() => route.meta?.title || 'Dashboard')
@@ -35,6 +37,11 @@ const userName = computed(() => user.value?.name || 'Host')
 
 // 11. Methods
 function handleLogout() {
+  isLogoutModalOpen.value = true
+}
+
+function confirmLogout() {
+  isLogoutModalOpen.value = false
   logout()
 }
 
@@ -62,5 +69,11 @@ function handleLogout() {
         <LogOut class="h-5 w-5" />
       </button>
     </div>
+    
+    <LogoutConfirmationModal
+      :is-open="isLogoutModalOpen"
+      @cancel="isLogoutModalOpen = false"
+      @confirm="confirmLogout"
+    />
   </header>
 </template>

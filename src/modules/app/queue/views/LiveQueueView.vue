@@ -1,6 +1,6 @@
 <script setup>
 /**
- * @component ActiveQueueView
+ * @component LiveQueueView
  * @description Live queue management dashboard for authenticated hosts.
  * Two-column layout supporting both empty and populated states.
  * Left: stat cards, live queue guest list with search, and call next button.
@@ -120,7 +120,7 @@ async function handleCopyCode() {
 </script>
 
 <template>
-  <div class="flex gap-8">
+  <div class="flex gap-8 min-h-[calc(100vh-128px)]">
     <!-- ═══ Left column ═══ -->
     <div class="flex w-[381px] shrink-0 flex-col gap-6">
       <QueueStatCards
