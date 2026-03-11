@@ -1,0 +1,77 @@
+<script setup>
+/**
+ * @component DashboardPeakHours
+ * @description Bar chart showing peak hours distribution.
+ * Pure CSS bars — no external chart library.
+ *
+ * @prop {Array} data - Array of { hour, value }.
+ * @prop {Boolean} hasData - Whether to show chart or empty state.
+ */
+
+import { computed } from 'vue'
+import PeakEmptyIcon from '@/assets/icons/peak-empty.svg?component'
+
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => [],
+  },
+  hasData: {
+    type: Boolean,
+    default: false,
+  },
+})
+
+const maxValue = computed(() => {
+  if (!props.data.length) return 1
+  return Math.max(...props.data.map((d) => d.value), 1)
+})
+
+function barHeight(value) {
+  return `${(value / maxValue.value) * 100}%`
+}
+</script>
+
+<template>
+  <div
+    class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+  >
+    <h4
+      class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted"
+    >
+      Peak Hours
+    </h4>
+
+    <!-- Empty state -->
+    <div
+      v-if="!hasData"
+      class="flex flex-col items-center justify-center py-8 gap-3"
+    >
+      <PeakEmptyIcon class="h-7 w-8 text-plum-faint" />
+      <p class="font-body text-sm text-ash">Not enough data yet</p>
+    </div>
+
+    <!-- Chart -->
+    <div v-else class="mt-4">
+      <div class="flex items-end gap-px h-20">
+        <div
+          v-for="item in data"
+          :key="item.hour"
+          class="flex-1 flex items-end justify-center"
+        >
+          <div
+            class="w-full max-w-[14px] rounded-t-xs bg-mint/60 transition-all duration-500 hover:bg-mint"
+            :style="{ height: barHeight(item.value) }"
+          />
+        </div>
+      </div>
+
+      <!-- Hour labels -->
+      <div class="mt-2 flex justify-between">
+        <span class="font-mono text-[10px] text-plum-muted">12 AM</span>
+        <span class="font-mono text-[10px] text-plum-muted">12 PM</span>
+        <span class="font-mono text-[10px] text-plum-muted">11 PM</span>
+      </div>
+    </div>
+  </div>
+</template>

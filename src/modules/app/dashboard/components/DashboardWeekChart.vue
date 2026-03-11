@@ -1,0 +1,122 @@
+<script setup>
+/**
+ * @component DashboardWeekChart
+ * @description 7-bar chart Mon–Sun showing weekly performance.
+ * Pure CSS bars — no external chart library.
+ *
+ * @prop {Array} data - 7 items: { day, value, isFuture, isToday }.
+ * @prop {Boolean} hasData - Whether there is chart data to display.
+ */
+
+import { ref, computed } from 'vue'
+import BarChartEmptyIcon from '@/assets/icons/bar-chart-empty.svg?component'
+
+const props = defineProps({
+  data: {
+    type: Array,
+    default: () => [],
+  },
+  hasData: {
+    type: Boolean,
+    default: true,
+  },
+})
+
+const activeTab = ref('served')
+const tabs = [
+  { key: 'served', label: 'Served' },
+  { key: 'avgWait', label: 'Avg. Wait' },
+]
+
+const maxValue = computed(() => {
+  const values = props.data.map((d) => d.value)
+  return Math.max(...values, 1)
+})
+
+function barHeight(value) {
+  return `${(value / maxValue.value) * 100}%`
+}
+</script>
+
+<template>
+  <div
+    class="rounded-[14px] border border-ash-border bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+  >
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <h3 class="font-display text-base font-bold text-plum">This Week</h3>
+      <!-- Tab switcher -->
+      <div class="flex gap-1 rounded-lg bg-plum-faint/50 p-0.5">
+        <button
+          v-for="tab in tabs"
+          :key="tab.key"
+          :class="[
+            'rounded-md px-3 py-1 font-body text-xs font-medium transition-colors',
+            activeTab === tab.key
+              ? 'bg-white text-plum shadow-xs'
+              : 'text-plum-muted hover:text-plum',
+          ]"
+          @click="activeTab = tab.key"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div
+      v-if="!hasData"
+      class="flex flex-col items-center justify-center py-12 gap-3"
+    >
+      <div
+        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint"
+      >
+        <BarChartEmptyIcon class="h-5 w-5 text-plum-muted" />
+      </div>
+      <p class="font-display text-base font-semibold text-plum">No data yet</p>
+      <p
+        class="max-w-[225px] text-center font-body text-sm text-plum-muted leading-5"
+      >
+        We'll chart your weekly traffic here once your first queue becomes
+        active.
+      </p>
+    </div>
+
+    <!-- Chart -->
+    <div v-else class="mt-6">
+      <!-- Bars -->
+      <div class="flex items-end justify-between gap-3 h-44">
+        <div
+          v-for="item in data"
+          :key="item.day"
+          class="flex flex-1 flex-col items-center gap-2"
+        >
+          <div class="relative w-full flex justify-center h-full items-end">
+            <div
+              :class="[
+                'w-full max-w-[48px] rounded-t-lg transition-all duration-500',
+                item.isFuture
+                  ? 'bg-plum-faint border-t-2 border-dashed border-plum-muted/30'
+                  : item.isToday
+                    ? 'bg-mint shadow-[0_4px_16px_rgba(0,229,160,0.3)]'
+                    : 'bg-mint/40',
+              ]"
+              :style="{ height: item.isFuture ? '20%' : barHeight(item.value) }"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Day labels -->
+      <div class="mt-3 flex justify-between gap-3">
+        <span
+          v-for="item in data"
+          :key="item.day"
+          class="flex-1 text-center font-mono text-[10px] uppercase text-plum-muted"
+        >
+          {{ item.day }}
+        </span>
+      </div>
+    </div>
+  </div>
+</template>

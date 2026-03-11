@@ -61,6 +61,13 @@ export const appRoutes = [
         meta: { title: 'History' },
       },
       {
+        path: 'history/:id',
+        name: 'history-detail',
+        component: () => import('@/modules/app/history/views/HistoryDetailView.vue'),
+        meta: { title: 'Queue History' },
+        props: (route) => ({ historyId: route.params.id }),
+      },
+      {
         path: 'settings',
         name: 'settings',
         component: () => import('@/modules/app/settings/views/SettingsView.vue'),
