@@ -16,6 +16,7 @@
  */
 
 // 1. Vue core imports
+import { ref, onMounted, onUnmounted } from 'vue'
 
 // 2. Router / Pinia imports
 
@@ -49,6 +50,7 @@ defineProps({
 // 7. Emits
 const emit = defineEmits([
   'call-next',
+  'call-guest',
   'search',
   'add-guest',
   'entry-menu',
@@ -58,12 +60,33 @@ const emit = defineEmits([
 // 8. Composable destructuring
 
 // 9. Reactive state
+const openDropdownId = ref(null)
 
 // 10. Computed properties
 
 // 11. Methods
+function toggleDropdown(id) {
+  openDropdownId.value = openDropdownId.value === id ? null : id
+}
+
+function handleCallGuest(id) {
+  emit('call-guest', id)
+  openDropdownId.value = null
+}
+
+function onClickOutside(e) {
+  if (!e.target.closest('.guest-dropdown-container')) {
+    openDropdownId.value = null
+  }
+}
 
 // 12. Lifecycle hooks
+onMounted(() => {
+  document.addEventListener('click', onClickOutside)
+})
+onUnmounted(() => {
+  document.removeEventListener('click', onClickOutside)
+})
 </script>
 
 <template>
@@ -107,6 +130,7 @@ const emit = defineEmits([
         <div
           v-for="entry in entries"
           :key="entry.id"
+          v-memo="[entry.status, entry.waitTime, entry.position, entry.name, entry.partySize, openDropdownId === entry.id]"
           class="flex items-center rounded-2xl border px-4 py-3"
           :class="
             entry.status === 'called'
@@ -135,14 +159,41 @@ const emit = defineEmits([
               </p>
             </div>
           </div>
-          <button
-            class="ml-auto flex h-4 w-1 flex-col items-center justify-center gap-[2px]"
-            @click="emit('entry-menu', entry.id)"
-          >
-            <span class="block h-[3px] w-[3px] rounded-full bg-plum/20" />
-            <span class="block h-[3px] w-[3px] rounded-full bg-plum/20" />
-            <span class="block h-[3px] w-[3px] rounded-full bg-plum/20" />
-          </button>
+          <div class="relative ml-auto guest-dropdown-container">
+            <button
+              class="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-plum/5"
+              @click="toggleDropdown(entry.id)"
+            >
+              <div class="flex h-4 w-1 flex-col items-center justify-center gap-[2px]">
+                <span class="block h-[3px] w-[3px] rounded-full bg-plum/40" />
+                <span class="block h-[3px] w-[3px] rounded-full bg-plum/40" />
+                <span class="block h-[3px] w-[3px] rounded-full bg-plum/40" />
+              </div>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <transition
+              enter-active-class="transition duration-200 ease-out"
+              enter-from-class="transform scale-95 opacity-0"
+              enter-to-class="transform scale-100 opacity-100"
+              leave-active-class="transition duration-75 ease-in"
+              leave-from-class="transform scale-100 opacity-100"
+              leave-to-class="transform scale-95 opacity-0"
+            >
+              <div
+                v-if="openDropdownId === entry.id"
+                class="absolute right-0 top-full z-10 mt-2 w-40 origin-top-right rounded-xl border border-plum/10 bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+              >
+                <button
+                  class="flex w-full items-center px-4 py-2 font-body text-sm font-medium text-plum hover:bg-plum/5"
+                  @click="handleCallGuest(entry.id)"
+                >
+                  <CallNextIcon class="mr-2 h-4 w-4 text-mint" />
+                  Call Guest
+                </button>
+              </div>
+            </transition>
+          </div>
         </div>
       </template>
     </div>

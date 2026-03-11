@@ -10,9 +10,10 @@
  * @prop {Array} chartLabels - Labels for the activity bar chart.
  * @prop {Array} chartBars - Data values for the activity bar chart.
  */
+import { computed } from 'vue'
 import TrendUpIcon from '@/assets/icons/trend-up.svg?component'
 
-defineProps({
+const props = defineProps({
   servedToday: {
     type: Number,
     required: true,
@@ -33,7 +34,13 @@ defineProps({
     type: Array,
     required: true,
   },
+  trendDirection: {
+    type: String,
+    default: 'up',
+  },
 })
+
+const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
 </script>
 
 <template>
@@ -58,9 +65,23 @@ defineProps({
           <p class="mt-2 font-mono text-[60px] font-bold leading-none tracking-tight text-plum">
             {{ servedToday }}
           </p>
-          <span class="mt-3 inline-flex items-center gap-1 rounded-full bg-mint/10 px-2 py-1">
-            <TrendUpIcon class="h-[7px] w-3 text-mint" />
-            <span class="font-body text-xs font-medium text-mint">{{ trendText }}</span>
+          <span 
+            class="mt-3 inline-flex items-center gap-1 rounded-full px-2 py-1"
+            :class="trendDirection === 'down' ? 'bg-danger/10' : 'bg-mint/10'"
+          >
+            <TrendUpIcon 
+              class="h-[7px] w-3 transition-transform" 
+              :class="[
+                trendDirection === 'down' ? 'rotate-180 text-danger' : 'text-mint',
+                trendDirection === 'flat' ? 'opacity-50' : ''
+              ]" 
+            />
+            <span 
+              class="font-body text-xs font-medium" 
+              :class="trendDirection === 'down' ? 'text-danger' : 'text-mint'"
+            >
+              {{ trendText }}
+            </span>
           </span>
         </div>
         <!-- Completion Rate -->
@@ -77,16 +98,16 @@ defineProps({
     </div>
 
     <!-- Bar chart (simplified) -->
-    <div class="flex flex-1 items-end gap-4 px-8 pb-4 pt-8">
+    <div class="flex flex-1 items-end gap-2 px-8 pb-4 pt-8">
       <div
         v-for="(bar, idx) in chartBars"
         :key="idx"
-        class="flex flex-1 flex-col items-center gap-2"
+        class="flex flex-1 flex-col items-center gap-2 h-[60px] justify-end"
       >
         <div
-          class="w-full rounded-t-lg"
-          :class="idx === 4 ? 'bg-mint' : 'bg-plum/10'"
-          :style="{ height: `${bar * 1.5}px` }"
+          class="w-full rounded-t-lg transition-all duration-300"
+          :class="idx === chartBars.length - 1 ? 'bg-mint' : 'bg-plum/10'"
+          :style="{ height: `${Math.max((bar / maxBarValue) * 60, 4)}px` }"
         />
       </div>
     </div>

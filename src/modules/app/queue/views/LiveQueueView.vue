@@ -104,6 +104,12 @@ const {
   rawSearchQuery,
   debouncedSearchQuery,
   filteredEntries,
+  activeWaitCount,
+  servedTodayCount,
+  completionRatePercent,
+  chartLabels,
+  chartBars,
+  computedTrend,
   handleSearchUpdate,
   handleAddGuestSubmit
 } = useLiveQueue(props.entries, props.searchQuery)
@@ -111,8 +117,6 @@ const {
 // 9. Reactive state
 const showInfoModal = ref(false)
 
-const chartLabels = ref(['10 am', '12 pm', '2 pm', '4 pm', '6 pm', '8 pm'])
-const chartBars = ref([30, 45, 55, 80, 90, 60])
 const isCodeCopied = ref(false)
 
 // 10. Computed properties
@@ -138,7 +142,7 @@ async function handleCopyCode() {
     <!-- ═══ Left column ═══ -->
     <div class="flex w-[381px] shrink-0 flex-col gap-6">
       <QueueStatCards
-        :waiting-count="waitingCount"
+        :waiting-count="activeWaitCount"
         :avg-wait="avgWait"
       />
 
@@ -208,9 +212,10 @@ async function handleCopyCode() {
 
       <!-- Queue Analysis card -->
       <QueueAnalysisCard
-        :served-today="servedToday"
-        :trend-text="trendText"
-        :completion-rate="completionRate"
+        :served-today="servedTodayCount"
+        :trend-text="computedTrend.text"
+        :trend-direction="computedTrend.direction"
+        :completion-rate="completionRatePercent"
         :chart-labels="chartLabels"
         :chart-bars="chartBars"
       />
