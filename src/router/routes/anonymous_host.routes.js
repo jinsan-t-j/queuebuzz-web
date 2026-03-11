@@ -18,7 +18,7 @@ export const anoymousHostRoutes = [
             {
                 path: 'queue/:queueId',
                 name: 'guest-host-active',
-                component: () => import('@/modules/app/queue/views/GuestHostActiveQueueView.vue'),
+                component: () => import('@/modules/app/queue/views/GuestHostLiveQueueView.vue'),
                 meta: { title: 'Active Queue — QueueBuzz' },
             },
             {

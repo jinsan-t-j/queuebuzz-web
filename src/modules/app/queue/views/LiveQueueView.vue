@@ -38,11 +38,9 @@ import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
 import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
+import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
+import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
 import CheckCircleIcon from '@/assets/icons/verified-check.svg?component'
-import QrGridIcon from '@/assets/icons/qr-grid.svg?component'
-import CopyLinkIcon from '@/assets/icons/copy-link.svg?component'
-import ShowQrIcon from '@/assets/icons/show-qr.svg?component'
-import TrendUpIcon from '@/assets/icons/trend-up.svg?component'
 import EmptyQueueIcon from '@/assets/icons/empty-queue.svg?component'
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
 import ShowQrGridIcon from '@/assets/icons/show-qr-grid.svg?component'
@@ -97,29 +95,27 @@ const emit = defineEmits([
 // 8. Composable destructuring
 const { copy: copyToClipboard } = useClipboard()
 
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue.js'
+const {
+  showAddGuestModal,
+  showToast,
+  toastMessage,
+  guestEntries,
+  rawSearchQuery,
+  debouncedSearchQuery,
+  filteredEntries,
+  handleSearchUpdate,
+  handleAddGuestSubmit
+} = useLiveQueue(props.entries, props.searchQuery)
+
 // 9. Reactive state
 const showInfoModal = ref(false)
-const showAddGuestModal = ref(false)
-const showToast = ref(false)
-const toastMessage = ref('')
 
 const chartLabels = ref(['10 am', '12 pm', '2 pm', '4 pm', '6 pm', '8 pm'])
 const chartBars = ref([30, 45, 55, 80, 90, 60])
 const isCodeCopied = ref(false)
-const isLinkCopied = ref(false)
-
-const guestEntries = ref([...props.entries])
-const rawSearchQuery = ref(props.searchQuery)
-const debouncedSearchQuery = ref(rawSearchQuery.value)
-let searchTimeout = null
 
 // 10. Computed properties
-import { computed } from 'vue'
-const filteredEntries = computed(() => {
-  if (!debouncedSearchQuery.value) return guestEntries.value
-  const q = debouncedSearchQuery.value.toLowerCase()
-  return guestEntries.value.filter(e => e.name.toLowerCase().includes(q))
-})
 
 // 11. Methods
 function handleShowQr() {
@@ -127,43 +123,11 @@ function handleShowQr() {
   emit('show-qr')
 }
 
-async function handleCopyLink() {
-  await copyToClipboard(`${window.location.origin}/join/${props.joinCode}`)
-  isLinkCopied.value = true
-  setTimeout(() => isLinkCopied.value = false, 2000)
-  emit('copy-link')
-}
-
 async function handleCopyCode() {
   await copyToClipboard(props.joinCode)
   isCodeCopied.value = true
   setTimeout(() => isCodeCopied.value = false, 2000)
   emit('copy-code')
-}
-
-function handleSearchUpdate(val) {
-  rawSearchQuery.value = val
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    debouncedSearchQuery.value = val
-  }, 300)
-  emit('search', val)
-}
-
-function handleAddGuestSubmit(values) {
-  guestEntries.value.push({
-    id: Date.now(),
-    position: guestEntries.value.length + 1,
-    name: values.name,
-    partySize: 1,
-    waitTime: '0m',
-    status: 'waiting'
-  })
-  showAddGuestModal.value = false
-  
-  toastMessage.value = `${values.name} added to queue.`
-  showToast.value = true
-  setTimeout(() => showToast.value = false, 3000)
 }
 
 // 12. Lifecycle hooks
@@ -182,7 +146,7 @@ function handleAddGuestSubmit(values) {
         :entries="filteredEntries"
         :search-query="rawSearchQuery"
         @call-next="emit('call-next')"
-        @search="handleSearchUpdate"
+        @search="handleSearchUpdate($event, (v) => emit('search', v))"
         @add-guest="showAddGuestModal = true"
         @entry-menu="emit('entry-menu', $event)"
       />
@@ -236,103 +200,20 @@ function handleAddGuestSubmit(values) {
     <!-- ═══ Right column — Populated state ═══ -->
     <div v-else class="flex flex-1 flex-col gap-8">
       <!-- Share code card -->
-      <div class="relative overflow-hidden rounded-card border border-plum/5 bg-white px-10 pb-8 pt-12 text-center shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-        <!-- Decorative circle -->
-        <div class="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-mint/10" />
-
-        <div class="relative">
-          <QrGridIcon class="mx-auto mb-6 h-[18px] w-[18px] text-mint" />
-          <p class="font-body text-[10px] font-bold uppercase tracking-[2px] text-plum/40">
-            Share this code
-          </p>
-          <p class="mt-2 font-mono text-5xl font-bold leading-none tracking-tight text-plum">
-            <span class="text-mint">{{ joinCode.slice(0, 2) }}</span>{{ joinCode.slice(2) }}
-          </p>
-
-          <!-- Copy / QR buttons -->
-          <div class="mt-8 flex items-center justify-center gap-4">
-            <button
-              class="flex items-center gap-2 rounded-input bg-mint px-6 py-3 font-body text-xs font-bold text-plum shadow-[0_4px_6px_rgba(0,229,160,0.10),0_10px_15px_rgba(0,229,160,0.10)] transition-colors hover:bg-mint-dark"
-              @click="handleCopyLink"
-            >
-              <CopyLinkIcon v-if="!isLinkCopied" class="h-[13px] w-[11px] text-plum" />
-              {{ isLinkCopied ? 'Copied!' : 'Copy Link' }}
-            </button>
-            <button
-              class="flex items-center gap-2 rounded-input bg-plum/5 px-6 py-3 font-body text-xs font-bold text-plum transition-colors hover:bg-plum/10"
-              @click="handleShowQr"
-            >
-              <ShowQrIcon class="h-[13px] w-[13px] text-plum" />
-              Show QR
-            </button>
-          </div>
-        </div>
-      </div>
+      <ShareCodeCard
+        :join-code="joinCode"
+        @copy-link="emit('copy-link')"
+        @show-qr="handleShowQr"
+      />
 
       <!-- Queue Analysis card -->
-      <div class="flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-        <!-- Header -->
-        <div class="flex items-center justify-between px-8 py-6">
-          <h3 class="font-display text-xl font-bold text-plum">Queue Analysis</h3>
-          <span class="flex items-center gap-[7px] rounded-lg bg-plum/5 px-3 py-1">
-            <span class="h-[6px] w-[6px] rounded-full bg-mint" />
-            <span class="font-body text-[10px] font-bold uppercase tracking-[1px] text-plum/40">Active</span>
-          </span>
-        </div>
-
-        <!-- Stats row -->
-        <div class="mx-8 rounded-card border border-plum/5 bg-plum/[0.02] p-8">
-          <div class="flex">
-            <!-- Served Today -->
-            <div class="flex-1">
-              <p class="font-body text-[11px] font-bold uppercase tracking-[1.1px] text-plum/40">
-                Served Today
-              </p>
-              <p class="mt-2 font-mono text-[60px] font-bold leading-none tracking-tight text-plum">
-                {{ servedToday }}
-              </p>
-              <span class="mt-3 inline-flex items-center gap-1 rounded-full bg-mint/10 px-2 py-1">
-                <TrendUpIcon class="h-[7px] w-3 text-mint" />
-                <span class="font-body text-xs font-medium text-mint">{{ trendText }}</span>
-              </span>
-            </div>
-            <!-- Completion Rate -->
-            <div class="flex flex-col border-l border-plum/10 pl-8">
-              <p class="font-body text-[11px] font-bold uppercase tracking-[1.1px] text-plum/40">
-                Completion Rate
-              </p>
-              <div class="mt-2 flex items-baseline">
-                <span class="font-mono text-4xl font-bold leading-10 text-plum">{{ completionRate }}</span>
-                <span class="font-mono text-xl font-bold text-plum/40">%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bar chart (simplified) -->
-        <div class="flex flex-1 items-end gap-4 px-8 pb-4 pt-8">
-          <div
-            v-for="(bar, idx) in chartBars"
-            :key="idx"
-            class="flex flex-1 flex-col items-center gap-2"
-          >
-            <div
-              class="w-full rounded-t-lg"
-              :class="idx === 4 ? 'bg-mint' : 'bg-plum/10'"
-              :style="{ height: `${bar * 1.5}px` }"
-            />
-          </div>
-        </div>
-        <div class="flex gap-4 px-8 pb-6">
-          <span
-            v-for="label in chartLabels"
-            :key="label"
-            class="flex-1 text-center font-mono text-[10px] uppercase tracking-[1px] text-plum/30"
-          >
-            {{ label }}
-          </span>
-        </div>
-      </div>
+      <QueueAnalysisCard
+        :served-today="servedToday"
+        :trend-text="trendText"
+        :completion-rate="completionRate"
+        :chart-labels="chartLabels"
+        :chart-bars="chartBars"
+      />
     </div>
 
     <!-- ═══ Info/QR Modal ═══ -->
