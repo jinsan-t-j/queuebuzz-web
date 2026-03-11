@@ -18,6 +18,7 @@ import { ref, watch } from 'vue'
 // 2. Router / Pinia imports
 
 // 3. Third-party composables
+import { useShare } from '@vueuse/core'
 
 // 4. Local composables
 
@@ -44,6 +45,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'download', 'share'])
 
 // 8. Composable destructuring
+const { share } = useShare()
 
 // 9. Reactive state
 const qrDataUrl = ref('')
@@ -75,18 +77,21 @@ function handleDownload() {
 }
 
 async function handleShare() {
-  const shareData = {
-    title: 'Join my queue on QueueBuzz',
-    text: `Join code: ${props.joinCode}`,
-    url: props.queueUrl,
+  if (!navigator || !navigator.share) {
+    console.warn('Web Share API is not supported in this browser/environment.')
+    return
   }
 
-  if (navigator.share) {
-    await navigator.share(shareData)
-  } else {
-    await navigator.clipboard.writeText(props.queueUrl)
+  try {
+    await share({
+      title: 'Join my queue on QueueBuzz',
+      text: `Join code: ${props.joinCode}`,
+      url: props.queueUrl,
+    })
+    emit('share')
+  } catch {
+    
   }
-  emit('share')
 }
 
 // 12. Lifecycle hooks

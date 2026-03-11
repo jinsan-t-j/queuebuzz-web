@@ -29,6 +29,7 @@ import { ref } from 'vue'
 // 2. Router / Pinia imports
 
 // 3. Third-party composables
+import { useClipboard } from '@vueuse/core'
 
 // 4. Local composables
 
@@ -36,6 +37,8 @@ import { ref } from 'vue'
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
+import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
+import CheckCircleIcon from '@/assets/icons/verified-check.svg?component'
 import QrGridIcon from '@/assets/icons/qr-grid.svg?component'
 import CopyLinkIcon from '@/assets/icons/copy-link.svg?component'
 import ShowQrIcon from '@/assets/icons/show-qr.svg?component'
@@ -92,13 +95,31 @@ const emit = defineEmits([
 ])
 
 // 8. Composable destructuring
+const { copy: copyToClipboard } = useClipboard()
 
 // 9. Reactive state
 const showInfoModal = ref(false)
+const showAddGuestModal = ref(false)
+const showToast = ref(false)
+const toastMessage = ref('')
+
 const chartLabels = ref(['10 am', '12 pm', '2 pm', '4 pm', '6 pm', '8 pm'])
 const chartBars = ref([30, 45, 55, 80, 90, 60])
+const isCodeCopied = ref(false)
+const isLinkCopied = ref(false)
+
+const guestEntries = ref([...props.entries])
+const rawSearchQuery = ref(props.searchQuery)
+const debouncedSearchQuery = ref(rawSearchQuery.value)
+let searchTimeout = null
 
 // 10. Computed properties
+import { computed } from 'vue'
+const filteredEntries = computed(() => {
+  if (!debouncedSearchQuery.value) return guestEntries.value
+  const q = debouncedSearchQuery.value.toLowerCase()
+  return guestEntries.value.filter(e => e.name.toLowerCase().includes(q))
+})
 
 // 11. Methods
 function handleShowQr() {
@@ -107,13 +128,42 @@ function handleShowQr() {
 }
 
 async function handleCopyLink() {
-  await navigator.clipboard.writeText(props.joinCode)
+  await copyToClipboard(`${window.location.origin}/join/${props.joinCode}`)
+  isLinkCopied.value = true
+  setTimeout(() => isLinkCopied.value = false, 2000)
   emit('copy-link')
 }
 
 async function handleCopyCode() {
-  await navigator.clipboard.writeText(props.joinCode)
+  await copyToClipboard(props.joinCode)
+  isCodeCopied.value = true
+  setTimeout(() => isCodeCopied.value = false, 2000)
   emit('copy-code')
+}
+
+function handleSearchUpdate(val) {
+  rawSearchQuery.value = val
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    debouncedSearchQuery.value = val
+  }, 300)
+  emit('search', val)
+}
+
+function handleAddGuestSubmit(values) {
+  guestEntries.value.push({
+    id: Date.now(),
+    position: guestEntries.value.length + 1,
+    name: values.name,
+    partySize: 1,
+    waitTime: '0m',
+    status: 'waiting'
+  })
+  showAddGuestModal.value = false
+  
+  toastMessage.value = `${values.name} added to queue.`
+  showToast.value = true
+  setTimeout(() => showToast.value = false, 3000)
 }
 
 // 12. Lifecycle hooks
@@ -129,18 +179,18 @@ async function handleCopyCode() {
       />
 
       <LiveQueueCard
-        :entries="entries"
-        :search-query="searchQuery"
+        :entries="filteredEntries"
+        :search-query="rawSearchQuery"
         @call-next="emit('call-next')"
-        @search="emit('search', $event)"
-        @add-guest="emit('add-guest')"
+        @search="handleSearchUpdate"
+        @add-guest="showAddGuestModal = true"
         @entry-menu="emit('entry-menu', $event)"
       />
     </div>
 
     <!-- ═══ Right column — Empty state ═══ -->
     <div
-      v-if="entries.length === 0"
+      v-if="guestEntries.length === 0"
       class="flex flex-1 flex-col items-center justify-center rounded-card border border-plum/10 bg-white p-12 text-center shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
     >
       <!-- Empty state illustration -->
@@ -170,8 +220,8 @@ async function handleCopyCode() {
           class="flex items-center gap-2 rounded-2xl bg-mint px-8 py-4 font-body text-base font-bold text-plum shadow-[0_8px_10px_rgba(0,229,160,0.20),0_20px_25px_rgba(0,229,160,0.20)] transition-colors hover:bg-mint-dark"
           @click="handleCopyCode"
         >
-          <CopyCodeIcon class="h-[17px] w-[14px] text-plum" />
-          Copy Code
+          <CopyCodeIcon v-if="!isCodeCopied" class="h-[17px] w-[14px] text-plum" />
+          {{ isCodeCopied ? 'Copied!' : 'Copy Code' }}
         </button>
         <button
           class="flex items-center gap-2 rounded-2xl border border-plum/10 bg-white px-8 py-4 font-body text-base font-bold text-plum transition-colors hover:bg-sand"
@@ -205,8 +255,8 @@ async function handleCopyCode() {
               class="flex items-center gap-2 rounded-input bg-mint px-6 py-3 font-body text-xs font-bold text-plum shadow-[0_4px_6px_rgba(0,229,160,0.10),0_10px_15px_rgba(0,229,160,0.10)] transition-colors hover:bg-mint-dark"
               @click="handleCopyLink"
             >
-              <CopyLinkIcon class="h-[13px] w-[11px] text-plum" />
-              Copy Link
+              <CopyLinkIcon v-if="!isLinkCopied" class="h-[13px] w-[11px] text-plum" />
+              {{ isLinkCopied ? 'Copied!' : 'Copy Link' }}
             </button>
             <button
               class="flex items-center gap-2 rounded-input bg-plum/5 px-6 py-3 font-body text-xs font-bold text-plum transition-colors hover:bg-plum/10"
@@ -291,5 +341,21 @@ async function handleCopyCode() {
       :join-code="joinCode"
       @close="showInfoModal = false"
     />
+
+    <!-- ═══ Add Guest Modal ═══ -->
+    <AddGuestModal
+      :is-open="showAddGuestModal"
+      @close="showAddGuestModal = false"
+      @submit="handleAddGuestSubmit"
+    />
+
+    <!-- ═══ Success Toast ═══ -->
+    <div 
+      class="fixed bottom-6 right-6 z-50 flex transform items-center gap-3 rounded-2xl bg-plum px-6 py-4 shadow-[0_10px_25px_rgba(26,10,46,0.20)] transition-all duration-300"
+      :class="showToast ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'"
+    >
+      <CheckCircleIcon class="h-5 w-5 text-mint" />
+      <span class="font-body text-sm font-semibold text-white">{{ toastMessage }}</span>
+    </div>
   </div>
 </template>
