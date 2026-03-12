@@ -1,13 +1,13 @@
 /**
  * @module customerRoutes
  * @description Customer-facing pages: the queue experience seen by customers waiting
- * in queue. These use BlankLayout — no host app chrome.
+ * in queue. These use CustomerLayout — centred mobile column with navbar and footer.
  */
 
 export const customerRoutes = [
   {
     path: '/q/:hostSlug',
-    component: () => import('@/layouts/BlankLayout.vue'),
+    component: () => import('@/layouts/CustomerLayout.vue'),
     children: [
       {
         path: '',
@@ -22,16 +22,28 @@ export const customerRoutes = [
         meta: { title: 'Your Position' },
       },
       {
-        path: 'ticket',
-        name: 'customer-ticket',
-        component: () => import('@/modules/customer/views/TicketView.vue'),
+        path: 'idle',
+        name: 'customer-idle',
+        component: () => import('@/modules/customer/views/IdleView.vue'),
+        meta: { title: 'Are you still here?' },
+      },
+      {
+        path: 'called',
+        name: 'customer-called',
+        component: () => import('@/modules/customer/views/CalledView.vue'),
         meta: { title: "You're Up!" },
+      },
+      {
+        path: 'served',
+        name: 'customer-served',
+        component: () => import('@/modules/customer/views/ServedView.vue'),
+        meta: { title: "You're All Done!" },
       },
     ],
   },
   {
     path: '/join',
-    component: () => import('@/layouts/BlankLayout.vue'),
+    component: () => import('@/layouts/CustomerLayout.vue'),
     children: [
       {
         path: '',

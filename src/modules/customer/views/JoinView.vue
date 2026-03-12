@@ -1,78 +1,89 @@
 <script setup>
 /**
  * @component JoinView
- * @description Customer-facing queue join page. Shows the business name,
- * a name input, and a join button. Accessed via QR code or direct URL.
+ * @description Customer-facing queue join page. Shows JoinQueueForm or GeofenceError
+ * based on geofence state. Accessed via QR code or direct URL.
  */
 
 // 1. Vue core imports
-import { ref } from 'vue'
-
-// 2. Router / Pinia imports
-import { useRouter, useRoute } from 'vue-router'
-
-// 3. Third-party composables
+import { ref, onMounted } from 'vue'
 
 // 4. Local composables
+import { useCustomerApi } from '@/modules/customer/composables/useCustomerApi'
 
 // 5. Component imports
-import BaseButton from '@/components/base/BaseButton.vue'
-import BaseInput from '@/components/base/BaseInput.vue'
-
-// 6. Props
+import JoinQueueForm from '@/modules/customer/components/JoinQueueForm.vue'
+import GeofenceError from '@/modules/customer/components/GeofenceError.vue'
 
 // 7. Emits
+const emit = defineEmits(['queue-joined', 'go-to-join-by-code'])
 
 // 8. Composable destructuring
-const router = useRouter()
-const route = useRoute()
+const { checkGeofence, joinQueue, isLoading } = useCustomerApi()
 
 // 9. Reactive state
-const displayName = ref('')
-const isJoining = ref(false)
+const isOutOfRange = ref(false)
+const distanceMeters = ref(0)
+const isCheckingGeofence = ref(true)
 
-// 10. Computed properties
+// Mock data
+const queueName = ref('Chai Point · Koramangala')
+const peopleInQueue = ref(23)
+const estWaitMin = ref(35)
 
 // 11. Methods
-function handleJoin() {
-  if (!displayName.value.trim()) return
-  isJoining.value = true
-  setTimeout(() => {
-    isJoining.value = false
-    router.push({ name: 'host-waiting', params: { hostSlug: route.params.hostSlug } })
-  }, 600)
+async function handleGeofenceCheck() {
+  isCheckingGeofence.value = true
+  const result = await checkGeofence()
+  isOutOfRange.value = !result.isWithinRange
+  distanceMeters.value = result.distanceMeters
+  isCheckingGeofence.value = false
+}
+
+async function handleJoinQueue(payload) {
+  const result = await joinQueue(payload)
+  if (result) {
+    emit('queue-joined', result)
+  }
+}
+
+function handleRetryGeofence() {
+  handleGeofenceCheck()
 }
 
 // 12. Lifecycle hooks
+onMounted(() => {
+  handleGeofenceCheck()
+})
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col items-center justify-center px-6">
-    <div class="w-full max-w-sm text-center">
-      <div class="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-mint-light">
-        <span class="font-display text-3xl text-mint-dark">Q</span>
-      </div>
-      <h1 class="font-display text-2xl font-bold text-plum">Join the Queue</h1>
-      <p class="mt-2 font-body text-sm text-plum-muted">
-        Enter your name to get in line.
-      </p>
+  <div class="flex flex-col">
+    <!-- Queue name header -->
+    <h1 class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum">
+      {{ queueName }}
+    </h1>
 
-      <form class="mt-8 flex flex-col gap-4" @submit.prevent="handleJoin">
-        <BaseInput
-          v-model="displayName"
-          label="Your name"
-          placeholder="e.g. Sarah"
-        />
-        <BaseButton
-          variant="primary"
-          size="lg"
-          :is-loading="isJoining"
-          class="w-full"
-          @click="handleJoin"
-        >
-          Join Queue
-        </BaseButton>
-      </form>
+    <!-- Loading state -->
+    <div v-if="isCheckingGeofence" class="flex flex-col gap-3 px-5 py-8">
+      <div v-for="i in 3" :key="i" class="h-20 animate-pulse rounded-3xl bg-plum-faint" />
     </div>
+
+    <!-- Geofence error -->
+    <GeofenceError
+      v-else-if="isOutOfRange"
+      :distance-meters="distanceMeters"
+      @retry-geofence="handleRetryGeofence"
+    />
+
+    <!-- Join form -->
+    <JoinQueueForm
+      v-else
+      :queue-name="queueName"
+      :people-in-queue="peopleInQueue"
+      :est-wait-min="estWaitMin"
+      @join-queue="handleJoinQueue"
+      @go-to-join-by-code="emit('go-to-join-by-code')"
+    />
   </div>
 </template>
