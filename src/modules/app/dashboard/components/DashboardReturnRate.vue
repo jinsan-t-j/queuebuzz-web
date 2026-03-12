@@ -27,47 +27,32 @@ const props = defineProps({
   },
 })
 
-// Build SVG path for the line chart
-const svgPath = computed(() => {
-  if (!props.chartData.length) return ''
+const chartPlot = computed(() => {
+  if (!props.chartData.length) return { path: '', dots: [] }
   const width = 440
   const height = 120
   const padding = 10
   const maxRate = 100
-  const stepX = (width - padding * 2) / (props.chartData.length - 1)
+  const pointsCount = Math.max(props.chartData.length - 1, 1)
+  const stepX = (width - padding * 2) / pointsCount
 
-  const points = props.chartData.map((d, i) => {
-    const x = padding + i * stepX
-    const y = height - padding - ((d.rate / maxRate) * (height - padding * 2))
-    return { x, y }
-  })
+  const dots = props.chartData.map((d, i) => ({
+    x: padding + i * stepX,
+    y: height - padding - ((d.rate / maxRate) * (height - padding * 2)),
+    rate: d.rate,
+  }))
 
   // Build smooth curve
-  let path = `M ${points[0].x} ${points[0].y}`
-  for (let i = 1; i < points.length; i++) {
-    const prev = points[i - 1]
-    const curr = points[i]
+  let path = `M ${dots[0].x} ${dots[0].y}`
+  for (let i = 1; i < dots.length; i++) {
+    const prev = dots[i - 1]
+    const curr = dots[i]
     const cpx1 = prev.x + (curr.x - prev.x) / 3
     const cpx2 = prev.x + ((curr.x - prev.x) * 2) / 3
     path += ` C ${cpx1} ${prev.y}, ${cpx2} ${curr.y}, ${curr.x} ${curr.y}`
   }
 
-  return path
-})
-
-const dotPoints = computed(() => {
-  if (!props.chartData.length) return []
-  const width = 440
-  const height = 120
-  const padding = 10
-  const maxRate = 100
-  const stepX = (width - padding * 2) / (props.chartData.length - 1)
-
-  return props.chartData.map((d, i) => ({
-    x: padding + i * stepX,
-    y: height - padding - ((d.rate / maxRate) * (height - padding * 2)),
-    rate: d.rate,
-  }))
+  return { path, dots }
 })
 
 const dayLabels = computed(() => {
@@ -114,14 +99,14 @@ const dayLabels = computed(() => {
           preserveAspectRatio="xMidYMid meet"
         >
           <path
-            :d="svgPath"
+            :d="chartPlot.path"
             fill="none"
             stroke="#00E5A0"
             stroke-width="2"
             stroke-linecap="round"
           />
           <circle
-            v-for="(point, idx) in dotPoints"
+            v-for="(point, idx) in chartPlot.dots"
             :key="idx"
             :cx="point.x"
             :cy="point.y"

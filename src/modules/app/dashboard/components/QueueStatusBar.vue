@@ -78,12 +78,12 @@ const emit = defineEmits(['go-to-queue', 'start-queue'])
       </div>
     </div>
 
-    <button
+    <router-link  :to="isActive ? 'dashboard/queue/live' : 'dashboard/queue/create'"
       class="inline-flex items-center gap-2 rounded-xl bg-mint/80 px-5 py-2 font-body text-sm font-bold text-plum transition-colors hover:bg-mint"
       @click="isActive ? emit('go-to-queue') : emit('start-queue')"
     >
       {{ isActive ? 'Go to live queue' : 'Start a Queue' }}
       <ArrowRight class="h-3 w-3" />
-    </button>
+  </router-link>
   </div>
 </template>

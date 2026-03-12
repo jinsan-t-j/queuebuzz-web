@@ -25,18 +25,28 @@ const maxValue = computed(() => {
   return Math.max(...props.data.map((d) => d.value), 1)
 })
 
-// Generate 3 rows × 12 columns grid
+// Generate grid efficiently without O(N^2) lookups
 const gridCells = computed(() => {
   if (!props.data.length) return []
 
-  const days = [...new Set(props.data.map((d) => d.day))].sort()
-  const hours = [...new Set(props.data.map((d) => d.hour))].sort((a, b) => a - b)
+  const rowsMap = new Map()
+  const hoursSet = new Set()
+
+  for (let i = 0; i < props.data.length; i++) {
+    const item = props.data[i]
+    hoursSet.add(item.hour)
+    if (!rowsMap.has(item.day)) {
+      rowsMap.set(item.day, new Map())
+    }
+    rowsMap.get(item.day).set(item.hour, item.value)
+  }
+
+  const days = Array.from(rowsMap.keys()).sort()
+  const hours = Array.from(hoursSet).sort((a, b) => a - b)
 
   return days.map((day) => {
-    return hours.map((hour) => {
-      const cell = props.data.find((d) => d.day === day && d.hour === hour)
-      return cell ? cell.value : 0
-    })
+    const dayMap = rowsMap.get(day)
+    return hours.map((hour) => dayMap.get(hour) || 0)
   })
 })
 

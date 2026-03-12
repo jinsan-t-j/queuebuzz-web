@@ -162,7 +162,6 @@ export function useDashboardApi() {
         },
         greeting: {
           name: 'John',
-          date: 'Monday, October 23, 2023',
         },
       }
     } catch (e) {

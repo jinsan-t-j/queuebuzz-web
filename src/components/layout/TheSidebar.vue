@@ -109,13 +109,13 @@ const navItems = computed(() => [
   },
   {
     name: 'New Queue',
-    to: '/dashboard/queue/new',
+    to: '/dashboard/queue/create',
     icon: NavNewQueue,
     exact: true,
   },
   {
     name: 'History',
-    to: '/dashboard/history',
+    to: '/dashboard/queue/history',
     icon: NavHistory,
   },
   {

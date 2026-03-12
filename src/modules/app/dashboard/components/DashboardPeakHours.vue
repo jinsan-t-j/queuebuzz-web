@@ -22,14 +22,14 @@ const props = defineProps({
   },
 })
 
-const maxValue = computed(() => {
-  if (!props.data.length) return 1
-  return Math.max(...props.data.map((d) => d.value), 1)
+const processedData = computed(() => {
+  if (!props.data.length) return []
+  const maxVal = Math.max(...props.data.map((d) => d.value), 1)
+  return props.data.map((d) => ({
+    ...d,
+    barHeight: `${(d.value / maxVal) * 100}%`
+  }))
 })
-
-function barHeight(value) {
-  return `${(value / maxValue.value) * 100}%`
-}
 </script>
 
 <template>
@@ -55,13 +55,13 @@ function barHeight(value) {
     <div v-else class="mt-4">
       <div class="flex items-end gap-px h-20">
         <div
-          v-for="item in data"
+          v-for="item in processedData"
           :key="item.hour"
-          class="flex-1 flex items-end justify-center"
+          class="flex-1 flex items-end justify-center h-full"
         >
           <div
             class="w-full max-w-[14px] rounded-t-xs bg-mint/60 transition-all duration-500 hover:bg-mint"
-            :style="{ height: barHeight(item.value) }"
+            :style="{ height: item.barHeight }"
           />
         </div>
       </div>

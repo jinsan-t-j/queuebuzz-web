@@ -28,14 +28,18 @@ const tabs = [
   { key: 'avgWait', label: 'Avg. Wait' },
 ]
 
-const maxValue = computed(() => {
-  const values = props.data.map((d) => d.value)
-  return Math.max(...values, 1)
-})
+const processedData = computed(() => {
+  if (!props.data || !props.data.length) return []
+  const isServed = activeTab.value === 'served'
+  
+  const values = props.data.map((d) => isServed ? (d.value || 0) : (d.avgWait ? parseInt(d.avgWait) : 0))
+  const maxValue = Math.max(...values, 1)
 
-function barHeight(value) {
-  return `${(value / maxValue.value) * 100}%`
-}
+  return props.data.map((d, i) => ({
+    ...d,
+    barHeight: d.isFuture ? '20%' : `${(values[i] / maxValue) * 100}%`
+  }))
+})
 </script>
 
 <template>
@@ -87,9 +91,9 @@ function barHeight(value) {
       <!-- Bars -->
       <div class="flex items-end justify-between gap-3 h-44">
         <div
-          v-for="item in data"
+          v-for="item in processedData"
           :key="item.day"
-          class="flex flex-1 flex-col items-center gap-2"
+          class="flex flex-1 flex-col items-center gap-2 h-full"
         >
           <div class="relative w-full flex justify-center h-full items-end">
             <div
@@ -101,7 +105,7 @@ function barHeight(value) {
                     ? 'bg-mint shadow-[0_4px_16px_rgba(0,229,160,0.3)]'
                     : 'bg-mint/40',
               ]"
-              :style="{ height: item.isFuture ? '20%' : barHeight(item.value) }"
+              :style="{ height: item.barHeight }"
             />
           </div>
         </div>
@@ -110,7 +114,7 @@ function barHeight(value) {
       <!-- Day labels -->
       <div class="mt-3 flex justify-between gap-3">
         <span
-          v-for="item in data"
+          v-for="item in processedData"
           :key="item.day"
           class="flex-1 text-center font-mono text-[10px] uppercase text-plum-muted"
         >

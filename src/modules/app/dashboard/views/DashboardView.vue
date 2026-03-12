@@ -7,7 +7,7 @@
  */
 
 // 1. Vue core imports
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 
 // 2. Router / Pinia imports
 
@@ -46,6 +46,8 @@ const { isLoading, error, fetchDashboard } = useDashboardApi()
 
 // 9. Reactive state
 const dashboardData = ref(null)
+const currentHour = ref(new Date().getHours())
+let greetingTimer = null
 
 // 10. Computed properties
 const isNewAccount = computed(
@@ -54,11 +56,28 @@ const isNewAccount = computed(
 
 const greeting = computed(() => {
   const name = dashboardData.value?.greeting?.name || 'there'
-  return `Good morning, ${name}`
+  if (currentHour.value < 12) return `Good morning, ${name}`
+  if (currentHour.value < 17) return `Good afternoon, ${name}`
+  return `Good evening, ${name}`
+})
+
+const locale =
+  typeof navigator !== 'undefined'
+    ? navigator.language || 'en-US'
+    : 'en-US'
+
+const dateFormatter = new Intl.DateTimeFormat(locale, {
+  weekday: 'long',
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
 })
 
 const dateString = computed(() => {
-  return dashboardData.value?.greeting?.date || ''
+  const hourSnapshot = currentHour.value
+  const today = new Date()
+  today.setHours(hourSnapshot, 0, 0, 0)
+  return dateFormatter.format(today)
 })
 
 const activeQueue = computed(() => dashboardData.value?.activeQueue || {})
@@ -104,9 +123,50 @@ function retry() {
   loadDashboard()
 }
 
+function clearGreetingTimer() {
+  if (greetingTimer !== null) {
+    window.clearTimeout(greetingTimer)
+    greetingTimer = null
+  }
+}
+
+function scheduleGreetingUpdate() {
+  clearGreetingTimer()
+
+  const now = new Date()
+  currentHour.value = now.getHours()
+
+  const nextBoundary = new Date(now)
+
+  if (now.getHours() < 12) {
+    nextBoundary.setHours(12, 0, 0, 0)
+  } else if (now.getHours() < 17) {
+    nextBoundary.setHours(17, 0, 0, 0)
+  } else {
+    nextBoundary.setDate(nextBoundary.getDate() + 1)
+    nextBoundary.setHours(0, 0, 0, 0)
+  }
+
+  const timeoutMs = Math.max(nextBoundary.getTime() - now.getTime(), 1000)
+  greetingTimer = window.setTimeout(scheduleGreetingUpdate, timeoutMs)
+}
+
+function handleVisibilityChange() {
+  if (!document.hidden) {
+    scheduleGreetingUpdate()
+  }
+}
+
 // 12. Lifecycle hooks
 onMounted(() => {
+  scheduleGreetingUpdate()
+  document.addEventListener('visibilitychange', handleVisibilityChange)
   loadDashboard()
+})
+
+onBeforeUnmount(() => {
+  clearGreetingTimer()
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 </script>
 

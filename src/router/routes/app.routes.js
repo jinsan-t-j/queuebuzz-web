@@ -43,7 +43,7 @@ export const appRoutes = [
         meta: { title: 'Dashboard' },
       },
       {
-        path: 'queue/new',
+        path: 'queue/create',
         name: 'queue-create',
         component: () => import('@/modules/app/queue/views/CreateQueueView.vue'),
         meta: { title: 'New Queue' },
@@ -55,8 +55,8 @@ export const appRoutes = [
         meta: { title: 'Live Queue' },
       },
       {
-        path: 'history',
-        name: 'history',
+        path: 'queue/history',
+        name: 'queue-history',
         component: () => import('@/modules/app/queue/views/HistoryQueueView.vue'),
         meta: { title: 'History' },
       },
