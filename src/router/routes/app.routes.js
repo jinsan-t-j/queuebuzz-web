@@ -61,8 +61,8 @@ export const appRoutes = [
         meta: { title: 'History' },
       },
       {
-        path: 'history/:id',
-        name: 'history-detail',
+        path: 'queue/history/:id',
+        name: 'queue-history-detail',
         component: () => import('@/modules/app/history/views/HistoryDetailView.vue'),
         meta: { title: 'Queue History' },
         props: (route) => ({ historyId: route.params.id }),
