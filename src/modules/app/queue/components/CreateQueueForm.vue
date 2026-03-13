@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import { useClipboard } from '@vueuse/core'
+import { useQueueStore } from '@/stores/queue.store'
 
 import QueueCreatedModal from '@/modules/app/queue/components/QueueCreatedModal.vue'
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
@@ -21,6 +22,9 @@ const props = defineProps({
 const emit = defineEmits(['queue-created', 'cancel', 'create-account'])
 
 const router = useRouter()
+const queueStore = useQueueStore()
+
+const hasActiveQueue = computed(() => queueStore.hasActiveQueue)
 
 // Suggestions for queue name
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
@@ -111,7 +115,23 @@ function copySuccessLink() {
 </script>
 
 <template>
-  <form @submit.prevent="onSubmit">
+  <div v-if="hasActiveQueue" class="mt-8 flex flex-col items-center justify-center rounded-card border border-plum/5 bg-white p-8 shadow-[0_4px_24px_rgba(26,10,46,0.05)] text-center">
+    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-mint-light">
+      <LockIcon class="h-8 w-8 text-mint-dark" />
+    </div>
+    <h2 class="mb-2 font-display text-2xl font-bold text-plum">Active Queue Exists</h2>
+    <p class="mb-6 max-w-sm font-body text-[15px] text-[#5c5267]">
+      You can only have one active queue at a time. Please complete or close your current queue before creating a new one.
+    </p>
+    <router-link
+      :to="role === 'host' ? '/dashboard/queue/live' : '/guest-host/queue/live'"
+      class="rounded-input bg-mint px-6 py-3 font-body text-base font-bold text-plum shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95"
+    >
+      Go to Live Queue
+    </router-link>
+  </div>
+
+  <form v-else @submit.prevent="onSubmit">
     <div class="mt-8 flex flex-col gap-5">
       <!-- ═══ Card 1: Queue Name ═══ -->
       <div class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]">
