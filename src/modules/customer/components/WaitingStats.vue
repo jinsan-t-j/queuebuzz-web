@@ -2,6 +2,7 @@
 /**
  * @component WaitingStats
  * @description Three stat cards showing position, ahead count, and estimated wait time.
+ * Matches Figma Waiting screen layout with progress line underneath.
  *
  * @prop {Number} position - Current position in queue.
  * @prop {Number} ahead - Number of people ahead.
@@ -9,12 +10,21 @@
  * @prop {Number} totalInQueue - Total people in queue.
  */
 
+// 1. Vue core imports
+import { computed } from 'vue'
+
 // 6. Props
-defineProps({
+const props = defineProps({
   position: { type: Number, default: 4 },
   ahead: { type: Number, default: 3 },
   estWaitMin: { type: Number, default: 12 },
   totalInQueue: { type: Number, default: 23 },
+})
+
+// 10. Computed
+const progressPercent = computed(() => {
+  if (props.totalInQueue === 0) return 0
+  return Math.round((props.position / props.totalInQueue) * 100)
 })
 </script>
 
@@ -41,9 +51,17 @@ defineProps({
       </div>
     </div>
 
-    <!-- Position text -->
-    <p class="mt-2 text-center font-body text-[13px] text-plum">
-      Position {{ position }} of {{ totalInQueue }}
-    </p>
+    <!-- Position text + progress bar -->
+    <div class="mt-3 flex flex-col gap-3">
+      <p class="font-body text-[13px] text-plum">
+        Position {{ position }} of {{ totalInQueue }}
+      </p>
+      <div class="h-1 w-full overflow-hidden rounded-full bg-plum-faint">
+        <div
+          class="h-full rounded-full bg-mint transition-all duration-700 ease-out"
+          :style="{ width: `${progressPercent}%` }"
+        />
+      </div>
+    </div>
   </div>
 </template>

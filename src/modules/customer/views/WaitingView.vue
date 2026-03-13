@@ -92,7 +92,15 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div class="relative flex flex-col">
+    <!-- Blob decorations — Waiting screen specific -->
+    <div
+      class="pointer-events-none absolute -right-16 -top-10   h-[250px] w-[250px] rounded-[125px] bg-mint-light/50 blur-[40px]"
+    />
+    <div
+      class="pointer-events-none absolute -bottom-16 -left-12   h-[250px] w-[250px] rounded-full bg-plum/3 blur-[80px]"
+    />
+
     <!-- Queue name header -->
     <h1 class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum">
       {{ queueName }}

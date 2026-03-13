@@ -2,6 +2,7 @@
 /**
  * @component TicketSaveBar
  * @description Bottom bar showing ticket save confirmation and share button.
+ * Matches Figma — header with X, progress bar, saved + share buttons.
  *
  * @prop {String} ticketNumber - Ticket number.
  * @prop {String} shareCode - Share code.

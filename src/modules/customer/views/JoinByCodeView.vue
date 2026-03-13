@@ -3,6 +3,7 @@
  * @component JoinByCodeView
  * @description 6-character code entry screen for joining a queue.
  * Supports partial fill, searching, and error states.
+ * Matches Figma — three states: entry, searching, error.
  */
 
 // 1. Vue core imports
@@ -12,9 +13,10 @@ import { ref, computed } from 'vue'
 import { useCustomerApi } from '@/modules/customer/composables/useCustomerApi'
 
 // 5. Component imports
-import { Loader2, AlertCircle } from 'lucide-vue-next'
-import ArrowRightBoldIcon from '@/assets/icons/arrow-right-bold.svg?component'
-import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
+import ArrowRightFilledIcon from '@/assets/icons/arrow-right-filled.svg?component'
+import QrCodeScanIcon from '@/assets/icons/qr-code-scan.svg?component'
+import ErrorCircleOutlineIcon from '@/assets/icons/error-circle-outline.svg?component'
+import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 
 // 7. Emits
 const emit = defineEmits(['queue-found', 'scan-qr'])
@@ -27,6 +29,7 @@ const code = ref(['', '', '', '', '', ''])
 const inputRefs = ref([])
 const isError = ref(false)
 const isSearching = ref(false)
+const isShaking = ref(false)
 
 // 10. Computed properties
 const isFilled = computed(() => code.value.every((c) => c !== ''))
@@ -70,6 +73,10 @@ async function handleFind() {
     emit('queue-found', result)
   } else {
     isError.value = true
+    isShaking.value = true
+    setTimeout(() => {
+      isShaking.value = false
+    }, 600)
     setTimeout(() => {
       code.value = ['', '', '', '', '', '']
       inputRefs.value[0]?.focus()
@@ -79,7 +86,15 @@ async function handleFind() {
 </script>
 
 <template>
-  <div class="flex flex-col px-5 py-4">
+  <div class="relative flex flex-col px-5 py-4">
+    <!-- Blob decorations — JoinByCode screen specific -->
+    <div
+      class="pointer-events-none absolute -right-16 -top-16   h-[256px] w-[256px] rounded-full bg-[radial-gradient(70.71%_70.71%_at_50%_50%,rgba(0,229,160,0.50)_0%,rgba(0,229,160,0)_70%)] blur-[40px]"
+    />
+    <div
+      class="pointer-events-none absolute -bottom-16 -left-28   h-[320px] w-[320px] rounded-full bg-[radial-gradient(70.71%_70.71%_at_50%_50%,rgba(26,10,46,0.35)_0%,rgba(26,10,46,0)_70%)] blur-[40px]"
+    />
+
     <!-- Heading -->
     <div class="mt-8 text-center">
       <h1 class="font-display text-[29px] font-bold leading-[40.5px] text-plum">
@@ -91,7 +106,12 @@ async function handleFind() {
     </div>
 
     <!-- 6 Code boxes -->
-    <div class="mt-8 flex justify-center gap-2">
+    <div
+      :class="[
+        'mt-8 flex justify-center gap-2',
+        isShaking ? 'animate-[shake_0.5s_ease-in-out]' : '',
+      ]"
+    >
       <input
         v-for="(char, i) in code"
         :key="i"
@@ -117,7 +137,7 @@ async function handleFind() {
 
     <!-- Error message -->
     <div v-if="isError" class="mt-3 flex items-center justify-center gap-1.5">
-      <AlertCircle class="h-4 w-4 text-danger" />
+      <ErrorCircleOutlineIcon class="h-4 w-4 text-danger" />
       <span class="font-body text-[13px] font-medium text-danger">Queue not found or has ended</span>
     </div>
 
@@ -139,12 +159,12 @@ async function handleFind() {
         ]"
         @click="handleFind"
       >
-        <Loader2 v-if="isSearching" class="h-5 w-5 animate-spin text-plum" />
+        <SpinnerLoadingIcon v-if="isSearching" class="h-5 w-5 animate-spin text-plum" />
         <template v-if="isSearching">Searching...</template>
         <template v-else-if="isError">Try Again</template>
         <template v-else>
           Find My Queue
-          <ArrowRightBoldIcon class="h-3.5 w-3.5 text-plum" />
+          <ArrowRightFilledIcon class="h-3.5 w-3.5 text-plum" />
         </template>
       </button>
 
@@ -153,7 +173,7 @@ async function handleFind() {
         class="flex h-14 w-full items-center justify-center gap-1 rounded-xl border-2 border-[rgba(107,33,168,0.30)] font-body text-base font-bold tracking-wide text-[#6b21a8]"
         @click="emit('scan-qr')"
       >
-        <QrScanIcon class="h-5 w-5 text-[#6b21a8]" />
+        <QrCodeScanIcon class="h-5 w-5 text-[#6b21a8]" />
         Scan QR Instead
       </button>
     </div>

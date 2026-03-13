@@ -8,9 +8,6 @@
 // 1. Vue core imports
 import { ref } from 'vue'
 
-// 4. Local composables
-import { useCustomerApi } from '@/modules/customer/composables/useCustomerApi'
-
 // 5. Component imports
 import TicketHero from '@/modules/customer/components/TicketHero.vue'
 import GracePeriodCard from '@/modules/customer/components/GracePeriodCard.vue'
@@ -24,7 +21,15 @@ const queueName = ref('Chai Point · Koramangala')
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div class="relative flex flex-col">
+    <!-- Blob decorations — Idle screen specific (teal top-right, orange bottom-left) -->
+    <div
+      class="pointer-events-none absolute -right-16 -top-24   h-[300px] w-[300px] rounded-[150px] bg-[rgba(45,212,191,0.40)] blur-[40px]"
+    />
+    <div
+      class="pointer-events-none absolute -bottom-16 -left-12   h-[250px] w-[250px] rounded-[100px_200px_213px_163px] bg-warning/40 blur-[40px]"
+    />
+
     <!-- Queue name header -->
     <h1 class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum">
       {{ queueName }}

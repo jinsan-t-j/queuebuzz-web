@@ -58,7 +58,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div class="relative flex flex-col">
+    <!-- Blob decorations — Join screen specific -->
+    <div
+      class="pointer-events-none absolute -right-16 -top-16 h-[250px] w-[250px] rounded-[125px] bg-mint-light/50 blur-[40px]"
+    />
+    <div
+      class="pointer-events-none absolute -bottom-16 -left-28 h-[238px] w-[238px] rounded-[100px] bg-warning/35 blur-[40px]"
+    />
+
     <!-- Queue name header -->
     <h1 class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum">
       {{ queueName }}

@@ -3,24 +3,36 @@
  * @component CustomerFooter
  * @description Minimal legal footer shown at the bottom of every customer screen.
  *
- * @emits {open-terms} - Emitted when "Terms & Conditions" is clicked.
- * @emits {open-privacy} - Emitted when "Privacy Policy" is clicked.
+ * @prop {Boolean} showFreeNotice - Whether to show "Free · No signup required" above copyright.
  */
 
-// 7. Emits
-const emit = defineEmits(['open-terms', 'open-privacy'])
+// 5. Component imports
+import ShieldVerifiedIcon from '@/assets/icons/shield-verified.svg?component'
+
+// 6. Props
+defineProps({
+  showFreeNotice: {
+    type: Boolean,
+    default: false,
+  },
+})
 </script>
 
 <template>
   <footer class="bg-sand pb-6 pt-4">
-    <div class="mx-auto max-w-[430px] px-5 text-center">
-      <p class="font-body text-[10px] text-plum-muted">
+    <div class="mx-auto flex max-w-[430px] flex-col items-center gap-1 px-5">
+      <!-- Free notice (shown on join screen) -->
+      <div v-if="showFreeNotice" class="flex items-center gap-2">
+        <ShieldVerifiedIcon class="h-3 w-3 text-plum-muted" />
+        <span class="font-body text-xs font-medium text-plum-muted">Free · No signup required</span>
+      </div>
+
+      <!-- Copyright -->
+      <p class="text-center font-body text-[10px] capitalize tracking-tight text-plum-muted">
         © All Copyrights Reserved 2026
       </p>
-      <p class="mt-1 font-body text-[10px] text-plum-muted">
-        <button class="cursor-pointer underline" @click="emit('open-terms')">Terms &amp; Conditions</button>
-        <span class="mx-1">|</span>
-        <button class="cursor-pointer underline" @click="emit('open-privacy')">Privacy Policy</button>
+      <p class="text-center font-body text-[10px] capitalize tracking-tight text-plum-muted">
+        Terms & Conditions | Privacy Policy
       </p>
     </div>
   </footer>

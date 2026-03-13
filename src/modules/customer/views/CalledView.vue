@@ -3,26 +3,17 @@
  * @component CalledView
  * @description Customer-facing "called" screen — "Great news! Your turn has arrived."
  * Shows ticket number prominently with QR option and I'm Here CTA.
- *
- * @prop {String} ticketNumber - Ticket number.
+ * Matches Figma — large ticket card with decorative punches, mint border.
  */
 
 // 1. Vue core imports
 import { ref } from 'vue'
-
-// 3. Third-party composables
-import QRCode from 'qrcode'
 
 // 4. Local composables
 import { useCustomerApi } from '@/modules/customer/composables/useCustomerApi'
 
 // 5. Component imports
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
-
-// 6. Props
-const props = defineProps({
-  ticketNumber: { type: String, default: 'Q-0042' },
-})
 
 // 7. Emits
 const emit = defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'claim-earlier'])
@@ -31,6 +22,7 @@ const emit = defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'claim-
 const { confirmArrival, leaveQueue } = useCustomerApi()
 
 // 9. Reactive state
+const ticketNumber = ref('Q-0042')
 const queueName = ref('Chai Point · Koramangala')
 const isConfirming = ref(false)
 
@@ -51,7 +43,15 @@ async function handleLeave() {
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div class="relative flex flex-col">
+    <!-- Blob decorations — Called screen specific (two large mint blobs) -->
+    <div
+      class="pointer-events-none absolute -top-20 left-1/2   h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-mint/16 blur-[80px]"
+    />
+    <div
+      class="pointer-events-none absolute -bottom-16 -left-10   h-[350px] w-[350px] rounded-full bg-mint/16 blur-[80px]"
+    />
+
     <!-- Queue name header -->
     <h1 class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum">
       {{ queueName }}
@@ -65,12 +65,10 @@ async function handleLeave() {
       </div>
 
       <!-- Ticket card -->
-      <div class="mt-6 rounded-[40px] border-2 border-mint bg-white p-6 text-center shadow-[0_20px_50px_rgba(0,229,160,0.12)]">
+      <div class="relative mt-6 overflow-hidden rounded-[40px] border-2 border-mint bg-[#fdfcfe] p-6 text-center shadow-[0_20px_50px_rgba(0,229,160,0.12)]">
         <!-- Decorative notches -->
-        <div class="relative">
-          <div class="absolute -left-6 top-1/2 h-6 w-3 -translate-y-1/2 rounded-r-full bg-sand" />
-          <div class="absolute -right-6 top-1/2 h-6 w-3 -translate-y-1/2 rounded-l-full bg-sand" />
-        </div>
+        <div class="absolute -left-[7px] top-1/2 h-6 w-3.5 -translate-y-1/2 rounded-r-full bg-sand" />
+        <div class="absolute -right-[7px] top-1/2 h-6 w-3.5 -translate-y-1/2 rounded-l-full bg-sand" />
 
         <p class="font-body text-xs font-normal uppercase tracking-[2.4px] text-plum/60">Your Ticket</p>
         <p class="mt-4 font-mono text-[92px] font-black leading-[92px] text-plum">

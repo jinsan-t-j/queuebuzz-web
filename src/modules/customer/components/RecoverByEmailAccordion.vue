@@ -2,6 +2,7 @@
 /**
  * @component RecoverByEmailAccordion
  * @description Expandable accordion for email recovery on the waiting screen.
+ * Matches Figma — mint border + mint-light bg when collapsed.
  *
  * @emits {submit-email} - Emitted with email value.
  */
