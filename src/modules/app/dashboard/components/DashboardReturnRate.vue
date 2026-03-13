@@ -9,7 +9,7 @@
  * @prop {Boolean} hasData - Whether to show chart or empty state.
  */
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import MountainEmptyIcon from '@/assets/icons/mountain-empty.svg?component'
 
 const props = defineProps({
@@ -26,6 +26,19 @@ const props = defineProps({
     default: false,
   },
 })
+
+const emit = defineEmits(['timeframe-change'])
+
+const activeTimeframe = ref('today')
+const timeframes = [
+  { key: 'today', label: 'Today' },
+  { key: 'week', label: 'This Week' },
+]
+
+function setTimeframe(key) {
+  activeTimeframe.value = key
+  emit('timeframe-change', key)
+}
 
 const chartPlot = computed(() => {
   if (!props.chartData.length) return { path: '', dots: [] }
@@ -86,11 +99,29 @@ const dayLabels = computed(() => {
     <!-- Chart content -->
     <template v-else>
       <!-- Day vs Return Rate -->
-      <h4
-        class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted"
-      >
-        Day vs. Return Rate
-      </h4>
+      <div class="flex items-center justify-between pb-2 mb-2">
+        <h4
+          class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted"
+        >
+          Day vs. Return Rate
+        </h4>
+        
+        <div class="flex gap-1 rounded-lg bg-plum-faint/50 p-0.5">
+          <button
+            v-for="tab in timeframes"
+            :key="tab.key"
+            :class="[
+              'rounded-md px-3 py-1 font-body text-xs font-medium transition-colors',
+              activeTimeframe === tab.key
+                ? 'bg-white text-plum shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
+                : 'text-plum-muted hover:text-plum',
+            ]"
+            @click="setTimeframe(tab.key)"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+      </div>
 
       <div class="mt-4">
         <svg

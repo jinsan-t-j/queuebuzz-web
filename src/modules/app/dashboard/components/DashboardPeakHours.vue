@@ -8,7 +8,7 @@
  * @prop {Boolean} hasData - Whether to show chart or empty state.
  */
 
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import PeakEmptyIcon from '@/assets/icons/peak-empty.svg?component'
 
 const props = defineProps({
@@ -21,6 +21,19 @@ const props = defineProps({
     default: false,
   },
 })
+
+const emit = defineEmits(['timeframe-change'])
+
+const activeTimeframe = ref('week') // Peak hours usually defaults to week for better data
+const timeframes = [
+  { key: 'today', label: 'Today' },
+  { key: 'week', label: 'This Week' },
+]
+
+function setTimeframe(key) {
+  activeTimeframe.value = key
+  emit('timeframe-change', key)
+}
 
 const processedData = computed(() => {
   if (!props.data.length) return []
@@ -36,11 +49,29 @@ const processedData = computed(() => {
   <div
     class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
   >
-    <h4
-      class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted"
-    >
-      Peak Hours
-    </h4>
+    <div class="flex items-center justify-between">
+      <h4
+        class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted"
+      >
+        Peak Hours
+      </h4>
+
+      <div class="flex gap-1 rounded-lg bg-plum-faint/50 p-0.5">
+        <button
+          v-for="tab in timeframes"
+          :key="tab.key"
+          :class="[
+            'rounded-md px-3 py-1 font-body text-xs font-medium transition-colors',
+            activeTimeframe === tab.key
+              ? 'bg-white text-plum shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
+              : 'text-plum-muted hover:text-plum',
+          ]"
+          @click="setTimeframe(tab.key)"
+        >
+          {{ tab.label }}
+        </button>
+      </div>
+    </div>
 
     <!-- Empty state -->
     <div
