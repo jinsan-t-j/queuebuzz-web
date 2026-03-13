@@ -23,8 +23,9 @@ import { Menu, X } from 'lucide-vue-next'
 // 8. Composable destructuring
 
 // 9. Reactive state
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 const isMobileMenuOpen = ref(false)
+const isScrolled = ref(false)
 
 // 10. Computed properties
 
@@ -33,11 +34,27 @@ function handleToggleMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
 
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 10
+}
+
 // 12. Lifecycle hooks
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <template>
-  <header class="border-b border-plum-faint bg-white">
+  <header 
+    :class="[
+      'sticky top-0 z-50 transition-all duration-300 border-b',
+      isScrolled ? 'bg-white/85 backdrop-blur-md shadow-sm border-plum-faint/50' : 'bg-white border-plum-faint'
+    ]"
+  >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
       <router-link to="/" class="font-display text-2xl font-bold text-plum">
         QueueBuzz
@@ -49,6 +66,12 @@ function handleToggleMenu() {
           class="font-body text-sm font-medium text-plum-muted transition-colors hover:text-plum"
         >
           Pricing
+        </router-link>
+        <router-link
+          to="/support"
+          class="font-body text-sm font-medium text-plum-muted transition-colors hover:text-plum"
+        >
+          Support
         </router-link>
         <router-link
           to="/login"
@@ -84,6 +107,13 @@ function handleToggleMenu() {
           @click="isMobileMenuOpen = false"
         >
           Pricing
+        </router-link>
+        <router-link
+          to="/support"
+          class="font-body text-sm font-medium text-plum-muted"
+          @click="isMobileMenuOpen = false"
+        >
+          Support
         </router-link>
         <router-link
           to="/login"

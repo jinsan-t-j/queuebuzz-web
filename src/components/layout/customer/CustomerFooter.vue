@@ -6,6 +6,8 @@
  * @prop {Boolean} showFreeNotice - Whether to show "Free · No signup required" above copyright.
  */
 
+import { computed } from 'vue'
+
 // 5. Component imports
 import ShieldVerifiedIcon from '@/assets/icons/shield-verified.svg?component'
 
@@ -16,6 +18,9 @@ defineProps({
     default: false,
   },
 })
+
+const currentYear = computed(() => new Date().getFullYear())
+
 </script>
 
 <template>
@@ -29,10 +34,10 @@ defineProps({
 
       <!-- Copyright -->
       <p class="text-center font-body text-[10px] capitalize tracking-tight text-plum-muted">
-        © All Copyrights Reserved 2026
+        © {{ currentYear }} queuebuzz. All rights reserved
       </p>
       <p class="text-center font-body text-[10px] capitalize tracking-tight text-plum-muted">
-        Terms & Conditions | Privacy Policy
+        <router-link to="/terms" class="hover:text-plum">Terms & Conditions</router-link> | <router-link to="/privacy" class="hover:text-plum">Privacy Policy</router-link>
       </p>
     </div>
   </footer>

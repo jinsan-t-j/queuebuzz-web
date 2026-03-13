@@ -25,6 +25,24 @@ export const websiteRoutes = [
         component: () => import('@/modules/website/premium/views/GoPremiumView.vue'),
         meta: { title: 'Go Premium — QueueBuzz' },
       },
+      {
+        path: 'terms',
+        name: 'terms',
+        component: () => import('@/modules/website/views/TermsView.vue'),
+        meta: { title: 'Terms & Conditions — QueueBuzz' },
+      },
+      {
+        path: 'privacy',
+        name: 'privacy',
+        component: () => import('@/modules/website/views/PrivacyView.vue'),
+        meta: { title: 'Privacy Policy — QueueBuzz' },
+      },
+      {
+        path: 'support',
+        name: 'support',
+        component: () => import('@/modules/website/views/SupportView.vue'),
+        meta: { title: 'Support — QueueBuzz' },
+      },
     ],
   },
 ]

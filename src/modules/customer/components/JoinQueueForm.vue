@@ -8,7 +8,6 @@
  * @prop {Number} peopleInQueue - Number of people currently in queue.
  * @prop {Number} estWaitMin - Estimated wait time in minutes.
  * @emits {join-queue} - Emitted with { name, buzzEnabled, email } payload.
- * @emits {go-to-join-by-code} - Emitted when "Join now" link is clicked.
  */
 
 // 1. Vue core imports
@@ -28,7 +27,7 @@ defineProps({
 })
 
 // 7. Emits
-const emit = defineEmits(['join-queue', 'go-to-join-by-code'])
+const emit = defineEmits(['join-queue'])
 
 // 9. Reactive state
 const displayName = ref('')
@@ -159,7 +158,7 @@ async function handleJoin() {
     <!-- Join by code link -->
     <p class="mt-5 text-center font-body text-sm text-plum-muted">
       Have an existing code?
-      <button class="font-body text-sm text-plum-muted underline" @click="emit('go-to-join-by-code')">Join now.</button>
+      <router-link to="/join" class="font-body text-sm text-plum-muted underline">Join now.</router-link>
     </p>
   </div>
 </template>
