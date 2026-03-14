@@ -6,6 +6,7 @@
  */
 import { useQueueStore } from '@/stores/queue.store'
 import { ref, computed } from 'vue'
+import type { QueueConfig, QueueEntry, QueueRecord } from '@/types/app'
 
 /**
  * @returns {Object} Queue composable with state and management methods.
@@ -25,8 +26,8 @@ export function useQueue() {
    * @param {string} config.name - Queue name
    * @returns {Object} The created queue object
    */
-  function createQueue(config) {
-    const queue = {
+  function createQueue(config: Partial<QueueConfig> = {}): QueueRecord {
+    const queue: QueueRecord = {
       id: `q_${Date.now()}`,
       name: config.name || "Today's Queue",
       joinCode: generateJoinCode(),
@@ -43,8 +44,8 @@ export function useQueue() {
    * @description Adds a mock customer entry to the queue.
    * @param {string} displayName - Customer display name
    */
-  function addEntry(displayName) {
-    const entry = {
+  function addEntry(displayName: string): QueueEntry {
+    const entry: QueueEntry = {
       id: `e_${Date.now()}`,
       displayName,
       ticketNumber: store.entries.length + 1,
@@ -52,15 +53,16 @@ export function useQueue() {
       joinedAt: new Date().toISOString(),
     }
     store.setEntries([...store.entries, entry])
+    return entry
   }
 
   /**
    * @description Marks a queue entry as called.
    * @param {string} entryId - The entry ID to call
    */
-  function callEntry(entryId) {
-    const updated = store.entries.map((e) =>
-      e.id === entryId ? { ...e, status: 'called' } : e,
+  function callEntry(entryId: string) {
+    const updated: QueueEntry[] = store.entries.map((entry) =>
+      entry.id === entryId ? { ...entry, status: 'called' } : entry,
     )
     store.setEntries(updated)
   }

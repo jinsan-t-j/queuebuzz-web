@@ -10,7 +10,7 @@ import DOMPurify from 'dompurify'
  * @param {string} input - Raw string from user input or external data
  * @returns {string} Safe plain text
  */
-export function sanitizeText(input) {
+export function sanitizeText(input: string) {
   if (typeof input !== 'string') return ''
   return DOMPurify.sanitize(input, { ALLOWED_TAGS: [] })
 }

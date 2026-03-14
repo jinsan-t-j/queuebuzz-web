@@ -3,8 +3,9 @@
  * @description Customer-facing pages: the queue experience seen by customers waiting
  * in queue. These use CustomerLayout — centred mobile column with navbar and footer.
  */
+import type { RouteRecordRaw } from 'vue-router'
 
-export const customerRoutes = [
+export const customerRoutes: RouteRecordRaw[] = [
   {
     path: '/q/:hostSlug',
     component: () => import('@/layouts/CustomerLayout.vue'),

@@ -7,6 +7,7 @@
 import { useAuthStore } from '@/stores/auth.store'
 import { useRouter } from 'vue-router'
 import { computed } from 'vue'
+import type { AuthUser } from '@/types/app'
 
 /**
  * @returns {Object} Auth composable with user state and login/logout methods.
@@ -23,8 +24,8 @@ export function useAuth() {
    * @description Mock login — sets a demo user in the store.
    * @param {string} email - The email used for login
    */
-  function login(email) {
-    const mockUser = {
+  function login(email: string) {
+    const mockUser: AuthUser = {
       id: 'usr_001',
       name: 'Alex Rivera',
       email,
@@ -40,7 +41,7 @@ export function useAuth() {
    */
   function logout() {
     store.logout()
-    router.push({ name: 'home' })
+    void router.push({ name: 'home' })
   }
 
   return { user, isAuthenticated, isPremium, login, logout }

@@ -95,11 +95,10 @@ const emit = defineEmits([
 // 8. Composable destructuring
 const { copy: copyToClipboard } = useClipboard()
 
-import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue.js'
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 const {
   showAddGuestModal,
   showToast,
-  toastMessage,
   guestEntries,
   rawSearchQuery,
   debouncedSearchQuery,
@@ -234,14 +233,5 @@ async function handleCopyCode() {
       @close="showAddGuestModal = false"
       @submit="handleAddGuestSubmit"
     />
-
-    <!-- ═══ Success Toast ═══ -->
-    <div 
-      class="fixed bottom-6 right-6 z-50 flex transform items-center gap-3 rounded-2xl bg-plum px-6 py-4 shadow-[0_10px_25px_rgba(26,10,46,0.20)] transition-all duration-300"
-      :class="showToast ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'"
-    >
-      <CheckCircleIcon class="h-5 w-5 text-mint" />
-      <span class="font-body text-sm font-semibold text-white">{{ toastMessage }}</span>
-    </div>
   </div>
 </template>

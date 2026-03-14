@@ -4,12 +4,13 @@
  * Phase 2: replace each stub function body with real fetch/axios call.
  */
 import { ref } from 'vue'
+import type { DashboardData } from '@/types/app'
 
 export function useDashboardApi() {
   const isLoading = ref(false)
-  const error = ref(null)
+  const error = ref<string | null>(null)
 
-  async function fetchDashboard() {
+  async function fetchDashboard(): Promise<DashboardData | null> {
     isLoading.value = true
     error.value = null
     try {
@@ -165,7 +166,7 @@ export function useDashboardApi() {
         },
       }
     } catch (e) {
-      error.value = e.message
+      error.value = e instanceof Error ? e.message : 'Failed to load dashboard'
       return null
     } finally {
       isLoading.value = false

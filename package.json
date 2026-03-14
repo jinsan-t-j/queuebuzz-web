@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -18,6 +19,7 @@
     "@vee-validate/yup": "^4.15.1",
     "@vueuse/core": "^14.2.1",
     "@vueuse/motion": "^3.0.3",
+    "axios": "^1.13.6",
     "dompurify": "^3.3.2",
     "lucide-vue-next": "^0.577.0",
     "pinia": "^3.0.4",
@@ -30,8 +32,11 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "^6.0.2",
     "puppeteer": "^24.39.0",
-    "vite": "^7.3.1"
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vue-tsc": "^3.2.5"
   }
 }

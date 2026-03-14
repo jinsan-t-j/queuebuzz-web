@@ -6,13 +6,9 @@
  */
 import { ref } from 'vue'
 
-/**
- * @param {string} _url - WebSocket URL (unused in mock)
- * @returns {Object} WebSocket composable with connection state and message handlers.
- */
-export function useWebSocket(_url) {
+export function useWebSocket<TMessage = unknown>(_url: string) {
   const isConnected = ref(false)
-  const lastMessage = ref(null)
+  const lastMessage = ref<TMessage | null>(null)
 
   /**
    * @description Simulates connecting to the WebSocket server.
@@ -33,7 +29,7 @@ export function useWebSocket(_url) {
    * @description Simulates sending a message through the WebSocket.
    * @param {Object} data - The message payload
    */
-  function send(data) {
+  function send(data: TMessage) {
     lastMessage.value = data
   }
 

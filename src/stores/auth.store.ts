@@ -5,11 +5,12 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { AuthUser } from '@/types/app'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
-  const user = ref(null)
-  const token = ref(null)
+  const user = ref<AuthUser | null>(null)
+  const token = ref<string | null>(null)
 
   // Getters
   const isAuthenticated = computed(() => !!token.value)
@@ -21,7 +22,7 @@ export const useAuthStore = defineStore('auth', () => {
    * @param {Object} userData - The user profile object.
    * @param {string} authToken - The session token.
    */
-  function setUser(userData, authToken) {
+  function setUser(userData: AuthUser, authToken: string) {
     user.value = userData
     token.value = authToken
   }

@@ -9,14 +9,9 @@
  * @emits {social-login} - User clicked a social login button.
  */
 
-import { ref, computed } from 'vue'
-
-import { useAuth } from '@/composables/useAuth'
-
+import LoginForm from '@/modules/app/auth/components/LoginForm.vue'
 import QueueBuzzLogoBg from '@/assets/icons/queuebuzz-logo-bg.svg?component'
 import ShieldCheckIcon from '@/assets/icons/shield-check.svg?component'
-import SparkleIcon from '@/assets/icons/sparkle.svg?component'
-import { useRoute, useRouter } from 'vue-router'
 
 defineProps({
   isLoading: {
@@ -26,31 +21,6 @@ defineProps({
 })
 
 const emit = defineEmits(['form-submit', 'social-login'])
-
-const router = useRouter()
-const route = useRoute()
-const { login } = useAuth()
-
-const email = ref('')
-const isLoading = ref(false)
-
-const safeRedirect = computed(() => {
-  const r = route.query.redirect
-  return typeof r === 'string' && r.startsWith('/') && !r.startsWith('//') ? r : '/dashboard'
-})
-
-function handleSubmit() {
-  if (!email.value.trim()) return
-  isLoading.value = true
-  setTimeout(() => {
-    login(email.value)
-    isLoading.value = false
-    router.push(safeRedirect.value)
-  }, 500)
-
-  emit('form-submit', { email: email.value })
-
-}
 
 function handleSocialLogin(provider) {
   emit('social-login', { provider })
@@ -104,33 +74,7 @@ function handleSocialLogin(provider) {
       <!-- ═══ Right column — Form ═══ -->
       <div class="flex flex-1 flex-col items-center justify-center gap-10 px-16 py-16">
         <!-- Email form -->
-        <div class="flex w-full max-w-[448px] flex-col gap-6">
-          <!-- Label + Input -->
-          <div>
-            <label
-              class="mb-2 block font-display text-sm font-bold uppercase tracking-[1.4px] text-[#64748b]"
-            >
-              Email Address
-            </label>
-            <input
-              v-model="email"
-              type="email"
-              placeholder="name@yourcompany.com"
-              class="w-full rounded-[14px] border border-plum-faint bg-white px-[18px] py-4 font-display text-lg font-semibold text-plum placeholder:text-ash outline-none focus:border-plum"
-              @keyup.enter="handleSubmit"
-            />
-          </div>
-
-          <!-- Submit button -->
-          <button
-            class="flex w-full items-center justify-center gap-2 rounded-[32px] bg-[#00c48c] px-8 py-5 font-display text-lg font-extrabold text-white shadow-[0_8px_10px_rgba(0,229,160,0.20),0_20px_25px_rgba(0,229,160,0.20)] transition-colors hover:bg-mint-dark"
-            :is-loading="isLoading"
-            @click="handleSubmit"
-          >
-            Receive Magic Link
-            <SparkleIcon class="h-[21px] w-[21px] text-white" />
-          </button>
-        </div>
+        <LoginForm @submit-success="(email) => emit('form-submit', { email })" />
 
         <!-- OR divider -->
         <div class="flex w-full max-w-[448px] items-center gap-4">

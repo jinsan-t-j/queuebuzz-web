@@ -2,7 +2,9 @@
  * @module websiteRoutes
  * @description Public marketing website routes. Uses WebsiteLayout.
  */
-export const websiteRoutes = [
+import type { RouteRecordRaw } from 'vue-router'
+
+export const websiteRoutes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () => import('@/layouts/WebsiteLayout.vue'),

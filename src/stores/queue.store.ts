@@ -5,11 +5,12 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { QueueEntry, QueueRecord } from '@/types/app'
 
 export const useQueueStore = defineStore('queue', () => {
   // State
-  const activeQueue = ref(null)
-  const entries = ref([])
+  const activeQueue = ref<QueueRecord | null>(null)
+  const entries = ref<QueueEntry[]>([])
 
   // Getters
   const hasActiveQueue = computed(() => !!activeQueue.value)
@@ -23,7 +24,7 @@ export const useQueueStore = defineStore('queue', () => {
    * @description Sets the active queue data.
    * @param {Object} queueData - The queue configuration object.
    */
-  function setActiveQueue(queueData) {
+  function setActiveQueue(queueData: QueueRecord | null) {
     activeQueue.value = queueData
   }
 
@@ -31,7 +32,7 @@ export const useQueueStore = defineStore('queue', () => {
    * @description Updates the entries list for the active queue.
    * @param {Array} newEntries - Array of queue entry objects.
    */
-  function setEntries(newEntries) {
+  function setEntries(newEntries: QueueEntry[]) {
     entries.value = newEntries
   }
 

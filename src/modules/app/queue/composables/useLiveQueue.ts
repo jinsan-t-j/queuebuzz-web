@@ -1,15 +1,25 @@
 import { ref, shallowRef, computed } from 'vue'
+import { useToast } from '@/composables/useToast'
+import type {
+  LiveQueueEntry,
+  LiveQueueGuestInput,
+  TrendSummary,
+} from '@/types/app'
 
-export function useLiveQueue(initialEntries = [], initialSearchQuery = '') {
+type SearchEmitter = (value: string) => void
+
+export function useLiveQueue(
+  initialEntries: LiveQueueEntry[] = [],
+  initialSearchQuery = '',
+) {
     const showAddGuestModal = ref(false)
-    const showToast = ref(false)
-    const toastMessage = ref('')
+    const { showToast } = useToast()
 
     // Use shallowRef for the entries array to avoid deep proxy overhead, significantly reducing memory consumption and reactivity tracking
-    const guestEntries = shallowRef([...initialEntries])
+    const guestEntries = shallowRef<LiveQueueEntry[]>([...initialEntries])
     const rawSearchQuery = ref(initialSearchQuery)
     const debouncedSearchQuery = ref(rawSearchQuery.value)
-    let searchTimeout = null
+    let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
     const filteredEntries = computed(() => {
         if (!debouncedSearchQuery.value) return guestEntries.value
@@ -31,7 +41,7 @@ export function useLiveQueue(initialEntries = [], initialSearchQuery = '') {
     queueStartTime.setHours(queueStartTime.getHours() - 5)
 
     const chartLabels = computed(() => {
-        const labels = []
+        const labels: string[] = []
         const now = new Date()
         const start = new Date(queueStartTime)
         start.setMinutes(0, 0, 0)
@@ -49,7 +59,7 @@ export function useLiveQueue(initialEntries = [], initialSearchQuery = '') {
     const chartBars = computed(() => {
         const count = chartLabels.value.length
         const total = servedTodayCount.value
-        const bars = new Array(count).fill(0)
+        const bars: number[] = new Array(count).fill(0)
 
         if (total > 0 && count > 0) {
             let remaining = total
@@ -65,7 +75,7 @@ export function useLiveQueue(initialEntries = [], initialSearchQuery = '') {
         return bars
     })
 
-    const computedTrend = computed(() => {
+    const computedTrend = computed<TrendSummary>(() => {
         const bars = chartBars.value
         if (bars.length < 2) return { text: '0% vs last hr', direction: 'flat' }
 
@@ -89,9 +99,11 @@ export function useLiveQueue(initialEntries = [], initialSearchQuery = '') {
         }
     })
 
-    function handleSearchUpdate(val, emitSearch) {
+    function handleSearchUpdate(val: string, emitSearch?: SearchEmitter) {
         rawSearchQuery.value = val
-        clearTimeout(searchTimeout)
+        if (searchTimeout) {
+            clearTimeout(searchTimeout)
+        }
         searchTimeout = setTimeout(() => {
             debouncedSearchQuery.value = val
         }, 300)
@@ -99,7 +111,7 @@ export function useLiveQueue(initialEntries = [], initialSearchQuery = '') {
         if (emitSearch) emitSearch(val)
     }
 
-    function handleAddGuestSubmit(values) {
+    function handleAddGuestSubmit(values: LiveQueueGuestInput) {
         // Since we use shallowRef, we reassign the array to trigger reactivity efficiently
         guestEntries.value = [
             ...guestEntries.value,
@@ -114,15 +126,12 @@ export function useLiveQueue(initialEntries = [], initialSearchQuery = '') {
         ]
         showAddGuestModal.value = false
 
-        toastMessage.value = `${values.name} added to queue.`
-        showToast.value = true
-        setTimeout(() => showToast.value = false, 3000)
+        showToast(`${values.name} added to queue.`)
     }
 
     return {
         showAddGuestModal,
         showToast,
-        toastMessage,
         guestEntries,
         rawSearchQuery,
         debouncedSearchQuery,

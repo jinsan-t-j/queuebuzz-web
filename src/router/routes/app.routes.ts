@@ -4,8 +4,9 @@
  */
 import { authGuard } from '@/router/guards/auth.guard'
 import { guestGuard } from '@/router/guards/guest.guard'
+import type { RouteRecordRaw } from 'vue-router'
 
-export const appRoutes = [
+export const appRoutes: RouteRecordRaw[] = [
   {
     path: '/login',
     component: () => import('@/layouts/BlankLayout.vue'),
@@ -65,7 +66,7 @@ export const appRoutes = [
         name: 'queue-history-detail',
         component: () => import('@/modules/app/history/views/HistoryDetailView.vue'),
         meta: { title: 'Queue History' },
-        props: (route) => ({ historyId: route.params.id }),
+        props: (route) => ({ historyId: String(route.params.id ?? '') }),
       },
       {
         path: 'settings',

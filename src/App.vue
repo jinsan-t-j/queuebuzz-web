@@ -14,6 +14,7 @@
 // 4. Local composables
 
 // 5. Component imports
+import GlobalToast from '@/components/common/GlobalToast.vue'
 
 // 6. Props
 
@@ -33,5 +34,6 @@
 <template>
   <div id="queuebuzz-app">
     <router-view />
+    <GlobalToast />
   </div>
 </template>

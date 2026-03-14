@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
+import type { HistoryQueryParams, HistoryQueryResult, QueueHistoryItem } from '@/types/app'
 
 export const useQueueStore = defineStore('queueStore', () => {
-    const dummyQueues = [
+    const dummyQueues: QueueHistoryItem[] = [
         { id: 1, date: '2023-10-24', name: 'Main Service Desk', totalServed: 128, avgWait: '12m 40s', status: 'Completed' },
         { id: 2, date: '2023-10-23', name: 'Express Checkout', totalServed: 342, avgWait: '04m 15s', status: 'Active' },
         { id: 3, date: '2023-10-22', name: 'Weekend Pop-up', totalServed: 89, avgWait: '18m 22s', status: 'Terminated' },
@@ -14,7 +15,7 @@ export const useQueueStore = defineStore('queueStore', () => {
         { id: 10, date: '2023-10-15', name: 'Express Checkout', totalServed: 412, avgWait: '02m 30s', status: 'Completed' }
     ]
 
-    const fetchHistoryQueues = async (params) => {
+    const fetchHistoryQueues = async (params: HistoryQueryParams = {}): Promise<HistoryQueryResult> => {
         // API Delays simulation
         await new Promise(resolve => setTimeout(resolve, 600))
         let results = [...dummyQueues]
@@ -31,8 +32,8 @@ export const useQueueStore = defineStore('queueStore', () => {
         if (params.sortDirection) {
             results = results.sort((a, b) => {
                 return params.sortDirection === 'asc'
-                    ? new Date(a.date) - new Date(b.date)
-                    : new Date(b.date) - new Date(a.date)
+                    ? new Date(a.date).getTime() - new Date(b.date).getTime()
+                    : new Date(b.date).getTime() - new Date(a.date).getTime()
             })
         }
 

@@ -4,12 +4,13 @@
  * Phase 2: replace each stub function body with real fetch/axios call.
  */
 import { ref } from 'vue'
+import type { HistoryDetail } from '@/types/app'
 
 export function useHistoryApi() {
   const isLoading = ref(false)
-  const error = ref(null)
+  const error = ref<string | null>(null)
 
-  async function fetchHistoryDetail(id) {
+  async function fetchHistoryDetail(_id: string): Promise<HistoryDetail | null> {
     isLoading.value = true
     error.value = null
     try {
@@ -108,20 +109,20 @@ export function useHistoryApi() {
         ],
       }
     } catch (e) {
-      error.value = e.message
+      error.value = e instanceof Error ? e.message : 'Failed to load queue history'
       return null
     } finally {
       isLoading.value = false
     }
   }
 
-  async function exportCsv(id) {
+  async function exportCsv(_id: string): Promise<boolean> {
     // STUB — replace with real download endpoint
     await new Promise((r) => setTimeout(r, 400))
     return true
   }
 
-  async function exportPdf(id) {
+  async function exportPdf(_id: string): Promise<boolean> {
     // STUB — replace with real PDF generation endpoint
     await new Promise((r) => setTimeout(r, 400))
     return true
