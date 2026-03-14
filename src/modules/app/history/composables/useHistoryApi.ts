@@ -4,7 +4,7 @@
  * Phase 2: replace each stub function body with real fetch/axios call.
  */
 import { ref } from 'vue'
-import type { HistoryDetail } from '@/types/app'
+import type { HistoryDetail } from '@/modules/app/history/types'
 
 export function useHistoryApi() {
   const isLoading = ref(false)

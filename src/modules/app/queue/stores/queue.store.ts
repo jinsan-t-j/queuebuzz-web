@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia'
-import type { HistoryQueryParams, HistoryQueryResult, QueueHistoryItem } from '@/types/app'
+import type {
+  HistoryQueryParams,
+  HistoryQueryResult,
+  QueueHistoryItem,
+} from '@/modules/app/history/types'
 
 export const useQueueStore = defineStore('queueStore', () => {
     const dummyQueues: QueueHistoryItem[] = [

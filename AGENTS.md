@@ -950,21 +950,12 @@ p-4=16px   p-5=20px    p-6=24px    p-8=32px    p-10=40px   p-12=48px
 ```
 
 ### Responsive
+All components and pages must be responsive and work on both desktop and mobile devices.
+
 ```
 Desktop: max-w-[1200px] mx-auto px-10
 Mobile:  px-5 · full width · single column
 Breakpoint: md: prefix for desktop overrides
-```
-
-### Blobs (background decoration — every screen)
-```html
-<div class="relative min-h-screen bg-sand overflow-hidden">
-  <div class="absolute -top-16 -right-16 w-72 h-72 opacity-50
-              bg-mint-light rounded-[60%_40%_55%_45%/50%_60%_40%_50%] -z-10" />
-  <div class="absolute -bottom-16 -left-16 w-64 h-64 opacity-40
-              bg-plum-faint rounded-[45%_55%_40%_60%/60%_40%_55%_45%] -z-10" />
-  <div class="relative z-10"><!-- content --></div>
-</div>
 ```
 
 ---

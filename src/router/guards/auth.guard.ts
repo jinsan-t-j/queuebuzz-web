@@ -12,9 +12,9 @@ import type { NavigationGuardWithThis } from 'vue-router'
 
 export const authGuard: NavigationGuardWithThis<undefined> = (to) => {
   const auth = useAuthStore()
-  // if (!auth.isAuthenticated) {
-  //   return { path: '/login', query: { redirect: to.fullPath } }
-  // }
+  if (!auth.isAuthenticated) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
   void auth
   void to
 }

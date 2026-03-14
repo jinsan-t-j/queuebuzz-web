@@ -11,7 +11,7 @@ import type {
   JoinQueueResult,
   MutationResult,
   WaitingStatus,
-} from '@/types/app'
+} from '@/modules/customer/types'
 
 export function useCustomerApi() {
   const isLoading = ref(false)

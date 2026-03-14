@@ -6,7 +6,7 @@
  */
 import { useQueueStore } from '@/stores/queue.store'
 import { ref, computed } from 'vue'
-import type { QueueConfig, QueueEntry, QueueRecord } from '@/types/app'
+import type { QueueConfig, QueueEntry, QueueRecord } from '@/modules/app/queue/types'
 
 /**
  * @returns {Object} Queue composable with state and management methods.

@@ -4,7 +4,7 @@ import type {
   LiveQueueEntry,
   LiveQueueGuestInput,
   TrendSummary,
-} from '@/types/app'
+} from '@/modules/app/queue/types'
 
 type SearchEmitter = (value: string) => void
 

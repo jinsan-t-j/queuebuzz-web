@@ -5,7 +5,7 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { QueueEntry, QueueRecord } from '@/types/app'
+import type { QueueEntry, QueueRecord } from '@/modules/app/queue/types'
 
 export const useQueueStore = defineStore('queue', () => {
   // State

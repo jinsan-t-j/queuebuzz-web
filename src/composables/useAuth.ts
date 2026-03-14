@@ -7,7 +7,7 @@
 import { useAuthStore } from '@/stores/auth.store'
 import { useRouter } from 'vue-router'
 import { computed } from 'vue'
-import type { AuthUser } from '@/types/app'
+import type { AuthUser } from '@/modules/app/auth/types'
 
 /**
  * @returns {Object} Auth composable with user state and login/logout methods.

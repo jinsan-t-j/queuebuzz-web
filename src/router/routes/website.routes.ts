@@ -13,7 +13,7 @@ export const websiteRoutes: RouteRecordRaw[] = [
         path: '',
         name: 'home',
         component: () => import('@/modules/website/views/HomeView.vue'),
-        meta: { title: 'QueueBuzz — Virtual Queue Management' },
+        meta: { title: 'QueueBuzz — feels like a breeze' },
       },
       {
         path: 'pricing',

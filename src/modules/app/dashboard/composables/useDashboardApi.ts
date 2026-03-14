@@ -4,7 +4,7 @@
  * Phase 2: replace each stub function body with real fetch/axios call.
  */
 import { ref } from 'vue'
-import type { DashboardData } from '@/types/app'
+import type { DashboardData } from '@/modules/app/dashboard/types'
 
 export function useDashboardApi() {
   const isLoading = ref(false)

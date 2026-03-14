@@ -5,7 +5,7 @@
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { AuthUser } from '@/types/app'
+import type { AuthUser } from '@/modules/app/auth/types'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
