@@ -10,23 +10,22 @@ import { computed, ref } from 'vue'
 
 // 2. Router / Pinia imports
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.store'
 
-// 3. Third-party composables
-
-// 4. Local composables
-import { useAuth } from '@/composables/useAuth'
-
-// 5. Component imports
+// 3. Third party imports
 import { LogOut, User } from 'lucide-vue-next'
+import router from '@/router'
+
+// 4. Components imports
 import LogoutConfirmationModal from '@/modules/app/auth/components/LogoutConfirmationModal.vue'
 
-// 6. Props
+// 5. Props
 
 // 7. Emits
 
 // 8. Composable destructuring
 const route = useRoute()
-const { user, logout } = useAuth()
+const {user, logout} = useAuthStore()
 
 // 9. Reactive state
 const isLogoutModalOpen = ref(false)
@@ -42,7 +41,8 @@ function handleLogout() {
 
 function confirmLogout() {
   isLogoutModalOpen.value = false
-  logout()
+  void logout()
+  void router.push({ name: 'home' })
 }
 
 // 12. Lifecycle hooks

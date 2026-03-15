@@ -1,5 +1,6 @@
-import { apiClient } from '@/lib/axios'
+import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
+import type { AuthUser, SocialProvider } from '@/modules/app/auth/types'
 
 export interface RegisterHostPayload {
     email?: string
@@ -12,19 +13,21 @@ export interface VerifyHostPayload {
     otp?: string
 }
 
-export interface VerifyHostResponse {
-    access_token: string
-    expires_at: string
-    token_type: string
-    host_id: string
-    host_public_id: string
-}
-
 export interface HostProfile {
     id: string
     public_id: string
     tier: string
     created_at: string
+}
+
+export interface CurrentHostResponse {
+    id: string
+    public_id: string
+    name: string
+    email: string
+    business_name: string
+    tier: 'free' | 'premium'
+    avatar: string | null
 }
 
 export interface Queue {
@@ -47,27 +50,45 @@ export async function registerHost({ email, phone }: RegisterHostPayload): Promi
 }
 
 /**
- * verifyHost
- * Calls the API to verify a magic link token or OTP.
- * @param payload - VerifyHostPayload
- * @returns API response data containing tokens and host info
- */
-export async function verifyHost({ token, phone, otp }: VerifyHostPayload): Promise<VerifyHostResponse> {
-    const payload: VerifyHostPayload = {}
-    if (token) payload.token = token
-    if (phone) payload.phone = phone
-    if (otp) payload.otp = otp
-
-    return await apiClient.post(API_ROUTES.HOST.VERIFY, payload)
-}
-
-/**
  * claimQueue
  * Calls API to claim an anonymous queue as a registered host.
  * @returns API response data
  */
 export async function claimQueue(): Promise<{ message: string }> {
-    return await apiClient.post(API_ROUTES.HOST.CLAIM)
+    return await apiClient.post(
+        API_ROUTES.HOST.CLAIM,
+        undefined,
+        createApiRequestConfig({}, { withCredentials: true }),
+    )
+}
+
+export async function logoutHost(): Promise<{ message: string }> {
+    return await apiClient.post(
+        API_ROUTES.HOST.LOGOUT,
+        undefined,
+        createApiRequestConfig({}, { withCredentials: true }),
+    )
+}
+
+/**
+ * fetchCurrentHost
+ * Fetches the authenticated host profile using cookie-backed auth.
+ * @returns Host profile for bootstrapping app auth state
+ */
+export async function fetchCurrentHost(): Promise<AuthUser> {
+    const data = await apiClient.get<CurrentHostResponse>(
+        API_ROUTES.HOST.ME,
+        createApiRequestConfig({}, { withCredentials: true }),
+    )
+
+    return {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        businessName: data.business_name,
+        tier: data.tier,
+        avatar: data.avatar,
+    }
 }
 
 /**
