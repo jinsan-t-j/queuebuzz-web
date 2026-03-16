@@ -14,12 +14,22 @@ export const AUTH_ROUTES = {
 // Centralized route definitions
 export const API_ROUTES = {
     HOST: {
+        // Auth routes
         REGISTER: '/auth/register',
         LOGOUT: '/auth/logout',
         ME: '/host/me',
+        // Queue routes
         CLAIM: '/host/claim',
         GET_PROFILE: (publicId: string): string => `/host/${publicId}`,
         GET_QUEUES: (publicId: string): string => `/host/${publicId}/queues`,
     },
+    QUEUE: {
+        CHECK_SLUG: '/queue/slug-check',
+        GET_LIVE_QUEUE: (publicId: string): string => `/queue/${publicId}/live`,
+    },
+    SHARED: {
+        CREATE_QUEUE: '/queue/create',
+    }
+
     // Add more modules (e.g. QUEUE, GUEST) here as they grow
 } as const

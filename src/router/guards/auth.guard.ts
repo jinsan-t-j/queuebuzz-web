@@ -8,14 +8,19 @@
  * @returns {RouteLocationRaw | undefined}
  */
 import { useAuthStore } from '@/stores/auth.store'
+import { useQueueStore } from '@/stores/queue.store'
 import type { NavigationGuardWithThis } from 'vue-router'
 
 export const authGuard: NavigationGuardWithThis<undefined> = async (to) => {
   const auth = useAuthStore()
 
-  if (!auth.isHydrated) {
-    await auth.initializeSession()
+  // if (!auth.isHydrated) {
+  await auth.initializeSession()
+  if (auth.isAuthenticated) {
+    const queueStore = useQueueStore()
+    void queueStore.fetchActiveQueue()
   }
+  // }
 
   if (!auth.isAuthenticated) {
     return { path: '/login', query: { redirect: to.fullPath } }

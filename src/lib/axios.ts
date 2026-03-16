@@ -5,6 +5,7 @@ import axios, {
   InternalAxiosRequestConfig,
 } from 'axios'
 import { API_BASE_URL } from '@/config/api.constants'
+import { keysToCamelCase, keysToSnakeCase } from '@/utils/caseConvert'
 
 export function createApiRequestConfig(
   config: AxiosRequestConfig = {},
@@ -29,10 +30,16 @@ export const apiClient: AxiosInstance = axios.create({
   timeout: 15000,
 })
 
-// Optional: Request Interceptor
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // You can attach authentication tokens here later
+    if (config.data) {
+      config.data = keysToSnakeCase(config.data)
+    }
+
+    if (config.params) {
+      config.params = keysToSnakeCase(config.params)
+    }
+
     return config
   },
   (error: any) => Promise.reject(error)
@@ -56,7 +63,10 @@ const processQueue = (error: any, token: string | null = null) => {
 }
 
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response.data,
+  (response: AxiosResponse) => {
+    response.data = keysToCamelCase(response.data)
+    return response.data
+  },
   async (error: any) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 

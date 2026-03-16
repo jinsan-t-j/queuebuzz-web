@@ -75,6 +75,7 @@ function openTerminateModal() {
 function handleCloseQueue() {
   showTerminateModal.value = false
   emit('terminate-queue')
+  router.push({ name: 'queue-history' })
 }
 
 function handleKeepOpen() {

@@ -20,25 +20,6 @@ export function useQueue() {
   const hasActiveQueue = computed(() => store.hasActiveQueue)
   const waitingCount = computed(() => store.waitingCount)
 
-  /**
-   * @description Creates a new queue with mock data.
-   * @param {Object} config - Queue configuration
-   * @param {string} config.name - Queue name
-   * @returns {Object} The created queue object
-   */
-  function createQueue(config: Partial<QueueConfig> = {}): QueueRecord {
-    const queue: QueueRecord = {
-      id: `q_${Date.now()}`,
-      name: config.name || "Today's Queue",
-      joinCode: generateJoinCode(),
-      hostSlug: 'rivera-barbershop',
-      createdAt: new Date().toISOString(),
-      isOpen: true,
-    }
-    store.setActiveQueue(queue)
-    store.setEntries([])
-    return queue
-  }
 
   /**
    * @description Adds a mock customer entry to the queue.
@@ -80,22 +61,8 @@ export function useQueue() {
     hasActiveQueue,
     waitingCount,
     isLoading,
-    createQueue,
     addEntry,
     callEntry,
     closeQueue,
   }
-}
-
-/**
- * @description Generates a random 6-character alphanumeric join code.
- * @returns {string} Join code like "8X4K2F"
- */
-function generateJoinCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let code = ''
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)]
-  }
-  return code
 }

@@ -27,6 +27,7 @@
 import { ref } from 'vue'
 
 // 2. Router / Pinia imports
+import { useRouter, useRoute } from 'vue-router'
 
 // 3. Third-party composables
 
@@ -120,6 +121,9 @@ const {
 
 // 10. Computed properties
 
+const router = useRouter()
+const route = useRoute()
+
 // 11. Methods
 function handleTerminateClick() {
   showTerminateModal.value = true
@@ -128,6 +132,8 @@ function handleTerminateClick() {
 function handleCloseQueue() {
   showTerminateModal.value = false
   emit('terminate')
+  const queueId = route.params.queueId || '123'
+  router.push({ name: 'guest-host-complete', params: { queueId } })
 }
 
 function handleKeepOpen() {

@@ -1,6 +1,6 @@
 import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
-import type { AuthUser, SocialProvider } from '@/modules/app/auth/types'
+import type { AuthUser } from '@/modules/app/auth/types'
 
 export interface RegisterHostPayload {
     email?: string
@@ -75,18 +75,12 @@ export async function logoutHost(): Promise<{ message: string }> {
  * @returns Host profile for bootstrapping app auth state
  */
 export async function fetchCurrentHost(): Promise<AuthUser> {
-    const { data } = await apiClient.get<CurrentHostResponse>(
+    const { data } = await apiClient.get<AuthUser>(
         API_ROUTES.HOST.ME,
         createApiRequestConfig({}, { withCredentials: true }),
     )
 
-    return {
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        tier: data.tier,
-        avatar: data.avatar,
-    }
+    return data
 }
 
 /**

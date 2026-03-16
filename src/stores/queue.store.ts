@@ -6,6 +6,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { QueueEntry, QueueRecord } from '@/modules/app/queue/types'
+import { useAuthStore } from '@/stores/auth.store'
+import { getLiveQueue } from '@/modules/app/queue/actions/queue.action'
 
 export const useQueueStore = defineStore('queue', () => {
   // State
@@ -44,6 +46,29 @@ export const useQueueStore = defineStore('queue', () => {
     entries.value = []
   }
 
+  /**
+   * @description Fetches the active live queue for the host and updates the store
+   */
+  async function fetchActiveQueue() {
+    const authStore = useAuthStore()
+    if (!authStore.user?.publicId) return
+    console.log(authStore.user)
+
+    try {
+      const queue = await getLiveQueue(authStore.user.publicId)
+      if (queue) {
+        setActiveQueue(queue)
+      } else {
+        clearQueue()
+      }
+    } catch (e: any) {
+      if (e?.response?.status !== 404) {
+        console.error('Failed to fetch active queue', e)
+      }
+      clearQueue()
+    }
+  }
+
   return {
     activeQueue,
     entries,
@@ -53,5 +78,6 @@ export const useQueueStore = defineStore('queue', () => {
     setActiveQueue,
     setEntries,
     clearQueue,
+    fetchActiveQueue,
   }
 })

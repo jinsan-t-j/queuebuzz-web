@@ -1,15 +1,18 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
-import { useClipboard } from '@vueuse/core'
+import { useClipboard, useDebounceFn } from '@vueuse/core'
 import { useQueueStore } from '@/stores/queue.store'
+import { createQueue, checkSlugAvailability } from '@/modules/app/queue/actions/queue.action'
 
 import QueueCreatedModal from '@/modules/app/queue/components/QueueCreatedModal.vue'
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
 import LockIcon from '@/assets/icons/lock.svg?component'
 import ChevronDownIcon from '@/assets/icons/chevron-down.svg?component'
+import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
+import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
 
 const props = defineProps({
   role: {
@@ -19,21 +22,17 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['queue-created', 'cancel', 'create-account'])
-
 const router = useRouter()
 const queueStore = useQueueStore()
 
 const hasActiveQueue = computed(() => queueStore.hasActiveQueue)
 
-// Suggestions for queue name
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
 
 // Modal State
 const showSuccessModal = ref(false)
-const generatedJoinCode = ref('8X4K2F') // Using default prop for now
+const queueJoinCode = ref('')
 
-// Validation Schema based on role
 const schema = computed(() => {
   const baseSchema = {
     queueName: yup.string().required('Queue name is required').max(50, 'Queue name must be at most 50 characters'),
@@ -57,13 +56,13 @@ const schema = computed(() => {
   }
 })
 
-const { handleSubmit, errors } = useForm({
+const { handleSubmit, errors, setFieldError } = useForm({
   validationSchema: schema,
   initialValues: {
-    queueName: '',
+    queueName: null,
     serviceTime: 5,
-    slug: '',
-    recoveryEmail: ''
+    slug: null,
+    recoveryEmail: null
   }
 })
 
@@ -79,22 +78,49 @@ function selectSuggestion(suggestion) {
   queueName.value = suggestion
 }
 
-const onSubmit = handleSubmit((values) => {
-  // In a real scenario, API call happens here. For now, open success modal.
-  generatedJoinCode.value = Math.random().toString(36).substring(2, 8).toUpperCase()
-  showSuccessModal.value = true
-  emit('queue-created', values)
+const isCheckingSlug = ref(false)
+
+const checkSlug = useDebounceFn(async (currentSlug) => {
+  if (!currentSlug) return
+  try {
+    const isAvailable = await checkSlugAvailability(currentSlug)
+    if (!isAvailable) {
+      setFieldError('slug', 'This link is already taken')
+    }
+  } finally {
+    isCheckingSlug.value = false
+  }
+}, 500)
+
+watch(slug, (newSlug) => {
+  if (newSlug) {
+    if (errors.value.slug) setFieldError('slug', undefined)
+    isCheckingSlug.value = true
+    checkSlug(newSlug)
+  } else {
+    isCheckingSlug.value = false
+  }
+})
+
+const onSubmit = handleSubmit(async (values) => {
+  if (errors.value.slug || isCheckingSlug.value) return
+  
+  try {
+    const queue = await createQueue(values)
+    queueJoinCode.value = queue.joinCode
+    showSuccessModal.value = true
+  } catch (error) {
+    console.error('Error creating queue:', error)
+  }
 })
 
 function handleCancel() {
-  emit('cancel')
   router.back()
 }
 
 function goToDashboard() {
   showSuccessModal.value = false
-  // Navigation fallback, depending on actual app routes
-  router.push('/').catch(() => {})
+  router.push(props.role === 'host' ? '/dashboard/queue/live' : '/guest-host/queue/live')
 }
 
 // Clipboard setups for Host view's slug and Success Modal
@@ -102,15 +128,14 @@ const { copy: copyToClipboard } = useClipboard()
 const isSlugCopied = ref(false)
 
 function copyCustomLink() {
-  const customLink = `https://queuebuzz.com/${slug.value || 'random-slug'}`
+  const customLink = `https://queuebuzz.com/${slug.value}`
   copyToClipboard(customLink)
   isSlugCopied.value = true
   setTimeout(() => isSlugCopied.value = false, 2000)
 }
 
 function copySuccessLink() {
-  // Assuming a generic join link format here
-  copyToClipboard(`https://queuebuzz.com/join/${generatedJoinCode.value}`)
+  copyToClipboard(`https://queuebuzz.com/join/${queueJoinCode.value}?join-code=${queueJoinCode.value}`)
 }
 </script>
 
@@ -209,6 +234,10 @@ function copySuccessLink() {
               placeholder="eenie-meenie"
               class="w-full border-none bg-transparent font-display text-[18px] text-plum placeholder:text-plum/30 font-body outline-none"
             />
+            <div class="mx-2 flex h-5 w-5 shrink-0 items-center justify-center">
+              <SpinnerLoadingIcon v-if="isCheckingSlug" class="h-4 w-4 animate-spin text-plum/50" />
+              <VerifiedCheckIcon v-else-if="slug && !errors.slug" class="h-4 w-4 text-mint" />
+            </div>
             <button 
               type="button" 
               @click="copyCustomLink"
@@ -281,21 +310,21 @@ function copySuccessLink() {
     <!-- ═══ Account nudge (Guest only) ═══ -->
     <p v-if="role === 'guest'" class="mt-6 text-center font-body text-sm text-[#6b7280]">
       Want to customize your URL?
-      <button
-        type="button"
+      <router-link
+        to="/login"
         class="font-semibold text-plum underline transition-colors hover:text-plum-soft"
-        @click="emit('create-account')"
       >
         Create a free account
-      </button>
+      </router-link>
     </p>
 
     <!-- ═══ Success Modal ═══ -->
     <QueueCreatedModal
       :is-open="showSuccessModal"
-      :join-code="generatedJoinCode"
-      @go-to-dashboard="goToDashboard"
+      :join-code="queueJoinCode"
       @copy-link="copySuccessLink"
+      @close="showSuccessModal = false"
+      @go-dashboard="goToDashboard"
     />
   </form>
 </template>

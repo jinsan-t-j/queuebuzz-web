@@ -3,6 +3,7 @@ export type SocialProvider = 'google' | 'apple'
 
 export interface AuthUser {
   id: string
+  publicId: string
   name: string
   email: string
   tier: UserTier

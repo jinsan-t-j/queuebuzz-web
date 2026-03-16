@@ -3,12 +3,12 @@ export interface QueueConfig {
 }
 
 export interface QueueRecord {
-  id: string
   name: string
   joinCode: string
-  hostSlug: string
+  slug: string
+  avgServiceMins: number
+  status: string
   createdAt: string
-  isOpen: boolean
 }
 
 export type QueueEntryStatus = 'waiting' | 'called' | 'served' | 'skipped'

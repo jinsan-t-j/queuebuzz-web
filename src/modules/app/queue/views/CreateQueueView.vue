@@ -11,7 +11,6 @@ import CreateQueueForm from '@/modules/app/queue/components/CreateQueueForm.vue'
 
 <template>
   <div class="mx-auto max-w-[680px]">
-    <!-- Page heading -->
     <h1 class="font-display text-[40px] font-extrabold text-plum">
       Let's get started.
     </h1>
