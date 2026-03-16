@@ -25,7 +25,6 @@ export interface CurrentHostResponse {
     public_id: string
     name: string
     email: string
-    business_name: string
     tier: 'free' | 'premium'
     avatar: string | null
 }
@@ -81,13 +80,10 @@ export async function fetchCurrentHost(): Promise<AuthUser> {
         createApiRequestConfig({}, { withCredentials: true }),
     )
 
-    console.log(data);
-
     return {
         id: data.id,
         name: data.name,
         email: data.email,
-        businessName: data.business_name,
         tier: data.tier,
         avatar: data.avatar,
     }

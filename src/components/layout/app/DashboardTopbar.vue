@@ -32,9 +32,16 @@ const isLogoutModalOpen = ref(false)
 
 // 10. Computed properties
 const pageTitle = computed(() => route.meta?.title || 'Dashboard')
-const userName = computed(() => user.value?.name || 'Host')
+const userName = computed(() => user?.name || formatName(user.email))
 
 // 11. Methods
+function formatName(email) {
+  if (!email) return 'Host'
+
+  const name = email.split('@')[0]
+  return name.includes('.') ? name.split('.')[0] : name
+}
+
 function handleLogout() {
   isLogoutModalOpen.value = true
 }
