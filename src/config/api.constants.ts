@@ -8,16 +8,15 @@ export const API_BASE_URL: string = import.meta.env.VITE_API_URL || 'http://loca
 export const API_ORIGIN_URL: string = new URL(API_BASE_URL, window.location.origin).origin
 
 export const AUTH_ROUTES = {
-    VERIFY: `${API_ORIGIN_URL}/auth/verify`,
     SOCIAL_START: (provider: string): string => `${API_ORIGIN_URL}/auth/social/${provider}/start`,
 } as const
 
 // Centralized route definitions
 export const API_ROUTES = {
     HOST: {
-        REGISTER: '/host/register',
+        REGISTER: '/auth/register',
+        LOGOUT: '/auth/logout',
         ME: '/host/me',
-        LOGOUT: '/host/logout',
         CLAIM: '/host/claim',
         GET_PROFILE: (publicId: string): string => `/host/${publicId}`,
         GET_QUEUES: (publicId: string): string => `/host/${publicId}/queues`,

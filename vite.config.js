@@ -19,5 +19,8 @@ export default defineConfig(({ mode }) => {
       // Access the variable and convert it to a number
       port: parseInt(env.VITE_PORT) || 5173,
     },
+    build: {
+      sourcemap: env.VITE_ENV != 'production' ? 'inline-source-map' : false
+    }
   }
 })

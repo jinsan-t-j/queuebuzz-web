@@ -1,7 +1,7 @@
 <script setup>
 /**
  * @component AppLayout
- * @description Wraps all authenticated host routes. Mounts TheSidebar and TheTopbar.
+ * @description Wraps all authenticated host routes. Mounts DashboardSidebar and DashboardTopbar.
  * Only rendered after the auth guard confirms a valid session.
  */
 
@@ -14,8 +14,8 @@
 // 4. Local composables
 
 // 5. Component imports
-import TheSidebar from '@/components/layout/TheSidebar.vue'
-import TheTopbar from '@/components/layout/TheTopbar.vue'
+import DashboardSidebar from '@/components/layout/app/DashboardSidebar.vue'
+import DashboardTopbar from '@/components/layout/app/DashboardTopbar.vue'
 
 // 6. Props
 
@@ -34,9 +34,9 @@ import TheTopbar from '@/components/layout/TheTopbar.vue'
 
 <template>
   <div class="flex h-screen overflow-hidden bg-sand">
-    <TheSidebar />
+    <DashboardSidebar />
     <div class="flex flex-1 flex-col overflow-hidden">
-      <TheTopbar />
+      <DashboardTopbar />
       <main class="flex-1 overflow-y-auto p-8">
         <router-view />
       </main>

@@ -6,30 +6,26 @@ import axios, {
 } from 'axios'
 import { API_BASE_URL } from '@/config/api.constants'
 
-const API_WITH_CREDENTIALS = import.meta.env.VITE_API_WITH_CREDENTIALS === 'true'
-
 export function createApiRequestConfig(
   config: AxiosRequestConfig = {},
   options: { withCredentials?: boolean } = {},
 ) {
   return {
     ...config,
-    withCredentials: options.withCredentials ?? API_WITH_CREDENTIALS,
+    withCredentials: options.withCredentials ?? false,
   }
 }
 
 /**
  * Global Axios Instance
  * Pre-configured with base URL, headers, and basic interceptors.
- * Designed for optimized memory usage matching tanstack-query paradigms.
  */
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: API_WITH_CREDENTIALS,
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
   },
-  // Set a standard timeout to avoid hanging requests (performance optimization)
   timeout: 15000,
 })
 
@@ -42,9 +38,63 @@ apiClient.interceptors.request.use(
   (error: any) => Promise.reject(error)
 )
 
-// Optional: Response Interceptor
+let isRefreshing = false
+let failedQueue: Array<{
+  resolve: (value?: unknown) => void
+  reject: (reason?: any) => void
+}> = []
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token)
+    }
+  })
+  failedQueue = []
+}
+
 apiClient.interceptors.response.use(
-  // Automatically unwrap standard axios data envelope
   (response: AxiosResponse) => response.data,
-  (error: any) => Promise.reject(error)
+  async (error: any) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+
+      if (originalRequest.url?.includes('/auth/refresh/token')) {
+        return Promise.reject(error)
+      }
+
+      // If another request is already refreshing the token, pause this one
+      if (isRefreshing) {
+        return new Promise(function (resolve, reject) {
+          failedQueue.push({ resolve, reject })
+        }).then(() => {
+          return apiClient(originalRequest)
+        }).catch((err) => Promise.reject(err))
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      try {
+        await axios.post(`${API_BASE_URL}/auth/refresh/token`, undefined, {
+          withCredentials: true
+        })
+
+        processQueue(null)
+
+        return apiClient(originalRequest)
+      } catch (err: any) {
+        processQueue(err)
+
+        return Promise.reject(err)
+      } finally {
+        isRefreshing = false
+      }
+    }
+
+    return Promise.reject(error)
+  }
 )

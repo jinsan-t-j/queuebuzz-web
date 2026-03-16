@@ -1,7 +1,7 @@
 <script setup>
 /**
- * @component TheSidebar
- * @description Host app sidebar navigation. Shows the QueueBuzz wordmark,
+ * @component DashboardSidebar
+ * @description Host dashboard sidebar navigation. Shows the QueueBuzz wordmark,
  * primary nav links, a queue-running status panel, and a Go Premium link.
  * Used once inside AppLayout.
  *

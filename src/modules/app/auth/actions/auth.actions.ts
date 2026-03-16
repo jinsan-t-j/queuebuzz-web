@@ -76,10 +76,12 @@ export async function logoutHost(): Promise<{ message: string }> {
  * @returns Host profile for bootstrapping app auth state
  */
 export async function fetchCurrentHost(): Promise<AuthUser> {
-    const data = await apiClient.get<CurrentHostResponse>(
+    const { data } = await apiClient.get<CurrentHostResponse>(
         API_ROUTES.HOST.ME,
         createApiRequestConfig({}, { withCredentials: true }),
     )
+
+    console.log(data);
 
     return {
         id: data.id,
