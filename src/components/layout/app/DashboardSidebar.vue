@@ -19,8 +19,7 @@ import { useRoute } from 'vue-router'
 
 import SidebarLogo from '@/assets/icons/sidebar-logo.svg?component'
 import NavDashboard from '@/assets/icons/nav-dashboard.svg?component'
-import NavActiveQueue from '@/assets/icons/nav-active-queue.svg?component'
-import NavNewQueue from '@/assets/icons/nav-new-queue.svg?component'
+import Queue from '@/assets/icons/queue.svg?component'
 import NavHistory from '@/assets/icons/nav-history.svg?component'
 import NavSettings from '@/assets/icons/nav-settings.svg?component'
 import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
@@ -103,15 +102,9 @@ const navItems = computed(() => [
     exact: true,
   },
   {
-    name: 'Live Queue',
-    to: '/dashboard/queue/live',
-    icon: NavActiveQueue,
-    exact: true,
-  },
-  {
-    name: 'New Queue',
-    to: '/dashboard/queue/create',
-    icon: NavNewQueue,
+    name: 'Queue',
+    to: '/dashboard/queue',
+    icon: Queue,
     exact: true,
   },
   {

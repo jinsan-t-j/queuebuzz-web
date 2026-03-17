@@ -1,20 +1,48 @@
 <script setup>
 /**
  * @component CreateQueueView
- * @description New queue creation form. Uses CreateQueueForm to handle
- * validation and submission logic.
+ * @description Unified queue view. Shows the creation form initially,
+ * then transitions to the live queue dashboard after successful creation.
+ * Uses v-if to fully unmount the form once the queue is live.
  */
 
+import { ref } from 'vue'
 import CreateQueueForm from '@/modules/app/queue/components/CreateQueueForm.vue'
+import LiveQueueView from '@/modules/app/queue/views/LiveQueueView.vue'
+import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
 
+const activeQueueData = ref(null)
+const showSuccessModal = ref(false)
+
+function handleQueueCreated(queueData) {
+  activeQueueData.value = queueData
+  showSuccessModal.value = true
+}
 </script>
 
 <template>
-  <div class="mx-auto max-w-[680px]">
+  <!-- ═══ Create form (unmounted once queue is live) ═══ -->
+  <div v-if="!activeQueueData" class="mx-auto max-w-[680px]">
     <h1 class="font-display text-[40px] font-extrabold text-plum">
       Let's get started.
     </h1>
 
-    <CreateQueueForm role="host" />
+    <CreateQueueForm role="host" @queue-created="handleQueueCreated" />
   </div>
+
+  <!-- ═══ Live queue dashboard ═══ -->
+  <LiveQueueView
+    v-if="activeQueueData"
+    :queue-data="activeQueueData"
+    :join-code="activeQueueData.joinCode"
+  />
+
+  <!-- ═══ Success modal (shown once after creation) ═══ -->
+  <InfoQueueModal
+    :is-open="showSuccessModal"
+    variant="success"
+    :join-code="activeQueueData?.joinCode ?? ''"
+    :queue-url="`https://queuebuzz.app/q/${activeQueueData?.joinCode ?? ''}`"
+    @close="showSuccessModal = false"
+  />
 </template>

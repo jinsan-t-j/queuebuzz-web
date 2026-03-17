@@ -7,9 +7,7 @@ import { useClipboard, useDebounceFn } from '@vueuse/core'
 import { useQueueStore } from '@/stores/queue.store'
 import { createQueue, checkSlugAvailability } from '@/modules/app/queue/actions/queue.action'
 
-import QueueCreatedModal from '@/modules/app/queue/components/QueueCreatedModal.vue'
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
-import LockIcon from '@/assets/icons/lock.svg?component'
 import ChevronDownIcon from '@/assets/icons/chevron-down.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
@@ -22,16 +20,12 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['queue-created'])
+
 const router = useRouter()
 const queueStore = useQueueStore()
 
-const hasActiveQueue = computed(() => queueStore.hasActiveQueue)
-
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
-
-// Modal State
-const showSuccessModal = ref(false)
-const queueJoinCode = ref('')
 
 const schema = computed(() => {
   const baseSchema = {
@@ -107,8 +101,8 @@ const onSubmit = handleSubmit(async (values) => {
   
   try {
     const queue = await createQueue(values)
-    queueJoinCode.value = queue.joinCode
-    showSuccessModal.value = true
+    queueStore.setActiveQueue(queue)
+    emit('queue-created', queue)
   } catch (error) {
     console.error('Error creating queue:', error)
   }
@@ -116,11 +110,6 @@ const onSubmit = handleSubmit(async (values) => {
 
 function handleCancel() {
   router.back()
-}
-
-function goToDashboard() {
-  showSuccessModal.value = false
-  router.push(props.role === 'host' ? '/dashboard/queue/live' : '/guest-host/queue/live')
 }
 
 // Clipboard setups for Host view's slug and Success Modal
@@ -133,30 +122,10 @@ function copyCustomLink() {
   isSlugCopied.value = true
   setTimeout(() => isSlugCopied.value = false, 2000)
 }
-
-function copySuccessLink() {
-  copyToClipboard(`https://queuebuzz.com/join/${queueJoinCode.value}?join-code=${queueJoinCode.value}`)
-}
 </script>
 
 <template>
-  <div v-if="hasActiveQueue" class="mt-8 flex flex-col items-center justify-center rounded-card border border-plum/5 bg-white p-8 shadow-[0_4px_24px_rgba(26,10,46,0.05)] text-center">
-    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-mint-light">
-      <LockIcon class="h-8 w-8 text-mint-dark" />
-    </div>
-    <h2 class="mb-2 font-display text-2xl font-bold text-plum">Active Queue Exists</h2>
-    <p class="mb-6 max-w-sm font-body text-[15px] text-[#5c5267]">
-      You can only have one active queue at a time. Please complete or close your current queue before creating a new one.
-    </p>
-    <router-link
-      :to="role === 'host' ? '/dashboard/queue/live' : '/guest-host/queue/live'"
-      class="rounded-input bg-mint px-6 py-3 font-body text-base font-bold text-plum shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95"
-    >
-      Go to Live Queue
-    </router-link>
-  </div>
-
-  <form v-else @submit.prevent="onSubmit">
+  <form @submit.prevent="onSubmit">
     <div class="mt-8 flex flex-col gap-5">
       <!-- ═══ Card 1: Queue Name ═══ -->
       <div class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]">
@@ -317,14 +286,5 @@ function copySuccessLink() {
         Create a free account
       </router-link>
     </p>
-
-    <!-- ═══ Success Modal ═══ -->
-    <QueueCreatedModal
-      :is-open="showSuccessModal"
-      :join-code="queueJoinCode"
-      @copy-link="copySuccessLink"
-      @close="showSuccessModal = false"
-      @go-dashboard="goToDashboard"
-    />
   </form>
 </template>

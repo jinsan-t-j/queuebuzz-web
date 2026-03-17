@@ -47,6 +47,10 @@ import ShowQrGridIcon from '@/assets/icons/show-qr-grid.svg?component'
 
 // 6. Props
 const props = defineProps({
+  queueData: {
+    type: Object,
+    default: null,
+  },
   waitingCount: {
     type: Number,
     default: 0,
@@ -57,7 +61,7 @@ const props = defineProps({
   },
   joinCode: {
     type: String,
-    default: '8X4K2F',
+    default: '',
   },
   entries: {
     type: Array,
@@ -171,10 +175,10 @@ async function handleCopyCode() {
         join code to start accepting guests.
       </p>
 
-      <!-- Direct Join Code card -->
-      <div class="mx-auto mt-10 w-full max-w-[448px] rounded-card border border-plum/5 bg-sand/50 px-10 py-8">
+      <!-- Join Code card -->
+      <div class="mx-auto mt-10 w-full max-w-[448px] rounded-card border-2 border-dashed border-plum/10 bg-sand px-10 py-8">
         <p class="mb-4 font-body text-[10px] font-bold uppercase tracking-[1px] text-plum/40">
-          Direct Join Code
+          Join Code
         </p>
         <p class="font-mono text-5xl font-bold leading-none tracking-tight text-mint">
           {{ joinCode }}

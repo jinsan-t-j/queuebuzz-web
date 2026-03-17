@@ -44,16 +44,10 @@ export const appRoutes: RouteRecordRaw[] = [
         meta: { title: 'Dashboard' },
       },
       {
-        path: 'queue/create',
-        name: 'queue-create',
+        path: 'queue',
+        name: 'queue',
         component: () => import('@/modules/app/queue/views/CreateQueueView.vue'),
-        meta: { title: 'New Queue' },
-      },
-      {
-        path: 'queue/live',
-        name: 'queue-live',
-        component: () => import('@/modules/app/queue/views/LiveQueueView.vue'),
-        meta: { title: 'Live Queue' },
+        meta: { title: 'Queue' },
       },
       {
         path: 'queue/history',

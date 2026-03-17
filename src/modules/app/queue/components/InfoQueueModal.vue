@@ -1,11 +1,14 @@
 <script setup>
 /**
  * @component InfoQueueModal
- * @description QR code display modal. Shows a generated QR code,
- * the queue join code, and download/share actions.
+ * @description QR code display modal. Shows a generated QR code
+ * and download/share actions. Supports two variants:
+ * - 'success': shown after queue creation with "Queue is open!" heading.
+ * - 'qr': shown when the host clicks "Show QR" with "Your Queue Code" heading.
  *
  * @prop {Boolean} isOpen - Whether the modal is visible.
- * @prop {String} joinCode - The join code to encode in the QR.
+ * @prop {String} variant - 'success' | 'qr'.
+ * @prop {String} joinCode - The join code (used in download filename and share text).
  * @prop {String} queueUrl - The URL to encode in the QR code.
  * @emits {close} - User clicked the close button.
  * @emits {download} - User clicked "Download".
@@ -13,7 +16,7 @@
  */
 
 // 1. Vue core imports
-import { ref, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 // 2. Router / Pinia imports
 
@@ -24,6 +27,7 @@ import { useShare } from '@vueuse/core'
 
 // 5. Component imports
 import CloseXIcon from '@/assets/icons/close-x.svg?component'
+import CheckCircleIcon from '@/assets/icons/check-circle.svg?component'
 
 // 6. Props
 const props = defineProps({
@@ -31,15 +35,22 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  variant: {
+    type: String,
+    default: 'qr',
+    validator: (v) => ['success', 'qr'].includes(v),
+  },
   joinCode: {
     type: String,
-    default: '8X4K2F',
+    default: '',
   },
   queueUrl: {
     type: String,
     default: 'https://queuebuzz.app/q/8X4K2F',
   },
 })
+
+const isSuccess = computed(() => props.variant === 'success')
 
 // 7. Emits
 const emit = defineEmits(['close', 'download', 'share'])
@@ -106,7 +117,7 @@ watch(() => props.isOpen, (val) => {
       v-if="isOpen"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/25"
     >
-      <div class="relative w-full max-w-[448px] rounded-[48px] bg-[#f8f8f8] px-16 pb-12 pt-10 text-center shadow-[0_30px_70px_rgba(0,0,0,0.10)]">
+      <div class="relative w-full max-w-[480px] rounded-[48px] bg-[#f8f8f8] p-10 text-center shadow-[0_30px_70px_rgba(0,0,0,0.10)]">
         <!-- Close button -->
         <button
           class="absolute right-6 top-6 flex h-8 w-8 items-center justify-center rounded-lg text-plum/40 transition-colors hover:bg-plum/5 hover:text-plum"
@@ -115,7 +126,15 @@ watch(() => props.isOpen, (val) => {
           <CloseXIcon class="h-3 w-3" />
         </button>
 
-        <!-- QR code -->
+        <!-- Success icon (only for success variant) -->
+        <div v-if="isSuccess" class="mx-auto mb-6 flex h-[33px] w-[33px] items-center justify-center">
+          <CheckCircleIcon class="h-[33px] w-[33px] text-mint" />
+        </div>
+
+        <h2 class="mb-4 font-display text-[30px] font-semibold leading-9 tracking-tight text-plum">
+          {{ isSuccess ? 'Queue is open!' : 'Your Queue Code' }}
+        </h2>
+
         <div class="mx-auto mb-8 flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
           <img
             v-if="qrDataUrl"
@@ -126,30 +145,23 @@ watch(() => props.isOpen, (val) => {
           <div v-else class="h-full w-full animate-pulse bg-plum-faint" />
         </div>
 
-        <!-- Title and description -->
-        <h2 class="font-display text-[30px] font-semibold leading-9 tracking-tight text-plum">
-          Your Queue Code
-        </h2>
-        <p class="mx-auto mt-4 max-w-[205px] font-body text-sm leading-[22px] text-[#4a3b5d]">
-          Share this code for instant guest
-          access.
-        </p>
-
-        <!-- Join code -->
-        <p class="mt-6 font-mono text-[30px] font-bold tracking-[6px] text-plum">
-          {{ joinCode }}
+        <p class="mx-auto max-w-[370px] font-body text-base leading-6 text-plum/50">
+          {{ isSuccess
+            ? 'Customers can now join your queue using the code below.'
+            : 'Customers can now join instantly to your queue using the QR.'
+          }}
         </p>
 
         <!-- Action buttons -->
-        <div class="mt-10 flex flex-col items-center gap-4">
+        <div class="mt-5 flex flex-col items-center gap-4">
           <button
-            class="w-full rounded-2xl bg-mint px-8 py-3.5 font-body text-sm font-semibold uppercase tracking-[0.35px] text-plum shadow-[0_2px_4px_rgba(128,229,192,0.20),0_4px_6px_rgba(128,229,192,0.20)] transition-colors hover:bg-mint-dark"
+            class="w-full rounded-2xl bg-mint px-8 py-3.5 font-body text-sm font-semibold uppercase tracking-[0.35px] text-plum shadow-[0_2px_4px_rgba(128,229,192,0.20),0_4px_6px_rgba(128,229,192,0.20)] transition-colors cursor-pointer hover:bg-mint-dark"
             @click="handleDownload"
           >
             DOWNLOAD
           </button>
           <button
-            class="font-body text-sm font-semibold uppercase tracking-[0.35px] text-[#4a3b5d] transition-colors hover:text-plum"
+            class="font-body text-sm font-semibold uppercase tracking-[0.35px] text-[#4a3b5d] transition-colors cursor-pointer hover:text-plum"
             @click="handleShare"
           >
             SHARE
