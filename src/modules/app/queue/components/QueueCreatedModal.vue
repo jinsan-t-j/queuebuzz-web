@@ -7,60 +7,46 @@
  *
  * @prop {Boolean} isOpen - Whether the modal is visible.
  * @prop {String} joinCode - The generated join code to display.
- * @emits {copy-link} - User clicked "Copy Link Instead".
  */
 
-// 1. Vue core imports
 import { ref } from 'vue'
 
-// 2. Router / Pinia imports
+import { useRouter } from 'vue-router'
 
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
 import CheckCircleIcon from '@/assets/icons/check-circle.svg?component'
 import XIcon from '@/assets/icons/close-x.svg?component'
 import CopyLinkIcon from '@/assets/icons/copy-link.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
+import BaseButton from '@/components/base/BaseButton.vue'
 
-// 6. Props
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false,
   },
   joinCode: {
     type: String,
-    default: '',
+  },
+  queueUrl: {
+    type: String,
   },
 })
 
-// 7. Emits
-const emit = defineEmits(['close', 'copy-link', 'go-dashboard'])
+const emit = defineEmits(['close'])
 
-// 8. Composable destructuring
+const router = useRouter()
 
-// 9. Reactive state
 const isCopied = ref(false)
 
-// 10. Computed properties
-
-// 11. Methods
 function handleCopy() {
-  emit('copy-link')
   isCopied.value = true
   setTimeout(() => {
     isCopied.value = false
   }, 2000)
 }
 
-function goToDashboard() {
-  emit('go-dashboard')
-}
+const handleOpenQueue = () => router.push(props.queueUrl)
 
-// 12. Lifecycle hooks
 </script>
 
 <template>
@@ -104,12 +90,12 @@ function goToDashboard() {
 
         <!-- Actions -->
         <div class="mt-6 flex flex-col items-center gap-3">
-          <button
-            class="w-full rounded-input bg-plum px-8 py-3 font-body text-base font-bold text-white transition-colors cursor-pointer hover:bg-plum-soft"
-            @click="goToDashboard"
+          <BaseButton
+            class="w-full"
+            @click="handleOpenQueue"
           >
-            Go to Dashboard
-          </button>
+            Open Queue
+          </BaseButton>
           <button
             class="flex items-center gap-1.5 font-body text-sm font-bold transition-colors cursor-pointer"
             :class="isCopied ? 'text-mint' : 'text-plum/40 hover:text-plum'"

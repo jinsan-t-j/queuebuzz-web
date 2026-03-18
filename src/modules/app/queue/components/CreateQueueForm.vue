@@ -11,6 +11,7 @@ import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
 import ChevronDownIcon from '@/assets/icons/chevron-down.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
+import LockIcon from '@/assets/icons/lock.svg?component'
 
 const props = defineProps({
   role: {

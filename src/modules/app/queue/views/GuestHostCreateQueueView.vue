@@ -6,15 +6,34 @@
  * link nudging the user to create a free account for URL customization.
  */
 
-import CreateQueueForm from '@/modules/app/queue/components/CreateQueueForm.vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
+import CreateQueueForm from '@/modules/app/queue/components/CreateQueueForm.vue'
+import QueueCreatedModal from '../components/QueueCreatedModal.vue'
 
 const router = useRouter()
 
-function goToSignup() {
-  // Navigation fallback, depending on actual app routes
-  router.push('/register').catch(() => {})
+
+const activeQueueData = ref(null)
+const showSuccessModal = ref(false)
+
+
+function handleQueueCreated(queueData) {
+  activeQueueData.value = queueData
+  showSuccessModal.value = true
 }
+
+const queueUrl = computed(() => {
+  if (!activeQueueData.value) return ''
+
+  return router.resolve({ name: 'guest-host-live-queue', params: { id: activeQueueData.value?.id } }).href
+})
+
+function goToSignup() {
+  router.push('/login')
+}
+
 </script>
 
 <template>
@@ -25,12 +44,19 @@ function goToSignup() {
 
     <!-- Content -->
     <div class="relative z-10 mx-auto max-w-[680px] px-6 py-16">
-      <!-- Page heading -->
       <h1 class="font-display text-[40px] font-extrabold text-plum">
         Let's get started.
       </h1>
 
-      <CreateQueueForm role="guest" @create-account="goToSignup" />
+      <CreateQueueForm role="guest" @create-account="goToSignup" @queue-created="handleQueueCreated" />
     </div>
   </div>
+
+  <!-- ═══ Success modal (shown once after creation) ═══ -->
+  <QueueCreatedModal
+    :is-open="showSuccessModal"
+    :join-code="activeQueueData?.joinCode ?? ''"
+    :queue-url="queueUrl"
+    @close="showSuccessModal = false"
+  />
 </template>

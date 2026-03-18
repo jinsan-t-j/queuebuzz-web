@@ -30,9 +30,11 @@ import AddPersonIcon from '@/assets/icons/add-person.svg?component'
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
 import CloseCircleIcon from '@/assets/icons/close-circle.svg?component'
+import PauseIcon from '@/assets/icons/pause.svg?component'
+import PlayIcon from '@/assets/icons/play.svg?component'
 
 // 6. Props
-defineProps({
+const props = defineProps({
   entries: {
     type: Array,
     default: () => [],
@@ -42,6 +44,10 @@ defineProps({
     default: '',
   },
   showTerminate: {
+    type: Boolean,
+    default: false,
+  },
+  isPaused: {
     type: Boolean,
     default: false,
   },
@@ -55,6 +61,7 @@ const emit = defineEmits([
   'add-guest',
   'entry-menu',
   'terminate',
+  'toggle-pause',
 ])
 
 // 8. Composable destructuring
@@ -90,14 +97,29 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+  <div class="min-h-[580px] flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <!-- Header -->
     <div class="border-b border-plum/5 bg-plum/[0.02] px-6 py-4">
-      <div class="mb-3 flex items-center gap-[7px]">
-        <span class="h-[6px] w-[6px] rounded-full bg-mint" />
-        <span class="font-body text-xs font-bold uppercase tracking-[1.2px] text-plum/60">
-          Live Queue
-        </span>
+      <div class="mb-3 flex items-center justify-between">
+        <div class="flex items-center gap-[7px]">
+          <span class="h-[6px] w-[6px] rounded-full" :class="isPaused ? 'bg-warning' : 'bg-mint'" />
+          <span class="font-body text-xs font-bold uppercase tracking-[1.2px] text-plum/60">
+            {{ isPaused ? 'Queue Paused' : 'Live Queue' }}
+          </span>
+        </div>
+        <button 
+          class="flex items-center gap-1.5 rounded-full border border-plum/10 bg-white px-3 py-1 font-body text-[10px] font-bold uppercase tracking-wider text-plum/60 cursor-pointer transition-colors hover:bg-plum/5"
+          @click="emit('toggle-pause')"
+        >
+          <template v-if="isPaused">
+            <PlayIcon class="h-2 w-2 text-mint" />
+            Resume
+          </template>
+          <template v-else>
+            <PauseIcon class="h-2 w-2 text-warning" />
+            Pause
+          </template>
+        </button>
       </div>
       <div class="flex items-center gap-3">
         <div class="flex flex-1 items-center gap-0 rounded-input border border-plum/5 bg-sand px-4 py-2">
@@ -156,6 +178,9 @@ onUnmounted(() => {
                 <span :class="entry.status === 'called' ? 'text-mint' : ''">
                   {{ entry.waitTime }} wait
                 </span>
+                <span v-if="entry.status === 'skipped'" class="ml-1 text-danger italic">
+                  • Skipped
+                </span>
               </p>
             </div>
           </div>
@@ -182,13 +207,14 @@ onUnmounted(() => {
             >
               <div
                 v-if="openDropdownId === entry.id"
-                class="absolute right-0 top-full z-10 mt-2 w-40 origin-top-right rounded-xl border border-plum/10 bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                class="absolute right-0 top-full z-10 mt-2 w-48 origin-top-right rounded-xl border border-plum/10 bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
               >
                 <button
-                  class="flex w-full items-center px-4 py-2 font-body text-sm font-medium text-plum hover:bg-plum/5"
+                  v-if="entry.status !== 'called'"
+                  class="flex w-full items-center px-4 py-2 font-body text-sm font-medium text-plum hover:bg-plum/5 transition-colors"
                   @click="handleCallGuest(entry.id)"
                 >
-                  <CallNextIcon class="mr-2 h-4 w-4 text-mint" />
+                  <CallNextIcon class="mr-3 h-4 w-4 text-mint" />
                   Call Guest
                 </button>
               </div>
@@ -202,22 +228,22 @@ onUnmounted(() => {
     <div class="border-t border-plum/5 p-4">
       <button
         class="flex w-full items-center justify-center gap-3 rounded-2xl px-8 py-4 font-body text-lg font-bold transition-colors"
-        :disabled="entries.length === 0"
+        :disabled="entries.length === 0 || isPaused"
         :class="
-          entries.length > 0
+          entries.length > 0 && !isPaused
             ? 'bg-plum text-sand hover:bg-plum-soft'
             : 'bg-plum/40 text-white'
         "
         @click="emit('call-next')"
       >
-        <CallNextIcon class="h-4 w-5" :class="entries.length > 0 ? 'text-mint' : 'text-white'" />
+        <CallNextIcon class="h-4 w-5" :class="entries.length > 0 && !isPaused ? 'text-mint' : 'text-white'" />
         Call Next Guest
       </button>
       <p
-        v-if="entries.length === 0"
+        v-if="entries.length === 0 || isPaused"
         class="mt-3 text-center font-body text-xs font-medium text-plum/30"
       >
-        Queue must have guests to call
+        {{ isPaused ? 'Resume queue to call guests' : '' }}
       </p>
 
       <!-- Terminate button -->

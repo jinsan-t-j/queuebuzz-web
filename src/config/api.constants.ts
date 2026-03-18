@@ -25,7 +25,13 @@ export const API_ROUTES = {
     },
     QUEUE: {
         CHECK_SLUG: '/queue/slug-check',
-        GET_LIVE_QUEUE: (publicId: string): string => `/queue/${publicId}/live`,
+        GET_LIVE_QUEUE: '/queue/live',
+        GET_LIVE_QUEUE_BY_ID: (id: string): string => `/queue/${id}/live`,
+        PAUSE: (id: string): string => `/queue/${id}/pause`,
+        RESUME: (id: string): string => `/queue/${id}/resume`,
+        TERMINATE: (id: string): string => `/queue/${id}/terminate`,
+        CALL_NEXT: (id: string): string => `/queue/${id}/call-next`,
+        ADD_ENTRY: (id: string): string => `/queue/${id}/entry`,
     },
     SHARED: {
         CREATE_QUEUE: '/queue/create',

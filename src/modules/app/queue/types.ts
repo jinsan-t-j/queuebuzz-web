@@ -2,12 +2,15 @@ export interface QueueConfig {
   name: string
 }
 
+export type QueueStatus = 'open' | 'closed' | 'paused'
+
 export interface QueueRecord {
+  id: string
   name: string
   joinCode: string
   slug: string
   avgServiceMins: number
-  status: string
+  status: QueueStatus
   createdAt: string
 }
 
@@ -21,10 +24,11 @@ export interface QueueEntry {
   joinedAt: string
 }
 
-export type LiveGuestStatus = 'waiting' | 'called'
+export type LiveGuestStatus = 'waiting' | 'called' | 'served' | 'skipped'
 
 export interface LiveQueueEntry {
   id: number | string
+  token: string
   position: number
   name: string
   partySize: number

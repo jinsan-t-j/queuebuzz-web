@@ -28,8 +28,8 @@ defineProps({
     default: 0,
   },
   avgWait: {
-    type: String,
-    default: '0',
+    type: Number,
+    default: 0,
   },
 })
 

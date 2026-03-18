@@ -2,90 +2,22 @@
 /**
  * @component LiveQueueView
  * @description Live queue management dashboard for authenticated hosts.
- * Two-column layout supporting both empty and populated states.
- * Left: stat cards, live queue guest list with search, and call next button.
- * Right: share code panel when empty, or queue analysis when populated.
- *
- * @prop {Number} waitingCount - Number of guests currently waiting.
- * @prop {String} avgWait - Average wait time string (e.g. "12").
- * @prop {String} joinCode - The join code to share.
- * @prop {Array} entries - List of queue entry objects.
- * @prop {Number} servedToday - Total served today count.
- * @prop {Number} completionRate - Completion rate percentage.
- * @prop {String} trendText - Trend comparison text.
- * @prop {String} searchQuery - Current search filter text.
- * @emits {call-next} - "Call Next Guest" button clicked.
- * @emits {search} - Search input changed.
- * @emits {copy-link} - "Copy Link" clicked.
- * @emits {copy-code} - "Copy Code" clicked.
- * @emits {show-qr} - "Show QR" clicked.
- * @emits {add-guest} - Add guest button clicked.
- * @emits {entry-menu} - Three-dot menu on an entry clicked.
  */
-
-// 1. Vue core imports
-import { ref } from 'vue'
-
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
+import { ref, onMounted } from 'vue'
 import { useClipboard } from '@vueuse/core'
+import { useQueueStore } from '@/stores/queue.store'
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
-// 4. Local composables
-
-// 5. Component imports
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
 import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
-import CheckCircleIcon from '@/assets/icons/verified-check.svg?component'
 import EmptyQueueIcon from '@/assets/icons/empty-queue.svg?component'
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
 import ShowQrGridIcon from '@/assets/icons/show-qr-grid.svg?component'
 
-// 6. Props
-const props = defineProps({
-  queueData: {
-    type: Object,
-    default: null,
-  },
-  waitingCount: {
-    type: Number,
-    default: 0,
-  },
-  avgWait: {
-    type: String,
-    default: '0',
-  },
-  joinCode: {
-    type: String,
-    default: '',
-  },
-  entries: {
-    type: Array,
-    default: () => [],
-  },
-  servedToday: {
-    type: Number,
-    default: 142,
-  },
-  completionRate: {
-    type: Number,
-    default: 94,
-  },
-  trendText: {
-    type: String,
-    default: '12% vs last hour',
-  },
-  searchQuery: {
-    type: String,
-    default: '',
-  },
-})
-
-// 7. Emits
 const emit = defineEmits([
   'call-next',
   'search',
@@ -96,75 +28,80 @@ const emit = defineEmits([
   'entry-menu',
 ])
 
-// 8. Composable destructuring
+const store = useQueueStore()
 const { copy: copyToClipboard } = useClipboard()
 
-import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 const {
+  activeQueue,
+  isPaused,
+  waitingCount,
+  avgWaitTime,
+
   showAddGuestModal,
-  showToast,
-  guestEntries,
+  showInfoModal,
+  
   rawSearchQuery,
-  debouncedSearchQuery,
   filteredEntries,
-  activeWaitCount,
+  
   servedTodayCount,
   completionRatePercent,
   chartLabels,
   chartBars,
   computedTrend,
-  handleSearchUpdate,
-  handleAddGuestSubmit
-} = useLiveQueue(props.entries, props.searchQuery)
 
-// 9. Reactive state
-const showInfoModal = ref(false)
+  handleSearchUpdate,
+  handleAddGuestSubmit,
+  handleCallNext,
+  handlePauseToggle,
+} = useLiveQueue()
 
 const isCodeCopied = ref(false)
 
-// 10. Computed properties
+onMounted(() => {
+  store.fetchActiveQueue()
+})
 
-// 11. Methods
 function handleShowQr() {
   showInfoModal.value = true
   emit('show-qr')
 }
 
 async function handleCopyCode() {
-  await copyToClipboard(props.joinCode)
+  if (activeQueue.value?.joinCode) {
+    await copyToClipboard(activeQueue.value.joinCode)
+  }
   isCodeCopied.value = true
   setTimeout(() => isCodeCopied.value = false, 2000)
   emit('copy-code')
 }
-
-// 12. Lifecycle hooks
 </script>
 
 <template>
   <div class="flex gap-8 min-h-[calc(100vh-128px)]">
-    <!-- ═══ Left column ═══ -->
+    <!-- Left column -->
     <div class="flex w-[381px] shrink-0 flex-col gap-6">
       <QueueStatCards
-        :waiting-count="activeWaitCount"
-        :avg-wait="avgWait"
+        :waiting-count="waitingCount"
+        :avg-wait="avgWaitTime"
       />
 
       <LiveQueueCard
         :entries="filteredEntries"
         :search-query="rawSearchQuery"
-        @call-next="emit('call-next')"
+        :is-paused="isPaused"
+        @call-next="handleCallNext"
+        @toggle-pause="handlePauseToggle"
         @search="handleSearchUpdate($event, (v) => emit('search', v))"
         @add-guest="showAddGuestModal = true"
         @entry-menu="emit('entry-menu', $event)"
       />
     </div>
 
-    <!-- ═══ Right column — Empty state ═══ -->
+    <!-- Right column — Empty state -->
     <div
-      v-if="guestEntries.length === 0"
+      v-if="filteredEntries.length === 0"
       class="flex flex-1 flex-col items-center justify-center rounded-card border border-plum/10 bg-white p-12 text-center shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
     >
-      <!-- Empty state illustration -->
       <div class="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-mint/15">
         <EmptyQueueIcon class="h-9 w-9 text-mint" />
       </div>
@@ -181,7 +118,7 @@ async function handleCopyCode() {
           Join Code
         </p>
         <p class="font-mono text-5xl font-bold leading-none tracking-tight text-mint">
-          {{ joinCode }}
+          {{ activeQueue?.joinCode ?? '' }}
         </p>
       </div>
 
@@ -204,16 +141,14 @@ async function handleCopyCode() {
       </div>
     </div>
 
-    <!-- ═══ Right column — Populated state ═══ -->
+    <!-- Right column — Populated state -->
     <div v-else class="flex flex-1 flex-col gap-8">
-      <!-- Share code card -->
       <ShareCodeCard
-        :join-code="joinCode"
+        :join-code="activeQueue?.joinCode ?? ''"
         @copy-link="emit('copy-link')"
         @show-qr="handleShowQr"
       />
 
-      <!-- Queue Analysis card -->
       <QueueAnalysisCard
         :served-today="servedTodayCount"
         :trend-text="computedTrend.text"
@@ -224,14 +159,14 @@ async function handleCopyCode() {
       />
     </div>
 
-    <!-- ═══ Info/QR Modal ═══ -->
+    <!-- Info/QR Modal -->
     <InfoQueueModal
       :is-open="showInfoModal"
-      :join-code="joinCode"
+      :join-code="activeQueue?.joinCode ?? ''"
       @close="showInfoModal = false"
     />
 
-    <!-- ═══ Add Guest Modal ═══ -->
+    <!-- Add Guest Modal -->
     <AddGuestModal
       :is-open="showAddGuestModal"
       @close="showAddGuestModal = false"

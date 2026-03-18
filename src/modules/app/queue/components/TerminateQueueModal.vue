@@ -8,21 +8,10 @@
  * @prop {Boolean} isOpen - Whether the modal is visible.
  * @prop {Number} stillWaitingCount - Number of people still waiting.
  * @emits {close-queue} - User confirmed closing the queue.
- * @emits {keep-open} - User chose to keep the queue open.
  */
 
-// 1. Vue core imports
-
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
 import WarningTriangleIcon from '@/assets/icons/warning-triangle.svg?component'
 
-// 6. Props
 defineProps({
   isOpen: {
     type: Boolean,
@@ -30,22 +19,10 @@ defineProps({
   },
   stillWaitingCount: {
     type: Number,
-    default: 12,
   },
 })
 
-// 7. Emits
 const emit = defineEmits(['close-queue', 'keep-open'])
-
-// 8. Composable destructuring
-
-// 9. Reactive state
-
-// 10. Computed properties
-
-// 11. Methods
-
-// 12. Lifecycle hooks
 </script>
 
 <template>
@@ -67,7 +44,7 @@ const emit = defineEmits(['close-queue', 'keep-open'])
         </p>
 
         <!-- Still waiting count -->
-        <p class="mt-6 font-display text-[32px] font-semibold text-warning">
+        <p v-if="stillWaitingCount > 0" class="mt-6 font-display text-[32px] font-semibold text-warning">
           {{ stillWaitingCount }} still waiting
         </p>
 
