@@ -10,6 +10,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 // 4. Local composables
 import { useCustomerApi } from '@/modules/customer/composables/useCustomerApi'
+import { useWebSocket } from '@/composables/useWebSocket'
 
 // 5. Component imports
 import TicketHero from '@/modules/customer/components/TicketHero.vue'
@@ -24,6 +25,7 @@ const emit = defineEmits(['status-change', 'leave-queue'])
 
 // 8. Composable destructuring
 const { fetchWaitingStatus, leaveQueue, isLoading } = useCustomerApi()
+const { lastMessage, connect, disconnect } = useWebSocket('ws://queuebuzz.app/ws/customer')
 
 // 9. Reactive state
 const ticketNumber = ref('Q-0042')
@@ -84,10 +86,22 @@ function handleShareCode() {
 onMounted(() => {
   loadStatus()
   pollInterval = setInterval(loadStatus, 10000)
+  connect()
 })
 
 onUnmounted(() => {
   if (pollInterval) clearInterval(pollInterval)
+  disconnect()
+})
+
+import { watch } from 'vue'
+watch(lastMessage, (newVal) => {
+  if (newVal && typeof newVal === 'object') {
+    // Merge real-time update into state
+    if ('position' in newVal) position.value = newVal.position
+    if ('ahead' in newVal) ahead.value = newVal.ahead
+    if ('status' in newVal) status.value = newVal.status
+  }
 })
 </script>
 

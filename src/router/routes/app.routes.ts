@@ -52,7 +52,7 @@ export const appRoutes: RouteRecordRaw[] = [
       {
         path: 'queue/history',
         name: 'queue-history',
-        component: () => import('@/modules/app/queue/views/HistoryQueueView.vue'),
+        component: () => import('@/modules/app/history/views/HistoryListView.vue'),
         meta: { title: 'History' },
       },
       {

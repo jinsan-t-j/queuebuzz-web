@@ -4,11 +4,62 @@
  * Phase 2: replace each stub function body with real fetch/axios call.
  */
 import { ref } from 'vue'
-import type { HistoryDetail } from '@/modules/app/history/types'
+import type { HistoryDetail, HistoryQueryParams, HistoryQueryResult, QueueHistoryItem } from '@/modules/app/history/types'
 
 export function useHistoryApi() {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+
+  async function fetchHistory(params: HistoryQueryParams): Promise<HistoryQueryResult> {
+    isLoading.value = true
+    error.value = null
+    try {
+      // STUB — replace with: return await $fetch('/api/history', { params })
+      await new Promise((r) => setTimeout(r, 600))
+      
+      const totalCount = 42
+      const items: QueueHistoryItem[] = [
+        {
+          id: 1,
+          date: '2025-06-10',
+          dateFormatted: '10 Jun, 2025',
+          name: 'Morning Consultation',
+          status: 'Completed',
+          totalServed: 47,
+          avgWait: '6m 14s'
+        },
+        {
+          id: 2,
+          date: '2025-06-09',
+          dateFormatted: '9 Jun, 2025',
+          name: 'Afternoon Walk-ins',
+          status: 'Terminated',
+          totalServed: 12,
+          avgWait: '14m 20s'
+        },
+        {
+          id: 3,
+          date: '2025-06-08',
+          dateFormatted: '8 Jun, 2025',
+          name: 'Special Event Queue',
+          status: 'Completed',
+          totalServed: 89,
+          avgWait: '4m 30s'
+        }
+      ]
+
+      return {
+        data: items,
+        totalCount,
+        totalPages: Math.ceil(totalCount / (params.limit || 10))
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to load history'
+      return { data: [], totalCount: 0, totalPages: 0 }
+    } finally {
+      isLoading.value = false
+    }
+  }
 
   async function fetchHistoryDetail(_id: string): Promise<HistoryDetail | null> {
     isLoading.value = true
@@ -128,5 +179,5 @@ export function useHistoryApi() {
     return true
   }
 
-  return { isLoading, error, fetchHistoryDetail, exportCsv, exportPdf }
+  return { isLoading, error, fetchHistory, fetchHistoryDetail, exportCsv, exportPdf }
 }
