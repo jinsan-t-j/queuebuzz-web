@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import type { QueueEntry, QueueRecord } from '@/modules/app/queue/types'
 import {
+  addQueueEntry,
+  AddQueueEntryPayload,
   callNext,
   getLiveQueue,
   getLiveQueueById,
@@ -24,6 +26,8 @@ export const useQueueStore = defineStore('queue', {
     avgWaitTime: (state) => state.activeQueue?.avgServiceMins,
     totalCount: (state) => state.entries.length,
     hasError: (state) => !!state.error,
+    canJoinWithParty: (state) => state.activeQueue?.allowPartyJoining ?? false,
+    maxAllowedPartySize: (state) => state.activeQueue?.maxPartySize ?? 1,
   },
 
   actions: {
@@ -111,6 +115,20 @@ export const useQueueStore = defineStore('queue', {
         this.entries = []
       } catch (e: any) {
         this.error = e?.response?.data?.message || 'Failed to terminate queue'
+      }
+    },
+
+    async addQueueEntry(guest: AddQueueEntryPayload) {
+      if (!this.activeQueue) return
+
+      this.error = null
+      try {
+        const entry = await addQueueEntry(this.activeQueue.id, guest)
+        this.updateEntries([...this.entries, entry])
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to add guest'
+      } finally {
+        this.isLoading = false
       }
     },
 

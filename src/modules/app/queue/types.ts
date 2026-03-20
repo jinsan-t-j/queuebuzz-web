@@ -12,6 +12,8 @@ export interface QueueRecord {
   avgServiceMins: number
   status: QueueStatus
   createdAt: string
+  allowPartyJoining: boolean
+  maxPartySize: number
 }
 
 export type QueueEntryStatus = 'waiting' | 'called' | 'served' | 'skipped'
@@ -22,6 +24,7 @@ export interface QueueEntry {
   ticketNumber: number
   status: QueueEntryStatus
   joinedAt: string
+  partySize: number
 }
 
 export type LiveGuestStatus = 'waiting' | 'called' | 'served' | 'skipped'
@@ -38,6 +41,8 @@ export interface LiveQueueEntry {
 
 export interface LiveQueueGuestInput {
   name: string
+  phone?: string
+  partySize: number
 }
 
 export type TrendDirection = 'up' | 'down' | 'flat'

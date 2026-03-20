@@ -43,7 +43,7 @@ function goToSignup() {
     <div class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]" />
 
     <!-- Content -->
-    <div class="relative z-10 mx-auto max-w-[680px] px-6 py-16">
+    <div class="relative z-10 mx-auto max-w-[680px] px-6 py-6">
       <h1 class="font-display text-[40px] font-extrabold text-plum">
         Let's get started.
       </h1>

@@ -31,7 +31,7 @@ export const API_ROUTES = {
         RESUME: (id: string): string => `/queue/${id}/resume`,
         TERMINATE: (id: string): string => `/queue/${id}/terminate`,
         CALL_NEXT: (id: string): string => `/queue/${id}/call-next`,
-        ADD_ENTRY: (id: string): string => `/queue/${id}/entry`,
+        ADD_ENTRY: (id: string): string => `/queue/${id}/add-entry`,
     },
     SHARED: {
         CREATE_QUEUE: '/queue/create',

@@ -7,6 +7,15 @@ export interface CreateQueuePayload {
     avgServiceMins: number
     slug?: string
     recoveryEmail?: string
+    allowPartyJoining: boolean
+    maxPartySize: number
+}
+
+export interface AddQueueEntryPayload {
+    name: string
+    phone?: string
+    email?: string
+    partySize?: number
 }
 
 export interface CheckSlugAvailabilityResponse {
@@ -48,13 +57,12 @@ export async function callNext(id: string): Promise<QueueEntry> {
     return response.data
 }
 
-export async function addQueueEntry(id: string, payload: QueueEntry): Promise<QueueEntry> {
+export async function addQueueEntry(id: string, payload: AddQueueEntryPayload): Promise<QueueEntry> {
     const config = createApiRequestConfig({}, { withCredentials: true })
     const response = await apiClient.post<QueueEntry>(API_ROUTES.QUEUE.ADD_ENTRY(id), payload, config)
 
     return response.data
 }
-
 
 export async function pauseQueue(id: string): Promise<void> {
     const config = createApiRequestConfig({}, { withCredentials: true })

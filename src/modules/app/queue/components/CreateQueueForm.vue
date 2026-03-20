@@ -12,6 +12,7 @@ import ChevronDownIcon from '@/assets/icons/chevron-down.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
 import LockIcon from '@/assets/icons/lock.svg?component'
+import BaseToggle from '@/components/base/BaseToggle.vue'
 
 const props = defineProps({
   role: {
@@ -32,6 +33,12 @@ const schema = computed(() => {
   const baseSchema = {
     queueName: yup.string().required('Queue name is required').max(50, 'Queue name must be at most 50 characters'),
     serviceTime: yup.number().required('Service time is required').min(1).max(30),
+    allowPartyJoining: yup.boolean().default(false),
+    maxPartySize: yup.number().when('allowPartyJoining', {
+      is: true,
+      then: (schema) => schema.required('Limit is required').min(1).max(50),
+      otherwise: (schema) => schema.notRequired()
+    })
   }
   
   if (props.role === 'host') {
@@ -56,6 +63,8 @@ const { handleSubmit, errors, setFieldError } = useForm({
   initialValues: {
     queueName: null,
     serviceTime: 5,
+    allowPartyJoining: false,
+    maxPartySize: 5,
     slug: null,
     recoveryEmail: null
   }
@@ -64,10 +73,12 @@ const { handleSubmit, errors, setFieldError } = useForm({
 // Fields setup
 const { value: queueName } = useField('queueName')
 const { value: serviceTime } = useField('serviceTime')
+const { value: allowPartyJoining } = useField('allowPartyJoining')
+const { value: maxPartySize } = useField('maxPartySize')
 const { value: slug } = useField('slug')
 const { value: recoveryEmail } = useField('recoveryEmail')
 
-const showEmailSection = ref(true)
+const showEmailSection = ref(false)
 
 function selectSuggestion(suggestion) {
   queueName.value = suggestion
@@ -101,9 +112,19 @@ const onSubmit = handleSubmit(async (values) => {
   if (errors.value.slug || isCheckingSlug.value) return
   
   try {
-    const queue = await createQueue(values)
-    queueStore.setActiveQueue(queue)
-    emit('queue-created', queue)
+    const payload = {
+      name: values.queueName,
+      avgServiceMins: values.serviceTime,
+      slug: values.slug,
+      recoveryEmail: values.recoveryEmail,
+      allowPartyJoining: values.allowPartyJoining,
+      maxPartySize: values.allowPartyJoining ? values.maxPartySize : 1,
+    }
+    const queue = await createQueue(payload)
+    if (queue) {
+      queueStore.setActiveQueue(queue)
+      emit('queue-created', queue)
+    }
   } catch (error) {
     console.error('Error creating queue:', error)
   }
@@ -189,6 +210,55 @@ function copyCustomLink() {
         <p class="mt-6 font-body text-xs text-[#5c5267]">
           Used to calculate wait time estimates.
         </p>
+      </div>
+
+      <!-- ═══ Card 3: Party Settings ═══ -->
+      <div class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]">
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]">
+              Party Settings
+            </label>
+            <p class="mt-1 font-body text-xs text-[#5c5267]">
+              Allow guests to join with companions.
+            </p>
+          </div>
+          <BaseToggle v-model="allowPartyJoining" />
+        </div>
+
+        <div v-if="allowPartyJoining" class="mt-8 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300">
+          <label class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267] mb-6">
+            Max Party Size
+          </label>
+          
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="size in [2, 4, 6, 8, 10, 15, 20]"
+              :key="size"
+              type="button"
+              :class="[
+                'px-4 py-2 rounded-xl font-body text-sm transition-all',
+                maxPartySize === size
+                  ? 'bg-plum text-sand font-semibold'
+                  : 'border border-plum-faint text-plum-muted hover:border-plum'
+              ]"
+              @click="maxPartySize = size"
+            >
+              {{ size }}
+            </button>
+            <div class="flex items-center gap-2 ml-2">
+              <span class="text-xs text-plum-muted font-body">Custom:</span>
+              <input
+                v-model="maxPartySize"
+                type="number"
+                min="1"
+                max="50"
+                class="w-16 h-9 rounded-xl border border-plum-faint bg-sand text-center font-body text-sm text-plum focus:border-plum outline-none"
+              />
+            </div>
+          </div>
+          <div v-if="errors.maxPartySize" class="mt-2 font-body text-xs text-red-500">{{ errors.maxPartySize }}</div>
+        </div>
       </div>
 
       <!-- ═══ Card 3: Host vs Guest Version ═══ -->

@@ -20,10 +20,12 @@ import ArrowRightBoldIcon from '@/assets/icons/arrow-right-bold.svg?component'
 import { User, AtSign, ChevronDown, Info } from 'lucide-vue-next'
 
 // 6. Props
-defineProps({
+const props = defineProps({
   queueName: { type: String, default: 'Chai Point · Koramangala' },
   peopleInQueue: { type: Number, default: 23 },
   estWaitMin: { type: Number, default: 35 },
+  canJoinWithParty: { type: Boolean, default: true },
+  maxAllowedPartySize: { type: Number, default: 4 },
 })
 
 // 7. Emits
@@ -35,6 +37,8 @@ const buzzEnabled = ref(true)
 const email = ref('')
 const isEmailExpanded = ref(false)
 const isJoining = ref(false)
+const isGuestsOpen = ref(false)
+const accompanying = ref(0)
 
 // 11. Methods
 function toggleEmail() {
@@ -47,6 +51,7 @@ async function handleJoin() {
     name: displayName.value || 'Guest',
     buzzEnabled: buzzEnabled.value,
     email: email.value,
+    partySize: accompanying.value + 1,
   })
 }
 </script>
@@ -89,6 +94,67 @@ async function handleJoin() {
         />
         <p class="mt-1 font-body text-[11px] text-plum-muted">Appears as Guest if skipped</p>
       </div>
+    </div>
+
+    <!-- Smart Progressive Disclosure Row: Party Joining -->
+    <div v-if="canJoinWithParty" class="mt-6 flex flex-col gap-4">
+      <button
+        type="button"
+        class="flex items-center gap-3 rounded-3xl border border-plum-faint bg-white p-4 transition-colors hover:border-plum/20"
+        @click="isGuestsOpen = !isGuestsOpen"
+      >
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10">
+          <svg class="h-5 w-5 text-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+        </div>
+        <div class="flex-1 text-left">
+          <p class="font-body text-[15px] font-semibold text-plum">Joining with others?</p>
+          <p class="font-body text-xs text-plum-muted">Add companions to your spot</p>
+        </div>
+        <ChevronDown
+          :class="[
+            'h-4 w-4 text-plum-muted transition-transform duration-200',
+            isGuestsOpen ? 'rotate-180' : '',
+          ]"
+        />
+      </button>
+
+      <!-- Expandable Stepper -->
+      <transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="translate-y-1 opacity-0"
+        enter-to-class="translate-y-0 opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="translate-y-0 opacity-100"
+        leave-to-class="translate-y-1 opacity-0"
+      >
+        <div v-if="isGuestsOpen" class="flex items-center justify-between rounded-3xl border border-plum-faint bg-plum-faint/30 p-4">
+          <p class="font-body text-sm font-semibold text-plum">How many people with you?</p>
+          
+          <div class="flex items-center gap-4">
+            <button
+              type="button"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
+              :disabled="accompanying <= 0"
+              @click="accompanying--"
+            >
+              −
+            </button>
+            <span class="min-w-[20px] text-center font-mono text-lg font-bold text-plum">
+              {{ accompanying }}
+            </span>
+            <button
+              type="button"
+              class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
+              :disabled="accompanying >= props.maxAllowedPartySize - 1"
+              @click="accompanying++"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </transition>
     </div>
 
     <!-- Buzz toggle card -->

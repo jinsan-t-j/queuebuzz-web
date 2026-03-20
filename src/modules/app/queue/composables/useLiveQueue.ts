@@ -98,7 +98,7 @@ export function useLiveQueue() {
   }
 
   async function handleAddGuestSubmit(values: LiveQueueGuestInput) {
-    // Stub — real add will come via WebSocket push after API call
+    await store.addQueueEntry(values)
     showAddGuestModal.value = false
     showToast(`${values.name} added to queue.`)
   }

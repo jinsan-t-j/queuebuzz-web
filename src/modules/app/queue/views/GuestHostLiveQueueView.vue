@@ -46,10 +46,10 @@ const {
   handleTerminateQueue,
 } = useLiveQueue()
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
   if (!store.activeQueue) {
     const route = useRoute()
-    store.fetchQueueById(route.params.id as string)
+    await store.fetchQueueById(route.params.id as string)
     if (!store.activeQueue) {
       router.push({ name: 'guest-host-queue-ended', query: { reason: 'terminated' } })
     }
