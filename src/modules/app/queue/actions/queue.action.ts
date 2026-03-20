@@ -1,6 +1,6 @@
 import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
-import type { QueueRecord, QueueEntry } from '../types'
+import type { ApiSuccessResponse, LiveQueueResponse, QueueEntry, QueueRecord } from '../types'
 
 export interface CreateQueuePayload {
     name: string
@@ -24,42 +24,41 @@ export interface CheckSlugAvailabilityResponse {
 
 export async function createQueue(payload: CreateQueuePayload): Promise<QueueRecord> {
     const config = createApiRequestConfig({}, { withCredentials: true })
-    const response = await apiClient.post<QueueRecord>(API_ROUTES.SHARED.CREATE_QUEUE, payload, config)
+    const response = await apiClient.post<ApiSuccessResponse<QueueRecord>>(API_ROUTES.SHARED.CREATE_QUEUE, payload, config) as unknown as ApiSuccessResponse<QueueRecord>
     return response.data
 }
 
 export async function checkSlugAvailability(slug: string): Promise<boolean> {
     const config = createApiRequestConfig()
-    const response = await apiClient.get<CheckSlugAvailabilityResponse>(
+    const response = await apiClient.get<ApiSuccessResponse<CheckSlugAvailabilityResponse>>(
         `${API_ROUTES.QUEUE.CHECK_SLUG}?slug=${encodeURIComponent(slug)}`,
         config,
-    )
+    ) as unknown as ApiSuccessResponse<CheckSlugAvailabilityResponse>
     return response.data.isAvailable
 }
 
-export async function getLiveQueue(): Promise<QueueRecord> {
+export async function getLiveQueue(): Promise<LiveQueueResponse> {
     const config = createApiRequestConfig({}, { withCredentials: true })
-    const response = await apiClient.get<QueueRecord>(API_ROUTES.QUEUE.GET_LIVE_QUEUE, config)
+    const response = await apiClient.get<ApiSuccessResponse<LiveQueueResponse>>(API_ROUTES.QUEUE.GET_LIVE_QUEUE, config) as unknown as ApiSuccessResponse<LiveQueueResponse>
     return response.data
 }
 
-export async function getLiveQueueById(id: string): Promise<QueueRecord> {
+export async function getLiveQueueById(id: string): Promise<LiveQueueResponse> {
     const config = createApiRequestConfig({}, { withCredentials: true })
-    const response = await apiClient.get<QueueRecord>(API_ROUTES.QUEUE.GET_LIVE_QUEUE_BY_ID(id), config)
-
+    const response = await apiClient.get<ApiSuccessResponse<LiveQueueResponse>>(API_ROUTES.QUEUE.GET_LIVE_QUEUE_BY_ID(id), config) as unknown as ApiSuccessResponse<LiveQueueResponse>
     return response.data
 }
 
 export async function callNext(id: string): Promise<QueueEntry> {
     const config = createApiRequestConfig({}, { withCredentials: true })
-    const response = await apiClient.post<QueueEntry>(API_ROUTES.QUEUE.CALL_NEXT(id), null, config)
+    const response = await apiClient.post<QueueEntry>(API_ROUTES.QUEUE.CALL_NEXT(id), null, config) as unknown as QueueEntry
 
-    return response.data
+    return response
 }
 
 export async function addQueueEntry(id: string, payload: AddQueueEntryPayload): Promise<QueueEntry> {
     const config = createApiRequestConfig({}, { withCredentials: true })
-    const response = await apiClient.post<QueueEntry>(API_ROUTES.QUEUE.ADD_ENTRY(id), payload, config)
+    const response = await apiClient.post<ApiSuccessResponse<QueueEntry>>(API_ROUTES.QUEUE.ADD_ENTRY(id), payload, config) as unknown as ApiSuccessResponse<QueueEntry>
 
     return response.data
 }

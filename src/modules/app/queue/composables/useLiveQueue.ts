@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
 import type { LiveQueueEntry, LiveQueueGuestInput, TrendSummary } from '@/modules/app/queue/types'
@@ -126,6 +126,22 @@ export function useLiveQueue() {
     return true
   }
 
+  async function initializeHostQueue() {
+    return await store.initializeActiveQueue()
+  }
+
+  async function initializeQueueById(queueId: string) {
+    return await store.initializeQueueById(queueId)
+  }
+
+  function disposeLiveQueue() {
+    store.disconnectLiveUpdates()
+  }
+
+  onUnmounted(() => {
+    disposeLiveQueue()
+  })
+
   return {
     // Store-backed state (reactive via Pinia)
     activeQueue: computed(() => store.activeQueue),
@@ -135,6 +151,8 @@ export function useLiveQueue() {
     avgWaitTime: computed(() => store.avgWaitTime),
     isLoading: computed(() => store.isLoading),
     error: computed(() => store.error),
+    streamState: computed(() => store.streamState),
+    isStreamConnected: computed(() => store.isStreamConnected),
 
     // UI state
     showAddGuestModal,
@@ -158,5 +176,8 @@ export function useLiveQueue() {
     handleCallNext,
     handlePauseToggle,
     handleTerminateQueue,
+    initializeHostQueue,
+    initializeQueueById,
+    disposeLiveQueue,
   }
 }

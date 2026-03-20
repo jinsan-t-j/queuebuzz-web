@@ -3,7 +3,7 @@
  * @component GuestHostLiveQueueView
  * @description Anonymous (guest) host active queue dashboard.
  */
-import { onMounted } from 'vue'
+import { onBeforeMount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
@@ -15,9 +15,8 @@ import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
 import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
-import { onBeforeMount } from 'vue'
-
 const router = useRouter()
+const route = useRoute()
 const store = useQueueStore()
 
 const {
@@ -44,15 +43,25 @@ const {
   handleCallNext,
   handlePauseToggle,
   handleTerminateQueue,
+  initializeQueueById,
 } = useLiveQueue()
 
+const queueId = route.params.id as string
+let hasInitialized = false
+
 onBeforeMount(async () => {
-  if (!store.activeQueue) {
-    const route = useRoute()
-    await store.fetchQueueById(route.params.id as string)
+  if (!store.activeQueue?.id || store.activeQueue.id !== queueId) {
+    await initializeQueueById(queueId)
+    hasInitialized = true
     if (!store.activeQueue) {
       router.push({ name: 'guest-host-queue-ended', query: { reason: 'terminated' } })
     }
+  }
+})
+
+watch(activeQueue, (queue) => {
+  if (hasInitialized && !queue) {
+    router.push({ name: 'guest-host-queue-ended', query: { reason: 'terminated' } })
   }
 })
 

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component LiveQueueView
  * @description Live queue management dashboard for authenticated hosts.
@@ -53,12 +53,13 @@ const {
   handleAddGuestSubmit,
   handleCallNext,
   handlePauseToggle,
+  initializeHostQueue,
 } = useLiveQueue()
 
 const isCodeCopied = ref(false)
 
 onMounted(() => {
-  store.fetchActiveQueue()
+  initializeHostQueue()
 })
 
 function handleShowQr() {

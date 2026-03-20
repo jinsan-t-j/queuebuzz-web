@@ -6,6 +6,11 @@
 // Base URL mapped from Vite env variables
 export const API_BASE_URL: string = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
 export const API_ORIGIN_URL: string = new URL(API_BASE_URL, window.location.origin).origin
+export const API_BASE_PATH: string = new URL(API_BASE_URL, window.location.origin).pathname.replace(/\/$/, '')
+
+export function buildApiUrl(path: string): string {
+    return new URL(`${API_BASE_PATH}${path}`, API_ORIGIN_URL).toString()
+}
 
 export const AUTH_ROUTES = {
     SOCIAL_START: (provider: string): string => `${API_ORIGIN_URL}/auth/social/${provider}/start`,
@@ -30,8 +35,9 @@ export const API_ROUTES = {
         PAUSE: (id: string): string => `/queue/${id}/pause`,
         RESUME: (id: string): string => `/queue/${id}/resume`,
         TERMINATE: (id: string): string => `/queue/${id}/terminate`,
-        CALL_NEXT: (id: string): string => `/queue/${id}/call-next`,
+        CALL_NEXT: (id: string): string => `/queue/${id}/next`,
         ADD_ENTRY: (id: string): string => `/queue/${id}/add-entry`,
+        CONNECT_EVENTS: (id: string): string => `/queue/${id}/events`,
     },
     SHARED: {
         CREATE_QUEUE: '/queue/create',
