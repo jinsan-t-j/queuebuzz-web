@@ -22,7 +22,7 @@ export function useLiveQueue() {
   const filteredEntries = computed(() => {
     if (!debouncedSearchQuery.value) return store.entries
     const q = debouncedSearchQuery.value.toLowerCase()
-    return store.entries.filter((e) => e.displayName.toLowerCase().includes(q))
+    return store.entries.filter((e) => e.name.toLowerCase().includes(q))
   })
 
   // Stats (stub — will come from WebSocket / API later)

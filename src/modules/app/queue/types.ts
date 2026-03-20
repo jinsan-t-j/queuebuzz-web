@@ -20,10 +20,10 @@ export type QueueEntryStatus = 'waiting' | 'called' | 'served' | 'skipped'
 
 export interface QueueEntry {
   id: string
-  displayName: string
-  ticketNumber: number
+  name: string
+  ticketNo: number
   status: QueueEntryStatus
-  joinedAt: string
+  estimatedWaitMin: number
   partySize: number
 }
 
