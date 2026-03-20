@@ -11,7 +11,7 @@ export const customerRoutes: RouteRecordRaw[] = [
     component: () => import('@/layouts/CustomerLayout.vue'),
     children: [
       {
-        path: 'join',
+        path: 'join/:code?',
         name: 'customer-join',
         component: () => import('@/modules/customer/views/JoinView.vue'),
         meta: { title: 'Join Queue' },

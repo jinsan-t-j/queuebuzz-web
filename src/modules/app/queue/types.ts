@@ -11,9 +11,10 @@ export interface QueueRecord {
   slug: string
   avgServiceMins: number
   status: QueueStatus
-  createdAt: string
   allowPartyJoining: boolean
   maxPartySize: number
+  recoveryEmail?: string
+  createdAt?: string
   expiresAt?: string
 }
 

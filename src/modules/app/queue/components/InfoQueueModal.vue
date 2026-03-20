@@ -1,78 +1,53 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component InfoQueueModal
- * @description QR code display modal. Shows a generated QR code
- * and download/share actions. Supports two variants:
- * - 'success': shown after queue creation with "Queue is open!" heading.
- * - 'qr': shown when the host clicks "Show QR" with "Your Queue Code" heading.
- *
- * @prop {Boolean} isOpen - Whether the modal is visible.
- * @prop {String} variant - 'success' | 'qr'.
- * @prop {String} joinCode - The join code (used in download filename and share text).
- * @prop {String} queueUrl - The URL to encode in the QR code.
- * @emits {close} - User clicked the close button.
- * @emits {download} - User clicked "Download".
- * @emits {share} - User clicked "Share".
+ * @description QR code display modal with premium aesthetics.
+ * Shows a generated QR code and download/share actions.
  */
-
-// 1. Vue core imports
 import { ref, computed, watch } from 'vue'
-
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
 import { useShare } from '@vueuse/core'
+import QRCode from 'qrcode'
+import BaseModal from '@/components/base/BaseModal.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
-// 4. Local composables
-
-// 5. Component imports
+// Icons
 import CloseXIcon from '@/assets/icons/close-x.svg?component'
 import CheckCircleIcon from '@/assets/icons/check-circle.svg?component'
+import DownloadIcon from '@/assets/icons/download-arrow.svg?component'
+import ShareIcon from '@/assets/icons/share.svg?component'
+import CopyIcon from '@/assets/icons/copy.svg?component'
 
-// 6. Props
-const props = defineProps({
-  isOpen: {
-    type: Boolean,
-    default: false,
-  },
-  variant: {
-    type: String,
-    default: 'qr',
-    validator: (v) => ['success', 'qr'].includes(v),
-  },
-  joinCode: {
-    type: String,
-    default: '',
-  },
-  queueUrl: {
-    type: String,
-    default: 'https://queuebuzz.app/q/8X4K2F',
-  },
-})
+const props = defineProps<{
+  isOpen: boolean
+  variant?: 'success' | 'qr'
+  joinCode?: string
+  queueUrl?: string
+}>()
 
-const isSuccess = computed(() => props.variant === 'success')
+const emit = defineEmits<{
+  (e: 'close'): void
+  (e: 'download'): void
+  (e: 'share'): void
+}>()
 
-// 7. Emits
-const emit = defineEmits(['close', 'download', 'share'])
-
-// 8. Composable destructuring
 const { share } = useShare()
 
-// 9. Reactive state
 const qrDataUrl = ref('')
+const copied = ref(false)
 
-// 10. Computed properties
+const isSuccess = computed(() => props.variant === 'success')
+const currentQueueUrl = computed(() => props.queueUrl || 'https://queuebuzz.app/q/8X4K2F')
+const currentJoinCode = computed(() => props.joinCode || 'A4X9K2')
 
-// 11. Methods
 async function generateQr() {
   try {
-    const QRCode = await import('qrcode')
-    qrDataUrl.value = await QRCode.toDataURL(props.queueUrl, {
-      width: 240,
+    qrDataUrl.value = await QRCode.toDataURL(currentQueueUrl.value, {
+      width: 400,
       margin: 2,
       color: { dark: '#1A0A2E', light: '#FFFFFF' },
     })
-  } catch {
+  } catch (err) {
+    console.error('QR Generation Error:', err)
     qrDataUrl.value = ''
   }
 }
@@ -81,106 +56,145 @@ function handleDownload() {
   if (qrDataUrl.value) {
     const a = document.createElement('a')
     a.href = qrDataUrl.value
-    a.download = `queuebuzz-${props.joinCode}.png`
+    a.download = `queuebuzz-${currentJoinCode.value}.png`
     a.click()
   }
   emit('download')
 }
 
 async function handleShare() {
-  if (!navigator || !navigator.share) {
-    console.warn('Web Share API is not supported in this browser/environment.')
-    return
+  const shareData = {
+    title: 'Join my queue on QueueBuzz',
+    text: `Skip the wait — join my virtual queue with code: ${currentJoinCode.value}`,
+    url: currentQueueUrl.value,
   }
 
-  try {
-    await share({
-      title: 'Join my queue on QueueBuzz',
-      text: `Join code: ${props.joinCode}`,
-      url: props.queueUrl,
-    })
-    emit('share')
-  } catch {
-    
+  if (navigator.share) {
+    try {
+      await share(shareData)
+      emit('share')
+    } catch (err) {
+      // User cancelled or error
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(shareData.url)
+      copied.value = true
+      setTimeout(() => (copied.value = false), 2000)
+    } catch {
+      // Fallback failed
+    }
   }
 }
 
-// 12. Lifecycle hooks
-watch(() => props.isOpen, (val) => {
-  if (val) generateQr()
-}, { immediate: true })
+watch(
+  () => props.isOpen,
+  (val) => {
+    if (val) generateQr()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
-  <Teleport to="body">
-    <Transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0 scale-95"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-95"
-    >
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-plum/40 p-4 backdrop-blur-sm"
-        @click.self="emit('close')"
-      >
-        <div 
-          class="relative w-full max-w-[480px] rounded-[48px] bg-[#f8f8f8] p-10 text-center shadow-[0_30px_70px_rgba(0,0,0,0.10)]"
-          @click.stop
-        >
-        <!-- Close button -->
-        <button
-          class="absolute right-6 top-6 flex h-8 w-8 items-center justify-center rounded-lg text-plum/40 transition-colors hover:bg-plum/5 hover:text-plum"
-          @click="emit('close')"
-        >
-          <CloseXIcon class="h-3 w-3" />
-        </button>
+  <BaseModal :is-open="isOpen" @close="emit('close')">
+    <div class="relative w-full overflow-hidden rounded-[48px] bg-white p-10 text-center shadow-[0_30px_80px_rgba(26,10,46,0.15)]">
+      <!-- Gradient background glow -->
+      <div class="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-mint/5 blur-[100px]" />
+      <div class="absolute -bottom-40 -right-40 h-80 w-80 rounded-full bg-plum/5 blur-[100px]" />
 
-        <!-- Success icon (only for success variant) -->
-        <div v-if="isSuccess" class="mx-auto mb-6 flex h-[33px] w-[33px] items-center justify-center">
-          <CheckCircleIcon class="h-[33px] w-[33px] text-mint" />
+      <!-- Close button -->
+      <button
+        class="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center rounded-2xl text-plum/20 transition-all hover:bg-plum/5 hover:text-plum active:scale-95"
+        @click="emit('close')"
+      >
+        <CloseXIcon class="h-4 w-4" />
+      </button>
+
+      <div class="relative z-10">
+        <!-- Success/Heading -->
+        <div v-if="isSuccess" class="mb-6 flex justify-center">
+          <div class="flex h-16 w-16 items-center justify-center rounded-full bg-mint-light/50 text-mint shadow-[0_0_20px_rgba(0,229,160,0.2)]">
+            <CheckCircleIcon class="h-8 w-8" />
+          </div>
         </div>
 
-        <h2 class="mb-4 font-display text-[30px] font-semibold leading-9 tracking-tight text-plum">
+        <h2 class="mb-4 font-display text-[32px] font-bold leading-tight tracking-tight text-plum">
           {{ isSuccess ? 'Queue is open!' : 'Your Queue Code' }}
         </h2>
 
-        <div class="mx-auto mb-8 flex h-[200px] w-[200px] items-center justify-center overflow-hidden rounded-2xl bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+        <p class="mx-auto mb-8 max-w-[320px] font-body text-sm leading-relaxed text-plum/50">
+          {{
+            isSuccess
+              ? 'Customers can now join your queue using the code or QR below.'
+              : 'Keep this QR handy for walk-in customers to join instantly.'
+          }}
+        </p>
+
+        <!-- QR Display -->
+        <div class="group relative mx-auto mb-8 flex h-[240px] w-[240px] items-center justify-center overflow-hidden rounded-[32px] bg-white p-6 shadow-[0_12px_40px_rgba(26,10,46,0.08)] transition-all hover:shadow-[0_20px_60px_rgba(26,10,46,0.12)]">
           <img
             v-if="qrDataUrl"
             :src="qrDataUrl"
             alt="Queue QR code"
-            class="h-full w-full"
+            class="h-full w-full rounded-xl transition-transform duration-500 group-hover:scale-110"
           />
-          <div v-else class="h-full w-full animate-pulse bg-plum-faint" />
+          <div v-else class="h-full w-full animate-pulse rounded-xl bg-plum-faint" />
+          
+          <!-- Subtle icon overlay on hover -->
+          <div class="absolute inset-0 flex items-center justify-center bg-white/20 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px]">
+            <div class="rounded-full bg-white p-3 shadow-lg">
+              <DownloadIcon class="h-6 w-6 text-plum" />
+            </div>
+          </div>
         </div>
 
-        <p class="mx-auto max-w-[370px] font-body text-base leading-6 text-plum/50">
-          {{ isSuccess
-            ? 'Customers can now join your queue using the code below.'
-            : 'Customers can now join instantly to your queue using the QR.'
-          }}
-        </p>
+        <!-- Join Code Display -->
+        <div class="mb-10 rounded-3xl bg-sand/50 p-6 border border-plum/5">
+          <p class="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-plum/30 mb-2">JOIN CODE</p>
+          <div class="flex items-center justify-center gap-4">
+            <span class="font-mono text-3xl font-bold tracking-[0.2em] text-plum">
+              {{ currentJoinCode }}
+            </span>
+            <button
+              class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-plum/40 shadow-sm transition-all hover:bg-plum hover:text-white active:scale-95"
+              @click="handleShare"
+            >
+              <CopyIcon v-if="!copied" class="h-3.5 w-3.5" />
+              <CheckCircleIcon v-else class="h-3.5 w-3.5 text-mint" />
+            </button>
+          </div>
+        </div>
 
-        <!-- Action buttons -->
-        <div class="mt-5 flex flex-col items-center gap-4">
-          <button
-            class="w-full rounded-2xl bg-mint px-8 py-3.5 font-body text-sm font-semibold uppercase tracking-[0.35px] text-plum shadow-[0_2px_4px_rgba(128,229,192,0.20),0_4px_6px_rgba(128,229,192,0.20)] transition-colors cursor-pointer hover:bg-mint-dark"
+        <!-- Actions -->
+        <div class="flex flex-col gap-3">
+          <BaseButton
+            variant="primary"
+            class="w-full py-5 text-lg font-bold shadow-xl shadow-mint/20 active:scale-95 transition-all"
             @click="handleDownload"
           >
-            DOWNLOAD
-          </button>
-          <button
-            class="font-body text-sm font-semibold uppercase tracking-[0.35px] text-[#4a3b5d] transition-colors cursor-pointer hover:text-plum"
+            <DownloadIcon class="mr-2 h-5 w-5" />
+            DOWNLOAD QR
+          </BaseButton>
+
+          <BaseButton 
+            variant="ghost" 
+            class="w-full h-14 text-plum/60 hover:text-plum font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2"
             @click="handleShare"
           >
-            SHARE
+            <ShareIcon class="h-4 w-4" />
+            {{ copied ? 'URL COPIED!' : 'SHARE JOIN LINK' }}
+          </BaseButton>
+          
+          <button 
+            v-if="isSuccess"
+            class="mt-4 font-body text-xs font-bold uppercase tracking-widest text-plum/30 transition-colors hover:text-plum"
+            @click="emit('close')"
+          >
+            Go to dashboard
           </button>
         </div>
-        </div>
       </div>
-    </Transition>
-  </Teleport>
+    </div>
+  </BaseModal>
 </template>

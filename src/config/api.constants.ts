@@ -40,6 +40,7 @@ export const API_ROUTES = {
         SKIP: (id: string, entryId: string): string => `/queue/${id}/skip/${entryId}`,
         SERVE: (id: string, entryId: string): string => `/queue/${id}/serve/${entryId}`,
         ADD_ENTRY: (id: string): string => `/queue/${id}/add-entry`,
+        UPDATE: (id: string): string => `/queue/${id}`,
         CONNECT_EVENTS: (id: string): string => `/queue/${id}/events`,
     },
     SHARED: {

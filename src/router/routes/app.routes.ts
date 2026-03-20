@@ -21,18 +21,6 @@ export const appRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: '/magic-link',
-    component: () => import('@/layouts/BlankLayout.vue'),
-    children: [
-      {
-        path: '',
-        name: 'magic-link',
-        component: () => import('@/modules/app/auth/views/MagicLinkView.vue'),
-        meta: { title: 'Check Your Email — QueueBuzz' },
-      },
-    ],
-  },
-  {
     path: '/dashboard',
     component: () => import('@/layouts/AppLayout.vue'),
     beforeEnter: authGuard,

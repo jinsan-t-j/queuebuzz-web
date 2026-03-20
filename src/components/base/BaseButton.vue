@@ -88,10 +88,10 @@ function handleClick(event) {
   <button
     :disabled="isButtonDisabled"
     :class="[
-      'inline-flex items-center justify-center gap-2 rounded-pill font-body font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint',
+      'inline-flex items-center justify-center gap-2 rounded-pill font-body font-semibold cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint',
       variantClasses,
       sizeClasses,
-      { 'cursor-not-allowed opacity-50': isButtonDisabled },
+      { 'cursor-not-allowed opacity-50 !cursor-not-allowed': isButtonDisabled },
     ]"
     @click="handleClick"
   >

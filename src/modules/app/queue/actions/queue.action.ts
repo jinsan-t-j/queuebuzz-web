@@ -11,6 +11,13 @@ export interface CreateQueuePayload {
     maxPartySize: number
 }
 
+export interface UpdateQueuePayload {
+    name?: string
+    avgServiceMins?: number
+    slug?: string
+    recoveryEmail?: string
+}
+
 export interface AddQueueEntryPayload {
     name: string
     phone?: string
@@ -25,6 +32,12 @@ export interface CheckSlugAvailabilityResponse {
 export async function createQueue(payload: CreateQueuePayload): Promise<QueueRecord> {
     const config = createApiRequestConfig({}, { withCredentials: true })
     const response = await apiClient.post<ApiSuccessResponse<QueueRecord>>(API_ROUTES.SHARED.CREATE_QUEUE, payload, config) as unknown as ApiSuccessResponse<QueueRecord>
+    return response.data
+}
+
+export async function updateQueue(id: string, payload: UpdateQueuePayload): Promise<QueueRecord> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
+    const response = await apiClient.patch<ApiSuccessResponse<QueueRecord>>(API_ROUTES.QUEUE.UPDATE(id), payload, config) as unknown as ApiSuccessResponse<QueueRecord>
     return response.data
 }
 

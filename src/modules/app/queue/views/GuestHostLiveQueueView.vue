@@ -8,6 +8,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
+import TimeIcon from '@/assets/icons/clock-time.svg?component'
+import BrandingIcon from '@/assets/icons/branding-pro.svg?component'
+import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
+import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
+
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 import TerminateQueueModal from '@/modules/app/queue/components/TerminateQueueModal.vue'
@@ -15,6 +20,7 @@ import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
 import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
+import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
 const router = useRouter()
 const route = useRoute()
 const store = useQueueStore()
@@ -28,6 +34,7 @@ const {
   showAddGuestModal,
   showTerminateModal,
   showInfoModal,
+  showSettingsModal,
   
   rawSearchQuery,
   filteredEntries,
@@ -45,6 +52,7 @@ const {
   handleCallGuest,
   handleServeGuest,
   handleTerminateQueue,
+  handleUpdateSettings,
   initializeQueueById,
 } = useLiveQueue()
 
@@ -103,6 +111,7 @@ async function onTerminateConfirmed() {
             @terminate="showTerminateModal = true"
             @call-guest="handleCallGuest"
             @serve-guest="handleServeGuest"
+            @open-settings="showSettingsModal = true"
           />
         </div>
 
@@ -156,6 +165,14 @@ async function onTerminateConfirmed() {
       :is-open="showAddGuestModal"
       @close="showAddGuestModal = false"
       @submit="handleAddGuestSubmit"
+    />
+    
+    <LiveQueueSettingsModal
+      v-if="activeQueue"
+      :is-open="showSettingsModal"
+      :queue="activeQueue"
+      @close="showSettingsModal = false"
+      @submit="handleUpdateSettings"
     />
   </div>
 </template>

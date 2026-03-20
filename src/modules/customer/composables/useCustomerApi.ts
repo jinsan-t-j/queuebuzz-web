@@ -32,21 +32,6 @@ export function useCustomerApi() {
     }
   }
 
-  async function checkGeofence(): Promise<GeofenceStatus> {
-    isLoading.value = true
-    error.value = null
-    try {
-      // STUB — replace with: GET /api/queues/:id/geofence-check
-      await new Promise((r) => setTimeout(r, 300))
-      return { isWithinRange: true, distanceMeters: 45 }
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to check geofence'
-      return { isWithinRange: true, distanceMeters: 0 }
-    } finally {
-      isLoading.value = false
-    }
-  }
-
   async function fetchWaitingStatus(_ticketId: string): Promise<WaitingStatus | null> {
     isLoading.value = true
     error.value = null
@@ -150,7 +135,6 @@ export function useCustomerApi() {
     isLoading,
     error,
     joinQueue,
-    checkGeofence,
     fetchWaitingStatus,
     confirmStillHere,
     confirmArrival,

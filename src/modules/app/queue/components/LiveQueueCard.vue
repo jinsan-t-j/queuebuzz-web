@@ -34,6 +34,7 @@ import CallNextIcon from '@/assets/icons/call-next.svg?component'
 import CloseCircleIcon from '@/assets/icons/close-circle.svg?component'
 import PauseIcon from '@/assets/icons/pause.svg?component'
 import PlayIcon from '@/assets/icons/play.svg?component'
+import navSettingsIcon from '@/assets/icons/nav-settings.svg?component'
 
 // 6. Props
 const props = defineProps({
@@ -65,6 +66,7 @@ const emit = defineEmits([
   'terminate',
   'toggle-pause',
   'serve-guest',
+  'open-settings',
 ])
 
 // 8. Composable destructuring
@@ -121,19 +123,28 @@ onUnmounted(() => {
             {{ isPaused ? 'Queue Paused' : 'Live Queue' }}
           </span>
         </div>
-        <button 
-          class="flex items-center gap-1.5 rounded-full border border-plum/10 bg-white px-3 py-1 font-body text-[10px] font-bold uppercase tracking-wider text-plum/60 cursor-pointer transition-colors hover:bg-plum/5"
-          @click="emit('toggle-pause')"
-        >
-          <template v-if="isPaused">
-            <PlayIcon class="h-2 w-2 text-mint" />
-            Resume
-          </template>
-          <template v-else>
-            <PauseIcon class="h-2 w-2 text-warning" />
-            Pause
-          </template>
-        </button>
+        <div class="flex items-center gap-2">
+          <button 
+            class="flex items-center gap-1.5 rounded-full border border-plum/10 bg-white px-3 py-1 font-body text-[10px] font-bold uppercase tracking-wider text-plum/60 cursor-pointer transition-colors hover:bg-plum/5"
+            @click="emit('toggle-pause')"
+          >
+            <template v-if="isPaused">
+              <PlayIcon class="h-2 w-2 text-mint" />
+              Resume
+            </template>
+            <template v-else>
+              <PauseIcon class="h-2 w-2 text-warning" />
+              Pause
+            </template>
+          </button>
+          <button
+            class="flex h-[26px] w-[26px] items-center justify-center rounded-full border border-plum/10 bg-white text-plum/40 transition-colors hover:bg-plum/5 hover:text-plum cursor-pointer"
+            title="Queue Settings"
+            @click="emit('open-settings')"
+          >
+            <navSettingsIcon class="h-3 w-3" />
+          </button>
+        </div>
       </div>
       <div class="flex items-center gap-3">
         <div class="flex flex-1 items-center gap-0 rounded-input border border-plum/5 bg-sand px-4 py-2">
@@ -146,7 +157,7 @@ onUnmounted(() => {
           />
         </div>
         <button
-          class="flex h-9 w-9 items-center justify-center rounded-lg bg-plum"
+          class="flex h-9 w-9 items-center justify-center rounded-lg bg-plum cursor-pointer transition-transform active:scale-95"
           @click="emit('add-guest')"
         >
           <AddPersonIcon class="h-3 w-4 text-sand" />
@@ -198,7 +209,7 @@ onUnmounted(() => {
           </div>
           <div class="relative ml-auto guest-dropdown-container">
             <button
-              class="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-plum/5"
+              class="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-plum/5 cursor-pointer"
               @click.stop="openDetails(entry)"
             >
               <div class="flex h-4 w-1 flex-col items-center justify-center gap-[2px]">
@@ -215,12 +226,12 @@ onUnmounted(() => {
     <!-- Action buttons -->
     <div class="border-t border-plum/5 p-4">
       <button
-        class="flex w-full items-center justify-center gap-3 rounded-2xl px-8 py-4 font-body text-lg font-bold transition-colors"
+        class="flex w-full items-center justify-center gap-3 rounded-2xl px-8 py-4 font-body text-lg font-bold transition-all active:scale-[0.98] cursor-pointer"
         :disabled="entries.length === 0 || isPaused"
         :class="
           entries.length > 0 && !isPaused
-            ? 'bg-plum text-sand hover:bg-plum-soft'
-            : 'bg-plum/40 text-white'
+            ? 'bg-plum text-sand hover:bg-plum-soft shadow-lg shadow-plum/10'
+            : 'bg-plum/40 text-white cursor-not-allowed'
         "
         @click="emit('call-next')"
       >
@@ -237,7 +248,7 @@ onUnmounted(() => {
       <!-- Terminate button -->
       <button
         v-if="showTerminate"
-        class="mt-4 flex w-full items-center justify-center gap-3 rounded-2xl border border-danger px-8 py-4 font-body text-lg font-bold text-danger transition-colors hover:bg-danger/5"
+        class="mt-4 flex w-full items-center justify-center gap-3 rounded-2xl border border-danger px-8 py-4 font-body text-lg font-bold text-danger transition-all hover:bg-danger/5 active:scale-[0.98] cursor-pointer"
         @click="emit('terminate')"
       >
         <CloseCircleIcon class="h-4 w-4 text-danger" />

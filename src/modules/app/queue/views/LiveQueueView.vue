@@ -1,34 +1,23 @@
 <script setup lang="ts">
 /**
- * @component LiveQueueView
- * @description Live queue management dashboard for authenticated hosts.
+ * @view LiveQueueView
+ * @description Authenticated host active queue dashboard.
+ * Managed via useLiveQueue and useQueueStore.
  */
-import { ref, onMounted } from 'vue'
-import { useClipboard } from '@vueuse/core'
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
+import TerminateQueueModal from '@/modules/app/queue/components/TerminateQueueModal.vue'
 import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
 import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
-import EmptyQueueIcon from '@/assets/icons/empty-queue.svg?component'
-import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
-import ShowQrGridIcon from '@/assets/icons/show-qr-grid.svg?component'
+import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
 
-const emit = defineEmits([
-  'call-next',
-  'search',
-  'copy-link',
-  'copy-code',
-  'show-qr',
-  'add-guest',
-  'entry-menu',
-])
-
-const { copy: copyToClipboard } = useClipboard()
-
+const router = useRouter()
 const {
   activeQueue,
   isPaused,
@@ -36,7 +25,9 @@ const {
   avgWaitTime,
 
   showAddGuestModal,
+  showTerminateModal,
   showInfoModal,
+  showSettingsModal,
   
   rawSearchQuery,
   filteredEntries,
@@ -52,130 +43,154 @@ const {
   handleCallNext,
   handlePauseToggle,
   handleCallGuest,
-  handleSkipGuest,
   handleServeGuest,
+  handleTerminateQueue,
+  handleUpdateSettings,
   initializeHostQueue,
 } = useLiveQueue()
 
-const isCodeCopied = ref(false)
-
-onMounted(() => {
-  initializeHostQueue()
+onMounted(async () => {
+    if (!activeQueue.value) {
+        const queue = await initializeHostQueue()
+        if (!queue) {
+            router.push({ name: 'dashboard' })
+        }
+    }
 })
 
-function handleShowQr() {
-  showInfoModal.value = true
-  emit('show-qr')
-}
-
-async function handleCopyCode() {
-  if (activeQueue.value?.joinCode) {
-    await copyToClipboard(activeQueue.value.joinCode)
-  }
-  isCodeCopied.value = true
-  setTimeout(() => isCodeCopied.value = false, 2000)
-  emit('copy-code')
+async function onTerminateConfirmed() {
+    const success = await handleTerminateQueue()
+    if (success) {
+        router.push({ name: 'dashboard' })
+    }
 }
 </script>
 
 <template>
-  <div class="flex gap-8 min-h-[calc(100vh-128px)]">
-    <!-- Left column -->
-    <div class="flex w-[381px] shrink-0 flex-col gap-6">
-      <QueueStatCards
-        :waiting-count="waitingCount"
-        :avg-wait="avgWaitTime"
-      />
+  <div class="relative min-h-screen bg-sand px-6 py-8">
+    <div class="mx-auto max-w-[1200px]">
+      <!-- Header Area -->
+      <header class="mb-8 flex items-end justify-between">
+        <div>
+          <h1 class="font-display text-4xl font-bold text-plum">
+            {{ activeQueue?.name || 'Active Queue' }}
+          </h1>
+          <p class="mt-1 font-body text-plum/60">
+            Running since {{ activeQueue?.createdAt ? new Date(activeQueue.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
+          </p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <button 
+            class="flex items-center gap-2 rounded-xl bg-white px-4 py-2 font-body text-sm font-bold text-plum shadow-sm border border-plum/5 hover:bg-plum/5 transition-colors cursor-pointer"
+            @click="showInfoModal = true"
+          >
+            <span class="text-mint">#</span>
+            Join Info
+          </button>
+        </div>
+      </header>
 
-      <LiveQueueCard
-        :entries="filteredEntries"
-        :search-query="rawSearchQuery"
-        :is-paused="isPaused"
-        @call-next="handleCallNext"
-        @toggle-pause="handlePauseToggle"
-        @call-guest="handleCallGuest"
-        @skip-guest="handleSkipGuest"
-        @serve-guest="handleServeGuest"
-        @search="handleSearchUpdate($event, (v) => emit('search', v))"
-        @add-guest="showAddGuestModal = true"
-        @entry-menu="emit('entry-menu', $event)"
-      />
+      <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
+        <!-- Left Column: Statistics & Live List -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+          <QueueStatCards
+            :waiting-count="waitingCount"
+            :avg-wait="avgWaitTime"
+          />
+
+          <LiveQueueCard
+            :entries="filteredEntries"
+            :search-query="rawSearchQuery"
+            :is-paused="isPaused"
+            :show-terminate="true"
+            @call-next="handleCallNext"
+            @search="handleSearchUpdate"
+            @add-guest="showAddGuestModal = true"
+            @toggle-pause="handlePauseToggle"
+            @terminate="showTerminateModal = true"
+            @call-guest="handleCallGuest"
+            @serve-guest="handleServeGuest"
+            @open-settings="showSettingsModal = true"
+          />
+        </div>
+
+        <!-- Right Column: Share & Insights -->
+        <div class="lg:col-span-8 flex flex-col gap-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+             <ShareCodeCard
+                :join-code="activeQueue?.joinCode ?? ''"
+                @show-qr="showInfoModal = true"
+              />
+              
+              <div class="flex flex-col gap-4 p-6 rounded-card border border-plum/5 bg-white shadow-sm">
+                <h3 class="font-display text-lg font-bold text-plum">Quick Actions</h3>
+                <div class="grid grid-cols-2 gap-3">
+                   <button 
+                    class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand p-4 transition-all hover:bg-mint-light group cursor-pointer"
+                    @click="showAddGuestModal = true"
+                   >
+                     <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-mint">
+                        <svg class="h-5 w-5 text-plum group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                     </div>
+                     <span class="font-body text-xs font-bold text-plum">Add Guest</span>
+                   </button>
+                   
+                   <button 
+                    class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand p-4 transition-all hover:bg-plum/5 group cursor-pointer"
+                    @click="handlePauseToggle"
+                   >
+                     <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-warning">
+                        <svg class="h-5 w-5 text-plum group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                     </div>
+                     <span class="font-body text-xs font-bold text-plum">{{ isPaused ? 'Resume' : 'Pause' }}</span>
+                   </button>
+                </div>
+              </div>
+          </div>
+
+          <QueueAnalysisCard
+            :served-today="servedTodayCount"
+            :trend-text="trend.text"
+            :trend-direction="trend.direction"
+            :completion-rate="completionRatePercent"
+            :chart-labels="chartLabels"
+            :chart-bars="chartBars"
+          />
+        </div>
+      </div>
     </div>
 
-    <!-- Right column — Empty state -->
-    <div
-      v-if="filteredEntries.length === 0"
-      class="flex flex-1 flex-col items-center justify-center rounded-card border border-plum/10 bg-white p-12 text-center shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-    >
-      <div class="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-mint/15">
-        <EmptyQueueIcon class="h-9 w-9 text-mint" />
-      </div>
+    <!-- Modals -->
+    <TerminateQueueModal
+      :is-open="showTerminateModal"
+      :still-waiting-count="waitingCount"
+      @close-queue="onTerminateConfirmed"
+      @keep-open="showTerminateModal = false"
+    />
 
-      <h2 class="font-display text-[28px] font-bold text-plum">Queue is empty</h2>
-      <p class="mx-auto mt-4 max-w-[381px] font-body text-sm font-medium leading-5 text-plum/60">
-        There are currently no customers waiting in line. Share your
-        join code to start accepting guests.
-      </p>
-
-      <!-- Join Code card -->
-      <div class="mx-auto mt-10 w-full max-w-[448px] rounded-card border-2 border-dashed border-plum/10 bg-sand px-10 py-8">
-        <p class="mb-4 font-body text-[10px] font-bold uppercase tracking-[1px] text-plum/40">
-          Join Code
-        </p>
-        <p class="font-mono text-5xl font-bold leading-none tracking-tight text-mint">
-          {{ activeQueue?.joinCode ?? '' }}
-        </p>
-      </div>
-
-      <!-- Copy / QR buttons -->
-      <div class="mt-8 flex items-center justify-center gap-4">
-        <button
-          class="flex items-center gap-2 rounded-2xl bg-mint px-8 py-4 font-body text-base font-bold text-plum shadow-[0_8px_10px_rgba(0,229,160,0.20),0_20px_25px_rgba(0,229,160,0.20)] transition-colors hover:bg-mint-dark"
-          @click="handleCopyCode"
-        >
-          <CopyCodeIcon v-if="!isCodeCopied" class="h-[17px] w-[14px] text-plum" />
-          {{ isCodeCopied ? 'Copied!' : 'Copy Code' }}
-        </button>
-        <button
-          class="flex items-center gap-2 rounded-2xl border border-plum/10 bg-white px-8 py-4 font-body text-base font-bold text-plum transition-colors hover:bg-sand"
-          @click="handleShowQr"
-        >
-          <ShowQrGridIcon class="h-[15px] w-[15px] text-plum" />
-          Show QR
-        </button>
-      </div>
-    </div>
-
-    <!-- Right column — Populated state -->
-    <div v-else class="flex flex-1 flex-col gap-8">
-      <ShareCodeCard
-        :join-code="activeQueue?.joinCode ?? ''"
-        @copy-link="emit('copy-link')"
-        @show-qr="handleShowQr"
-      />
-
-      <QueueAnalysisCard
-        :served-today="servedTodayCount"
-        :trend-text="trend.text"
-        :trend-direction="trend.direction"
-        :completion-rate="completionRatePercent"
-        :chart-labels="chartLabels"
-        :chart-bars="chartBars"
-      />
-    </div>
-
-    <!-- Info/QR Modal -->
     <InfoQueueModal
       :is-open="showInfoModal"
       :join-code="activeQueue?.joinCode ?? ''"
       @close="showInfoModal = false"
     />
 
-    <!-- Add Guest Modal -->
     <AddGuestModal
       :is-open="showAddGuestModal"
       @close="showAddGuestModal = false"
       @submit="handleAddGuestSubmit"
+    />
+    
+    <LiveQueueSettingsModal
+      v-if="activeQueue"
+      :is-open="showSettingsModal"
+      :queue="activeQueue"
+      @close="showSettingsModal = false"
+      @submit="handleUpdateSettings"
     />
   </div>
 </template>
