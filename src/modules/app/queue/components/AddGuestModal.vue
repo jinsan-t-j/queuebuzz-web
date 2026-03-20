@@ -63,13 +63,23 @@ const handleClose = () => {
 
 <template>
   <Teleport to="body">
-    <div
-      v-show="isOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/25"
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
     >
-      <div 
-        class="relative w-full max-w-[448px] rounded-[48px] bg-[#f8f8f8] px-16 pb-12 pt-10 text-center shadow-[0_30px_70px_rgba(0,0,0,0.10)]"
+      <div
+        v-if="isOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-plum/40 p-4 backdrop-blur-sm"
+        @click.self="handleClose"
       >
+        <div 
+          class="relative w-full max-w-[448px] rounded-[48px] bg-[#f8f8f8] px-16 pb-12 pt-10 text-center shadow-[0_30px_70px_rgba(0,0,0,0.10)]"
+          @click.stop
+        >
         <!-- Close button -->
         <button
           type="button"
@@ -220,7 +230,8 @@ const handleClose = () => {
             </BaseButton>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>

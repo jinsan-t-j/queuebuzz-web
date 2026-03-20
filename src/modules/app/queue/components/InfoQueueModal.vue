@@ -113,11 +113,23 @@ watch(() => props.isOpen, (val) => {
 
 <template>
   <Teleport to="body">
-    <div
-      v-if="isOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/25"
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
     >
-      <div class="relative w-full max-w-[480px] rounded-[48px] bg-[#f8f8f8] p-10 text-center shadow-[0_30px_70px_rgba(0,0,0,0.10)]">
+      <div
+        v-if="isOpen"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-plum/40 p-4 backdrop-blur-sm"
+        @click.self="emit('close')"
+      >
+        <div 
+          class="relative w-full max-w-[480px] rounded-[48px] bg-[#f8f8f8] p-10 text-center shadow-[0_30px_70px_rgba(0,0,0,0.10)]"
+          @click.stop
+        >
         <!-- Close button -->
         <button
           class="absolute right-6 top-6 flex h-8 w-8 items-center justify-center rounded-lg text-plum/40 transition-colors hover:bg-plum/5 hover:text-plum"
@@ -167,7 +179,8 @@ watch(() => props.isOpen, (val) => {
             SHARE
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </Transition>
   </Teleport>
 </template>

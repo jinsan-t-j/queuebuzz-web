@@ -42,7 +42,6 @@ const statusConfig = computed(() => {
 })
 
 const formattedJoinedTime = computed(() => {
-  console.log(props.entry)
   if (!props.entry.joinedAt) return ''
   try {
     return new Date(props.entry.joinedAt).toLocaleTimeString([], {
