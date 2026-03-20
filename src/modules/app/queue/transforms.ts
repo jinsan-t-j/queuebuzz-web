@@ -1,8 +1,6 @@
 import type {
-  LiveQueueEntry,
-  LiveQueueResponse,
+  QueueEntry,
   QueueRecord,
-  QueueSnapshotEntry,
 } from '@/modules/app/queue/types'
 
 function formatWaitTime(timestamp?: string | null): string {
@@ -16,36 +14,25 @@ function formatWaitTime(timestamp?: string | null): string {
   return `${diffMinutes}m`
 }
 
-export function normalizeLiveQueueEntry(entry: QueueSnapshotEntry): LiveQueueEntry {
+export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
   return {
-    id: entry.id || entry.token,
-    token: entry.token,
+    id: entry.id,
     ticketNo: entry.ticketNo,
     position: entry.position,
     name: entry.name || 'Guest',
     partySize: entry.partySize ?? 1,
-    waitTime: formatWaitTime(entry.joinedAt || entry.createdAt),
+    estimatedWaitMin: entry.estimatedWaitMin,
     status: entry.status,
+    joinedAt: entry.joinedAt,
+    servedAt: entry.servedAt,
+    finishedAt: entry.finishedAt,
+    createdAt: entry.createdAt,
+    updatedAt: entry.updatedAt,
   }
 }
 
-export function normalizeLiveQueueEntries(entries: QueueSnapshotEntry[]): LiveQueueEntry[] {
+export function normalizeLiveQueueEntries(entries: QueueEntry[]): QueueEntry[] {
   return [...entries]
     .sort((left, right) => left.position - right.position)
-    .map(normalizeLiveQueueEntry)
-}
-
-export function extractQueueRecord(queue: LiveQueueResponse): QueueRecord {
-  return {
-    id: queue.id,
-    name: queue.name,
-    joinCode: queue.joinCode,
-    slug: queue.slug,
-    avgServiceMins: queue.avgServiceMins,
-    status: queue.status,
-    createdAt: queue.createdAt,
-    allowPartyJoining: queue.allowPartyJoining,
-    maxPartySize: queue.maxPartySize,
-    expiresAt: queue.expiresAt,
-  }
+    .map(normalizeQueueEntry)
 }

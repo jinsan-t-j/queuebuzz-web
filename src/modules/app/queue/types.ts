@@ -28,22 +28,15 @@ export interface QueueEntry {
   id: string
   name: string
   ticketNo: number
+  position: number
   status: QueueEntryStatus
   estimatedWaitMin: number
   partySize: number
-}
-
-export type LiveGuestStatus = 'waiting' | 'called' | 'served' | 'skipped'
-
-export interface LiveQueueEntry {
-  id: number | string
-  token: string
-  ticketNo?: string
-  position: number
-  name: string
-  partySize: number
-  waitTime: string
-  status: LiveGuestStatus
+  joinedAt?: string
+  servedAt?: string
+  finishedAt?: string
+  createdAt: string
+  updatedAt?: string
 }
 
 export interface LiveQueueGuestInput {
@@ -57,22 +50,6 @@ export type TrendDirection = 'up' | 'down' | 'flat'
 export interface TrendSummary {
   text: string
   direction: TrendDirection
-}
-
-export interface QueueSnapshotEntry {
-  id: string
-  token: string
-  ticketNo: string
-  position: number
-  status: QueueEntryStatus
-  name?: string
-  partySize?: number | null
-  createdBy?: string | null
-  joinedAt?: string
-  servedAt?: string | null
-  finishedAt?: string | null
-  createdAt?: string
-  updatedAt?: string
 }
 
 export interface QueueStatusEventData {
@@ -91,11 +68,11 @@ export interface QueueStatusData {
 export interface QueueSseEnvelopeMap {
   queue_update: {
     event: 'queue_update'
-    data: QueueSnapshotEntry[]
+    data: QueueEntry[]
   }
   user_joined: {
     event: 'user_joined'
-    data: QueueSnapshotEntry
+    data: QueueEntry
   }
   user_called: {
     event: 'user_called'
@@ -113,8 +90,4 @@ export interface QueueSseEnvelopeMap {
     event: 'queue_expired'
     data: QueueExpiredEventData
   }
-}
-
-export interface LiveQueueResponse extends QueueRecord {
-  entries: QueueSnapshotEntry[]
 }

@@ -36,7 +36,7 @@ const {
   completionRatePercent,
   chartLabels,
   chartBars,
-  computedTrend,
+  trend,
 
   handleSearchUpdate,
   handleAddGuestSubmit,
@@ -54,6 +54,7 @@ onBeforeMount(async () => {
     await initializeQueueById(queueId)
     hasInitialized = true
     if (!store.activeQueue) {
+      // TODO: The queue might be terminated or not found. We should redirect to the appropriate page.
       router.push({ name: 'guest-host-queue-ended', query: { reason: 'terminated' } })
     }
   }
@@ -110,8 +111,8 @@ async function onTerminateConfirmed() {
 
           <QueueAnalysisCard
             :served-today="servedTodayCount"
-            :trend-text="computedTrend.text"
-            :trend-direction="computedTrend.direction"
+            :trend-text="trend.text"
+            :trend-direction="trend.direction"
             :completion-rate="completionRatePercent"
             :chart-labels="chartLabels"
             :chart-bars="chartBars"

@@ -2,8 +2,7 @@ import { defineStore } from 'pinia'
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
 import type {
-  LiveQueueEntry,
-  LiveQueueResponse,
+  QueueEntry,
   QueueStatus,
   QueueRecord,
   QueueSseEnvelopeMap,
@@ -20,9 +19,8 @@ import {
   terminateQueue,
 } from '@/modules/app/queue/actions/queue.action'
 import {
-  extractQueueRecord,
   normalizeLiveQueueEntries,
-  normalizeLiveQueueEntry,
+  normalizeQueueEntry,
 } from '@/modules/app/queue/transforms'
 
 let queueEventsClient: SseClient | null = null
@@ -31,7 +29,7 @@ let connectedQueueId: string | null = null
 export const useQueueStore = defineStore('queue', {
   state: () => ({
     activeQueue: null as QueueRecord | null,
-    entries: [] as LiveQueueEntry[],
+    entries: [] as QueueEntry[],
     isLoading: false,
     error: null as string | null,
     streamState: 'idle' as SseConnectionState,
@@ -54,9 +52,8 @@ export const useQueueStore = defineStore('queue', {
       this.activeQueue = queue
     },
 
-    setLiveQueueState(payload: LiveQueueResponse) {
-      this.activeQueue = extractQueueRecord(payload)
-      this.entries = normalizeLiveQueueEntries(payload.entries || [])
+    setLiveQueueState(payload: QueueRecord) {
+      this.activeQueue = payload
     },
 
     async fetchActiveQueue() {
@@ -110,14 +107,14 @@ export const useQueueStore = defineStore('queue', {
       return queue
     },
 
-    updateEntries(newEntries: LiveQueueEntry[]) {
+    updateEntries(newEntries: QueueEntry[]) {
       this.entries = newEntries
     },
 
-    upsertEntry(entry: LiveQueueEntry) {
-      const index = this.entries.findIndex((current) => current.token === entry.token)
+    upsertEntry(entry: QueueEntry) {
+      const index = this.entries.findIndex((current: QueueEntry) => current.id === entry.id)
       if (index === -1) {
-        this.entries = [...this.entries, entry].sort((left, right) => left.position - right.position)
+        this.entries = [...this.entries, entry].sort((left: QueueEntry, right: QueueEntry) => left.position - right.position)
         return
       }
 
@@ -169,7 +166,7 @@ export const useQueueStore = defineStore('queue', {
               return
             }
 
-            this.upsertEntry(normalizeLiveQueueEntry(event.data))
+            this.upsertEntry(normalizeQueueEntry(event.data))
           },
           user_called: (payload) => {
             const event = payload as QueueSseEnvelopeMap['user_called']

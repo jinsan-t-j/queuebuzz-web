@@ -19,7 +19,7 @@ const router = createRouter({
     ...appRoutes,
     ...customerRoutes,
     ...anoymousHostRoutes,
-    { path: '/:pathMatch(.*)*', redirect: '/dashboard' }
+    { path: '/:pathMatch(.*)*', redirect: '/' }
   ],
 })
 

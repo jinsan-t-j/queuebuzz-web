@@ -5,7 +5,6 @@
  */
 import { ref, onMounted } from 'vue'
 import { useClipboard } from '@vueuse/core'
-import { useQueueStore } from '@/stores/queue.store'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
@@ -28,7 +27,6 @@ const emit = defineEmits([
   'entry-menu',
 ])
 
-const store = useQueueStore()
 const { copy: copyToClipboard } = useClipboard()
 
 const {
@@ -47,7 +45,7 @@ const {
   completionRatePercent,
   chartLabels,
   chartBars,
-  computedTrend,
+  trend,
 
   handleSearchUpdate,
   handleAddGuestSubmit,
@@ -152,8 +150,8 @@ async function handleCopyCode() {
 
       <QueueAnalysisCard
         :served-today="servedTodayCount"
-        :trend-text="computedTrend.text"
-        :trend-direction="computedTrend.direction"
+        :trend-text="trend.text"
+        :trend-direction="trend.direction"
         :completion-rate="completionRatePercent"
         :chart-labels="chartLabels"
         :chart-bars="chartBars"
