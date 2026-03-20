@@ -1,3 +1,5 @@
+import { keysToCamelCase } from '@/utils/caseConvert'
+
 export type SseConnectionState = 'idle' | 'connecting' | 'open' | 'error'
 
 export interface SseClientOptions {
@@ -22,7 +24,7 @@ function parseEventPayload(event: MessageEvent<string>) {
     return null
   }
 
-  return JSON.parse(event.data)
+  return keysToCamelCase(JSON.parse(event.data))
 }
 
 export function createSseClient(options: SseClientOptions): SseClient {

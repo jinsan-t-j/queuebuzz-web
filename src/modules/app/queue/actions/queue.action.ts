@@ -77,3 +77,13 @@ export async function terminateQueue(id: string): Promise<void> {
     const config = createApiRequestConfig({}, { withCredentials: true })
     await apiClient.post(API_ROUTES.QUEUE.TERMINATE(id), null, config)
 }
+
+export async function callGuest(id: string, entryId: string): Promise<void> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
+    await apiClient.post(API_ROUTES.QUEUE.CALL_GUEST(id, entryId), null, config)
+}
+
+export async function serveGuest(id: string, entryId: string): Promise<void> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
+    await apiClient.post(API_ROUTES.QUEUE.SERVE(id, entryId), null, config)
+}

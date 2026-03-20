@@ -51,6 +51,9 @@ const {
   handleAddGuestSubmit,
   handleCallNext,
   handlePauseToggle,
+  handleCallGuest,
+  handleSkipGuest,
+  handleServeGuest,
   initializeHostQueue,
 } = useLiveQueue()
 
@@ -90,6 +93,9 @@ async function handleCopyCode() {
         :is-paused="isPaused"
         @call-next="handleCallNext"
         @toggle-pause="handlePauseToggle"
+        @call-guest="handleCallGuest"
+        @skip-guest="handleSkipGuest"
+        @serve-guest="handleServeGuest"
         @search="handleSearchUpdate($event, (v) => emit('search', v))"
         @add-guest="showAddGuestModal = true"
         @entry-menu="emit('entry-menu', $event)"

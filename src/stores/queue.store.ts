@@ -11,11 +11,13 @@ import type {
 import {
   addQueueEntry,
   AddQueueEntryPayload,
+  callGuest,
   callNext,
   getLiveQueue,
   getLiveQueueById,
   pauseQueue,
   resumeQueue,
+  serveGuest,
   terminateQueue,
 } from '@/modules/app/queue/actions/queue.action'
 import {
@@ -38,7 +40,7 @@ export const useQueueStore = defineStore('queue', {
   getters: {
     isPaused: (state) => state.activeQueue?.status === 'paused',
     waitingCount: (state) =>
-      state.entries.filter((e) => e.status === 'waiting').length,
+      state.entries.filter((e) => e.status === 'WAITING').length,
     avgWaitTime: (state) => state.activeQueue?.avgServiceMins,
     totalCount: (state) => state.entries.length,
     hasError: (state) => !!state.error,
@@ -200,7 +202,7 @@ export const useQueueStore = defineStore('queue', {
     applyEntryStatus(data: QueueStatusEventData) {
       this.entries = this.entries.map((entry) =>
         entry.token === data.token
-          ? { ...entry, status: data.status }
+          ? { ...entry, status: data.status.toUpperCase() as any }
           : entry
       )
     },
@@ -268,6 +270,28 @@ export const useQueueStore = defineStore('queue', {
         await callNext(this.activeQueue.id)
       } catch (e: any) {
         this.error = e?.response?.data?.message || 'Failed to call next guest'
+      }
+    },
+
+    async callGuest(entryId: string) {
+      if (!this.activeQueue) return
+
+      this.error = null
+      try {
+        await callGuest(this.activeQueue.id, entryId)
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to call guest'
+      }
+    },
+
+    async serveGuest(entryId: string) {
+      if (!this.activeQueue) return
+
+      this.error = null
+      try {
+        await serveGuest(this.activeQueue.id, entryId)
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to serve guest'
       }
     },
 

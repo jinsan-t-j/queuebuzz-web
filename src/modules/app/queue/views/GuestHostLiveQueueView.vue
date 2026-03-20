@@ -42,6 +42,8 @@ const {
   handleAddGuestSubmit,
   handleCallNext,
   handlePauseToggle,
+  handleCallGuest,
+  handleServeGuest,
   handleTerminateQueue,
   initializeQueueById,
 } = useLiveQueue()
@@ -99,6 +101,8 @@ async function onTerminateConfirmed() {
             @add-guest="showAddGuestModal = true"
             @toggle-pause="handlePauseToggle"
             @terminate="showTerminateModal = true"
+            @call-guest="handleCallGuest"
+            @serve-guest="handleServeGuest"
           />
         </div>
 

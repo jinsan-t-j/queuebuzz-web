@@ -22,7 +22,7 @@ export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
     name: entry.name || 'Guest',
     partySize: entry.partySize ?? 1,
     estimatedWaitMin: entry.estimatedWaitMin,
-    status: entry.status,
+    status: entry.status.toUpperCase() as any,
     joinedAt: entry.joinedAt,
     servedAt: entry.servedAt,
     finishedAt: entry.finishedAt,

@@ -22,7 +22,7 @@ export interface ApiSuccessResponse<T> {
   data: T
 }
 
-export type QueueEntryStatus = 'waiting' | 'called' | 'served' | 'skipped'
+export type QueueEntryStatus = 'WAITING' | 'CALLED' | 'SERVED' | 'SKIPPED' | 'IDLE' | 'LEFT'
 
 export interface QueueEntry {
   id: string

@@ -60,6 +60,16 @@ export function useLiveQueue() {
     }
   }
 
+  async function handleCallGuest(entryId: string) {
+    await store.callGuest(entryId)
+    showToast('Calling guest...')
+  }
+
+  async function handleServeGuest(entryId: string) {
+    await store.serveGuest(entryId)
+    showToast('Guest marked as served.')
+  }
+
   async function handleTerminateQueue() {
     await store.terminate()
     showToast('Queue terminated successfully.')
@@ -111,6 +121,8 @@ export function useLiveQueue() {
     handleAddGuestSubmit,
     handleCallNext,
     handlePauseToggle,
+    handleCallGuest,
+    handleServeGuest,
     handleTerminateQueue,
     initializeHostQueue,
     initializeQueueById,

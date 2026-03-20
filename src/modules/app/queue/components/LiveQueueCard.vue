@@ -25,6 +25,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 // 4. Local composables
 
 // 5. Component imports
+import EntryDetailsModal from './EntryDetailsModal.vue'
+
 import SearchIcon from '@/assets/icons/search.svg?component'
 import AddPersonIcon from '@/assets/icons/add-person.svg?component'
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
@@ -62,23 +64,35 @@ const emit = defineEmits([
   'entry-menu',
   'terminate',
   'toggle-pause',
+  'serve-guest',
 ])
 
 // 8. Composable destructuring
 
 // 9. Reactive state
 const openDropdownId = ref(null)
+const selectedEntry = ref(null)
+const isDetailsModalOpen = ref(false)
 
 // 10. Computed properties
 
 // 11. Methods
-function toggleDropdown(id) {
-  openDropdownId.value = openDropdownId.value === id ? null : id
-}
 
 function handleCallGuest(id) {
   emit('call-guest', id)
   openDropdownId.value = null
+}
+
+function openDetails(entry) {
+  selectedEntry.value = entry
+  isDetailsModalOpen.value = true
+}
+
+function closeDetails() {
+  isDetailsModalOpen.value = false
+  setTimeout(() => {
+    selectedEntry.value = null
+  }, 300)
 }
 
 function onClickOutside(e) {
@@ -152,19 +166,20 @@ onUnmounted(() => {
         <div
           v-for="entry in entries"
           :key="entry.id"
-          v-memo="[entry.status, entry.waitTime, entry.position, entry.name, entry.partySize, openDropdownId === entry.id]"
-          class="flex items-center rounded-2xl border px-4 py-3"
+          v-memo="[entry.status, entry.waitTimeMin, entry.position, entry.name, entry.partySize, openDropdownId === entry.id]"
+          class="group flex cursor-pointer items-center rounded-2xl border px-4 py-3 transition-all hover:border-mint/50 hover:bg-mint/5 hover:shadow-sm"
           :class="
-            entry.status === 'called'
+            entry.status === 'CALLED'
               ? 'border-2 border-mint shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
-              : 'border-plum/5'
+              : 'border-plum/5 shadow-sm bg-white'
           "
+          @click="openDetails(entry)"
         >
           <div class="flex items-center gap-3">
             <span
               class="flex h-8 w-8 items-center justify-center rounded-lg font-mono text-lg font-bold"
               :class="
-                entry.status === 'called'
+                entry.status === 'CALLED'
                   ? 'bg-plum text-mint'
                   : 'bg-plum/5 text-plum/40'
               "
@@ -176,10 +191,7 @@ onUnmounted(() => {
               <p class="font-body text-xs text-plum/40">
                 Party of {{ entry.partySize }} •
                 <span :class="entry.status === 'called' ? 'text-mint' : ''">
-                  {{ entry.waitTime }} wait
-                </span>
-                <span v-if="entry.status === 'skipped'" class="ml-1 text-danger italic">
-                  • Skipped
+                  {{ entry.estimatedWaitMin }} min wait
                 </span>
               </p>
             </div>
@@ -187,7 +199,7 @@ onUnmounted(() => {
           <div class="relative ml-auto guest-dropdown-container">
             <button
               class="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-plum/5"
-              @click="toggleDropdown(entry.id)"
+              @click.stop="openDetails(entry)"
             >
               <div class="flex h-4 w-1 flex-col items-center justify-center gap-[2px]">
                 <span class="block h-[3px] w-[3px] rounded-full bg-plum/40" />
@@ -195,30 +207,6 @@ onUnmounted(() => {
                 <span class="block h-[3px] w-[3px] rounded-full bg-plum/40" />
               </div>
             </button>
-
-            <!-- Dropdown Menu -->
-            <transition
-              enter-active-class="transition duration-200 ease-out"
-              enter-from-class="transform scale-95 opacity-0"
-              enter-to-class="transform scale-100 opacity-100"
-              leave-active-class="transition duration-75 ease-in"
-              leave-from-class="transform scale-100 opacity-100"
-              leave-to-class="transform scale-95 opacity-0"
-            >
-              <div
-                v-if="openDropdownId === entry.id"
-                class="absolute right-0 top-full z-10 mt-2 w-48 origin-top-right rounded-xl border border-plum/10 bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-              >
-                <button
-                  v-if="entry.status !== 'called'"
-                  class="flex w-full items-center px-4 py-2 font-body text-sm font-medium text-plum hover:bg-plum/5 transition-colors"
-                  @click="handleCallGuest(entry.id)"
-                >
-                  <CallNextIcon class="mr-3 h-4 w-4 text-mint" />
-                  Call Guest
-                </button>
-              </div>
-            </transition>
           </div>
         </div>
       </template>
@@ -256,5 +244,15 @@ onUnmounted(() => {
         Terminate Queue
       </button>
     </div>
+
+    <!-- Entry Details Modal -->
+    <EntryDetailsModal
+      v-if="selectedEntry"
+      :entry="selectedEntry"
+      :is-open="isDetailsModalOpen"
+      @close="closeDetails"
+      @call="(id) => { emit('call-guest', id); closeDetails(); }"
+      @serve="(id) => { emit('serve-guest', id); closeDetails(); }"
+    />
   </div>
 </template>
