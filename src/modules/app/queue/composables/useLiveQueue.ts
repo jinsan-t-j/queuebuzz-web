@@ -83,6 +83,8 @@ export function useLiveQueue() {
         if (updated) {
             showToast('Queue settings updated.')
             showSettingsModal.value = false
+        } else if (store.error) {
+            showToast(store.error, { type: 'error' })
         }
     }
 

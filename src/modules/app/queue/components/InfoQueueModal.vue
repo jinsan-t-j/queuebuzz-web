@@ -98,7 +98,7 @@ watch(
 
 <template>
   <BaseModal :is-open="isOpen" @close="emit('close')">
-    <div class="relative w-full overflow-hidden rounded-[48px] bg-white p-10 text-center shadow-[0_30px_80px_rgba(26,10,46,0.15)]">
+    <div class="relative w-full overflow-hidden rounded-[48px] bg-white p-8 text-center shadow-[0_30px_80px_rgba(26,10,46,0.15)]">
       <!-- Gradient background glow -->
       <div class="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-mint/5 blur-[100px]" />
       <div class="absolute -bottom-40 -right-40 h-80 w-80 rounded-full bg-plum/5 blur-[100px]" />
@@ -113,7 +113,7 @@ watch(
 
       <div class="relative z-10">
         <!-- Success/Heading -->
-        <div v-if="isSuccess" class="mb-6 flex justify-center">
+        <div v-if="isSuccess" class="mb-4 flex justify-center">
           <div class="flex h-16 w-16 items-center justify-center rounded-full bg-mint-light/50 text-mint shadow-[0_0_20px_rgba(0,229,160,0.2)]">
             <CheckCircleIcon class="h-8 w-8" />
           </div>
@@ -123,7 +123,7 @@ watch(
           {{ isSuccess ? 'Queue is open!' : 'Your Queue Code' }}
         </h2>
 
-        <p class="mx-auto mb-8 max-w-[320px] font-body text-sm leading-relaxed text-plum/50">
+        <p class="mx-auto mb-4 max-w-[320px] font-body text-sm leading-relaxed text-plum/50">
           {{
             isSuccess
               ? 'Customers can now join your queue using the code or QR below.'
@@ -132,7 +132,7 @@ watch(
         </p>
 
         <!-- QR Display -->
-        <div class="group relative mx-auto mb-8 flex h-[240px] w-[240px] items-center justify-center overflow-hidden rounded-[32px] bg-white p-6 shadow-[0_12px_40px_rgba(26,10,46,0.08)] transition-all hover:shadow-[0_20px_60px_rgba(26,10,46,0.12)]">
+        <div class="group relative mx-auto mb-4 flex h-[240px] w-[240px] items-center justify-center overflow-hidden rounded-[32px] bg-white p-6 shadow-[0_12px_40px_rgba(26,10,46,0.08)] transition-all hover:shadow-[0_20px_60px_rgba(26,10,46,0.12)]">
           <img
             v-if="qrDataUrl"
             :src="qrDataUrl"
@@ -150,7 +150,7 @@ watch(
         </div>
 
         <!-- Join Code Display -->
-        <div class="mb-10 rounded-3xl bg-sand/50 p-6 border border-plum/5">
+        <div class="mb-4 rounded-3xl bg-sand/50 p-6 border border-plum/5">
           <p class="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-plum/30 mb-2">JOIN CODE</p>
           <div class="flex items-center justify-center gap-4">
             <span class="font-mono text-3xl font-bold tracking-[0.2em] text-plum">
@@ -185,14 +185,6 @@ watch(
             <ShareIcon class="h-4 w-4" />
             {{ copied ? 'URL COPIED!' : 'SHARE JOIN LINK' }}
           </BaseButton>
-          
-          <button 
-            v-if="isSuccess"
-            class="mt-4 font-body text-xs font-bold uppercase tracking-widest text-plum/30 transition-colors hover:text-plum"
-            @click="emit('close')"
-          >
-            Go to dashboard
-          </button>
         </div>
       </div>
     </div>

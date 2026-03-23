@@ -32,8 +32,8 @@ const emit = defineEmits<{
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
 
 const schema = yup.object({
-  queueName: yup.string().required('Queue name is required').max(50, 'Queue name must be at most 50 characters'),
-  avgServiceMins: yup.number().required('Service time is required').min(1).max(30),
+  queueName: yup.string().required('Queue name is required').min(3, 'At least 3 characters').max(50, 'At least 50 characters'),
+  avgServiceMins: yup.number().required('Service time is required').min(1).max(60),
   recoveryEmail: yup.string()
     .nullable()
     .email('Invalid email address')
@@ -87,7 +87,7 @@ function selectSuggestion(suggestion: string) {
 
 <template>
   <BaseModal :is-open="isOpen" @close="emit('close')">
-    <div class="relative w-full rounded-[32px] bg-white p-8 shadow-2xl">
+    <div class="relative w-full rounded-[32px] bg-white p-6 shadow-2xl">
       <!-- Header -->
       <div class="mb-8 flex items-center justify-between">
         <div class="flex items-center gap-3">
@@ -106,10 +106,10 @@ function selectSuggestion(suggestion: string) {
         </button>
       </div>
 
-      <div class="max-h-[70vh] overflow-y-auto px-1 pb-4">
+      <div class="max-h-[70vh] px-1 pb-4">
         <form @submit.prevent="onSubmit" class="space-y-6">
           <!-- Queue Name -->
-          <div class="rounded-card border border-plum/5 bg-white p-6 shadow-sm transition-all hover:border-plum/10">
+          <div class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10">
             <label class="mb-3 block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-plum/50">
               Queue Name
             </label>
@@ -138,7 +138,7 @@ function selectSuggestion(suggestion: string) {
           </div>
 
           <!-- Avg Service Time -->
-          <div class="rounded-card border border-plum/5 bg-white p-6 shadow-sm transition-all hover:border-plum/10">
+          <div class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10">
             <div class="flex items-center justify-between mb-4">
               <label class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-plum/50">
                 Avg. Service Time
@@ -153,18 +153,18 @@ function selectSuggestion(suggestion: string) {
               <BaseSlider 
                 v-model="avgServiceMins"
                 :min="1"
-                :max="30"
+                :max="60"
                 :step="1"
               />
               <div class="flex justify-between font-body text-[10px] text-plum/40 font-bold uppercase tracking-wider mt-1">
                 <span>Quick (1m)</span>
-                <span>Relaxed (30m)</span>
+                <span>Relaxed (60m)</span>
               </div>
             </div>
           </div>
 
           <!-- Recovery Email -->
-          <div class="rounded-card border border-plum/5 bg-white p-6 shadow-sm transition-all hover:border-plum/10"
+          <div class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10"
                :class="{ 'bg-sand/50 opacity-80': isRecoveryEmailSet }">
             <div class="flex items-center justify-between mb-3">
               <label class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-plum/50">

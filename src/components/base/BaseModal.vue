@@ -15,17 +15,17 @@ const emit = defineEmits<{
 <template>
   <Teleport to="body">
     <Transition
-      enter-active-class="transition duration-300 ease-out"
+      enter-active-class="transition duration-100 ease-out"
       enter-from-class="opacity-0"
       enter-to-class="opacity-100"
-      leave-active-class="transition duration-200 ease-in"
+      leave-active-class="transition duration-100 ease-in"
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
       <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <!-- Backdrop -->
         <div 
-          class="fixed inset-0 bg-[#1A0A2E]/25 backdrop-blur-[2px]" 
+          class="fixed inset-0 bg-plum/40 backdrop-blur-sm" 
           aria-hidden="true"
           @click="emit('close')"
         ></div>

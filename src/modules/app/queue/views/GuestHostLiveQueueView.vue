@@ -3,7 +3,7 @@
  * @component GuestHostLiveQueueView
  * @description Anonymous (guest) host active queue dashboard.
  */
-import { onBeforeMount, watch } from 'vue'
+import { onBeforeMount, watch, computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
@@ -21,6 +21,7 @@ import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
 import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
+import EmailNoticePopup from '@/modules/app/queue/components/EmailNoticePopup.vue'
 const router = useRouter()
 const route = useRoute()
 const store = useQueueStore()
@@ -30,6 +31,7 @@ const {
   isPaused,
   waitingCount,
   avgWaitTime,
+  isLoading: isApiLoading,
 
   showAddGuestModal,
   showTerminateModal,
@@ -55,6 +57,50 @@ const {
   handleUpdateSettings,
   initializeQueueById,
 } = useLiveQueue()
+
+const isRecoveryEmailMissing = computed(() => !activeQueue.value?.recoveryEmail)
+const isNoticeVisible = ref(false)
+const storageKey = 'queuebuzz_hide_email_notice'
+let noticeInterval: ReturnType<typeof setInterval> | null = null
+
+function checkAndShowNotice() {
+  const isHiddenPermanently = localStorage.getItem(storageKey) === 'true'
+  if (isRecoveryEmailMissing.value && !isHiddenPermanently) {
+    isNoticeVisible.value = true
+  } else {
+    isNoticeVisible.value = false
+  }
+}
+
+onMounted(() => {
+  // Delay initial check by 1 second after component mount
+  setTimeout(() => {
+    checkAndShowNotice()
+  }, 1000)
+  
+  // Set interval for every 15 minutes
+  noticeInterval = setInterval(() => {
+    checkAndShowNotice()
+  }, 15 * 60 * 1000)
+})
+
+onUnmounted(() => {
+  if (noticeInterval) clearInterval(noticeInterval)
+})
+
+function handleNoticeClose(doNotShowAgain: boolean) {
+  isNoticeVisible.value = false
+  if (doNotShowAgain) {
+    localStorage.setItem(storageKey, 'true')
+  }
+}
+
+async function handleNoticeSubmit(email: string) {
+  await handleUpdateSettings({
+    recoveryEmail: email
+  })
+  isNoticeVisible.value = false
+}
 
 const queueId = route.params.id as string
 let hasInitialized = false
@@ -174,5 +220,22 @@ async function onTerminateConfirmed() {
       @close="showSettingsModal = false"
       @submit="handleUpdateSettings"
     />
+
+    <!-- Floating recovery email notice -->
+    <Transition
+      enter-active-class="transition duration-500 ease-out"
+      enter-from-class="translate-y-4 opacity-0 scale-95"
+      enter-to-class="translate-y-0 opacity-100 scale-100"
+      leave-active-class="transition duration-300 ease-in"
+      leave-from-class="translate-y-0 opacity-100 scale-100"
+      leave-to-class="translate-y-4 opacity-0 scale-95"
+    >
+      <EmailNoticePopup
+        v-if="isNoticeVisible"
+        :is-loading="isApiLoading"
+        @submit="handleNoticeSubmit"
+        @close="handleNoticeClose"
+      />
+    </Transition>
   </div>
 </template>
