@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue'
+import QueueStatusUpdateModal from './QueueStatusUpdateModal.vue'
 /**
  * @component QueueActionCard
  * @description Quick actions for managing the queue (Add Guest, Pause/Resume, Settings, Terminate).
@@ -16,16 +18,38 @@ import PlusIcon from '@/assets/icons/plus.svg?component'
 import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
 import PlayIcon from '@/assets/icons/play.svg?component'
 
-defineProps<{
+const props = defineProps<{
   isPaused: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'add-guest'): void
   (e: 'toggle-pause'): void
   (e: 'open-settings'): void
   (e: 'terminate'): void
 }>()
+
+const showStatusModal = ref(false)
+const modalMode = ref<'pause' | 'resume' | 'terminate'>('pause')
+
+function handlePauseClick() {
+  modalMode.value = props.isPaused ? 'resume' : 'pause'
+  showStatusModal.value = true
+}
+
+function handleTerminateClick() {
+  modalMode.value = 'terminate'
+  showStatusModal.value = true
+}
+
+function handleConfirm() {
+  if (modalMode.value === 'terminate') {
+    emit('terminate')
+  } else {
+    emit('toggle-pause')
+  }
+  showStatusModal.value = false
+}
 </script>
 
 <template>
@@ -44,7 +68,7 @@ defineEmits<{
        
        <button 
         class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand p-4 transition-all hover:bg-plum/5 group cursor-pointer"
-        @click="$emit('toggle-pause')"
+        @click="handlePauseClick"
        >
          <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-warning transition-colors">
             <template v-if="isPaused">
@@ -69,7 +93,7 @@ defineEmits<{
 
        <button 
         class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand p-4 transition-all hover:bg-danger/10 group cursor-pointer"
-        @click="$emit('terminate')"
+        @click="handleTerminateClick"
        >
          <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-danger transition-colors">
             <CloseCircleIcon class="h-4 w-4 text-danger group-hover:text-white transition-colors" />
@@ -77,5 +101,12 @@ defineEmits<{
          <span class="font-body text-xs font-bold text-danger">Terminate</span>
        </button>
     </div>
+
+    <QueueStatusUpdateModal
+      :isOpen="showStatusModal"
+      :mode="modalMode"
+      @confirm="handleConfirm"
+      @close="showStatusModal = false"
+    />
   </div>
 </template>

@@ -10,7 +10,7 @@ import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
-import TerminateQueueModal from '@/modules/app/queue/components/TerminateQueueModal.vue'
+import QueueStatusUpdateModal from '@/modules/app/queue/components/QueueStatusUpdateModal.vue'
 import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
 import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
@@ -145,11 +145,12 @@ async function onTerminateConfirmed() {
     </div>
 
     <!-- Modals -->
-    <TerminateQueueModal
+    <QueueStatusUpdateModal
       :is-open="showTerminateModal"
+      mode="terminate"
       :still-waiting-count="waitingCount"
-      @close-queue="onTerminateConfirmed"
-      @keep-open="showTerminateModal = false"
+      @confirm="onTerminateConfirmed"
+      @close="showTerminateModal = false"
     />
 
     <InfoQueueModal

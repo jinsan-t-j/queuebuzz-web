@@ -26,8 +26,7 @@ import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
 import { PlayCircle as PlayCircleIcon } from 'lucide-vue-next'
 import TerminateIcon from '@/assets/icons/terminate.svg?component'
 import DiamondPremium from '@/assets/icons/diamond-premium.svg?component'
-import TerminateQueueModal from '@/modules/app/queue/components/TerminateQueueModal.vue'
-import PauseQueueModal from '@/modules/app/queue/components/PauseQueueModal.vue'
+import QueueStatusUpdateModal from '@/modules/app/queue/components/QueueStatusUpdateModal.vue'
 import { useNow } from '@vueuse/core'
 
 const props = defineProps({
@@ -48,8 +47,8 @@ const props = defineProps({
 const emit = defineEmits(['pause-queue', 'resume-queue', 'terminate-queue'])
 
 const route = useRoute()
-const showTerminateModal = ref(false)
-const showPauseModal = ref(false)
+const showStatusModal = ref(false)
+const modalMode = ref('terminate')
 const now = useNow()
 
 const pausedTimeFormatted = computed(() => {
@@ -68,30 +67,22 @@ const pausedTimeFormatted = computed(() => {
 })
 
 function openTerminateModal() {
-  showTerminateModal.value = true
-}
-
-function handleCloseQueue() {
-  showTerminateModal.value = false
-  emit('terminate-queue')
-  router.push({ name: 'queue-history' })
-}
-
-function handleKeepOpen() {
-  showTerminateModal.value = false
+  modalMode.value = 'terminate'
+  showStatusModal.value = true
 }
 
 function openPauseModal() {
-  showPauseModal.value = true
+  modalMode.value = 'pause'
+  showStatusModal.value = true
 }
 
-function handlePauseQueue() {
-  showPauseModal.value = false
-  emit('pause-queue')
-}
-
-function handleKeepRunning() {
-  showPauseModal.value = false
+function handleStatusConfirm() {
+  if (modalMode.value === 'terminate') {
+    emit('terminate-queue')
+  } else if (modalMode.value === 'pause') {
+    emit('pause-queue')
+  }
+  showStatusModal.value = false
 }
 
 const navItems = computed(() => [
@@ -220,15 +211,11 @@ function isActive(item) {
         Go Premium
       </router-link>
     </div>
-    <TerminateQueueModal
-      :is-open="showTerminateModal"
-      @close-queue="handleCloseQueue"
-      @keep-open="handleKeepOpen"
-    />
-    <PauseQueueModal
-      :is-open="showPauseModal"
-      @pause-queue="handlePauseQueue"
-      @keep-running="handleKeepRunning"
+    <QueueStatusUpdateModal
+      :is-open="showStatusModal"
+      :mode="modalMode"
+      @confirm="handleStatusConfirm"
+      @close="showStatusModal = false"
     />
   </aside>
 </template>
