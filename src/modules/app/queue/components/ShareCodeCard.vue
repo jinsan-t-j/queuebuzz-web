@@ -45,7 +45,7 @@ async function handleCopyLink() {
     <!-- Decorative circle -->
     <div class="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-mint/10" />
 
-    <div class="relative">
+    <div class="relative flex flex-col justify-center h-full">
       <p class="font-body text-[10px] font-bold uppercase tracking-[2px] text-plum/40">
         Queue code
       </p>

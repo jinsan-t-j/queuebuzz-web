@@ -15,6 +15,7 @@ import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
 import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
+import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
 import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
 
 const router = useRouter()
@@ -106,8 +107,6 @@ async function onTerminateConfirmed() {
             :show-terminate="true"
             @call-next="handleCallNext"
             @search="handleSearchUpdate"
-            @add-guest="showAddGuestModal = true"
-            @toggle-pause="handlePauseToggle"
             @terminate="showTerminateModal = true"
             @call-guest="handleCallGuest"
             @serve-guest="handleServeGuest"
@@ -123,34 +122,14 @@ async function onTerminateConfirmed() {
                 @show-qr="showInfoModal = true"
               />
               
-              <div class="flex flex-col gap-4 p-6 rounded-card border border-plum/5 bg-white shadow-sm">
-                <h3 class="font-display text-lg font-bold text-plum">Quick Actions</h3>
-                <div class="grid grid-cols-2 gap-3">
-                   <button 
-                    class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand p-4 transition-all hover:bg-mint-light group cursor-pointer"
-                    @click="showAddGuestModal = true"
-                   >
-                     <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-mint">
-                        <svg class="h-5 w-5 text-plum group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                     </div>
-                     <span class="font-body text-xs font-bold text-plum">Add Guest</span>
-                   </button>
-                   
-                   <button 
-                    class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand p-4 transition-all hover:bg-plum/5 group cursor-pointer"
-                    @click="handlePauseToggle"
-                   >
-                     <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-warning">
-                        <svg class="h-5 w-5 text-plum group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                     </div>
-                     <span class="font-body text-xs font-bold text-plum">{{ isPaused ? 'Resume' : 'Pause' }}</span>
-                   </button>
-                </div>
-              </div>
+              <QueueActionCard 
+                :is-paused="isPaused"
+                @add-guest="showAddGuestModal = true"
+                @toggle-pause="handlePauseToggle"
+                @open-settings="showSettingsModal = true"
+                @terminate="showTerminateModal = true"
+              />
+
           </div>
 
           <QueueAnalysisCard

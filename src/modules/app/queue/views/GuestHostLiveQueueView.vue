@@ -20,6 +20,7 @@ import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
 import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
+import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
 import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
 import EmailNoticePopup from '@/modules/app/queue/components/EmailNoticePopup.vue'
 const router = useRouter()
@@ -73,12 +74,10 @@ function checkAndShowNotice() {
 }
 
 onMounted(() => {
-  // Delay initial check by 1 second after component mount
   setTimeout(() => {
     checkAndShowNotice()
   }, 1000)
   
-  // Set interval for every 15 minutes
   noticeInterval = setInterval(() => {
     checkAndShowNotice()
   }, 15 * 60 * 1000)
@@ -136,7 +135,7 @@ async function onTerminateConfirmed() {
     <div class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-mint-light opacity-50 blur-[80px]" />
     <div class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]" />
 
-    <div class="relative z-10 mx-auto max-w-[1024px] px-6 py-4">
+    <div class="relative z-10 mx-auto max-w-[1280px] px-6 py-4">
       <div class="flex gap-8">
         <!-- Left column -->
         <div class="flex w-[381px] shrink-0 flex-col gap-6">
@@ -152,8 +151,6 @@ async function onTerminateConfirmed() {
             :show-terminate="true"
             @call-next="handleCallNext"
             @search="handleSearchUpdate($event)"
-            @add-guest="showAddGuestModal = true"
-            @toggle-pause="handlePauseToggle"
             @terminate="showTerminateModal = true"
             @call-guest="handleCallGuest"
             @serve-guest="handleServeGuest"
@@ -163,10 +160,19 @@ async function onTerminateConfirmed() {
 
         <!-- Right column -->
         <div class="flex flex-1 flex-col gap-8">
-          <ShareCodeCard
-            :join-code="activeQueue?.joinCode ?? ''"
-            @show-qr="showInfoModal = true"
-          />
+          <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <ShareCodeCard
+              :join-code="activeQueue?.joinCode ?? ''"
+              @show-qr="showInfoModal = true"
+            />
+            <QueueActionCard
+              :is-paused="isPaused"
+              @add-guest="showAddGuestModal = true"
+              @toggle-pause="handlePauseToggle"
+              @open-settings="showSettingsModal = true"
+              @terminate="showTerminateModal = true"
+            />
+          </div>
 
           <QueueAnalysisCard
             :served-today="servedTodayCount"

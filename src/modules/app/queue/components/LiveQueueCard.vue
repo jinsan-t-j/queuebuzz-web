@@ -28,12 +28,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import EntryDetailsModal from './EntryDetailsModal.vue'
 
 import SearchIcon from '@/assets/icons/search.svg?component'
-import AddPersonIcon from '@/assets/icons/add-person.svg?component'
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
-import CloseCircleIcon from '@/assets/icons/close-circle.svg?component'
-import PauseIcon from '@/assets/icons/pause.svg?component'
-import PlayIcon from '@/assets/icons/play.svg?component'
 import navSettingsIcon from '@/assets/icons/nav-settings.svg?component'
 
 // 6. Props
@@ -61,10 +57,7 @@ const emit = defineEmits([
   'call-next',
   'call-guest',
   'search',
-  'add-guest',
   'entry-menu',
-  'terminate',
-  'toggle-pause',
   'serve-guest',
   'open-settings',
 ])
@@ -124,19 +117,6 @@ onUnmounted(() => {
           </span>
         </div>
         <div class="flex items-center gap-2">
-          <button 
-            class="flex items-center gap-1.5 rounded-full border border-plum/10 bg-white px-3 py-1 font-body text-[10px] font-bold uppercase tracking-wider text-plum/60 cursor-pointer transition-colors hover:bg-plum/5"
-            @click="emit('toggle-pause')"
-          >
-            <template v-if="isPaused">
-              <PlayIcon class="h-2 w-2 text-mint" />
-              Resume
-            </template>
-            <template v-else>
-              <PauseIcon class="h-2 w-2 text-warning" />
-              Pause
-            </template>
-          </button>
           <button
             class="flex h-[26px] w-[26px] items-center justify-center rounded-full border border-plum/10 bg-white text-plum/40 transition-colors hover:bg-plum/5 hover:text-plum cursor-pointer"
             title="Queue Settings"
@@ -156,12 +136,6 @@ onUnmounted(() => {
             @input="emit('search', $event.target.value)"
           />
         </div>
-        <button
-          class="flex h-9 w-9 items-center justify-center rounded-lg bg-plum cursor-pointer transition-transform active:scale-95"
-          @click="emit('add-guest')"
-        >
-          <AddPersonIcon class="h-3 w-4 text-sand" />
-        </button>
       </div>
     </div>
 
@@ -244,16 +218,6 @@ onUnmounted(() => {
       >
         {{ isPaused ? 'Resume queue to call guests' : '' }}
       </p>
-
-      <!-- Terminate button -->
-      <button
-        v-if="showTerminate"
-        class="mt-4 flex w-full items-center justify-center gap-3 rounded-2xl border border-danger px-8 py-4 font-body text-lg font-bold text-danger transition-all hover:bg-danger/5 active:scale-[0.98] cursor-pointer"
-        @click="emit('terminate')"
-      >
-        <CloseCircleIcon class="h-4 w-4 text-danger" />
-        Terminate Queue
-      </button>
     </div>
 
     <!-- Entry Details Modal -->
