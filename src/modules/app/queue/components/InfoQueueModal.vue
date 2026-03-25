@@ -19,9 +19,9 @@ import CopyIcon from '@/assets/icons/copy.svg?component'
 
 const props = defineProps<{
   isOpen: boolean
+  joinCode: string
+  queueUrl: string
   variant?: 'success' | 'qr'
-  joinCode?: string
-  queueUrl?: string
 }>()
 
 const emit = defineEmits<{
@@ -36,8 +36,8 @@ const qrDataUrl = ref('')
 const copied = ref(false)
 
 const isSuccess = computed(() => props.variant === 'success')
-const currentQueueUrl = computed(() => props.queueUrl || 'https://queuebuzz.app/q/8X4K2F')
-const currentJoinCode = computed(() => props.joinCode || 'A4X9K2')
+const currentQueueUrl = computed(() => props.queueUrl)
+const currentJoinCode = computed(() => props.joinCode)
 
 async function generateQr() {
   try {

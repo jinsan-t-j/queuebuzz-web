@@ -1,4 +1,5 @@
 import { ref, computed, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
 import { useQueueAnalysis } from './useQueueAnalysis'
@@ -9,6 +10,7 @@ type SearchEmitter = (value: string) => void
 
 export function useLiveQueue() {
     const store = useQueueStore()
+    const router = useRouter()
     const { showToast } = useToast()
     const analysis = useQueueAnalysis()
 
@@ -28,6 +30,21 @@ export function useLiveQueue() {
         if (!debouncedSearchQuery.value) return store.entries
         const q = debouncedSearchQuery.value.toLowerCase()
         return store.entries.filter((e) => e.name.toLowerCase().includes(q))
+    })
+
+    const queueUrl = computed(() => {
+        if (!store.activeQueue) return ''
+
+        const resolved = router.resolve({
+            name: 'customer-join',
+            params: {
+                hostSlug: store.activeQueue.slug || store.activeQueue.id,
+                code: store.activeQueue.joinCode
+            }
+        })
+
+        const base = window.location.origin
+        return `${base}${resolved.fullPath}`
     })
 
     // Actions
@@ -116,6 +133,7 @@ export function useLiveQueue() {
         error: computed(() => store.error),
         streamState: computed(() => store.streamState),
         isStreamConnected: computed(() => store.isStreamConnected),
+        queueUrl,
 
         // UI state
         showAddGuestModal,

@@ -5,7 +5,7 @@
  */
 import { onBeforeMount, watch, computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useQueueStore } from '@/stores/queue.store'
+
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
@@ -20,7 +20,6 @@ import EmailNoticePopup from '@/modules/app/queue/components/EmailNoticePopup.vu
 
 const router = useRouter()
 const route = useRoute()
-const store = useQueueStore()
 
 const {
   activeQueue,
@@ -28,6 +27,7 @@ const {
   waitingCount,
   avgWaitTime,
   isLoading: isApiLoading,
+  queueUrl,
 
   showAddGuestModal,
   showStatusUpdateModal,
@@ -137,7 +137,13 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
     <div class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]" />
 
     <div class="relative z-10 mx-auto max-w-[1280px] px-6 py-4">
-      <div class="flex gap-8">
+      <!-- Loading State -->
+      <div v-if="isApiLoading && !activeQueue" class="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+        <div class="h-16 w-16 rounded-full border-4 border-plum-faint border-t-mint animate-spin" />
+        <p class="font-display text-xl font-bold text-plum/60">Loading your live queue...</p>
+      </div>
+
+      <div v-else-if="activeQueue" class="flex gap-8">
         <!-- Left column -->
         <div class="flex w-[381px] shrink-0 flex-col gap-6">
           <QueueStatCards
@@ -206,8 +212,10 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
     />
 
     <InfoQueueModal
+      v-if="activeQueue"
       :is-open="showInfoModal"
-      :join-code="activeQueue?.joinCode ?? ''"
+      :join-code="activeQueue.joinCode"
+      :queue-url="queueUrl"
       @close="showInfoModal = false"
     />
 
