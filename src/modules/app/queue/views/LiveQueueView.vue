@@ -4,10 +4,10 @@
  * @description Authenticated host active queue dashboard.
  * Managed via useLiveQueue and useQueueStore.
  */
-import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
+import { onBeforeMount } from 'vue'
 
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 import QueueStatusUpdateModal from '@/modules/app/queue/components/QueueStatusUpdateModal.vue'
@@ -26,7 +26,8 @@ const {
   avgWaitTime,
 
   showAddGuestModal,
-  showTerminateModal,
+  showStatusUpdateModal,
+  statusUpdateMode,
   showInfoModal,
   showSettingsModal,
   
@@ -42,15 +43,14 @@ const {
   handleSearchUpdate,
   handleAddGuestSubmit,
   handleCallNext,
-  handlePauseToggle,
   handleCallGuest,
   handleServeGuest,
-  handleTerminateQueue,
+  handleStatusUpdateConfirm,
   handleUpdateSettings,
   initializeHostQueue,
 } = useLiveQueue()
 
-onMounted(async () => {
+onBeforeMount(async () => {
     if (!activeQueue.value) {
         const queue = await initializeHostQueue()
         if (!queue) {
@@ -59,11 +59,17 @@ onMounted(async () => {
     }
 })
 
-async function onTerminateConfirmed() {
-    const success = await handleTerminateQueue()
-    if (success) {
+async function onStatusUpdateConfirmed() {
+    const isTerminate = statusUpdateMode.value === 'terminate'
+    const success = await handleStatusUpdateConfirm()
+    if (success && isTerminate) {
         router.push({ name: 'dashboard' })
     }
+}
+
+function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
+    statusUpdateMode.value = mode
+    showStatusUpdateModal.value = true
 }
 </script>
 
@@ -104,13 +110,10 @@ async function onTerminateConfirmed() {
             :entries="filteredEntries"
             :search-query="rawSearchQuery"
             :is-paused="isPaused"
-            :show-terminate="true"
             @call-next="handleCallNext"
             @search="handleSearchUpdate"
-            @terminate="showTerminateModal = true"
             @call-guest="handleCallGuest"
             @serve-guest="handleServeGuest"
-            @open-settings="showSettingsModal = true"
           />
         </div>
 
@@ -125,9 +128,8 @@ async function onTerminateConfirmed() {
               <QueueActionCard 
                 :is-paused="isPaused"
                 @add-guest="showAddGuestModal = true"
-                @toggle-pause="handlePauseToggle"
+                @update-status="openStatusModal"
                 @open-settings="showSettingsModal = true"
-                @terminate="showTerminateModal = true"
               />
 
           </div>
@@ -146,11 +148,11 @@ async function onTerminateConfirmed() {
 
     <!-- Modals -->
     <QueueStatusUpdateModal
-      :is-open="showTerminateModal"
-      mode="terminate"
+      :is-open="showStatusUpdateModal"
+      :mode="statusUpdateMode"
       :still-waiting-count="waitingCount"
-      @confirm="onTerminateConfirmed"
-      @close="showTerminateModal = false"
+      @confirm="onStatusUpdateConfirmed"
+      @close="showStatusUpdateModal = false"
     />
 
     <InfoQueueModal

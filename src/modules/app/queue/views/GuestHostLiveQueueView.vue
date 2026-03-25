@@ -7,12 +7,6 @@ import { onBeforeMount, watch, computed, ref, onMounted, onUnmounted } from 'vue
 import { useRoute, useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
-
-import TimeIcon from '@/assets/icons/clock-time.svg?component'
-import BrandingIcon from '@/assets/icons/branding-pro.svg?component'
-import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
-import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
-
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 import QueueStatusUpdateModal from '@/modules/app/queue/components/QueueStatusUpdateModal.vue'
@@ -23,6 +17,7 @@ import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.
 import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
 import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
 import EmailNoticePopup from '@/modules/app/queue/components/EmailNoticePopup.vue'
+
 const router = useRouter()
 const route = useRoute()
 const store = useQueueStore()
@@ -35,7 +30,8 @@ const {
   isLoading: isApiLoading,
 
   showAddGuestModal,
-  showTerminateModal,
+  showStatusUpdateModal,
+  statusUpdateMode,
   showInfoModal,
   showSettingsModal,
   
@@ -51,10 +47,9 @@ const {
   handleSearchUpdate,
   handleAddGuestSubmit,
   handleCallNext,
-  handlePauseToggle,
   handleCallGuest,
   handleServeGuest,
-  handleTerminateQueue,
+  handleStatusUpdateConfirm,
   handleUpdateSettings,
   initializeQueueById,
 } = useLiveQueue()
@@ -105,10 +100,10 @@ const queueId = route.params.id as string
 let hasInitialized = false
 
 onBeforeMount(async () => {
-  if (!store.activeQueue?.id || store.activeQueue.id !== queueId) {
+  if (!activeQueue.value?.id || activeQueue.value.id !== queueId) {
     await initializeQueueById(queueId)
     hasInitialized = true
-    if (!store.activeQueue) {
+    if (!activeQueue.value) {
       // TODO: The queue might be terminated or not found. We should redirect to the appropriate page.
       router.push({ name: 'guest-host-queue-ended', query: { reason: 'terminated' } })
     }
@@ -121,11 +116,17 @@ watch(activeQueue, (queue) => {
   }
 })
 
-async function onTerminateConfirmed() {
-  const success = await handleTerminateQueue()
-  if (success) {
+async function onStatusUpdateConfirmed() {
+  const isTerminate = statusUpdateMode.value === 'terminate'
+  const success = await handleStatusUpdateConfirm()
+  if (success && isTerminate) {
     router.push({ name: 'guest-host-complete' })
   }
+}
+
+function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
+    statusUpdateMode.value = mode
+    showStatusUpdateModal.value = true
 }
 </script>
 
@@ -148,13 +149,10 @@ async function onTerminateConfirmed() {
             :entries="filteredEntries"
             :search-query="rawSearchQuery"
             :is-paused="isPaused"
-            :show-terminate="true"
             @call-next="handleCallNext"
             @search="handleSearchUpdate($event)"
-            @terminate="showTerminateModal = true"
             @call-guest="handleCallGuest"
             @serve-guest="handleServeGuest"
-            @open-settings="showSettingsModal = true"
           />
         </div>
 
@@ -165,12 +163,11 @@ async function onTerminateConfirmed() {
               :join-code="activeQueue?.joinCode ?? ''"
               @show-qr="showInfoModal = true"
             />
-            <QueueActionCard
+            <QueueActionCard 
               :is-paused="isPaused"
               @add-guest="showAddGuestModal = true"
-              @toggle-pause="handlePauseToggle"
+              @update-status="openStatusModal"
               @open-settings="showSettingsModal = true"
-              @terminate="showTerminateModal = true"
             />
           </div>
 
@@ -201,11 +198,11 @@ async function onTerminateConfirmed() {
 
     <!-- Modals -->
     <QueueStatusUpdateModal
-      :is-open="showTerminateModal"
-      mode="terminate"
+      :is-open="showStatusUpdateModal"
+      :mode="statusUpdateMode"
       :still-waiting-count="waitingCount"
-      @confirm="onTerminateConfirmed"
-      @close="showTerminateModal = false"
+      @confirm="onStatusUpdateConfirmed"
+      @close="showStatusUpdateModal = false"
     />
 
     <InfoQueueModal

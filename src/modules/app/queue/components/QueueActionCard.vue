@@ -24,31 +24,16 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'add-guest'): void
-  (e: 'toggle-pause'): void
+  (e: 'update-status', mode: 'pause' | 'resume' | 'terminate'): void
   (e: 'open-settings'): void
-  (e: 'terminate'): void
 }>()
 
-const showStatusModal = ref(false)
-const modalMode = ref<'pause' | 'resume' | 'terminate'>('pause')
-
 function handlePauseClick() {
-  modalMode.value = props.isPaused ? 'resume' : 'pause'
-  showStatusModal.value = true
+  emit('update-status', props.isPaused ? 'resume' : 'pause')
 }
 
 function handleTerminateClick() {
-  modalMode.value = 'terminate'
-  showStatusModal.value = true
-}
-
-function handleConfirm() {
-  if (modalMode.value === 'terminate') {
-    emit('terminate')
-  } else {
-    emit('toggle-pause')
-  }
-  showStatusModal.value = false
+  emit('update-status', 'terminate')
 }
 </script>
 
@@ -57,11 +42,12 @@ function handleConfirm() {
     <h3 class="font-display text-lg font-bold text-plum">Quick Actions</h3>
     <div class="grid grid-cols-2 gap-3">
        <button 
-        class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand p-4 transition-all hover:bg-mint-light group cursor-pointer"
+        class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand p-4 transition-all hover:bg-mint-light group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-sand"
+        :disabled="isPaused"
         @click="$emit('add-guest')"
        >
-         <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-mint transition-colors">
-            <PlusIcon class="h-5 w-5 text-plum group-hover:text-white transition-colors" />
+         <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-mint transition-colors group-disabled:group-hover:bg-white">
+            <PlusIcon class="h-5 w-5 text-plum group-hover:text-white transition-colors group-disabled:group-hover:text-plum" />
          </div>
          <span class="font-body text-xs font-bold text-plum">Add Guest</span>
        </button>
@@ -101,12 +87,5 @@ function handleConfirm() {
          <span class="font-body text-xs font-bold text-danger">Terminate</span>
        </button>
     </div>
-
-    <QueueStatusUpdateModal
-      :isOpen="showStatusModal"
-      :mode="modalMode"
-      @confirm="handleConfirm"
-      @close="showStatusModal = false"
-    />
   </div>
 </template>

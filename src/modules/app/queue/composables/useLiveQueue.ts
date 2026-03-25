@@ -14,7 +14,8 @@ export function useLiveQueue() {
 
     // UI-only modal state
     const showAddGuestModal = ref(false)
-    const showTerminateModal = ref(false)
+    const showStatusUpdateModal = ref(false)
+    const statusUpdateMode = ref<'pause' | 'resume' | 'terminate'>('terminate')
     const showInfoModal = ref(false)
     const showSettingsModal = ref(false)
 
@@ -52,14 +53,20 @@ export function useLiveQueue() {
         showToast(`Calling next guest...`)
     }
 
-    async function handlePauseToggle() {
-        if (store.isPaused) {
-            await store.resume()
-            showToast('Queue resumed.')
-        } else {
+    async function handleStatusUpdateConfirm() {
+        if (statusUpdateMode.value === 'pause') {
             await store.pause()
             showToast('Queue paused.')
+        } else if (statusUpdateMode.value === 'resume') {
+            await store.resume()
+            showToast('Queue resumed.')
+        } else if (statusUpdateMode.value === 'terminate') {
+            await store.terminate()
+            showToast('Queue terminated successfully.')
+            return true
         }
+        showStatusUpdateModal.value = false
+        return false
     }
 
     async function handleCallGuest(entryId: string) {
@@ -70,12 +77,6 @@ export function useLiveQueue() {
     async function handleServeGuest(entryId: string) {
         await store.serveGuest(entryId)
         showToast('Guest marked as served.')
-    }
-
-    async function handleTerminateQueue() {
-        await store.terminate()
-        showToast('Queue terminated successfully.')
-        return true
     }
 
     async function handleUpdateSettings(payload: UpdateQueuePayload) {
@@ -118,7 +119,8 @@ export function useLiveQueue() {
 
         // UI state
         showAddGuestModal,
-        showTerminateModal,
+        showStatusUpdateModal,
+        statusUpdateMode,
         showInfoModal,
         showSettingsModal,
 
@@ -133,10 +135,9 @@ export function useLiveQueue() {
         handleSearchUpdate,
         handleAddGuestSubmit,
         handleCallNext,
-        handlePauseToggle,
         handleCallGuest,
         handleServeGuest,
-        handleTerminateQueue,
+        handleStatusUpdateConfirm,
         handleUpdateSettings,
         initializeHostQueue,
         initializeQueueById,

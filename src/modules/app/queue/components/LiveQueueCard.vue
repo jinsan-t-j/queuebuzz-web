@@ -7,12 +7,8 @@
  *
  * @prop {Array} entries - List of queue entry objects.
  * @prop {String} searchQuery - Current search filter text.
- * @prop {Boolean} showTerminate - Whether to show the Terminate Queue button.
  * @emits {call-next} - "Call Next Guest" button clicked.
  * @emits {search} - Search input changed.
- * @emits {add-guest} - Add guest button clicked.
- * @emits {entry-menu} - Three-dot menu on an entry clicked.
- * @emits {terminate} - "Terminate Queue" button clicked.
  */
 
 // 1. Vue core imports
@@ -30,7 +26,6 @@ import EntryDetailsModal from './EntryDetailsModal.vue'
 import SearchIcon from '@/assets/icons/search.svg?component'
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
-import navSettingsIcon from '@/assets/icons/nav-settings.svg?component'
 
 // 6. Props
 const props = defineProps({
@@ -41,10 +36,6 @@ const props = defineProps({
   searchQuery: {
     type: String,
     default: '',
-  },
-  showTerminate: {
-    type: Boolean,
-    default: false,
   },
   isPaused: {
     type: Boolean,
@@ -57,9 +48,7 @@ const emit = defineEmits([
   'call-next',
   'call-guest',
   'search',
-  'entry-menu',
   'serve-guest',
-  'open-settings',
 ])
 
 // 8. Composable destructuring
@@ -115,15 +104,6 @@ onUnmounted(() => {
           <span class="font-body text-xs font-bold uppercase tracking-[1.2px] text-plum/60">
             {{ isPaused ? 'Queue Paused' : 'Live Queue' }}
           </span>
-        </div>
-        <div class="flex items-center gap-2">
-          <button
-            class="flex h-[26px] w-[26px] items-center justify-center rounded-full border border-plum/10 bg-white text-plum/40 transition-colors hover:bg-plum/5 hover:text-plum cursor-pointer"
-            title="Queue Settings"
-            @click="emit('open-settings')"
-          >
-            <navSettingsIcon class="h-3 w-3" />
-          </button>
         </div>
       </div>
       <div class="flex items-center gap-3">
