@@ -16,6 +16,7 @@ export interface QueueRecord {
   recoveryEmail?: string
   createdAt?: string
   expiresAt?: string
+  entries?: QueueEntry[] // Added for hydration
 }
 
 export interface ApiSuccessResponse<T> {
@@ -33,6 +34,7 @@ export interface QueueEntry {
   status: QueueEntryStatus
   estimatedWaitMin: number
   partySize: number
+  token?: string // To fix mapping in store
   joinedAt?: string
   servedAt?: string
   finishedAt?: string
@@ -44,6 +46,21 @@ export interface LiveQueueGuestInput {
   name: string
   phone?: string
   partySize: number
+}
+
+// Actions Payloads (Re-imported into store from here)
+export interface AddQueueEntryPayload {
+  name: string;
+  phone?: string;
+  email?: string;
+  partySize?: number;
+}
+
+export interface UpdateQueuePayload {
+  name?: string;
+  avgServiceMins?: number;
+  slug?: string;
+  recoveryEmail?: string;
 }
 
 export type TrendDirection = 'up' | 'down' | 'flat'

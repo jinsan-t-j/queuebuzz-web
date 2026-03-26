@@ -46,12 +46,8 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
 <template>
   <div class="flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <!-- Header -->
-    <div class="flex items-center justify-between px-8 py-6">
+    <div class="px-8 py-6">
       <h3 class="font-display text-xl font-bold text-plum">Queue Analysis</h3>
-      <span class="flex items-center gap-[7px] rounded-lg bg-plum/5 px-3 py-1">
-        <span class="h-[6px] w-[6px] rounded-full bg-mint" />
-        <span class="font-body text-[10px] font-bold uppercase tracking-[1px] text-plum/40">Active</span>
-      </span>
     </div>
 
     <!-- Stats row -->

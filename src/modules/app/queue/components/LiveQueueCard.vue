@@ -98,14 +98,6 @@ onUnmounted(() => {
   <div class="min-h-[580px] flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <!-- Header -->
     <div class="border-b border-plum/5 bg-plum/[0.02] px-6 py-4">
-      <div class="mb-3 flex items-center justify-between">
-        <div class="flex items-center gap-[7px]">
-          <span class="h-[6px] w-[6px] rounded-full" :class="isPaused ? 'bg-warning' : 'bg-mint'" />
-          <span class="font-body text-xs font-bold uppercase tracking-[1.2px] text-plum/60">
-            {{ isPaused ? 'Queue Paused' : 'Live Queue' }}
-          </span>
-        </div>
-      </div>
       <div class="flex items-center gap-3">
         <div class="flex flex-1 items-center gap-0 rounded-input border border-plum/5 bg-sand px-4 py-2">
           <SearchIcon class="h-[10px] w-[10px] text-plum/40" />
@@ -134,7 +126,7 @@ onUnmounted(() => {
           v-memo="[entry.status, entry.waitTimeMin, entry.position, entry.name, entry.partySize, openDropdownId === entry.id]"
           class="group flex cursor-pointer items-center rounded-2xl border px-4 py-3 transition-all hover:border-mint/50 hover:bg-mint/5 hover:shadow-sm"
           :class="
-            entry.status === 'CALLED'
+            entry.status === 'called'
               ? 'border-2 border-mint shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
               : 'border-plum/5 shadow-sm bg-white'
           "
@@ -144,7 +136,7 @@ onUnmounted(() => {
             <span
               class="flex h-8 w-8 items-center justify-center rounded-lg font-mono text-lg font-bold"
               :class="
-                entry.status === 'CALLED'
+                entry.status === 'called'
                   ? 'bg-plum text-mint'
                   : 'bg-plum/5 text-plum/40'
               "
@@ -156,7 +148,7 @@ onUnmounted(() => {
               <p class="font-body text-xs text-plum/40">
                 Party of {{ entry.partySize }} •
                 <span :class="entry.status === 'called' ? 'text-mint' : ''">
-                  {{ entry.estimatedWaitMin }} min wait
+                  {{ entry.waitTimeMin }} min wait
                 </span>
               </p>
             </div>

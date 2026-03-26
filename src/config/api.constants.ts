@@ -31,6 +31,7 @@ export const API_ROUTES = {
     QUEUE: {
         CHECK_SLUG: '/queue/slug-check',
         GET_LIVE_QUEUE: '/queue/live',
+        GET_QUEUE_STATUS: (id: string): string => `/queue/${id}/live/status`,
         GET_LIVE_QUEUE_BY_ID: (id: string): string => `/queue/${id}/live`,
         PAUSE: (id: string): string => `/queue/${id}/pause`,
         RESUME: (id: string): string => `/queue/${id}/resume`,

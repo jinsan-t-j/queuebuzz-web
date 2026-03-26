@@ -304,7 +304,7 @@ function copyCustomLink() {
             <div class="flex items-center gap-3">
               <LockIcon class="h-[14px] w-[11px] text-[#5c5267]" />
               <span class="font-body text-[15px] font-medium text-[#5c5267]">
-                Save access link to your email →
+                Sync across devices & save link →
               </span>
             </div>
             <ChevronDownIcon
@@ -323,7 +323,7 @@ function copyCustomLink() {
             />
             <div v-if="errors.recoveryEmail" class="mt-2 font-body text-xs text-red-500">{{ errors.recoveryEmail }}</div>
             <p class="mt-4 font-body text-xs text-[#5c5267]">
-              We'll email a link to manage from any device
+              Email yourself a magic link to resume management from any device, anywhere.
             </p>
           </div>
         </div>

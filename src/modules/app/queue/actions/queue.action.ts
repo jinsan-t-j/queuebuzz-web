@@ -1,6 +1,12 @@
 import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
-import type { ApiSuccessResponse, QueueRecord, QueueEntry } from '../types'
+import type {
+    ApiSuccessResponse,
+    QueueRecord,
+    QueueEntry,
+    AddQueueEntryPayload,
+    UpdateQueuePayload,
+} from '../types'
 
 export interface CreateQueuePayload {
     name: string
@@ -11,22 +17,17 @@ export interface CreateQueuePayload {
     maxPartySize: number
 }
 
-export interface UpdateQueuePayload {
-    name?: string
-    avgServiceMins?: number
-    slug?: string
-    recoveryEmail?: string
-}
-
-export interface AddQueueEntryPayload {
-    name: string
-    phone?: string
-    email?: string
-    partySize?: number
-}
-
 export interface CheckSlugAvailabilityResponse {
     isAvailable: boolean
+}
+
+export interface QueueStatusResponse {
+    id: string
+    status: 'active' | 'paused' | 'terminated' | 'expired'
+    joinCode: string
+    waitingCount: number
+    avgServiceMins: number
+    expiresAt: string
 }
 
 export async function createQueue(payload: CreateQueuePayload): Promise<QueueRecord> {
@@ -59,6 +60,12 @@ export async function getLiveQueue(): Promise<QueueRecord> {
 export async function getLiveQueueById(id: string): Promise<QueueRecord> {
     const config = createApiRequestConfig({}, { withCredentials: true })
     const response = await apiClient.get<ApiSuccessResponse<QueueRecord>>(API_ROUTES.QUEUE.GET_LIVE_QUEUE_BY_ID(id), config) as unknown as ApiSuccessResponse<QueueRecord>
+    return response.data
+}
+
+export async function getQueueStatus(id: string): Promise<QueueStatusResponse> {
+    const config = createApiRequestConfig()
+    const response = await apiClient.get<ApiSuccessResponse<QueueStatusResponse>>(API_ROUTES.QUEUE.GET_QUEUE_STATUS(id), config) as unknown as ApiSuccessResponse<QueueStatusResponse>
     return response.data
 }
 

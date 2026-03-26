@@ -1,10 +1,9 @@
 import { ref, computed, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { RouteLocationResolved, useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
 import { useQueueAnalysis } from './useQueueAnalysis'
-import type { LiveQueueGuestInput } from '@/modules/app/queue/types'
-import { UpdateQueuePayload } from '../actions/queue.action'
+import type { LiveQueueGuestInput, UpdateQueuePayload } from '@/modules/app/queue/types'
 
 type SearchEmitter = (value: string) => void
 
@@ -33,9 +32,13 @@ export function useLiveQueue() {
     })
 
     const queueUrl = computed(() => {
-        if (!store.activeQueue) return ''
+        let route: RouteLocationResolved
+        if (!store.activeQueue) {
+            // TODO: Update with customer queue ended page
+            route = router.resolve({ name: 'guest-host-queue-ended', query: { reason: 'terminated' } })
+        }
 
-        const resolved = router.resolve({
+        route = router.resolve({
             name: 'customer-join',
             params: {
                 hostSlug: store.activeQueue.slug || store.activeQueue.id,
@@ -44,7 +47,7 @@ export function useLiveQueue() {
         })
 
         const base = window.location.origin
-        return `${base}${resolved.fullPath}`
+        return `${base}${route.fullPath}`
     })
 
     // Actions
@@ -58,42 +61,71 @@ export function useLiveQueue() {
     }
 
     async function handleAddGuestSubmit(values: LiveQueueGuestInput) {
-        await store.addQueueEntry(values)
-        showAddGuestModal.value = false
-        showToast(`${values.name} added to queue.`)
+        const success = await store.addQueueEntry(values)
+        if (success) {
+            showAddGuestModal.value = false
+            showToast(`${values.name} added to queue.`)
+        } else if (store.error) {
+            showToast(store.error, { type: 'error' })
+        }
     }
 
     async function handleCallNext() {
         if (!store.activeQueue) return
 
-        await store.callNext()
-        showToast(`Calling next guest...`)
+        const success = await store.callNext()
+        if (success) {
+            showToast(`Calling next guest...`)
+        } else if (store.error) {
+            showToast(store.error, { type: 'error' })
+        }
     }
 
-    async function handleStatusUpdateConfirm() {
+    async function handleStatusUpdateConfirm(): Promise<boolean> {
         if (statusUpdateMode.value === 'pause') {
-            await store.pause()
-            showToast('Queue paused.')
+            const success = await store.pause()
+            if (success) {
+                showToast('Queue paused.')
+                showStatusUpdateModal.value = false
+                return true
+            }
         } else if (statusUpdateMode.value === 'resume') {
-            await store.resume()
-            showToast('Queue resumed.')
+            const success = await store.resume()
+            if (success) {
+                showToast('Queue resumed.')
+                showStatusUpdateModal.value = false
+                return true
+            }
         } else if (statusUpdateMode.value === 'terminate') {
-            await store.terminate()
-            showToast('Queue terminated successfully.')
-            return true
+            const success = await store.terminate()
+            if (success) {
+                showToast('Queue terminated successfully.')
+                return true
+            }
         }
-        showStatusUpdateModal.value = false
+
+        if (store.error) {
+            showToast(store.error, { type: 'error' })
+        }
         return false
     }
 
     async function handleCallGuest(entryId: string) {
-        await store.callGuest(entryId)
-        showToast('Calling guest...')
+        const success = await store.callGuest(entryId)
+        if (success) {
+            showToast('Calling guest...')
+        } else if (store.error) {
+            showToast(store.error, { type: 'error' })
+        }
     }
 
     async function handleServeGuest(entryId: string) {
-        await store.serveGuest(entryId)
-        showToast('Guest marked as served.')
+        const success = await store.serveGuest(entryId)
+        if (success) {
+            showToast('Guest marked as served.')
+        } else if (store.error) {
+            showToast(store.error, { type: 'error' })
+        }
     }
 
     async function handleUpdateSettings(payload: UpdateQueuePayload) {
@@ -114,13 +146,14 @@ export function useLiveQueue() {
         return await store.initializeQueueById(queueId)
     }
 
+    async function revalidateQueue(queueId: string) {
+        return await store.revalidate(queueId)
+    }
+
     function disposeLiveQueue() {
         store.disconnectLiveUpdates()
     }
 
-    onUnmounted(() => {
-        disposeLiveQueue()
-    })
 
     return {
         // Store-backed state (reactive via Pinia)
@@ -159,6 +192,7 @@ export function useLiveQueue() {
         handleUpdateSettings,
         initializeHostQueue,
         initializeQueueById,
+        revalidateQueue,
         disposeLiveQueue,
     }
 }
