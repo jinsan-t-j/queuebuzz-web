@@ -114,22 +114,30 @@ export const useQueueStore = defineStore('queue', {
         },
 
         async revalidate(id: string) {
-            this.connectToEvents(id)
+            if (!id) return
+
+            // If we already have data and are connected, we are good.
+            // If we are DISCONNECTED, connectToEvents() will attempt a fetch-based handshake
+            // which handles 401 errors internally via its onError callback.
+            if (this.activeQueue && this.activeQueue.id === id) {
+                this.connectToEvents(id)
+                return
+            }
+
             try {
-                const statusData = await getQueueStatus(id)
-                if (this.activeQueue && this.activeQueue.id === id) {
-                    this.activeQueue.status = statusData.status
-                    this.activeQueue.avgServiceMins = statusData.avgServiceMins
-                    this.activeQueue.joinCode = statusData.joinCode
-                } else if (!this.activeQueue) {
-                    await this.initializeQueueById(id)
-                }
+                // Initial data hydration + connection setup
+                await this.initializeQueueById(id)
             } catch (err: any) {
-                if (err.response?.status === 404 || err.response?.status === 410) {
+                const status = err.response?.status
+                if (status === 401 || status === 404 || status === 410) {
                     this.clearQueue()
+                    if (status === 401) {
+                        this.error = 'session_expired'
+                    }
                 }
             }
         },
+
 
         updateEntries(newEntries: QueueEntry[]) {
             this.entries = newEntries
@@ -156,25 +164,30 @@ export const useQueueStore = defineStore('queue', {
         },
 
         connectToEvents(queueId: string) {
-            // Don't reconnect if already connected to the same queue and it's active
             if (this.sseClient && this.connectedQueueId === queueId && (this.streamState === 'open' || this.streamState === 'connecting')) {
                 return
             }
 
-            this.disconnectLiveUpdates()
+            this.connectedQueueId = queueId
 
-            // Auto-reconnect on visibility change - only if not already added
+            // Single Visibility Listener setup for the duration of this queue's monitoring
             if (!(window as any)._q_visibility_handler) {
                 const handler = () => {
-                    if (document.visibilityState === 'visible' && this.connectedQueueId) {
-                        this.revalidate(this.connectedQueueId)
+                    const id = this.connectedQueueId
+                    if (!id) return
+
+                    if (document.visibilityState === 'visible') {
+                        // Resumes connection + syncs data
+                        this.revalidate(id)
+                    } else if (document.visibilityState === 'hidden') {
+                        // Suspends connection to save CPU/Network/Memory in background
+                        this.sseClient?.disconnect()
+                        this.streamState = 'idle'
                     }
                 }
                 document.addEventListener('visibilitychange', handler)
-                    ; (window as any)._q_visibility_handler = handler
+                ;(window as any)._q_visibility_handler = handler
             }
-
-            this.connectedQueueId = queueId
 
             this.sseClient = createSseClient({
                 url: buildApiUrl(API_ROUTES.QUEUE.CONNECT_EVENTS(queueId)),
@@ -183,8 +196,14 @@ export const useQueueStore = defineStore('queue', {
                     this.streamState = 'open'
                     this.error = null
                 },
-                onError: () => {
+                onError: (e) => {
                     this.streamState = 'error'
+                    if (e.status === 401 || e.status === 404 || e.status === 410) {
+                        this.clearQueue()
+                        if (e.status === 401) {
+                            this.error = 'session_expired'
+                        }
+                    }
                 },
                 events: {
                     queue_update: (payload) => {
@@ -228,8 +247,9 @@ export const useQueueStore = defineStore('queue', {
             this.sseClient = null
             this.connectedQueueId = null
             this.streamState = 'idle'
+            this.error = null
 
-            // Remove the visibility listener when disconnecting
+            // Clean up the visibility listener when explicitly stopping all updates
             if ((window as any)._q_visibility_handler) {
                 document.removeEventListener('visibilitychange', (window as any)._q_visibility_handler)
                 delete (window as any)._q_visibility_handler

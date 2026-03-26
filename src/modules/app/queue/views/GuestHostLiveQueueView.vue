@@ -55,6 +55,7 @@ const {
   disposeLiveQueue,
   isStreamConnected,
   streamState,
+  error,
 } = useLiveQueue()
 
 const isRecoveryEmailMissing = computed(() => !activeQueue.value?.recoveryEmail)
@@ -107,13 +108,15 @@ onBeforeMount(async () => {
   await revalidateQueue(queueId)
   hasInitialized = true
   if (!activeQueue.value) {
-    router.push({ name: 'guest-host-queue-ended', query: { reason: 'terminated' } })
+    const reason = error.value === 'session_expired' ? 'expired' : 'terminated'
+    router.push({ name: 'guest-host-queue-ended', query: { reason } })
   }
 })
 
 watch(activeQueue, (queue) => {
   if (hasInitialized && !queue) {
-    router.push({ name: 'guest-host-queue-ended', query: { reason: 'terminated' } })
+    const reason = error.value === 'session_expired' ? 'expired' : 'terminated'
+    router.push({ name: 'guest-host-queue-ended', query: { reason } })
   }
 })
 

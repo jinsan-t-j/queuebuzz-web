@@ -6,10 +6,10 @@ export interface SseClientOptions {
   url: string
   withCredentials?: boolean
   onOpen?: () => void
-  onError?: (event: Event) => void
-  onMessage?: (payload: unknown, event: MessageEvent<string>) => void
-  onParseError?: (error: Error, event: MessageEvent<string>) => void
-  events?: Record<string, (payload: unknown, event: MessageEvent<string>) => void>
+  onError?: (error: { status?: number; message: string }) => void
+  onMessage?: (payload: unknown, event: { event: string; data: string }) => void
+  onParseError?: (error: Error, payload: string) => void
+  events?: Record<string, (payload: unknown, data: string) => void>
 }
 
 export interface SseClient {
@@ -19,78 +19,101 @@ export interface SseClient {
   isConnected: () => boolean
 }
 
-function parseEventPayload(event: MessageEvent<string>) {
-  if (!event.data) {
-    return null
-  }
-
-  return keysToCamelCase(JSON.parse(event.data))
-}
-
 export function createSseClient(options: SseClientOptions): SseClient {
-  let source: EventSource | null = null
-  const listeners = new Map<string, (event: MessageEvent<string>) => void>()
-
-  function removeListeners() {
-    if (!source) {
-      return
-    }
-
-    listeners.forEach((listener, eventName) => {
-      source?.removeEventListener(eventName, listener as EventListener)
-    })
-    listeners.clear()
-  }
+  let controller: AbortController | null = null
+  let isRequestActive = false
+  let isOpen = false
 
   function disconnect() {
-    removeListeners()
-    source?.close()
-    source = null
+    controller?.abort()
+    controller = null
+    isRequestActive = false
+    isOpen = false
   }
 
-  function connect() {
+  async function connect() {
     disconnect()
+    controller = new AbortController()
+    isRequestActive = true
 
-    source = new EventSource(options.url, {
-      withCredentials: options.withCredentials ?? false,
-    })
+    try {
+      const response = await fetch(options.url, {
+        signal: controller.signal,
+        credentials: options.withCredentials ? 'include' : 'omit',
+        headers: {
+          'Accept': 'text/event-stream',
+        },
+      })
 
-    source.onopen = () => {
-      options.onOpen?.()
-    }
-
-    source.onerror = (event) => {
-      options.onError?.(event)
-    }
-
-    source.onmessage = (event) => {
-      try {
-        const payload = parseEventPayload(event)
-        options.onMessage?.(payload, event)
-      } catch (error) {
-        options.onParseError?.(error as Error, event)
+      if (!response.ok) {
+        throw { status: response.status, message: `SSE handshake failed with ${response.status}` }
       }
-    }
 
-    Object.entries(options.events ?? {}).forEach(([eventName, handler]) => {
-      const listener = (event: MessageEvent<string>) => {
-        try {
-          const payload = parseEventPayload(event)
-          handler(payload, event)
-        } catch (error) {
-          options.onParseError?.(error as Error, event)
+      if (!response.body) {
+        throw { message: 'No response body' }
+      }
+
+      isOpen = true
+      options.onOpen?.()
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const events = buffer.split('\n\n')
+        buffer = events.pop() || ''
+
+        for (const eventBlock of events) {
+          const lines = eventBlock.split('\n')
+          let eventType = 'message'
+          let eventData = ''
+
+          for (const line of lines) {
+            if (line.startsWith('event:')) {
+              eventType = line.replace('event:', '').trim()
+            } else if (line.startsWith('data:')) {
+              eventData = line.replace('data:', '').trim()
+            }
+          }
+
+          if (eventData) {
+            try {
+              const payload = keysToCamelCase(JSON.parse(eventData))
+              
+              // Call specific event handler or generic onMessage
+              if (options.events?.[eventType]) {
+                options.events[eventType](payload, eventData)
+              } else {
+                options.onMessage?.(payload, { event: eventType, data: eventData })
+              }
+            } catch (err) {
+              options.onParseError?.(err as Error, eventData)
+            }
+          }
         }
       }
-
-      listeners.set(eventName, listener)
-      source?.addEventListener(eventName, listener as EventListener)
-    })
+    } catch (err: any) {
+      if (err.name === 'AbortError') return
+      
+      isOpen = false
+      options.onError?.({ 
+        status: err.status, 
+        message: err.message || 'Unknown SSE error' 
+      })
+    } finally {
+      isRequestActive = false
+    }
   }
 
   return {
     connect,
     disconnect,
-    isActive: () => source !== null && source.readyState !== EventSource.CLOSED,
-    isConnected: () => source?.readyState === EventSource.OPEN,
+    isActive: () => isRequestActive,
+    isConnected: () => isOpen,
   }
 }
