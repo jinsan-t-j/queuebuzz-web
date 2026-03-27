@@ -1,6 +1,5 @@
 import type {
   QueueEntry,
-  QueueRecord,
 } from '@/modules/app/queue/types'
 
 function formatWaitTime(timestamp?: string | null): string {
@@ -21,9 +20,7 @@ export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
     position: entry.position,
     name: entry.name || 'Guest',
     partySize: entry.partySize ?? 1,
-    estimatedWaitMin: entry.estimatedWaitMin,
     status: entry.status.toUpperCase() as any,
-    joinedAt: entry.joinedAt,
     servedAt: entry.servedAt,
     finishedAt: entry.finishedAt,
     createdAt: entry.createdAt,

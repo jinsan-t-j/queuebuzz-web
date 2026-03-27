@@ -10,7 +10,7 @@ import CustomerFooter from '@/components/layout/customer/CustomerFooter.vue'
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col overflow-hidden bg-sand">
+  <div class="flex min-h-screen flex-col bg-sand">
     <!-- Navbar -->
     <CustomerNavbar />
 

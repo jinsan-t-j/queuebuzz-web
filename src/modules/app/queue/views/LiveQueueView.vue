@@ -24,6 +24,7 @@ const {
   isPaused,
   waitingCount,
   avgWaitTime,
+  queueUrl,
 
   showAddGuestModal,
   showStatusUpdateModal,
@@ -110,6 +111,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             :entries="filteredEntries"
             :search-query="rawSearchQuery"
             :is-paused="isPaused"
+            :avg-service-mins="activeQueue?.avgServiceMins"
             @call-next="handleCallNext"
             @search="handleSearchUpdate"
             @call-guest="handleCallGuest"
@@ -121,7 +123,8 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
         <div class="lg:col-span-8 flex flex-col gap-8">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
              <ShareCodeCard
-                :join-code="activeQueue?.joinCode ?? ''"
+                :join-code="activeQueue?.joinCode"
+                :share-url="queueUrl"
                 @show-qr="showInfoModal = true"
               />
               
@@ -158,6 +161,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
     <InfoQueueModal
       :is-open="showInfoModal"
       :join-code="activeQueue?.joinCode ?? ''"
+      :queue-url="queueUrl"
       @close="showInfoModal = false"
     />
 

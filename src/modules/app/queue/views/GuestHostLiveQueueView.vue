@@ -183,6 +183,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
               :entries="filteredEntries"
               :search-query="rawSearchQuery"
               :is-paused="isPaused"
+              :avg-service-mins="activeQueue?.avgServiceMins"
               @call-next="handleCallNext"
               @search="handleSearchUpdate($event)"
               @call-guest="handleCallGuest"
@@ -194,7 +195,8 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
           <div class="flex flex-1 flex-col gap-4">
             <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
               <ShareCodeCard
-                :join-code="activeQueue?.joinCode ?? ''"
+                :join-code="activeQueue?.joinCode"
+                :share-url="queueUrl"
                 @show-qr="showInfoModal = true"
               />
               <QueueActionCard 

@@ -13,6 +13,11 @@
 // 1. Vue core imports
 import { ref } from 'vue'
 
+// 3. Third-party imports
+import { useForm, useField } from 'vee-validate'
+import * as yup from 'yup'
+import { getFCMToken } from '@/lib/firebase'
+
 // 5. Component imports
 import BaseToggle from '@/components/base/BaseToggle.vue'
 import ClockFilledIcon from '@/assets/icons/clock-filled.svg?component'
@@ -21,39 +26,92 @@ import { User, AtSign, ChevronDown, Info } from 'lucide-vue-next'
 
 // 6. Props
 const props = defineProps({
-  queueName: { type: String, default: 'Chai Point · Koramangala' },
-  peopleInQueue: { type: Number, default: 23 },
-  estWaitMin: { type: Number, default: 35 },
-  canJoinWithParty: { type: Boolean, default: true },
-  maxAllowedPartySize: { type: Number, default: 4 },
+  queueName: { type: String },
+  peopleInQueue: { type: Number },
+  estWaitMin: { type: Number },
+  canJoinWithParty: { type: Boolean, default: false },
+  maxAllowedPartySize: { type: Number, default: 10 },
+  isLoading: { type: Boolean, default: false },
 })
 
 // 7. Emits
-const emit = defineEmits(['join-queue'])
+const emit = defineEmits(['join-queue', 'go-to-join-by-code'])
 
-// 9. Reactive state
-const displayName = ref('')
+// 8. Validation Schema
+const schema = yup.object({
+  displayName: yup.string().max(30, 'Name too long').optional(),
+  email: yup.string().email('Invalid email address').optional(),
+  accompanying: yup.number()
+    .min(0)
+    .max(Math.max(0, (props.maxAllowedPartySize || 10) - 1), 
+      `Max ${(props.maxAllowedPartySize || 10) - 1} companions`
+    )
+    .default(0),
+})
+
+// 9. VeeValidate Setup
+const { handleSubmit, isSubmitting } = useForm({
+  validationSchema: schema,
+  initialValues: {
+    displayName: '',
+    email: '',
+    accompanying: 0,
+  }
+})
+
+const { value: displayName, errorMessage: nameError } = useField('displayName')
+const { value: email, errorMessage: emailError } = useField('email')
+const { value: accompanying } = useField('accompanying')
+
+// 10. Reactive UI State
 const buzzEnabled = ref(true)
-const email = ref('')
 const isEmailExpanded = ref(false)
-const isJoining = ref(false)
 const isGuestsOpen = ref(false)
-const accompanying = ref(0)
 
 // 11. Methods
 function toggleEmail() {
   isEmailExpanded.value = !isEmailExpanded.value
 }
 
-async function handleJoin() {
-  isJoining.value = true
-  emit('join-queue', {
-    name: displayName.value || 'Guest',
-    buzzEnabled: buzzEnabled.value,
-    email: email.value,
-    partySize: accompanying.value + 1,
-  })
+/**
+ * Handle Notification Permission
+ */
+async function ensureNotificationPermission() {
+  if (!('Notification' in window)) return true
+  
+  if (Notification.permission === 'granted') return true
+  if (Notification.permission === 'denied') return false
+
+  const permission = await Notification.requestPermission()
+  return permission === 'granted'
 }
+
+const handleJoin = handleSubmit(async (values) => {
+  let notificationEnabled = buzzEnabled.value
+  let fcmToken = null
+
+  if (notificationEnabled) {
+    const hasPermission = await ensureNotificationPermission()
+    if (hasPermission) {
+      fcmToken = await getFCMToken()
+    } else {
+      notificationEnabled = false
+    }
+  }
+
+  const payload = {
+    name: values.displayName?.trim() || 'Guest',
+    partySize: (values.accompanying || 0) + 1,
+    notificationEnabled,
+    fcmToken,
+  }
+
+  if (values.email?.trim()) {
+    payload.email = values.email.trim()
+  }
+
+  emit('join-queue', payload)
+})
 </script>
 
 <template>
@@ -68,7 +126,8 @@ async function handleJoin() {
       </p>
       <div class="mx-auto mt-2.5 flex w-fit items-center gap-2 rounded-full border border-plum-faint/50 bg-sand px-4 py-2">
         <ClockFilledIcon class="h-4 w-4 text-mint" />
-        <span class="font-body text-lg font-bold text-plum">~{{ estWaitMin }} min</span>
+        <span v-if="estWaitMin === 0" class="font-body text-md font-medium text-plum">Few moments</span>
+        <span v-else class="font-mono text-lg font-bold text-plum">~{{ estWaitMin }} min</span>
         <span class="font-body text-lg text-plum-muted">Wait</span>
       </div>
       <p class="mt-2.5 font-body text-[9px] leading-snug text-plum-muted">
@@ -81,9 +140,19 @@ async function handleJoin() {
     <h2 class="mt-8 font-body text-2xl font-bold text-plum">Secure your spot</h2>
 
     <!-- Name input card -->
-    <div class="mt-6 flex items-start gap-4 rounded-3xl border border-plum-faint bg-white p-4">
-      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-plum-faint">
-        <User class="h-4 w-4 text-plum-muted" />
+    <div 
+      :class="[
+        'mt-6 flex items-start gap-4 rounded-3xl border p-4 transition-colors',
+        nameError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-white'
+      ]"
+    >
+      <div 
+        :class="[
+          'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+          nameError ? 'bg-danger/10' : 'bg-plum-faint'
+        ]"
+      >
+        <User :class="['h-4 w-4', nameError ? 'text-danger' : 'text-plum-muted']" />
       </div>
       <div class="flex-1">
         <input
@@ -92,7 +161,8 @@ async function handleJoin() {
           placeholder="What should we call you?"
           class="w-full border-none bg-transparent font-body text-[17px] text-plum placeholder:text-plum-muted/40 focus:outline-none"
         />
-        <p class="mt-1 font-body text-[11px] text-plum-muted">Appears as Guest if skipped</p>
+        <p v-if="nameError" class="mt-1 font-body text-[11px] text-danger">{{ nameError }}</p>
+        <p v-else class="mt-1 font-body text-[11px] text-plum-muted">Appears as Guest if skipped</p>
       </div>
     </div>
 
@@ -191,13 +261,20 @@ async function handleJoin() {
       </button>
 
       <!-- Expanded panel -->
-      <div v-show="isEmailExpanded" class="rounded-2xl border border-plum-faint bg-plum-faint/30 p-4">
+      <div 
+        v-show="isEmailExpanded" 
+        :class="[
+          'rounded-2xl border p-4 transition-colors',
+          emailError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-plum-faint/30'
+        ]"
+      >
         <input
           v-model="email"
           type="email"
           placeholder="your@email.com"
           class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none"
         />
+        <p v-if="emailError" class="mt-1 font-body text-[10px] text-danger">{{ emailError }}</p>
         <div class="mt-3 flex items-start gap-2">
           <Info class="mt-0.5 h-3 w-3 shrink-0 text-plum-muted/80" />
           <p class="font-body text-xs leading-relaxed text-plum-muted/80">
@@ -210,21 +287,27 @@ async function handleJoin() {
 
     <!-- Join CTA -->
     <button
-      :disabled="isJoining"
+      :disabled="isSubmitting || isLoading"
       :class="[
         'mt-6 flex h-[60px] w-full items-center justify-center gap-2 rounded-2xl bg-mint font-body text-lg font-semibold text-plum shadow-[0_8px_24px_rgba(0,229,160,0.50)] transition-all',
-        isJoining ? 'cursor-not-allowed opacity-70' : 'hover:shadow-[0_12px_32px_rgba(0,229,160,0.60)]',
+        (isSubmitting || isLoading) ? 'cursor-not-allowed opacity-70' : 'hover:shadow-[0_12px_32px_rgba(0,229,160,0.60)]',
       ]"
       @click="handleJoin"
     >
-      {{ isJoining ? 'Joining…' : 'Join the Queue' }}
-      <ArrowRightBoldIcon v-if="!isJoining" class="h-4 w-4 text-plum" />
+      {{ (isSubmitting || isLoading) ? 'Joining…' : 'Join the Queue' }}
+      <ArrowRightBoldIcon v-if="!(isSubmitting || isLoading)" class="h-4 w-4 text-plum" />
     </button>
 
     <!-- Join by code link -->
     <p class="mt-5 text-center font-body text-sm text-plum-muted">
-      Have an existing code?
-      <router-link to="/join" class="font-body text-sm text-plum-muted underline">Join now.</router-link>
+      Already have a ticket?
+      <button 
+        type="button" 
+        class="font-body text-sm text-plum-muted underline underline-offset-4 hover:text-plum transition-colors"
+        @click="emit('go-to-join-by-code')"
+      >
+        Enter your join code
+      </button>
     </p>
   </div>
 </template>

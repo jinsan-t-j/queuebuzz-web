@@ -1,25 +1,26 @@
 export interface JoinQueuePayload {
   name?: string
   phone?: string
+  email?: string
   partySize?: number
-  [key: string]: unknown
+  notificationEnabled: boolean
+  fcmToken?: string | null
 }
 
 export interface JoinQueueResult {
+  id: string
   ticketNumber: string
   position: number
   ahead: number
   estWaitMin: number
-}
-
-export interface GeofenceStatus {
-  isWithinRange: boolean
-  distanceMeters: number
+  totalInQueue: number
+  servedCount: number
 }
 
 export type CustomerTicketStatus = 'waiting' | 'idle' | 'called' | 'served'
 
 export interface WaitingStatus {
+  id: string
   ticketNumber: string
   position: number
   ahead: number

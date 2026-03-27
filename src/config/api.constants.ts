@@ -44,6 +44,16 @@ export const API_ROUTES = {
         UPDATE: (id: string): string => `/queue/${id}`,
         CONNECT_EVENTS: (id: string): string => `/queue/${id}/events`,
     },
+    CUSTOMER: {
+        JOIN_QUEUE_BY_ID: (id: string): string => `/queue/${id}/join`,
+        GET_TICKET_STATUS: (ticketId: string): string => `/tickets/${ticketId}/status`,
+        CONFIRM_STILL_HERE: (ticketId: string): string => `/tickets/${ticketId}/confirm`,
+        CONFIRM_ARRIVAL: (ticketId: string): string => `/tickets/${ticketId}/arrived`,
+        LEAVE: (ticketId: string): string => `/tickets/${ticketId}/leave`,
+        SUBMIT_RATING: (ticketId: string): string => `/tickets/${ticketId}/rating`,
+        JOIN_BY_CODE: '/queue/join-by-code',
+        RESOLVE_CODE: (code: string): string => `/queue/resolve-code/${code}`,
+    },
     SHARED: {
         CREATE_QUEUE: '/queue/create',
     }

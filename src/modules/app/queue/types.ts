@@ -28,14 +28,13 @@ export type QueueEntryStatus = 'WAITING' | 'CALLED' | 'SERVED' | 'SKIPPED' | 'ID
 
 export interface QueueEntry {
   id: string
-  name: string
   ticketNo: number
-  position: number
-  status: QueueEntryStatus
-  estimatedWaitMin: number
+  position?: number
+  name: string
+  email?: string
+  phone?: string
   partySize: number
-  token?: string // To fix mapping in store
-  joinedAt?: string
+  status: QueueEntryStatus
   servedAt?: string
   finishedAt?: string
   createdAt: string

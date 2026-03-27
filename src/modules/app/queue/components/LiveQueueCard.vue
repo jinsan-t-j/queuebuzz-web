@@ -41,6 +41,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  avgServiceMins: {
+    type: Number,
+    default: 0,
+  },
 })
 
 // 7. Emits
@@ -112,7 +116,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Empty state / Entries -->
-    <div class="flex flex-1 flex-col" :class="entries.length === 0 ? 'items-center justify-center p-6' : 'gap-3 p-4'">
+    <div class="flex flex-1 flex-col max-h-[400px] overflow-y-auto" :class="entries.length === 0 ? 'items-center justify-center p-6' : 'gap-3 p-4'">
       <template v-if="entries.length === 0">
         <p class="mb-4 font-body text-[10px] font-bold uppercase tracking-[2px] text-plum/30">
           Action Center
@@ -123,11 +127,10 @@ onUnmounted(() => {
         <div
           v-for="entry in entries"
           :key="entry.id"
-          v-memo="[entry.status, entry.waitTimeMin, entry.position, entry.name, entry.partySize, openDropdownId === entry.id]"
           class="group flex cursor-pointer items-center rounded-2xl border px-4 py-3 transition-all hover:border-mint/50 hover:bg-mint/5 hover:shadow-sm"
           :class="
-            entry.status === 'called'
-              ? 'border-2 border-mint shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
+            entry.status === 'CALLED'
+              ? 'border-2 border-mint shadow-[0_1px_2px_rgba(0,0,0,0.05)] text-plum font-bold'
               : 'border-plum/5 shadow-sm bg-white'
           "
           @click="openDetails(entry)"
@@ -136,7 +139,7 @@ onUnmounted(() => {
             <span
               class="flex h-8 w-8 items-center justify-center rounded-lg font-mono text-lg font-bold"
               :class="
-                entry.status === 'called'
+                entry.status === 'CALLED'
                   ? 'bg-plum text-mint'
                   : 'bg-plum/5 text-plum/40'
               "
@@ -147,8 +150,8 @@ onUnmounted(() => {
               <p class="font-body text-base font-bold text-plum">{{ entry.name }}</p>
               <p class="font-body text-xs text-plum/40">
                 Party of {{ entry.partySize }} •
-                <span :class="entry.status === 'called' ? 'text-mint' : ''">
-                  {{ entry.waitTimeMin }} min wait
+                <span :class="entry.status === 'CALLED' ? 'text-mint' : ''">
+                  {{ (entry.position - 1) * (avgServiceMins || 0) }} min wait
                 </span>
               </p>
             </div>
@@ -197,6 +200,7 @@ onUnmounted(() => {
       v-if="selectedEntry"
       :entry="selectedEntry"
       :is-open="isDetailsModalOpen"
+      :avg-service-mins="avgServiceMins"
       @close="closeDetails"
       @call="(id) => { emit('call-guest', id); closeDetails(); }"
       @serve="(id) => { emit('serve-guest', id); closeDetails(); }"

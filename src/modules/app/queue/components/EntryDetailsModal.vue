@@ -20,6 +20,7 @@ import CheckIcon from '@/assets/icons/check-mint.svg?component'
 const props = defineProps<{
   entry: QueueEntry
   isOpen: boolean
+  avgServiceMins: number
 }>()
 
 const emit = defineEmits<{
@@ -43,15 +44,20 @@ const statusConfig = computed(() => {
 })
 
 const formattedJoinedTime = computed(() => {
-  if (!props.entry.joinedAt) return ''
+  if (!props.entry.createdAt) return ''
   try {
-    return new Date(props.entry.joinedAt).toLocaleTimeString([], {
+    return new Date(props.entry.createdAt).toLocaleTimeString([], {
       hour: '2-digit',
       minute: '2-digit',
     })
   } catch (e) {
     return ''
   }
+})
+
+const estWaitMin = computed(() => {
+  if (props.entry.status !== 'WAITING' || !props.entry.position) return 0
+  return Math.max(0, (props.entry.position - 1) * (props.avgServiceMins || 0))
 })
 </script>
 
@@ -79,53 +85,44 @@ const formattedJoinedTime = computed(() => {
           </div>
         </div>
 
-        <!-- Details List -->
-        <div class="space-y-6">
-          <div class="flex items-center justify-between rounded-2xl bg-sand p-4">
-            <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-plum shadow-sm">
-                <span class="font-display text-sm font-bold">Pos</span>
-              </div>
-              <div>
-                <p class="font-body text-[10px] font-bold uppercase tracking-wider text-plum/40">
-                  Position
-                </p>
-                <p class="font-body text-base font-bold text-plum">
-                  {{ entry.position }} in line
-                </p>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-plum shadow-sm">
-                <ClockTimeIcon class="h-5 w-5 opacity-40" />
-              </div>
-              <div>
-                <p class="font-body text-[10px] font-bold uppercase tracking-wider text-plum/40">
-                  Est. Wait
-                </p>
-                <p class="font-body text-base font-bold text-plum">
-                  {{ entry.estimatedWaitMin }} mins
-                </p>
-              </div>
+        <!-- Quick Info Grid -->
+        <div class="mb-8 grid grid-cols-2 gap-3">
+          <!-- Party Size -->
+          <div class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80">
+            <span class="font-body text-[10px] font-bold uppercase tracking-widest text-plum-muted">
+              Party Size
+            </span>
+            <div class="mt-2 flex items-center gap-2">
+              <PartyIcon class="h-5 w-5 text-plum/40" />
+              <span class="font-body text-2xl font-bold text-plum">
+                {{ entry.partySize }}
+              </span>
             </div>
           </div>
 
-          <div class="space-y-4 px-2">
-            <div class="flex items-center justify-between">
-              <span class="font-body text-sm text-plum/50">Guest Name</span>
-              <span class="font-body text-base font-bold text-plum">{{ entry.name }}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="font-body text-sm text-plum/50">Party Size</span>
-              <span class="flex items-center gap-2 font-body text-base font-bold text-plum">
-                <PartyIcon class="h-4 w-4 opacity-30" />
-                {{ entry.partySize }} People
+          <!-- Est. Wait -->
+          <div class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80">
+            <span class="font-body text-[10px] font-bold uppercase tracking-widest text-plum-muted">
+              Est. Wait
+            </span>
+            <div class="mt-2 flex items-center gap-2 text-plum">
+              <ClockTimeIcon class="h-5 w-5 text-plum/40" />
+              <span class="font-body text-2xl font-bold">
+                {{ estWaitMin }}<span class="text-sm">m</span>
               </span>
             </div>
-            <div v-if="formattedJoinedTime" class="flex items-center justify-between">
-              <span class="font-body text-sm text-plum/50">Joined At</span>
-              <span class="font-body text-base font-bold text-plum">{{ formattedJoinedTime }}</span>
-            </div>
+          </div>
+        </div>
+
+        <!-- Details List -->
+        <div class="space-y-4 border-t border-plum-faint pt-6 px-2">
+          <div class="flex items-center justify-between">
+            <span class="font-body text-sm text-plum-muted">Guest Name</span>
+            <span class="font-body text-base font-bold text-plum">{{ entry.name }}</span>
+          </div>
+          <div v-if="formattedJoinedTime" class="flex items-center justify-between">
+            <span class="font-body text-sm text-plum-muted">Joined At</span>
+            <span class="font-body text-base font-bold text-plum">{{ formattedJoinedTime }}</span>
           </div>
         </div>
 

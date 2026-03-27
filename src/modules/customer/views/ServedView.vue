@@ -10,7 +10,7 @@
 import { ref } from 'vue'
 
 // 4. Local composables
-import { useCustomerApi } from '@/modules/customer/composables/useCustomerApi'
+import { useCustomerApi } from '@/modules/customer/composables/useCustomer'
 
 // 5. Component imports
 import StarRating from '@/modules/customer/components/StarRating.vue'

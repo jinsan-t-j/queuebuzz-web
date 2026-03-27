@@ -13,7 +13,9 @@ const { isVisible, message, type } = useToast()
       isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none',
       type === 'error' 
         ? 'bg-red-500 shadow-[0_12px_24px_rgba(239,68,68,0.3)]' 
-        : 'bg-mint-dark shadow-[0_12px_24px_rgba(0,229,160,0.3)]'
+        : type === 'info'
+          ? 'bg-plum shadow-[0_12px_24px_rgba(26,10,46,0.3)]'
+          : 'bg-mint-dark shadow-[0_12px_24px_rgba(0,229,160,0.3)]'
     ]"
   >
     <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/20">

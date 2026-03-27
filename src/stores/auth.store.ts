@@ -6,6 +6,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as AuthUser | null,
     isHydrated: false,
+    activeGuestQueueId: null as string | null, // Lightweight flag for anonymous hosts
   }),
 
   getters: {
@@ -16,6 +17,11 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     setUser(userData: AuthUser) {
       this.user = userData
+      this.activeGuestQueueId = null // Clear guest status if they become a registered host
+    },
+
+    setGuestSession(queueId: string | null) {
+      this.activeGuestQueueId = queueId
     },
 
     async logout() {
@@ -23,6 +29,7 @@ export const useAuthStore = defineStore('auth', {
         await logoutHost()
       } finally {
         this.user = null
+        this.activeGuestQueueId = null
       }
     },
 

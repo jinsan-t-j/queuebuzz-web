@@ -5,6 +5,7 @@ import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import { useClipboard, useDebounceFn } from '@vueuse/core'
 import { useQueueStore } from '@/stores/queue.store'
+import { useAuthStore } from '@/stores/auth.store'
 import { createQueue, checkSlugAvailability } from '@/modules/app/queue/actions/queue.action'
 
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
@@ -26,6 +27,7 @@ const emit = defineEmits(['queue-created'])
 
 const router = useRouter()
 const queueStore = useQueueStore()
+const authStore = useAuthStore()
 
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
 
@@ -123,6 +125,11 @@ const onSubmit = handleSubmit(async (values) => {
     const queue = await createQueue(payload)
     if (queue) {
       queueStore.setActiveQueue(queue)
+      
+      if (props.role === 'guest') {
+        authStore.setGuestSession(queue.id)
+      }
+      
       emit('queue-created', queue)
     }
   } catch (error) {

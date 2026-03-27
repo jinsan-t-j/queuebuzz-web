@@ -41,9 +41,20 @@ export const useQueueStore = defineStore('queue', {
 
     getters: {
         isPaused: (state) => state.activeQueue?.status === 'paused',
-        waitingCount: (state) =>
-            state.entries.filter((e) => e.status === 'WAITING').length,
-        avgWaitTime: (state) => state.activeQueue?.avgServiceMins,
+        waitingCount: (state) => {
+            if (state.entries.length > 0) {
+                return state.entries.filter((e) => e.status === 'WAITING').length
+            }
+
+            return 0
+        },
+        avgWaitTime: (state) => {
+            if (!state.activeQueue) return 0
+            const count = state.entries.length > 0
+                ? state.entries.filter((e) => e.status === 'WAITING').length
+                : 0
+            return (state.activeQueue.avgServiceMins || 0) * count
+        },
         totalCount: (state) => state.entries.length,
         hasError: (state) => !!state.error,
         canJoinWithParty: (state) => state.activeQueue?.allowPartyJoining ?? false,
@@ -91,6 +102,23 @@ export const useQueueStore = defineStore('queue', {
                 return payload
             } catch (e: any) {
                 this.error = e?.response?.data?.message || 'Failed to fetch queue'
+                return null
+            } finally {
+                this.isLoading = false
+            }
+        },
+
+        async fetchQueueStatus(id: string) {
+            this.isLoading = true
+            this.error = null
+            try {
+                const payload = await getQueueStatus(id)
+                if (payload) {
+                    this.setLiveQueueState(payload)
+                }
+                return payload
+            } catch (e: any) {
+                this.error = e?.response?.data?.message || 'Failed to fetch queue status'
                 return null
             } finally {
                 this.isLoading = false
@@ -186,7 +214,7 @@ export const useQueueStore = defineStore('queue', {
                     }
                 }
                 document.addEventListener('visibilitychange', handler)
-                ;(window as any)._q_visibility_handler = handler
+                    ; (window as any)._q_visibility_handler = handler
             }
 
             this.sseClient = createSseClient({

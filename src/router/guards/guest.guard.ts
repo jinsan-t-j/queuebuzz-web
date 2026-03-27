@@ -8,8 +8,14 @@
 import { useAuthStore } from '@/stores/auth.store'
 import type { NavigationGuardWithThis } from 'vue-router'
 
-export const guestGuard: NavigationGuardWithThis<undefined> = () => {
+export const guestGuard: NavigationGuardWithThis<undefined> = async () => {
   const auth = useAuthStore()
+
+  // Initialize session if not yet hydrated to ensure cookies are checked
+  if (!auth.isHydrated) {
+    await auth.initializeSession()
+  }
+
   if (auth.isAuthenticated) {
     return { path: '/dashboard' }
   }

@@ -41,7 +41,7 @@ export function useLiveQueue() {
         route = router.resolve({
             name: 'customer-join',
             params: {
-                hostSlug: store.activeQueue.slug || store.activeQueue.id,
+                queueId: store.activeQueue.id,
                 code: store.activeQueue.joinCode
             }
         })

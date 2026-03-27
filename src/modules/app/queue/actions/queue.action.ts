@@ -21,15 +21,6 @@ export interface CheckSlugAvailabilityResponse {
     isAvailable: boolean
 }
 
-export interface QueueStatusResponse {
-    id: string
-    status: 'active' | 'paused' | 'terminated' | 'expired'
-    joinCode: string
-    waitingCount: number
-    avgServiceMins: number
-    expiresAt: string
-}
-
 export async function createQueue(payload: CreateQueuePayload): Promise<QueueRecord> {
     const config = createApiRequestConfig({}, { withCredentials: true })
     const response = await apiClient.post<ApiSuccessResponse<QueueRecord>>(API_ROUTES.SHARED.CREATE_QUEUE, payload, config) as unknown as ApiSuccessResponse<QueueRecord>
@@ -63,9 +54,9 @@ export async function getLiveQueueById(id: string): Promise<QueueRecord> {
     return response.data
 }
 
-export async function getQueueStatus(id: string): Promise<QueueStatusResponse> {
+export async function getQueueStatus(id: string): Promise<QueueRecord> {
     const config = createApiRequestConfig()
-    const response = await apiClient.get<ApiSuccessResponse<QueueStatusResponse>>(API_ROUTES.QUEUE.GET_QUEUE_STATUS(id), config) as unknown as ApiSuccessResponse<QueueStatusResponse>
+    const response = await apiClient.get<ApiSuccessResponse<QueueRecord>>(API_ROUTES.QUEUE.GET_QUEUE_STATUS(id), config) as unknown as ApiSuccessResponse<QueueRecord>
     return response.data
 }
 

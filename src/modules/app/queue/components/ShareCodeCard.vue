@@ -10,7 +10,6 @@
  */
 import { ref } from 'vue'
 import { useClipboard } from '@vueuse/core'
-import QrGridIcon from '@/assets/icons/qr-grid.svg?component'
 import CopyLinkIcon from '@/assets/icons/copy-link.svg?component'
 import ShowQrIcon from '@/assets/icons/show-qr.svg?component'
 
@@ -19,11 +18,9 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  // Optional flag to use `window.location.origin` inside the component
-  // Or rely on the parent to supply the exact URL to pass to clipboard
   shareUrl: {
     type: String,
-    default: '',
+    required: true,
   }
 })
 
@@ -32,7 +29,7 @@ const { copy: copyToClipboard } = useClipboard()
 const isLinkCopied = ref(false)
 
 async function handleCopyLink() {
-  const urlToCopy = props.shareUrl || `${window.location.origin}/join/${props.joinCode}`
+  const urlToCopy = props.shareUrl
   await copyToClipboard(urlToCopy)
   isLinkCopied.value = true
   setTimeout(() => isLinkCopied.value = false, 2000)
