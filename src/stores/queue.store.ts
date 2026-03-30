@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
 import type {
@@ -13,7 +14,6 @@ import type {
 import {
     getLiveQueue,
     getLiveQueueById,
-    getQueueStatus,
     pauseQueue,
     resumeQueue,
     terminateQueue,
@@ -37,6 +37,8 @@ export const useQueueStore = defineStore('queue', {
         streamState: 'idle' as SseConnectionState,
         sseClient: null as SseClient | null,
         connectedQueueId: null as string | null,
+        publicWaitingCount: null as number | null,
+        publicSseClient: null as SseClient | null,
     }),
 
     getters: {
@@ -46,16 +48,16 @@ export const useQueueStore = defineStore('queue', {
                 return state.entries.filter((e) => e.status === 'WAITING').length
             }
 
-            return 0
+            return state.publicWaitingCount || 0
         },
         avgWaitTime: (state) => {
             if (!state.activeQueue) return 0
             const count = state.entries.length > 0
                 ? state.entries.filter((e) => e.status === 'WAITING').length
-                : 0
+                : (state.publicWaitingCount || 0)
             return (state.activeQueue.avgServiceMins || 0) * count
         },
-        totalCount: (state) => state.entries.length,
+        totalCount: (state) => state.entries.length || state.publicWaitingCount || 0,
         hasError: (state) => !!state.error,
         canJoinWithParty: (state) => state.activeQueue?.allowPartyJoining ?? false,
         maxAllowedPartySize: (state) => state.activeQueue?.maxPartySize ?? 1,
@@ -108,23 +110,6 @@ export const useQueueStore = defineStore('queue', {
             }
         },
 
-        async fetchQueueStatus(id: string) {
-            this.isLoading = true
-            this.error = null
-            try {
-                const payload = await getQueueStatus(id)
-                if (payload) {
-                    this.setLiveQueueState(payload)
-                }
-                return payload
-            } catch (e: any) {
-                this.error = e?.response?.data?.message || 'Failed to fetch queue status'
-                return null
-            } finally {
-                this.isLoading = false
-            }
-        },
-
         async initializeActiveQueue() {
             const queue = await this.fetchActiveQueue()
             if (queue?.id) {
@@ -134,26 +119,19 @@ export const useQueueStore = defineStore('queue', {
         },
 
         async initializeQueueById(id: string) {
-            const queue = await this.fetchQueueById(id)
-            if (queue?.id) {
-                this.connectToEvents(queue.id)
-            }
-            return queue
+            this.connectToPublicEvents(id)
+            return !!this.activeQueue
         },
 
         async revalidate(id: string) {
             if (!id) return
 
-            // If we already have data and are connected, we are good.
-            // If we are DISCONNECTED, connectToEvents() will attempt a fetch-based handshake
-            // which handles 401 errors internally via its onError callback.
             if (this.activeQueue && this.activeQueue.id === id) {
                 this.connectToEvents(id)
                 return
             }
 
             try {
-                // Initial data hydration + connection setup
                 await this.initializeQueueById(id)
             } catch (err: any) {
                 const status = err.response?.status
@@ -165,7 +143,6 @@ export const useQueueStore = defineStore('queue', {
                 }
             }
         },
-
 
         updateEntries(newEntries: QueueEntry[]) {
             this.entries = newEntries
@@ -191,6 +168,36 @@ export const useQueueStore = defineStore('queue', {
             this.activeQueue.status = status
         },
 
+        connectToPublicEvents(queueId: string) {
+            if (this.publicSseClient && this.connectedQueueId === queueId) return
+
+            this.connectedQueueId = queueId
+
+            this.publicSseClient = createSseClient({
+                url: buildApiUrl(API_ROUTES.QUEUE.PUBLIC_EVENTS(queueId)),
+                events: {
+                    queue_init: (payload: any) => {
+                        if (payload.data as QueueRecord) {
+                            this.activeQueue = payload.data
+                            this.publicWaitingCount = payload.data.waiting_count || this.publicWaitingCount
+                        }
+                    },
+                    waiting_count_updated: (payload: any) => {
+                        // The backend sends { event: '...', data: { count: N } }
+                        const count = payload.data?.count ?? payload.count
+                        this.publicWaitingCount = count
+                    },
+                    queue_status_changed: (payload: any) => {
+                        // Handle both envelope structure and flat structure
+                        const status = payload.data?.status ?? payload.status
+                        this.setQueueStatus(status)
+                    },
+                },
+            })
+
+            this.publicSseClient.connect()
+        },
+
         connectToEvents(queueId: string) {
             if (this.sseClient && this.connectedQueueId === queueId && (this.streamState === 'open' || this.streamState === 'connecting')) {
                 return
@@ -205,11 +212,10 @@ export const useQueueStore = defineStore('queue', {
                     if (!id) return
 
                     if (document.visibilityState === 'visible') {
-                        // Resumes connection + syncs data
                         this.revalidate(id)
                     } else if (document.visibilityState === 'hidden') {
-                        // Suspends connection to save CPU/Network/Memory in background
                         this.sseClient?.disconnect()
+                        this.publicSseClient?.disconnect()
                         this.streamState = 'idle'
                     }
                 }
@@ -272,7 +278,11 @@ export const useQueueStore = defineStore('queue', {
             if (this.sseClient && typeof this.sseClient.disconnect === 'function') {
                 this.sseClient.disconnect()
             }
+            if (this.publicSseClient && typeof this.publicSseClient.disconnect === 'function') {
+                this.publicSseClient.disconnect()
+            }
             this.sseClient = null
+            this.publicSseClient = null
             this.connectedQueueId = null
             this.streamState = 'idle'
             this.error = null
@@ -419,6 +429,7 @@ export const useQueueStore = defineStore('queue', {
             this.disconnectLiveUpdates()
             this.activeQueue = null
             this.entries = []
+            this.publicWaitingCount = null
             this.error = null
         },
 

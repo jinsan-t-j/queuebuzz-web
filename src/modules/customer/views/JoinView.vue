@@ -4,7 +4,6 @@
  * @description Customer-facing queue join page.
  */
 
-// 1. Vue core imports
 import { onBeforeMount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -12,33 +11,21 @@ import { storeToRefs } from 'pinia'
 import { useQueueStore } from '@/stores/queue.store'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 
-// 5. Component imports
 import JoinQueueForm from '@/modules/customer/components/JoinQueueForm.vue'
-import { useToast } from '@/composables/useToast'
 import BaseButton from '@/components/base/BaseButton.vue'
 
 const route = useRoute()
 const router = useRouter()
-const { showToast } = useToast()
 
-// 8. Composable destructuring
 const { handleJoinQueue, isLoading } = useCustomer()
 
 const queueStore = useQueueStore()
 const { activeQueue, waitingCount, avgWaitTime, isLoading: queueIsLoading } = storeToRefs(queueStore)
-const { fetchQueueStatus } = queueStore
 
-// 9. Reactive state from store
 const queueId = route.params.queueId as string
 
 onBeforeMount(async () => {
-    if (!activeQueue.value || (activeQueue.value.slug !== queueId && activeQueue.value.id !== queueId)) {
-        const success = await fetchQueueStatus(queueId)
-        if (!success) {
-            showToast('Queue not found or unavailable.', { type: 'error' })
-            router.push({ name: 'customer-not-found' })
-        }
-    }
+  await queueStore.initializeQueueById(queueId)
 })
 
 function handleJoinByCode() {

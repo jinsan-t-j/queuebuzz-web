@@ -4,13 +4,14 @@
  */
 import { authGuard } from '@/router/guards/auth.guard'
 import { guestGuard } from '@/router/guards/guest.guard'
+import { restrictCustomerGuard } from '@/router/guards/restrictCustomer.guard'
 import type { RouteRecordRaw } from 'vue-router'
 
 export const appRoutes: RouteRecordRaw[] = [
   {
     path: '/login',
     component: () => import('@/layouts/BlankLayout.vue'),
-    beforeEnter: guestGuard,
+    beforeEnter: [guestGuard, restrictCustomerGuard],
     children: [
       {
         path: '',

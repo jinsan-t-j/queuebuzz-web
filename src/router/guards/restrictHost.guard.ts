@@ -13,7 +13,7 @@ export const restrictHostGuard: NavigationGuardWithThis<undefined> = () => {
   const { showToast } = useToast()
 
   if (auth.isAuthenticated) {
-    showToast('Access Denied. You are managing a live queue', { type: 'info', duration: 3500 })
+    showToast('Access Denied. You are managing a live queue.', { type: 'info', duration: 3500 })
     return { name: 'dashboard' }
   }
 

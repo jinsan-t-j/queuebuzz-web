@@ -84,8 +84,7 @@ export function createSseClient(options: SseClientOptions): SseClient {
           if (eventData) {
             try {
               const payload = keysToCamelCase(JSON.parse(eventData))
-              
-              // Call specific event handler or generic onMessage
+
               if (options.events?.[eventType]) {
                 options.events[eventType](payload, eventData)
               } else {
@@ -99,11 +98,11 @@ export function createSseClient(options: SseClientOptions): SseClient {
       }
     } catch (err: any) {
       if (err.name === 'AbortError') return
-      
+
       isOpen = false
-      options.onError?.({ 
-        status: err.status, 
-        message: err.message || 'Unknown SSE error' 
+      options.onError?.({
+        status: err.status,
+        message: err.message || 'Unknown SSE error'
       })
     } finally {
       isRequestActive = false

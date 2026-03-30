@@ -4,6 +4,7 @@
  * in queue. These use CustomerLayout — centred mobile column with navbar and footer.
  */
 import { restrictHostGuard } from '@/router/guards/restrictHost.guard'
+import { restrictCustomerGuard } from '@/router/guards/restrictCustomer.guard'
 import type { RouteRecordRaw } from 'vue-router'
 
 export const customerRoutes: RouteRecordRaw[] = [
@@ -15,6 +16,7 @@ export const customerRoutes: RouteRecordRaw[] = [
       {
         path: 'join/:code?',
         name: 'customer-join',
+        beforeEnter: restrictCustomerGuard,
         component: () => import('@/modules/customer/views/JoinView.vue'),
         meta: { title: 'Join Queue' },
       },
@@ -63,6 +65,7 @@ export const customerRoutes: RouteRecordRaw[] = [
       {
         path: '',
         name: 'customer-join-by-code',
+        beforeEnter: restrictCustomerGuard,
         component: () => import('@/modules/customer/views/JoinByCodeView.vue'),
         meta: { title: 'Enter Join Code' },
       },

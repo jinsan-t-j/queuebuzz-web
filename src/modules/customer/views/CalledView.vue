@@ -9,37 +9,46 @@
 // 1. Vue core imports
 import { ref } from 'vue'
 
-// 4. Local composables
-import { useCustomerApi } from '@/modules/customer/composables/useCustomer'
-
-// 5. Component imports
+import { computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCustomer } from '@/modules/customer/composables/useCustomer'
+import { useQueueStore } from '@/stores/queue.store'
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
 
-// 7. Emits
-const emit = defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'claim-earlier'])
+const router = useRouter()
+const { entry, confirmArrival, leaveQueue, connectEvents, disconnectEvents } = useCustomer()
+const queueStore = useQueueStore()
 
-// 8. Composable destructuring
-const { confirmArrival, leaveQueue } = useCustomerApi()
+const emit = defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr'])
 
-// 9. Reactive state
-const ticketNumber = ref('Q-0042')
-const queueName = ref('Chai Point · Koramangala')
+const ticketNumber = computed(() => entry.value?.ticketNumber || '...')
+const queueName = computed(() => queueStore.activeQueue?.name || 'Your Queue')
 const isConfirming = ref(false)
 
-// 11. Methods
+onMounted(() => {
+  if (entry.value) {
+    connectEvents(entry.value.id)
+  }
+})
+
 async function handleConfirmArrival() {
+  if (isConfirming.value) return
   isConfirming.value = true
-  const result = await confirmArrival('stub-ticket-id')
+  const success = await confirmArrival()
   isConfirming.value = false
-  if (result.success) {
+  if (success) {
     emit('arrival-confirmed')
   }
 }
 
 async function handleLeave() {
-  await leaveQueue('stub-ticket-id')
-  emit('leave-queue')
+  const success = await leaveQueue()
+  if (success) {
+    emit('leave-queue')
+    router.push('/')
+  }
 }
+
 </script>
 
 <template>

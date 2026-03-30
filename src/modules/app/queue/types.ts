@@ -19,11 +19,6 @@ export interface QueueRecord {
   entries?: QueueEntry[] // Added for hydration
 }
 
-export interface ApiSuccessResponse<T> {
-  message?: string
-  data: T
-}
-
 export type QueueEntryStatus = 'WAITING' | 'CALLED' | 'SERVED' | 'SKIPPED' | 'IDLE' | 'LEFT'
 
 export interface QueueEntry {

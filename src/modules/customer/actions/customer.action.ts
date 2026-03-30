@@ -1,21 +1,20 @@
 import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
-import type { ApiSuccessResponse } from '@/modules/app/queue/types'
 import type {
     JoinQueuePayload,
-    JoinQueueResult,
-    WaitingStatus,
     MutationResult,
-    JoinByCodeResult
+    JoinByCodeResult,
+    Entry
 } from '../types'
+import { ApiSuccessResponse } from '@/types/app'
 
 /**
  * Customer actions for queue interaction.
  * STUB implementation — Phase 2: replace with real backend calls.
  */
 
-export async function joinQueue(queueId: string, payload: JoinQueuePayload): Promise<JoinQueueResult | null> {
-    const config = createApiRequestConfig()
+export async function joinQueue(queueId: string, payload: JoinQueuePayload): Promise<Entry> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
     try {
         const body = {
             display_name: payload.name || 'Guest',
@@ -26,50 +25,29 @@ export async function joinQueue(queueId: string, payload: JoinQueuePayload): Pro
             fcm_token: payload.fcmToken
         }
 
-        const response = await apiClient.post<any>(API_ROUTES.CUSTOMER.JOIN_QUEUE_BY_ID(queueId), body, config)
-        const data = response.data
-        return {
-            id: data.id,
-            ticketNumber: data.ticket_no,
-            position: data.position,
-            ahead: data.ahead,
-            estWaitMin: data.est_wait_min,
-            totalInQueue: data.total_in_queue,
-            servedCount: data.served_count
-        }
+        const response = await apiClient.post<ApiSuccessResponse<Entry>>(API_ROUTES.CUSTOMER.JOIN_QUEUE_BY_ID(queueId), body, config) as unknown as ApiSuccessResponse<Entry>
+        return response.data
     } catch (e) {
         console.error('Failed to join queue:', e)
         throw e
     }
 }
 
-export async function fetchWaitingStatus(ticketId: string): Promise<WaitingStatus | null> {
-    const config = createApiRequestConfig()
+export async function fetchEntry(): Promise<Entry | null> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
     try {
-        // STUB — replace with: return await apiClient.get(API_ROUTES.CUSTOMER.GET_TICKET_STATUS(ticketId), config)
-        await new Promise(r => setTimeout(r, 500))
-        return {
-            id: 'fwfdw',
-            ticketNumber: 'Q-0042',
-            position: 4,
-            ahead: 3,
-            estWaitMin: 12,
-            totalInQueue: 23,
-            servedCount: 8,
-            status: 'waiting',
-            buzzEnabled: true,
-        }
+        const response = await apiClient.get<ApiSuccessResponse<Entry>>(API_ROUTES.CUSTOMER.GET_ENTRY(), config) as unknown as ApiSuccessResponse<Entry>
+        return response.data
     } catch (e) {
-        console.error('Failed to fetch waiting status:', e)
+        console.error('Failed to fetch entry:', e)
         return null
     }
 }
 
-export async function confirmStillHere(ticketId: string): Promise<MutationResult> {
-    const config = createApiRequestConfig()
+export async function confirmStillHere(): Promise<MutationResult> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
     try {
-        // STUB — replace with: return await apiClient.post(API_ROUTES.CUSTOMER.CONFIRM_STILL_HERE(ticketId), null, config)
-        await new Promise(r => setTimeout(r, 300))
+        await apiClient.post(API_ROUTES.CUSTOMER.CONFIRM_STILL_HERE(), {}, config)
         return { success: true }
     } catch (e) {
         console.error('Failed to confirm still here:', e)
@@ -77,11 +55,10 @@ export async function confirmStillHere(ticketId: string): Promise<MutationResult
     }
 }
 
-export async function confirmArrival(ticketId: string): Promise<MutationResult> {
-    const config = createApiRequestConfig()
+export async function confirmArrival(): Promise<MutationResult> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
     try {
-        // STUB — replace with: return await apiClient.post(API_ROUTES.CUSTOMER.CONFIRM_ARRIVAL(ticketId), null, config)
-        await new Promise(r => setTimeout(r, 300))
+        await apiClient.post(API_ROUTES.CUSTOMER.CONFIRM_ARRIVAL(), {}, config)
         return { success: true }
     } catch (e) {
         console.error('Failed to confirm arrival:', e)
@@ -89,11 +66,10 @@ export async function confirmArrival(ticketId: string): Promise<MutationResult> 
     }
 }
 
-export async function leaveQueue(ticketId: string): Promise<MutationResult> {
-    const config = createApiRequestConfig()
+export async function leaveQueue(): Promise<MutationResult> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
     try {
-        // STUB — replace with: return await apiClient.post(API_ROUTES.CUSTOMER.LEAVE(ticketId), null, config)
-        await new Promise(r => setTimeout(r, 300))
+        await apiClient.post(API_ROUTES.CUSTOMER.LEAVE_GUEST, null, config)
         return { success: true }
     } catch (e) {
         console.error('Failed to leave queue:', e)
@@ -101,11 +77,21 @@ export async function leaveQueue(ticketId: string): Promise<MutationResult> {
     }
 }
 
-export async function submitRating(ticketId: string, rating: number): Promise<MutationResult> {
-    const config = createApiRequestConfig()
+export async function recoverGuestSession(): Promise<Entry | null> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
     try {
-        // STUB — replace with: return await apiClient.post(API_ROUTES.CUSTOMER.SUBMIT_RATING(ticketId), { rating }, config)
-        await new Promise(r => setTimeout(r, 300))
+        const response = await apiClient.get<ApiSuccessResponse<Entry>>(API_ROUTES.CUSTOMER.RECOVER_SESSION, config) as unknown as ApiSuccessResponse<Entry>
+        return response.data || null
+    } catch (e) {
+        console.error('Failed to recover session:', e)
+        return null
+    }
+}
+
+export async function submitRating(rating: number): Promise<MutationResult> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
+    try {
+        await apiClient.post(API_ROUTES.CUSTOMER.SUBMIT_RATING(), { rating }, config)
         return { success: true }
     } catch (e) {
         console.error('Failed to submit rating:', e)
@@ -113,14 +99,34 @@ export async function submitRating(ticketId: string, rating: number): Promise<Mu
     }
 }
 
+export async function updateEmail(email: string): Promise<MutationResult> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
+    try {
+        await apiClient.post(API_ROUTES.CUSTOMER.UPDATE_EMAIL, { email }, config)
+        return { success: true }
+    } catch (e) {
+        return { success: false }
+    }
+}
+
+export async function updatePIN(pin: string): Promise<MutationResult> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
+    try {
+        await apiClient.post(API_ROUTES.CUSTOMER.UPDATE_PIN, { pin }, config)
+        return { success: true }
+    } catch (e) {
+        return { success: false }
+    }
+}
+
 export async function joinByCode(code: string): Promise<JoinByCodeResult> {
     const config = createApiRequestConfig()
     try {
-        const response = await apiClient.get<any>(API_ROUTES.CUSTOMER.RESOLVE_CODE(code), config)
+        const response = await apiClient.get<ApiSuccessResponse<JoinByCodeResult>>(API_ROUTES.CUSTOMER.RESOLVE_CODE(code), config) as unknown as ApiSuccessResponse<JoinByCodeResult>
         return {
             found: true,
-            queueName: response.data.queue_name,
-            queueId: response.data.queue_id
+            queueName: response.data.queueName,
+            queueId: response.data.queueId
         }
     } catch (e) {
         console.error('Failed to resolve code:', e)

@@ -1,10 +1,4 @@
-<script setup>
-/**
- * @component CustomerLayout
- * @description Wraps all customer-facing screens (join, waiting, ticket, called, served, join-by-code).
- */
-
-// 5. Component imports
+<script setup lang="ts">
 import CustomerNavbar from '@/components/layout/customer/CustomerNavbar.vue'
 import CustomerFooter from '@/components/layout/customer/CustomerFooter.vue'
 </script>

@@ -11,20 +11,12 @@
  */
 
 // 1. Vue core imports
-import { computed } from 'vue'
 
 // 6. Props
 const props = defineProps({
-  position: { type: Number, default: 4 },
-  ahead: { type: Number, default: 3 },
-  estWaitMin: { type: Number, default: 12 },
-  totalInQueue: { type: Number, default: 23 },
-})
-
-// 10. Computed
-const progressPercent = computed(() => {
-  if (props.totalInQueue === 0) return 0
-  return Math.round((props.position / props.totalInQueue) * 100)
+  position: { type: Number, default: null },
+  ahead: { type: Number, default: null },
+  estWaitMin: { type: Number, default: null },
 })
 </script>
 
@@ -48,19 +40,6 @@ const progressPercent = computed(() => {
       <div class="flex flex-1 flex-col items-center rounded-[18px] border border-white bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
         <span class="font-mono text-[28px] text-mint">~{{ estWaitMin }}m</span>
         <span class="mt-1 font-body text-[10px] font-bold uppercase tracking-tight text-plum-muted">Est. Wait</span>
-      </div>
-    </div>
-
-    <!-- Position text + progress bar -->
-    <div class="mt-3 flex flex-col gap-3">
-      <p class="font-body text-[13px] text-plum">
-        Position {{ position }} of {{ totalInQueue }}
-      </p>
-      <div class="h-1 w-full overflow-hidden rounded-full bg-plum-faint">
-        <div
-          class="h-full rounded-full bg-mint transition-all duration-700 ease-out"
-          :style="{ width: `${progressPercent}%` }"
-        />
       </div>
     </div>
   </div>

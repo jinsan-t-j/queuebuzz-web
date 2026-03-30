@@ -1,0 +1,6 @@
+// SSE Event types for the customer module
+export const CUSTOMER_EVENTS = {
+    ENTRY_INIT: 'entry_init',
+    POSITION_UPDATE: 'position_update',
+    ENTRY_STATUS_CHANGED: 'entry_status_changed',
+} as const

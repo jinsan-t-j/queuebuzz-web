@@ -1,12 +1,12 @@
 import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
 import type {
-    ApiSuccessResponse,
     QueueRecord,
     QueueEntry,
     AddQueueEntryPayload,
     UpdateQueuePayload,
 } from '../types'
+import { ApiSuccessResponse } from '@/types/app'
 
 export interface CreateQueuePayload {
     name: string
@@ -54,17 +54,11 @@ export async function getLiveQueueById(id: string): Promise<QueueRecord> {
     return response.data
 }
 
-export async function getQueueStatus(id: string): Promise<QueueRecord> {
-    const config = createApiRequestConfig()
-    const response = await apiClient.get<ApiSuccessResponse<QueueRecord>>(API_ROUTES.QUEUE.GET_QUEUE_STATUS(id), config) as unknown as ApiSuccessResponse<QueueRecord>
-    return response.data
-}
-
 export async function callNext(id: string): Promise<QueueEntry> {
     const config = createApiRequestConfig({}, { withCredentials: true })
-    const response = await apiClient.post<QueueEntry>(API_ROUTES.QUEUE.CALL_NEXT(id), null, config) as unknown as QueueEntry
+    const response = await apiClient.post<ApiSuccessResponse<QueueEntry>>(API_ROUTES.QUEUE.CALL_NEXT(id), null, config) as unknown as ApiSuccessResponse<QueueEntry>
 
-    return response
+    return response.data
 }
 
 export async function addQueueEntry(id: string, payload: AddQueueEntryPayload): Promise<QueueEntry> {
