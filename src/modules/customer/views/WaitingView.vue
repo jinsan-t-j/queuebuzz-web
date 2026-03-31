@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onBeforeMount, onUnmounted, watch } from 'vue'
+import { ref, computed, onBeforeMount, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { useQueueStore } from '@/stores/queue.store'
@@ -10,12 +10,14 @@ import WaitingStats from '@/modules/customer/components/WaitingStats.vue'
 import WaitingProgress from '@/modules/customer/components/WaitingProgress.vue'
 import WaitingAdUnit from '@/modules/customer/components/WaitingAdUnit.vue'
 import TicketSaveBar from '@/modules/customer/components/TicketSaveBar.vue'
-import RecoverByEmailAccordion from '@/modules/customer/components/RecoverByEmailAccordion.vue'
+import CustomerSettingsModal from '@/modules/customer/components/CustomerSettingsModal.vue'
+import BaseCard from '@/components/base/BaseCard.vue'
 import PWABanner from '@/modules/customer/components/PWABanner.vue'
 import TicketCaptureTemplate from '@/modules/customer/components/TicketCaptureTemplate.vue'
 
 import { useCustomer } from '../composables/useCustomer'
 import { useCapture } from '@/composables/useCapture'
+import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -24,7 +26,22 @@ const { isCapturing: isSaving, hasCaptured: isSaved, captureElement } = useCaptu
 const {entry, isLoading, position, ahead, estWaitMin, status, isJoined, leaveQueue, fetchEntry, connectEvents, disconnectEvents} = useCustomer()
 const queueStore = useQueueStore()
 
+const isSettingsModalOpen = ref(false)
+const showEmailHighlight = ref(false)
 const queueName = computed(() => queueStore.activeQueue?.name ?? 'Your Queue')
+
+onMounted(() => {
+  // Point to settings after 1 second if recovery email is missing
+  setTimeout(() => {
+    if (entry.value && !entry.value.email) {
+      showEmailHighlight.value = true
+    }
+  }, 1000)
+})
+
+watch(isSettingsModalOpen, (isOpen) => {
+  if (isOpen) showEmailHighlight.value = false
+})
 
 async function saveTicketAsImage() {
   if (!entry.value) return
@@ -143,7 +160,39 @@ onUnmounted(() => {
 
       <WaitingAdUnit :est-wait-min="estWaitMin" />
 
-      <RecoverByEmailAccordion />
+      <!-- Entry Settings Section -->
+      <BaseCard 
+        :class="[
+          'p-6 border-dashed transition-all duration-700',
+          showEmailHighlight 
+            ? 'border-mint bg-mint-light/30 ring-2 ring-mint ring-offset-sand scale-[1.02] shadow-[0_0_20px_rgba(0,229,160,0.25)]' 
+            : 'border-plum-faint bg-white/50'
+        ]"
+      >
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-0.5">
+              <h3 class="font-display text-base font-bold text-plum">Settings</h3>
+              <span v-if="showEmailHighlight" class="animate-pulse rounded-full bg-mint px-2 py-0.5 font-body text-[10px] font-bold text-plum">
+                 Recommended
+              </span>
+            </div>
+            <p class="font-body text-xs text-plum-muted/80">
+              Update details or add a recovery email to keep your spot.
+            </p>
+          </div>
+          <button 
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-plum-faint bg-white text-plum shadow-sm hover:border-plum transition-colors relative"
+            @click="isSettingsModalOpen = true"
+          >
+            <SettingsIcon class="h-5 w-5" />
+            <span v-if="showEmailHighlight" class="absolute -right-1 -top-1 flex h-3 w-3">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-mint opacity-75" />
+              <span class="relative inline-flex h-3 w-3 rounded-full bg-mint" />
+            </span>
+          </button>
+        </div>
+      </BaseCard>
 
       <TicketSaveBar
         :ticket-number="String(entry.ticketNo)"
@@ -159,6 +208,10 @@ onUnmounted(() => {
         :ticket-number="String(entry.ticketNo)"
         :queue-name="queueName"
         join-date="Mar 31, 2026"
+      />
+
+      <CustomerSettingsModal 
+        v-model:is-open="isSettingsModalOpen"
       />
     </div>
   </div>

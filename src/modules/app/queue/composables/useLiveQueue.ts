@@ -171,6 +171,10 @@ export function useLiveQueue() {
         isStreamConnected: computed(() => store.isStreamConnected),
         queueUrl,
 
+        // Party Constraints
+        canJoinWithParty: computed(() => store.canJoinWithParty),
+        maxAllowedPartySize: computed(() => store.maxAllowedPartySize),
+
         // UI state
         showAddGuestModal,
         showStatusUpdateModal,

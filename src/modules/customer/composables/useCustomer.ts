@@ -1,6 +1,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
+import { useQueueStore } from '@/stores/queue.store'
 import * as CustomerActions from '@/modules/customer/actions/customer.action'
 import type { JoinQueuePayload } from '@/modules/customer/types'
 import { useToast } from '@/composables/useToast'
@@ -65,6 +66,11 @@ export function useCustomer() {
         isJoined: computed(() => store.isJoined),
         isLoading: computed(() => store.isLoading),
         error: computed(() => store.error),
+
+        // Party Constraints (from queue store)
+        canJoinWithParty: computed(() => useQueueStore().canJoinWithParty),
+        maxAllowedPartySize: computed(() => useQueueStore().maxAllowedPartySize),
+
         handleJoinQueue,
         joinByCode: handleJoinByCode,
         leaveQueue: handleLeaveQueue,

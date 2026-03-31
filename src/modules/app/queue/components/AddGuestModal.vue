@@ -10,7 +10,7 @@ import CloseXIcon from '@/assets/icons/close-x.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
-import { useQueueStore } from '@/stores/queue.store'
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 const props = defineProps({
   isOpen: {
@@ -21,9 +21,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'submit'])
 
-const queueStore = useQueueStore()
-const canJoinWithParty = computed(() => queueStore.canJoinWithParty)
-const maxAllowedPartySize = computed(() => queueStore.maxAllowedPartySize)
+const { canJoinWithParty, maxAllowedPartySize } = useLiveQueue()
 
 const schema = computed(() => yup.object({
   name: yup.string().required('Guest name is required'),

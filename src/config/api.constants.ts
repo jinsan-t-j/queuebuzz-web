@@ -54,7 +54,7 @@ export const API_ROUTES = {
         LEAVE_GUEST: '/customer/entry/leave',
         RECOVER_SESSION: '/customer/entry/recover-session',
         SUBMIT_RATING: () => `/customer/entry/rating`,
-        UPDATE_EMAIL: '/customer/entry/user/email',
+        UPDATE_ENTRY: '/customer/entry/update',
     },
     SHARED: {
         CREATE_QUEUE: '/queue/create',

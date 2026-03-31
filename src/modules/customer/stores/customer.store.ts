@@ -249,6 +249,23 @@ export const useCustomerStore = defineStore('customer', {
             }
         },
 
+        async updateEntry(payload: { name?: string, email?: string, partySize?: number }): Promise<boolean> {
+            try {
+                const result = await CustomerActions.updateEntry(payload)
+                if (result.success) {
+                    if (this.entry) {
+                        if (payload.name) this.entry.name = payload.name
+                        if (payload.email) this.entry.email = payload.email
+                        if (payload.partySize) this.entry.partySize = payload.partySize
+                    }
+                }
+                return result.success
+            } catch (e: any) {
+                this.error = e?.response?.data?.message || 'Failed to update entry'
+                return false
+            }
+        },
+
         async confirmStillHere(): Promise<boolean> {
             if (!this.entry?.id) return false
             try {

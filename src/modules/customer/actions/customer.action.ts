@@ -99,12 +99,18 @@ export async function submitRating(rating: number): Promise<MutationResult> {
     }
 }
 
-export async function updateEmail(email: string): Promise<MutationResult> {
+export async function updateEntry(payload: { name?: string, email?: string, partySize?: number }): Promise<MutationResult> {
     const config = createApiRequestConfig({}, { withCredentials: true })
     try {
-        await apiClient.post(API_ROUTES.CUSTOMER.UPDATE_EMAIL, { email }, config)
+        const body = {
+            name: payload.name,
+            email: payload.email,
+            party_size: payload.partySize
+        }
+        await apiClient.post(API_ROUTES.CUSTOMER.UPDATE_ENTRY, body, config)
         return { success: true }
     } catch (e) {
+        console.error('Failed to update entry:', e)
         return { success: false }
     }
 }
