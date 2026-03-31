@@ -35,3 +35,8 @@ export interface JoinByCodeResult {
     queueName?: string
     queueId?: string
 }
+
+export interface JoinByCodeResponse {
+    queueId: string
+    queueName: string
+}

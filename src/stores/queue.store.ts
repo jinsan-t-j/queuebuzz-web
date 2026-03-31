@@ -3,29 +3,29 @@ import { defineStore } from 'pinia'
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
 import type {
-    QueueEntry,
-    QueueStatus,
-    QueueRecord,
-    QueueSseEnvelopeMap,
-    QueueStatusEventData,
-    AddQueueEntryPayload,
-    UpdateQueuePayload,
+  QueueEntry,
+  QueueStatus,
+  QueueRecord,
+  QueueSseEnvelopeMap,
+  QueueStatusEventData,
+  AddQueueEntryPayload,
+  UpdateQueuePayload,
 } from '@/modules/app/queue/types'
 import {
-    getLiveQueue,
-    getLiveQueueById,
-    pauseQueue,
-    resumeQueue,
-    terminateQueue,
-    addQueueEntry as apiAddQueueEntry,
-    callNext as apiCallNext,
-    updateQueue as apiUpdateQueue,
-    callGuest as apiCallGuest,
-    serveGuest as apiServeGuest,
+  getLiveQueue,
+  getLiveQueueById,
+  pauseQueue,
+  resumeQueue,
+  terminateQueue,
+  addQueueEntry as apiAddQueueEntry,
+  callNext as apiCallNext,
+  updateQueue as apiUpdateQueue,
+  callGuest as apiCallGuest,
+  serveGuest as apiServeGuest,
 } from '@/modules/app/queue/actions/queue.action'
 import {
-    normalizeLiveQueueEntries,
-    normalizeQueueEntry,
+  normalizeLiveQueueEntries,
+  normalizeQueueEntry,
 } from '@/modules/app/queue/transforms'
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
 
@@ -317,150 +317,150 @@ export const useQueueStore = defineStore('queue', {
       }
     },
 
-        applyEntryStatus(data: QueueStatusEventData) {
-            this.entries = this.entries.map((entry) =>
-                entry.id === data.token || entry.id === (data as any).id
-                    ? { ...entry, status: data.status.toUpperCase() as any }
-                    : entry
-            )
-        },
-
-        async pause(): Promise<boolean> {
-            if (!this.activeQueue) return false
-
-            this.isLoading = true
-            this.error = null
-            try {
-                await pauseQueue(this.activeQueue.id)
-                if (this.activeQueue) {
-                    this.activeQueue.status = 'paused'
-                }
-                return true
-            } catch (e: any) {
-                this.error = e?.response?.data?.message || 'Failed to pause queue'
-                return false
-            } finally {
-                this.isLoading = false
-            }
-        },
-
-        async resume(): Promise<boolean> {
-            if (!this.activeQueue) return false
-
-            this.isLoading = true
-            this.error = null
-            try {
-                await resumeQueue(this.activeQueue.id)
-                if (this.activeQueue) {
-                    this.activeQueue.status = 'active'
-                }
-                return true
-            } catch (e: any) {
-                this.error = e?.response?.data?.message || 'Failed to resume queue'
-                return false
-            } finally {
-                this.isLoading = false
-            }
-        },
-
-        async terminate(): Promise<boolean> {
-            if (!this.activeQueue) return false
-
-            this.isLoading = true
-            this.error = null
-            try {
-                await terminateQueue(this.activeQueue.id)
-                this.clearQueue()
-                return true
-            } catch (e: any) {
-                this.error = e?.response?.data?.message || 'Failed to terminate queue'
-                return false
-            } finally {
-                this.isLoading = false
-            }
-        },
-
-        async addQueueEntry(guest: AddQueueEntryPayload): Promise<boolean> {
-            if (!this.activeQueue) return false
-
-            this.error = null
-            try {
-                await apiAddQueueEntry(this.activeQueue.id, guest)
-                return true
-            } catch (e: any) {
-                this.error = e?.response?.data?.message || 'Failed to add guest'
-                return false
-            }
-        },
-
-        async callNext(): Promise<boolean> {
-            if (!this.activeQueue) return false
-
-            this.error = null
-            try {
-                await apiCallNext(this.activeQueue.id)
-                return true
-            } catch (e: any) {
-                this.error = e?.response?.data?.message || 'Failed to call next guest'
-                return false
-            }
-        },
-
-        async callGuest(entryId: string): Promise<boolean> {
-            if (!this.activeQueue) return false
-
-            this.error = null
-            try {
-                await apiCallGuest(this.activeQueue.id, entryId)
-                return true
-            } catch (e: any) {
-                this.error = e?.response?.data?.message || 'Failed to call guest'
-                return false
-            }
-        },
-
-        async serveGuest(entryId: string): Promise<boolean> {
-            if (!this.activeQueue) return false
-
-            this.error = null
-            try {
-                await apiServeGuest(this.activeQueue.id, entryId)
-                return true
-            } catch (e: any) {
-                this.error = e?.response?.data?.message || 'Failed to serve guest'
-                return false
-            }
-        },
-
-        async updateQueue(payload: UpdateQueuePayload): Promise<boolean> {
-            if (!this.activeQueue) return false
-            this.isLoading = true
-            this.error = null
-            try {
-                const updated = await apiUpdateQueue(this.activeQueue.id, payload)
-                this.activeQueue = updated
-                return true
-            } catch (e: any) {
-                this.error = e?.response?.data?.message || 'Failed to update queue'
-                return false
-            } finally {
-                this.isLoading = false
-            }
-        },
-
-        clearQueue() {
-            this.disconnectLiveUpdates()
-            this.activeQueue = null
-            this.entries = []
-            this.publicWaitingCount = null
-            this.error = null
-        },
-
-        clearError() {
-            this.error = null
-        },
+    applyEntryStatus(data: QueueStatusEventData) {
+      this.entries = this.entries.map((entry) =>
+        entry.id === data.token || entry.id === (data as any).id
+          ? { ...entry, status: data.status.toUpperCase() as any }
+          : entry
+      )
     },
-    persist: {
-        pick: ['activeQueue', 'entries', 'servedEntries', 'servedTodayCount', 'error'],
+
+    async pause(): Promise<boolean> {
+      if (!this.activeQueue) return false
+
+      this.isLoading = true
+      this.error = null
+      try {
+        await pauseQueue(this.activeQueue.id)
+        if (this.activeQueue) {
+          this.activeQueue.status = 'paused'
+        }
+        return true
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to pause queue'
+        return false
+      } finally {
+        this.isLoading = false
+      }
     },
+
+    async resume(): Promise<boolean> {
+      if (!this.activeQueue) return false
+
+      this.isLoading = true
+      this.error = null
+      try {
+        await resumeQueue(this.activeQueue.id)
+        if (this.activeQueue) {
+          this.activeQueue.status = 'active'
+        }
+        return true
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to resume queue'
+        return false
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async terminate(): Promise<boolean> {
+      if (!this.activeQueue) return false
+
+      this.isLoading = true
+      this.error = null
+      try {
+        await terminateQueue(this.activeQueue.id)
+        this.clearQueue()
+        return true
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to terminate queue'
+        return false
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async addQueueEntry(guest: AddQueueEntryPayload): Promise<boolean> {
+      if (!this.activeQueue) return false
+
+      this.error = null
+      try {
+        await apiAddQueueEntry(this.activeQueue.id, guest)
+        return true
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to add guest'
+        return false
+      }
+    },
+
+    async callNext(): Promise<boolean> {
+      if (!this.activeQueue) return false
+
+      this.error = null
+      try {
+        await apiCallNext(this.activeQueue.id)
+        return true
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to call next guest'
+        return false
+      }
+    },
+
+    async callGuest(entryId: string): Promise<boolean> {
+      if (!this.activeQueue) return false
+
+      this.error = null
+      try {
+        await apiCallGuest(this.activeQueue.id, entryId)
+        return true
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to call guest'
+        return false
+      }
+    },
+
+    async serveGuest(entryId: string): Promise<boolean> {
+      if (!this.activeQueue) return false
+
+      this.error = null
+      try {
+        await apiServeGuest(this.activeQueue.id, entryId)
+        return true
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to serve guest'
+        return false
+      }
+    },
+
+    async updateQueue(payload: UpdateQueuePayload): Promise<boolean> {
+      if (!this.activeQueue) return false
+      this.isLoading = true
+      this.error = null
+      try {
+        const updated = await apiUpdateQueue(this.activeQueue.id, payload)
+        this.activeQueue = updated
+        return true
+      } catch (e: any) {
+        this.error = e?.response?.data?.message || 'Failed to update queue'
+        return false
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    clearQueue() {
+      this.disconnectLiveUpdates()
+      this.activeQueue = null
+      this.entries = []
+      this.publicWaitingCount = null
+      this.error = null
+    },
+
+    clearError() {
+      this.error = null
+    },
+  },
+  persist: {
+    pick: ['activeQueue', 'entries', 'servedEntries', 'servedTodayCount'],
+  },
 })

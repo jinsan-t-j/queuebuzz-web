@@ -4,6 +4,7 @@ import type {
     JoinQueuePayload,
     MutationResult,
     JoinByCodeResult,
+    JoinByCodeResponse,
     Entry
 } from '../types'
 import { ApiSuccessResponse } from '@/types/app'
@@ -118,11 +119,18 @@ export async function updateEntry(payload: { name?: string, email?: string, part
 export async function joinByCode(code: string): Promise<JoinByCodeResult> {
     const config = createApiRequestConfig()
     try {
-        const response = await apiClient.get<ApiSuccessResponse<JoinByCodeResult>>(API_ROUTES.CUSTOMER.RESOLVE_CODE(code), config) as unknown as ApiSuccessResponse<JoinByCodeResult>
+        const response = await apiClient.get<ApiSuccessResponse<JoinByCodeResponse>>(API_ROUTES.CUSTOMER.JOIN_BY_CODE(code), config) as unknown as ApiSuccessResponse<JoinByCodeResponse>
+
+        const data = response.data
+
+        if (!data || !data.queueId) {
+            return { found: false }
+        }
+
         return {
             found: true,
-            queueName: response.data.queueName,
-            queueId: response.data.queueId
+            queueName: data.queueName,
+            queueId: data.queueId
         }
     } catch (e) {
         console.error('Failed to resolve code:', e)

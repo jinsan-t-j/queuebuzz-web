@@ -284,7 +284,9 @@ export const useCustomerStore = defineStore('customer', {
             this.error = null
         },
     },
-    persist: true,
+    persist: {
+        pick: ['entry', 'position', 'connectedEntryId']
+    },
 
 })
 

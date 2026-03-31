@@ -27,6 +27,7 @@ export function useCustomer() {
         try {
             const result = await CustomerActions.joinByCode(code)
             if (result.found && result.queueId) {
+                store.error = null
                 router.push({ name: 'customer-join', params: { queueId: result.queueId } })
                 return result
             }
@@ -73,6 +74,7 @@ export function useCustomer() {
 
         handleJoinQueue,
         joinByCode: handleJoinByCode,
+        clearError: () => (store.error = null),
         leaveQueue: handleLeaveQueue,
         confirmStillHere: handleConfirmStillHere,
 

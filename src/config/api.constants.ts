@@ -45,8 +45,7 @@ export const API_ROUTES = {
     },
     CUSTOMER: {
         JOIN_QUEUE_BY_ID: (id: string): string => `/customer/entry/join/${id}`,
-        JOIN_BY_CODE: '/customer/entry/join-by-code',
-        RESOLVE_CODE: (code: string): string => `/customer/entry/resolve-code/${code}`,
+        JOIN_BY_CODE: (code: string): string => `/customer/entry/join-by-code/${code}`,
         GET_ENTRY: () => `/customer/entry`,
         ENTRY_EVENTS: () => `/customer/entry/events`,
         CONFIRM_STILL_HERE: () => `/customer/entry/confirm`,

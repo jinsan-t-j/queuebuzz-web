@@ -65,7 +65,7 @@ export const customerRoutes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: '/join-by-code',
+    path: '/join',
     component: () => import('@/layouts/CustomerLayout.vue'),
     beforeEnter: restrictHostGuard,
     children: [
