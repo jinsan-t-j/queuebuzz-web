@@ -28,7 +28,7 @@
   --font-body: 'DM Sans', system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Courier New', monospace;
 
-  --color-sand: #F7F3EE;
+  --color-sand: #F9F8F6;
   --color-sand-dark: #E8E2F0;
   --color-plum: #1A0A2E;
   --color-plum-soft: #2D1B4E;
@@ -103,7 +103,24 @@
 
 /* Shake animation for code input error state */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-  20%, 40%, 60%, 80% { transform: translateX(4px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
 }

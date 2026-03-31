@@ -8,12 +8,12 @@
 
 // 6. Props
 defineProps({
-  estWaitMin: { type: Number, default: 12 },
+  estWaitMin: { type: Number},
 })
 </script>
 
 <template>
-  <div v-if="estWaitMin > 5" class="text-center">
+  <div v-if="estWaitMin > 3" class="text-center">
     <p class="mb-3 font-body text-[10px] font-bold uppercase tracking-[1px] text-plum-muted/60">
       Sponsored
     </p>

@@ -8,7 +8,7 @@
  * @prop {String} queueName - Queue name for QR content.
  * @prop {Boolean} showLeaveButton - Whether to show the "Leave Queue" button.
  * @emits {leave-queue} - Emitted when leave is confirmed.
- * @emits {show-qr} - Emitted when QR is tapped for fullscreen.
+ * @emits {save-ticket} - Emitted when QR is tapped for fullscreen.
  */
 
 // 1. Vue core imports
@@ -17,8 +17,9 @@ import { ref, onMounted } from 'vue'
 // 3. Third-party composables
 import QRCode from 'qrcode'
 
-// 5. Component imports
-import { Maximize2 } from 'lucide-vue-next'
+import { Download, AlertCircle } from 'lucide-vue-next'
+import BaseModal from '@/components/base/BaseModal.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 // 6. Props
 const props = defineProps({
@@ -28,31 +29,23 @@ const props = defineProps({
 })
 
 // 7. Emits
-const emit = defineEmits(['leave-queue', 'show-qr'])
+const emit = defineEmits(['leave-queue', 'save-ticket'])
 
 // 9. Reactive state
 const qrDataUrl = ref('')
-const isConfirmingLeave = ref(false)
+const isOpen = ref(false)
 
 // 11. Methods
-function handleLeaveClick() {
-  isConfirmingLeave.value = true
-}
-
 function confirmLeave() {
-  isConfirmingLeave.value = false
+  isOpen.value = false
   emit('leave-queue')
-}
-
-function cancelLeave() {
-  isConfirmingLeave.value = false
 }
 
 // 12. Lifecycle hooks
 onMounted(async () => {
   const qrValue = `https://queuebuzz.app/q/${props.queueName.toLowerCase().replace(/\s+/g, '-')}`
   qrDataUrl.value = await QRCode.toDataURL(qrValue, {
-    width: 160,
+    width: 400,
     margin: 2,
     color: { dark: '#1A0A2E', light: '#FFFFFF' },
   })
@@ -63,7 +56,7 @@ onMounted(async () => {
   <div class="rounded-3xl border border-plum-faint bg-white p-5 shadow-[0_4px_24px_rgba(26,10,46,0.08)]">
     <div class="flex">
       <!-- Left: Ticket info -->
-      <div class="flex w-[55%] flex-col justify-center">
+      <div class="flex w-[40%] flex-col justify-center">
         <p class="font-body text-xs font-semibold uppercase tracking-[2.4px] text-plum-muted">
           Your Ticket
         </p>
@@ -80,51 +73,81 @@ onMounted(async () => {
       </div>
 
       <!-- Right: QR code -->
-      <div class="flex w-[45%] flex-col items-center justify-center">
+      <div class="group relative flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(26,10,46,0.12)]">
         <img
           v-if="qrDataUrl"
           :src="qrDataUrl"
           alt="Queue QR code"
-          class="h-20 w-20 cursor-pointer rounded-lg"
-          @click="emit('show-qr')"
+          class="h-full w-full object-contain transition-transform duration-500 group-hover:scale-110"
+          @click="emit('save-ticket')"
         />
-        <div v-else class="h-20 w-20 animate-pulse rounded-lg bg-plum-faint" />
-        <button
-          class="mt-1 flex items-center gap-1 text-plum-muted"
-          @click="emit('show-qr')"
+
+        <!-- Hover Overlay (Premium feel from InfoQueueModal) -->
+        <div 
+          class="absolute inset-0 flex flex-col items-center justify-center bg-white/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-[2px]"
+          @click="emit('save-ticket')"
         >
-          <Maximize2 class="h-3 w-3" />
-        </button>
+          <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-xl">
+            <Download class="h-5 w-5 text-plum" />
+          </div>
+          <span class="font-body text-[10px] font-bold uppercase tracking-widest text-plum shadow-sm">
+            Save Ticket
+          </span>
+        </div>
+
+        <!-- Static Fallback label (visible when mobile/not hovered) -->
+        <div class="mt-1 flex items-center gap-1 opacity-40 group-hover:opacity-0 transition-opacity lg:hidden">
+          <Download class="h-2.5 w-2.5 text-plum" />
+          <span class="font-body text-[10px] font-bold uppercase tracking-wider text-plum">
+            Tap to Save
+          </span>
+        </div>
       </div>
     </div>
 
     <!-- Leave Queue button -->
     <div v-if="showLeaveButton" class="mt-4">
-      <!-- Default state -->
       <button
-        v-if="!isConfirmingLeave"
         class="flex h-10 w-full items-center justify-center rounded-full bg-danger font-body text-sm font-bold text-white transition-colors hover:bg-danger/90"
-        @click="handleLeaveClick"
+        @click="isOpen = true"
       >
         Leave Queue
       </button>
 
-      <!-- Confirm row -->
-      <div v-else class="flex items-center justify-center gap-3">
-        <span class="font-body text-sm text-plum-muted">Sure?</span>
-        <button
-          class="rounded-full bg-danger px-4 py-1.5 font-body text-xs font-semibold text-white"
-          @click="confirmLeave"
-        >
-          Yes
-        </button>
-        <button
-          class="rounded-full border border-plum-faint px-4 py-1.5 font-body text-xs font-semibold text-plum"
-          @click="cancelLeave"
-        >
-          Cancel
-        </button>
-      </div>
+      <!-- Confirmation Modal -->
+      <BaseModal :is-open="isOpen" @close="isOpen = false">
+        <div class="relative w-full overflow-hidden bg-white p-8 text-center shadow-xl">
+          <div class="flex flex-col items-center">
+            <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-danger/10 text-danger">
+              <AlertCircle class="h-7 w-7" />
+            </div>
+            
+            <h3 class="font-display text-2xl font-bold text-plum">
+              Leave queue?
+            </h3>
+            <p class="mt-2 font-body text-sm text-plum/50">
+              You will lose your current position and will need to re-join the line from the start.
+            </p>
+
+            <div class="mt-8 flex w-full flex-col gap-3">
+              <BaseButton
+                variant="danger"
+                class="w-full py-4 text-sm font-bold active:scale-[0.98] transition-all"
+                @click="confirmLeave"
+              >
+                Yes, Leave Now
+              </BaseButton>
+              <BaseButton
+                variant="ghost"
+                class="w-full h-11 text-plum-muted font-bold tracking-widest text-[10px] uppercase transition-all"
+                @click="isOpen = false"
+              >
+                Keep my spot
+              </BaseButton>
+            </div>
+          </div>
+        </div>
+      </BaseModal>
     </div>
   </div>
 </template>

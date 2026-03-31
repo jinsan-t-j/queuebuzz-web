@@ -37,7 +37,7 @@ const currentYear = computed(() => new Date().getFullYear())
         © {{ currentYear }} queuebuzz. All rights reserved
       </p>
       <p class="text-center font-body text-[10px] capitalize tracking-tight text-plum-muted">
-        <router-link to="/terms" class="hover:text-plum">Terms & Conditions</router-link> | <router-link to="/privacy" class="hover:text-plum">Privacy Policy</router-link>
+        <router-link to="/terms" target="_blank" class="hover:text-plum">Terms & Conditions</router-link> | <router-link to="/privacy" target="_blank" class="hover:text-plum">Privacy Policy</router-link>
       </p>
     </div>
   </footer>

@@ -268,12 +268,14 @@ const handleJoin = handleSubmit(async (values) => {
           emailError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-plum-faint/30'
         ]"
       >
-        <input
+        <div class="bg-white p-3 rounded-xl">
+          <input
           v-model="email"
           type="email"
           placeholder="your@email.com"
           class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none"
         />
+        </div>
         <p v-if="emailError" class="mt-1 font-body text-[10px] text-danger">{{ emailError }}</p>
         <div class="mt-3 flex items-start gap-2">
           <Info class="mt-0.5 h-3 w-3 shrink-0 text-plum-muted/80" />
