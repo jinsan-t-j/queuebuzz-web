@@ -278,6 +278,8 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
 
     <InfoQueueModal
       v-if="activeQueue"
+      :queue-name="activeQueue.name"
+      :slug="activeQueue.slug"
       :is-open="showInfoModal"
       :join-code="activeQueue.joinCode"
       :queue-url="queueUrl"

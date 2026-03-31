@@ -9,7 +9,7 @@ import { ref, onMounted } from 'vue'
 const props = defineProps<{
   queueName: string
   joinCode: string
-  slug: string
+  slug?: string
 }>()
 
 const qrDataUrl = ref('')

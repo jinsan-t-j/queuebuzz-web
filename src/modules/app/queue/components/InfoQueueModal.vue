@@ -24,7 +24,7 @@ const props = defineProps<{
   joinCode: string
   queueUrl: string
   queueName: string
-  slug: string
+  slug?: string
   variant?: 'success' | 'qr'
 }>()
 
