@@ -43,7 +43,7 @@ export function useCustomer() {
         const success = await store.leaveQueue()
         if (success) {
             showToast('You have left the queue.', { type: 'success' })
-            router.push('/')
+            router.push({ name: 'customer-ended', query: { reason: 'left' } })
         } else {
             showToast(store.error ?? 'Failed to leave queue', { type: 'error' })
         }
