@@ -1,8 +1,9 @@
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed } from 'vue'
 import { RouteLocationResolved, useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
 import { useQueueAnalysis } from './useQueueAnalysis'
+import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
 import type { LiveQueueGuestInput, UpdateQueuePayload } from '@/modules/app/queue/types'
 
 type SearchEmitter = (value: string) => void
@@ -34,8 +35,10 @@ export function useLiveQueue() {
     const queueUrl = computed(() => {
         let route: RouteLocationResolved
         if (!store.activeQueue) {
-            // TODO: Update with customer queue ended page
-            route = router.resolve({ name: 'guest-host-queue-ended', query: { reason: 'terminated' } })
+            route = router.resolve({ 
+              name: 'guest-host-queue-ended', 
+              query: { reason: QUEUE_ERROR_REASONS.TERMINATED } 
+            })
         }
 
         route = router.resolve({

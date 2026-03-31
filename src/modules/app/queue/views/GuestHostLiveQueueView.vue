@@ -18,6 +18,8 @@ import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
 import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
 import EmailNoticePopup from '@/modules/app/queue/components/EmailNoticePopup.vue'
 
+import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
+
 const router = useRouter()
 const route = useRoute()
 
@@ -58,28 +60,66 @@ const {
   error,
 } = useLiveQueue()
 
-const isRecoveryEmailMissing = computed(() => !activeQueue.value?.recoveryEmail)
+// 10. Methods - (Moving internal logic into lifecycle/watchers as refactored below)
+
+const queueId = route.params.id as string
+const hasInitialized = ref(false)
+
+/**
+ * Handles initial access check and subsequent session/queue state changes.
+ */
+function handleRedirection(reason: string) {
+  router.push({ 
+    name: 'guest-host-queue-ended', 
+    query: { reason } 
+  })
+}
+
+function checkQueueState() {
+  if (!hasInitialized.value) return
+
+  // 1. Check for specific error reasons from the store using constants
+  if (error.value) {
+    return handleRedirection(error.value)
+  }
+
+  // 2. Fallback: If no queue and no error, assume it was terminated locally
+  if (!activeQueue.value && !isApiLoading.value) {
+    handleRedirection(QUEUE_ERROR_REASONS.QUEUE_ENDED)
+  }
+}
+
+// Watchers
+watch([activeQueue, error], checkQueueState)
+
+onBeforeMount(async () => {
+  try {
+    await revalidateQueue(queueId)
+  } catch (err) {
+    console.error('Failed to revalidate queue:', err)
+  } finally {
+    hasInitialized.value = true
+    checkQueueState()
+  }
+})
+
+/**
+ * ═══ Recovery Email Notice Logic ═══
+ */
+const isRecoveryEmailMissing = computed(() => activeQueue.value && !activeQueue.value.recoveryEmail)
 const isNoticeVisible = ref(false)
 const storageKey = 'queuebuzz_hide_email_notice'
 let noticeInterval: ReturnType<typeof setInterval> | null = null
 
 function checkAndShowNotice() {
+  if (!activeQueue.value) return
   const isHiddenPermanently = localStorage.getItem(storageKey) === 'true'
-  if (isRecoveryEmailMissing.value && !isHiddenPermanently) {
-    isNoticeVisible.value = true
-  } else {
-    isNoticeVisible.value = false
-  }
+  isNoticeVisible.value = !!(isRecoveryEmailMissing.value && !isHiddenPermanently)
 }
 
 onMounted(() => {
-  setTimeout(() => {
-    checkAndShowNotice()
-  }, 1000)
-  
-  noticeInterval = setInterval(() => {
-    checkAndShowNotice()
-  }, 15 * 60 * 1000)
+  setTimeout(checkAndShowNotice, 2000)
+  noticeInterval = setInterval(checkAndShowNotice, 15 * 60 * 1000)
 })
 
 onUnmounted(() => {
@@ -95,42 +135,22 @@ function handleNoticeClose(doNotShowAgain: boolean) {
 }
 
 async function handleNoticeSubmit(email: string) {
-  await handleUpdateSettings({
-    recoveryEmail: email
-  })
+  await handleUpdateSettings({ recoveryEmail: email })
   isNoticeVisible.value = false
 }
-
-const queueId = route.params.id as string
-let hasInitialized = false
-
-onBeforeMount(async () => {
-  await revalidateQueue(queueId)
-  hasInitialized = true
-  if (!activeQueue.value) {
-    const reason = error.value === 'session_expired' ? 'expired' : 'terminated'
-    router.push({ name: 'guest-host-queue-ended', query: { reason } })
-  }
-})
-
-watch(activeQueue, (queue) => {
-  if (hasInitialized && !queue) {
-    const reason = error.value === 'session_expired' ? 'expired' : 'terminated'
-    router.push({ name: 'guest-host-queue-ended', query: { reason } })
-  }
-})
 
 async function onStatusUpdateConfirmed() {
   const isTerminate = statusUpdateMode.value === 'terminate'
   const success = await handleStatusUpdateConfirm()
   if (success && isTerminate) {
+    // Note: Terminates usually trigger the watcher to redirect, but we can also do it here.
     router.push({ name: 'guest-host-complete' })
   }
 }
 
 function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
-    statusUpdateMode.value = mode
-    showStatusUpdateModal.value = true
+  statusUpdateMode.value = mode
+  showStatusUpdateModal.value = true
 }
 </script>
 
@@ -142,9 +162,23 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
 
     <div class="relative z-10 mx-auto max-w-[1280px] px-6 pt-4 pb-2">
       <!-- Loading State -->
-      <div v-if="isApiLoading && !activeQueue" class="flex flex-col items-center justify-center min-h-[60vh] gap-6">
+      <div v-if="isApiLoading && !activeQueue && !error" class="flex flex-col items-center justify-center min-h-[60vh] gap-6">
         <div class="h-16 w-16 rounded-full border-4 border-plum-faint border-t-mint animate-spin"></div>
-        <p class="font-display text-xl font-bold text-plum/60">Loading your live queue...</p>
+        <p class="font-display text-xl font-bold text-plum/60">Syncing with server...</p>
+      </div>
+
+      <!-- Error State fallback (if redirection hasn't triggered yet) -->
+      <div v-else-if="error && !activeQueue" class="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-[#FEF2F2] flex items-center justify-center">
+          <svg class="w-8 h-8 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h2 class="font-display text-2xl font-bold text-plum">System offline or session expired</h2>
+        <p class="font-body text-plum-muted max-w-sm">
+          We encountered an issue connecting to your queue. Redirecting you to the home page...
+        </p>
+        <router-link to="/" class="text-plum underline font-medium">Head back now</router-link>
       </div>
 
       <div v-else-if="activeQueue" class="flex flex-col gap-4">
@@ -171,9 +205,9 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
           </div>
         </div>
 
-        <div class="flex gap-8">
-          <!-- Left column -->
-          <div class="flex w-[381px] shrink-0 flex-col gap-4">
+        <div class="flex flex-col gap-8 lg:flex-row">
+          <!-- Left column (Stats & Active Entrance) -->
+          <div class="flex w-full flex-col gap-4 lg:w-[381px] lg:shrink-0">
             <QueueStatCards
               :waiting-count="waitingCount"
               :avg-wait="avgWaitTime"
@@ -183,7 +217,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
               :entries="filteredEntries"
               :search-query="rawSearchQuery"
               :is-paused="isPaused"
-              :avg-service-mins="activeQueue?.avgServiceMins"
+              :avg-service-mins="activeQueue?.avgServiceMins || 2"
               @call-next="handleCallNext"
               @search="handleSearchUpdate($event)"
               @call-guest="handleCallGuest"
@@ -191,8 +225,8 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             />
           </div>
 
-          <!-- Right column -->
-          <div class="flex flex-1 flex-col gap-4">
+          <!-- Right column (Share, Actions, Analysis) -->
+          <div class="flex w-full flex-1 flex-col gap-4">
             <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
               <ShareCodeCard
                 :join-code="activeQueue?.joinCode"
