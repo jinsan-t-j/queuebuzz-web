@@ -12,6 +12,7 @@ import type { QueueRecord } from '@/modules/app/queue/types'
 import BaseModal from '@/components/base/BaseModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseSlider from '@/components/base/BaseSlider.vue'
+import BaseToggle from '@/components/base/BaseToggle.vue'
 import navSettingsIcon from '@/assets/icons/nav-settings.svg?component'
 import CloseIcon from '@/assets/icons/close-x.svg?component'
 import TimeIcon from '@/assets/icons/clock-time.svg?component'
@@ -37,7 +38,8 @@ const schema = yup.object({
   recoveryEmail: yup.string()
     .nullable()
     .email('Invalid email address')
-    .transform((value) => (value === '' ? null : value))
+    .transform((value) => (value === '' ? null : value)),
+  strictQueueMode: yup.boolean()
 })
 
 const { handleSubmit, errors, resetForm, meta } = useForm({
@@ -46,12 +48,14 @@ const { handleSubmit, errors, resetForm, meta } = useForm({
     queueName: props.queue?.name || '',
     avgServiceMins: props.queue?.avgServiceMins || 5,
     recoveryEmail: props.queue?.recoveryEmail || null,
+    strictQueueMode: props.queue?.strictQueueMode || false,
   }
 })
 
 const { value: queueName } = useField<string>('queueName')
 const { value: avgServiceMins } = useField<number>('avgServiceMins')
 const { value: recoveryEmail } = useField<string | null>('recoveryEmail')
+const { value: strictQueueMode } = useField<boolean>('strictQueueMode')
 
 const isRecoveryEmailSet = computed(() => !!props.queue?.recoveryEmail)
 
@@ -63,6 +67,7 @@ watch(() => props.queue, (newQueue) => {
         queueName: newQueue.name,
         avgServiceMins: newQueue.avgServiceMins,
         recoveryEmail: newQueue.recoveryEmail || null,
+        strictQueueMode: newQueue.strictQueueMode || false,
       }
     })
   }
@@ -72,7 +77,8 @@ const onSubmit = handleSubmit((values) => {
   emit('submit', {
     name: values.queueName,
     avgServiceMins: values.avgServiceMins,
-    recoveryEmail: values.recoveryEmail
+    recoveryEmail: values.recoveryEmail,
+    strictQueueMode: values.strictQueueMode
   })
 })
 
@@ -89,7 +95,7 @@ function selectSuggestion(suggestion: string) {
   <BaseModal :is-open="isOpen" @close="emit('close')">
     <div class="relative w-full rounded-[32px] bg-white p-6 shadow-2xl">
       <!-- Header -->
-      <div class="mb-8 flex items-center justify-between">
+      <div class="mb-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
           <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-plum/5">
             <navSettingsIcon class="h-5 w-5 text-plum" />
@@ -106,7 +112,7 @@ function selectSuggestion(suggestion: string) {
         </button>
       </div>
 
-      <div class="max-h-[70vh] px-1 pb-4">
+      <div class="px-1">
         <form @submit.prevent="onSubmit" class="space-y-6">
           <!-- Queue Name -->
           <div class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10">
@@ -163,6 +169,21 @@ function selectSuggestion(suggestion: string) {
             </div>
           </div>
 
+          <!-- Strict Calling Mode -->
+          <div class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col gap-1">
+                <label class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-plum/50">
+                  Strict Calling Mode
+                </label>
+                <p class="font-body text-[10px] text-plum/40 leading-relaxed max-w-[200px]">
+                  Call next guest only after marking current guest as served.
+                </p>
+              </div>
+              <BaseToggle v-model="strictQueueMode" />
+            </div>
+          </div>
+
           <!-- Recovery Email -->
           <div class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10"
                :class="{ 'bg-sand/50 opacity-80': isRecoveryEmailSet }">
@@ -196,7 +217,7 @@ function selectSuggestion(suggestion: string) {
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center justify-end gap-3 pt-4">
+          <div class="flex items-center justify-end gap-3">
             <BaseButton
               type="button"
               variant="ghost"

@@ -76,7 +76,7 @@ export function useLiveQueue() {
     async function handleCallNext() {
         if (!store.activeQueue) return
 
-        const success = await store.callNext()
+        const success = await store.callEntry()
         if (success) {
             showToast(`Calling next guest...`)
         } else if (store.error) {
@@ -114,7 +114,7 @@ export function useLiveQueue() {
     }
 
     async function handleCallGuest(entryId: string) {
-        const success = await store.callGuest(entryId)
+        const success = await store.callEntry(entryId)
         if (success) {
             showToast('Calling guest...')
         } else if (store.error) {

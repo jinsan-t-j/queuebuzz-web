@@ -17,6 +17,7 @@ import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
 import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
 import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
+import HostTips from '@/modules/app/queue/components/HostTips.vue'
 
 const router = useRouter()
 const {
@@ -24,6 +25,7 @@ const {
   isPaused,
   waitingCount,
   avgWaitTime,
+  isLoading,
   queueUrl,
 
   showAddGuestModal,
@@ -111,6 +113,8 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             :entries="filteredEntries"
             :search-query="rawSearchQuery"
             :is-paused="isPaused"
+            :is-loading="isLoading"
+            :strict-queue-mode="activeQueue?.strictQueueMode"
             :avg-service-mins="activeQueue?.avgServiceMins"
             @call-next="handleCallNext"
             @search="handleSearchUpdate"
@@ -162,6 +166,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       :is-open="showInfoModal"
       :join-code="activeQueue?.joinCode ?? ''"
       :queue-url="queueUrl"
+      :queue-name="activeQueue?.name ?? ''"
       @close="showInfoModal = false"
     />
 
@@ -178,5 +183,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       @close="showSettingsModal = false"
       @submit="handleUpdateSettings"
     />
+
+    <HostTips />
   </div>
 </template>

@@ -54,9 +54,13 @@ export async function getLiveQueueById(id: string): Promise<QueueRecord> {
     return response.data
 }
 
-export async function callNext(id: string): Promise<QueueEntry> {
+export async function callEntry(id: string, entryId?: string): Promise<QueueEntry> {
     const config = createApiRequestConfig({}, { withCredentials: true })
-    const response = await apiClient.post<ApiSuccessResponse<QueueEntry>>(API_ROUTES.QUEUE.CALL_NEXT(id), null, config) as unknown as ApiSuccessResponse<QueueEntry>
+    const response = await apiClient.post<ApiSuccessResponse<QueueEntry>>(
+        API_ROUTES.QUEUE.CALL_ENTRY(id, entryId),
+        null,
+        config
+    ) as unknown as ApiSuccessResponse<QueueEntry>
 
     return response.data
 }
@@ -81,11 +85,6 @@ export async function resumeQueue(id: string): Promise<void> {
 export async function terminateQueue(id: string): Promise<void> {
     const config = createApiRequestConfig({}, { withCredentials: true })
     await apiClient.post(API_ROUTES.QUEUE.TERMINATE(id), null, config)
-}
-
-export async function callGuest(id: string, entryId: string): Promise<void> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    await apiClient.post(API_ROUTES.QUEUE.CALL_GUEST(id, entryId), null, config)
 }
 
 export async function serveGuest(id: string, entryId: string): Promise<void> {

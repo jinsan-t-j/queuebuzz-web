@@ -19,6 +19,7 @@ import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSett
 import EmailNoticePopup from '@/modules/app/queue/components/EmailNoticePopup.vue'
 
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
+import HostTips from '../components/HostTips.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -316,5 +317,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
         @close="handleNoticeClose"
       />
     </Transition>
+
+    <HostTips />
   </div>
 </template>

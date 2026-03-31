@@ -13,6 +13,7 @@ export interface QueueRecord {
   status: QueueStatus
   allowPartyJoining: boolean
   maxPartySize: number
+  strictQueueMode: boolean
   recoveryEmail?: string
   createdAt?: string
   expiresAt?: string
@@ -55,6 +56,7 @@ export interface UpdateQueuePayload {
   avgServiceMins?: number;
   slug?: string;
   recoveryEmail?: string;
+  strictQueueMode?: boolean;
 }
 
 export type TrendDirection = 'up' | 'down' | 'flat'

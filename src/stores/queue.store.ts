@@ -18,9 +18,8 @@ import {
   resumeQueue,
   terminateQueue,
   addQueueEntry as apiAddQueueEntry,
-  callNext as apiCallNext,
+  callEntry as apiCallEntry,
   updateQueue as apiUpdateQueue,
-  callGuest as apiCallGuest,
   serveGuest as apiServeGuest,
 } from '@/modules/app/queue/actions/queue.action'
 import {
@@ -393,28 +392,16 @@ export const useQueueStore = defineStore('queue', {
       }
     },
 
-    async callNext(): Promise<boolean> {
+    async callEntry(entryId?: string): Promise<boolean> {
       if (!this.activeQueue) return false
 
       this.error = null
       try {
-        await apiCallNext(this.activeQueue.id)
+        await apiCallEntry(this.activeQueue.id, entryId)
         return true
       } catch (e: any) {
-        this.error = e?.response?.data?.message || 'Failed to call next guest'
-        return false
-      }
-    },
-
-    async callGuest(entryId: string): Promise<boolean> {
-      if (!this.activeQueue) return false
-
-      this.error = null
-      try {
-        await apiCallGuest(this.activeQueue.id, entryId)
-        return true
-      } catch (e: any) {
-        this.error = e?.response?.data?.message || 'Failed to call guest'
+        const action = entryId ? 'ping guest' : 'call next guest'
+        this.error = e?.response?.data?.message || `Failed to ${action}`
         return false
       }
     },

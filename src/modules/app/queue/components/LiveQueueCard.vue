@@ -12,7 +12,7 @@
  */
 
 // 1. Vue core imports
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 // 2. Router / Pinia imports
 
@@ -45,6 +45,14 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  strictQueueMode: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 // 7. Emits
@@ -63,6 +71,12 @@ const selectedEntry = ref(null)
 const isDetailsModalOpen = ref(false)
 
 // 10. Computed properties
+const hasActiveCalledEntry = computed(() => props.entries.some(e => e.status === 'CALLED'))
+const nextCallDisabled = computed(() => {
+  if (props.isLoading || props.isPaused || props.entries.length === 0) return true
+  if (props.strictQueueMode && hasActiveCalledEntry.value) return true
+  return false
+})
 
 // 11. Methods
 
@@ -176,22 +190,26 @@ onUnmounted(() => {
     <div class="border-t border-plum/5 p-4">
       <button
         class="flex w-full items-center justify-center gap-3 rounded-2xl px-8 py-4 font-body text-lg font-bold transition-all active:scale-[0.98] cursor-pointer"
-        :disabled="entries.length === 0 || isPaused"
+        :disabled="nextCallDisabled"
         :class="
-          entries.length > 0 && !isPaused
+          !nextCallDisabled
             ? 'bg-plum text-sand hover:bg-plum-soft shadow-lg shadow-plum/10'
             : 'bg-plum/40 text-white cursor-not-allowed'
         "
         @click="emit('call-next')"
       >
-        <CallNextIcon class="h-4 w-5" :class="entries.length > 0 && !isPaused ? 'text-mint' : 'text-white'" />
-        Call Next Guest
+        <CallNextIcon class="h-4 w-5" :class="!nextCallDisabled ? 'text-mint' : 'text-white'" />
+        {{ isLoading ? 'Calling...' : 'Call Next Guest' }}
       </button>
       <p
-        v-if="entries.length === 0 || isPaused"
-        class="mt-3 text-center font-body text-xs font-medium text-plum/30"
+        v-if="entries.length === 0 || isPaused || (strictQueueMode && hasActiveCalledEntry)"
+        class="mt-3 text-center font-body text-[10px] font-bold uppercase tracking-wider text-plum/30"
       >
-        {{ isPaused ? 'Resume queue to call guests' : '' }}
+        <template v-if="isPaused">Resume queue to call guests</template>
+        <template v-else-if="strictQueueMode && hasActiveCalledEntry">
+          Serve current guest first
+        </template>
+        <template v-else-if="entries.length === 0">No guests waiting</template>
       </p>
     </div>
 
