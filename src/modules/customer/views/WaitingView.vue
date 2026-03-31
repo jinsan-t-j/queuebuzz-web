@@ -62,7 +62,9 @@ watch(
   (s) => {
     if (s === 'CALLED') router.push({ name: 'customer-called' })
     else if (s === 'SERVED') router.push({ name: 'customer-served' })
-    else if (s === 'LEFT' || s === 'SKIPPED') router.push('/')
+    else if (s === 'LEFT' || s === 'SKIPPED') {
+      router.push({ name: 'customer-ended', query: { reason: s.toLowerCase() } })
+    }
   }
 )
 

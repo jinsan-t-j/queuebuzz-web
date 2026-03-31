@@ -50,6 +50,13 @@ export const customerRoutes: RouteRecordRaw[] = [
         component: () => import('@/modules/customer/views/NotFoundView.vue'),
         meta: { title: 'Queue Not Found' },
       },
+      {
+        path: 'ended',
+        name: 'customer-ended',
+        component: () => import('@/modules/customer/views/EntryEndedView.vue'),
+        meta: { title: 'Session Ended' },
+        props: (route: any) => ({ reason: route.query.reason })
+      },
       // Global customer wildcard for unknown queue-specific paths
       {
         path: ':catchAll(.*)*',
