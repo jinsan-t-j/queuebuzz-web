@@ -109,16 +109,6 @@ export async function updateEmail(email: string): Promise<MutationResult> {
     }
 }
 
-export async function updatePIN(pin: string): Promise<MutationResult> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        await apiClient.post(API_ROUTES.CUSTOMER.UPDATE_PIN, { pin }, config)
-        return { success: true }
-    } catch (e) {
-        return { success: false }
-    }
-}
-
 export async function joinByCode(code: string): Promise<JoinByCodeResult> {
     const config = createApiRequestConfig()
     try {

@@ -39,7 +39,6 @@ export const API_ROUTES = {
         TERMINATE: (id: string): string => `/queue/${id}/terminate`,
         CALL_NEXT: (id: string): string => `/queue/${id}/next`,
         CALL_GUEST: (id: string, entryId: string): string => `/queue/${id}/call/${entryId}`,
-        SKIP: (id: string, entryId: string): string => `/queue/${id}/skip/${entryId}`,
         SERVE: (id: string, entryId: string): string => `/queue/${id}/serve/${entryId}`,
         ADD_ENTRY: (id: string): string => `/queue/${id}/add-entry`,
         UPDATE: (id: string): string => `/queue/${id}`,
@@ -56,7 +55,6 @@ export const API_ROUTES = {
         RECOVER_SESSION: '/customer/entry/recover-session',
         SUBMIT_RATING: () => `/customer/entry/rating`,
         UPDATE_EMAIL: '/customer/entry/user/email',
-        UPDATE_PIN: '/customer/entry/user/pin',
     },
     SHARED: {
         CREATE_QUEUE: '/queue/create',

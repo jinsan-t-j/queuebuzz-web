@@ -9,6 +9,8 @@ import { useShare } from '@vueuse/core'
 import QRCode from 'qrcode'
 import BaseModal from '@/components/base/BaseModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
+import HostQRCaptureTemplate from './HostQRCaptureTemplate.vue'
+import { useCapture } from '@/composables/useCapture'
 
 // Icons
 import CloseXIcon from '@/assets/icons/close-x.svg?component'
@@ -21,6 +23,8 @@ const props = defineProps<{
   isOpen: boolean
   joinCode: string
   queueUrl: string
+  queueName: string
+  slug: string
   variant?: 'success' | 'qr'
 }>()
 
@@ -31,6 +35,7 @@ const emit = defineEmits<{
 }>()
 
 const { share } = useShare()
+const { isCapturing, captureElement } = useCapture()
 
 const qrDataUrl = ref('')
 const copied = ref(false)
@@ -52,13 +57,11 @@ async function generateQr() {
   }
 }
 
-function handleDownload() {
-  if (qrDataUrl.value) {
-    const a = document.createElement('a')
-    a.href = qrDataUrl.value
-    a.download = `queuebuzz-${currentJoinCode.value}.png`
-    a.click()
-  }
+async function handleDownload() {
+  await captureElement(
+    'capture-host-qr',
+    `queuebuzz-qr-${props.joinCode}.png`
+  )
   emit('download')
 }
 
@@ -99,6 +102,13 @@ watch(
 <template>
   <BaseModal :is-open="isOpen" @close="emit('close')">
     <div class="relative w-full overflow-hidden rounded-[48px] bg-white p-8 text-center shadow-[0_30px_80px_rgba(26,10,46,0.15)]">
+      <!-- Hidden Capture Template -->
+      <HostQRCaptureTemplate
+        :queue-name="queueName"
+        :join-code="joinCode"
+        :slug="slug"
+      />
+
       <!-- Gradient background glow -->
       <div class="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-mint/5 blur-[100px]" />
       <div class="absolute -bottom-40 -right-40 h-80 w-80 rounded-full bg-plum/5 blur-[100px]" />
@@ -143,8 +153,9 @@ watch(
           
           <!-- Subtle icon overlay on hover -->
           <div class="absolute inset-0 flex items-center justify-center bg-white/20 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px]">
-            <div class="rounded-full bg-white p-3 shadow-lg">
-              <DownloadIcon class="h-6 w-6 text-plum" />
+            <div class="rounded-full bg-white p-3 shadow-lg" @click="handleDownload">
+              <DownloadIcon v-if="!isCapturing" class="h-6 w-6 text-plum" />
+              <div v-else class="h-6 w-6 animate-spin rounded-full border-2 border-plum border-t-transparent" />
             </div>
           </div>
         </div>
@@ -170,11 +181,12 @@ watch(
         <div class="flex flex-col gap-3">
           <BaseButton
             variant="primary"
+            :isLoading="isCapturing"
             class="w-full py-5 text-lg font-bold shadow-xl shadow-mint/20 active:scale-95 transition-all"
             @click="handleDownload"
           >
-            <DownloadIcon class="mr-2 h-5 w-5" />
-            DOWNLOAD QR
+            <DownloadIcon v-if="!isCapturing" class="mr-2 h-5 w-5" />
+            {{ isCapturing ? 'GENERATING...' : 'DOWNLOAD QR' }}
           </BaseButton>
 
           <BaseButton 
