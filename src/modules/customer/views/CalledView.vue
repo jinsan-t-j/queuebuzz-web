@@ -30,6 +30,7 @@ const {
   isSaved,
   saveTicketAsImage,
   confirmArrival,
+  finishService,
   leaveQueue,
   connectEvents,
   disconnectEvents
@@ -37,17 +38,25 @@ const {
 const queueStore = useQueueStore()
 
 const isLeaveModalOpen = ref(false)
+const isFinishModalOpen = ref(false)
 const isQrModalOpen = ref(false)
 const isConfirming = ref(false)
+const isFinishing = ref(false)
 
-const emit = defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr'])
+const emit = defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'service-finished'])
 
 // Watch for status changes to redirect if served or skipped
 watch(
   () => status.value,
   (s) => {
     const params = router.currentRoute.value.params
-    if (s === 'SERVED') router.push({ name: 'customer-served', params })
+    if (s === 'SERVED') {
+      router.push({ 
+        name: 'customer-served', 
+        params, 
+        query: { t: ticketNumber.value } 
+      })
+    }
     else if (s === 'ARRIVED') {
       // Stay on this page but shows "Arrived" state
     }
@@ -87,6 +96,30 @@ onUnmounted(() => {
   disconnectEvents()
 })
 
+const handleMainCta = async () => {
+  if (status.value === 'ARRIVED') {
+    isFinishModalOpen.value = true
+  } else {
+    isConfirming.value = true
+    await confirmArrival()
+    isConfirming.value = false
+  }
+}
+
+const handleFinishService = async () => {
+  const tNumber = ticketNumber.value
+  isFinishing.value = true
+  const success = await finishService()
+  isFinishing.value = false
+  if (success) {
+    isFinishModalOpen.value = false
+    router.push({ 
+      name: 'customer-served', 
+      params: router.currentRoute.value.params,
+      query: { t: tNumber }
+    })
+  }
+}
 </script>
 
 <template>
@@ -146,22 +179,22 @@ onUnmounted(() => {
         🎉 Hurray Its your turn, Please head in.
       </p>
 
-      <!-- I'm Here CTA -->
+      <!-- Main CTA Button (I'm Here / Service Finished) -->
       <button
-        :disabled="isConfirming || status === 'ARRIVED'"
+        :disabled="isConfirming || isFinishing"
         :class="[
           'cursor-pointer mt-4 flex h-[68px] w-full items-center justify-center rounded-2xl font-body text-lg font-bold transition-all',
-          status === 'ARRIVED' 
-            ? 'bg-plum-faint text-plum-muted shadow-none border border-plum-faint' 
+          status === 'ARRIVED'
+            ? 'bg-plum text-sand shadow-lg border border-plum'
             : 'bg-mint text-plum shadow-[0_8px_10px_rgba(0,229,160,0.20),0_20px_25px_rgba(0,229,160,0.20)]',
-          isConfirming || status === 'ARRIVED' ? 'cursor-not-allowed opacity-70' : '',
+          (isConfirming || isFinishing) ? 'cursor-not-allowed opacity-70' : '',
         ]"
-        @click="confirmArrival"
+        @click="handleMainCta"
       >
         <template v-if="isConfirming">Confirming…</template>
+        <template v-else-if="isFinishing">Finishing…</template>
         <template v-else-if="status === 'ARRIVED'">
-          <CheckIcon class="mr-2 h-5 w-5 text-mint" />
-          Arrived!
+          Service Finished?
         </template>
         <template v-else>I'm Here</template>
       </button>
@@ -179,6 +212,17 @@ onUnmounted(() => {
         :is-open="isLeaveModalOpen"
         @close="isLeaveModalOpen = false"
         @confirm="leaveQueue"
+      />
+
+      <!-- Finish Service Confirmation Modal -->
+      <LeaveConfirmationModal
+        :is-open="isFinishModalOpen"
+        title="Service Finished?"
+        message="Are you sure you want to end your session? You can then rate your experience."
+        confirm-text="Yes, Finished"
+        variant="primary"
+        @close="isFinishModalOpen = false"
+        @confirm="handleFinishService"
       />
 
       <!-- Arrival QR Modal -->

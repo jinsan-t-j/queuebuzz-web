@@ -67,6 +67,17 @@ export async function confirmArrival(): Promise<MutationResult> {
     }
 }
 
+export async function finishService(): Promise<MutationResult> {
+    const config = createApiRequestConfig({}, { withCredentials: true })
+    try {
+        await apiClient.post(API_ROUTES.CUSTOMER.FINISH_SERVICE(), {}, config)
+        return { success: true }
+    } catch (e) {
+        console.error('Failed to finish service:', e)
+        return { success: false }
+    }
+}
+
 export async function leaveQueue(): Promise<MutationResult> {
     const config = createApiRequestConfig({}, { withCredentials: true })
     try {

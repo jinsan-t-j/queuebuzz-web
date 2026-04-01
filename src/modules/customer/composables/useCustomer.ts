@@ -69,6 +69,16 @@ export function useCustomer() {
         return success
     }
 
+    async function handleFinishService() {
+        const success = await store.finishService()
+        if (success) {
+            showToast('Service finished! Redirecting...', { type: 'success' })
+        } else {
+            showToast(store.error ?? 'Failed to finish service', { type: 'error' })
+        }
+        return success
+    }
+
     async function handleConfirmStillHere() {
         const success = await store.confirmStillHere()
         if (success) await store.fetchEntry()
@@ -114,6 +124,7 @@ export function useCustomer() {
         leaveQueue: handleLeaveQueue,
         confirmStillHere: handleConfirmStillHere,
         confirmArrival: () => handleConfirmArrival(),
+        finishService: () => handleFinishService(),
 
         submitRating: (rating: number) => store.submitRating(rating),
         fetchEntry: () => store.fetchEntry(),

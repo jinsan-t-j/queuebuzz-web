@@ -49,6 +49,7 @@ export const API_ROUTES = {
         ENTRY_EVENTS: () => `/customer/entry/events`,
         CONFIRM_STILL_HERE: () => `/customer/entry/confirm`,
         CONFIRM_ARRIVAL: () => `/customer/entry/arrived`,
+        FINISH_SERVICE: () => `/customer/entry/finish`,
         LEAVE_GUEST: '/customer/entry/leave',
         RECOVER_SESSION: '/customer/entry/recover-session',
         SUBMIT_RATING: () => `/customer/entry/rating`,

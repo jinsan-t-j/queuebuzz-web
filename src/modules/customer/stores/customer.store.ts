@@ -204,6 +204,22 @@ export const useCustomerStore = defineStore('customer', {
                 this.isLoading = false
             }
         },
+        async finishService() {
+            if (!this.entry) return false
+            this.isLoading = true
+            try {
+                const result = await CustomerActions.finishService()
+                if (result.success) {
+                    this.clearEntry()
+                }
+                return result.success
+            } catch (e: any) {
+                this.error = 'Failed to finish service'
+                return false
+            } finally {
+                this.isLoading = false
+            }
+        },
 
         async submitRating(rating: number) {
             if (!this.entry) return false

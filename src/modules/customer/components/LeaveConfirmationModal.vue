@@ -8,16 +8,29 @@ import { AlertCircle } from 'lucide-vue-next'
 import BaseModal from '@/components/base/BaseModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 
-defineProps<{
+interface Props {
   isOpen: boolean
-}>()
+  title?: string
+  message?: string
+  confirmText?: string
+  cancelText?: string
+  variant?: 'danger' | 'primary' | 'ghost' | 'secondary'
+}
+
+withDefaults(defineProps<Props>(), {
+  title: 'Leave queue?',
+  message: 'You will lose your current position and will need to re-join the line from the start.',
+  confirmText: 'Yes, Leave Now',
+  cancelText: 'Keep my spot',
+  variant: 'danger'
+})
 
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'confirm'): void
 }>()
 
-function confirmLeave() {
+function handleConfirm() {
   emit('confirm')
   emit('close')
 }
@@ -27,31 +40,36 @@ function confirmLeave() {
   <BaseModal :is-open="isOpen" @close="emit('close')">
     <div class="relative w-full overflow-hidden bg-white p-8 text-center shadow-xl">
       <div class="flex flex-col items-center">
-        <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-danger/10 text-danger">
+        <div 
+          :class="[
+            'mb-5 flex h-14 w-14 items-center justify-center rounded-full transition-colors',
+            variant === 'danger' ? 'bg-danger/10 text-danger' : 'bg-mint-light/60 text-plum'
+          ]"
+        >
           <AlertCircle class="h-7 w-7" />
         </div>
         
         <h3 class="font-display text-2xl font-bold text-plum">
-          Leave queue?
+          {{ title }}
         </h3>
-        <p class="mt-2 font-body text-sm text-plum/50 leading-relaxed">
-          You will lose your current position and will need to re-join the line from the start.
+        <p class="mt-2 font-body text-sm text-plum/50 leading-relaxed max-w-[280px]">
+          {{ message }}
         </p>
 
         <div class="mt-8 flex w-full flex-col gap-3">
           <BaseButton
-            variant="danger"
+            :variant="variant"
             class="w-full py-4 text-sm font-bold active:scale-[0.98] transition-all"
-            @click="confirmLeave"
+            @click="handleConfirm"
           >
-            Yes, Leave Now
+            {{ confirmText }}
           </BaseButton>
           <BaseButton
             variant="ghost"
             class="w-full h-11 text-plum-muted font-bold tracking-widest text-[10px] uppercase transition-all"
             @click="emit('close')"
           >
-            Keep my spot
+            {{ cancelText }}
           </BaseButton>
         </div>
       </div>
