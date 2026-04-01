@@ -22,10 +22,12 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 // 5. Component imports
 import EntryDetailsModal from './EntryDetailsModal.vue'
+import BaseTooltip from '@/components/base/BaseTooltip.vue'
 
 import SearchIcon from '@/assets/icons/search.svg?component'
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
+import ShieldCheckIcon from '@/assets/icons/shield-verified.svg?component'
 
 // 6. Props
 const props = defineProps({
@@ -160,8 +162,17 @@ onUnmounted(() => {
             >
               {{ entry.position }}
             </span>
-            <div>
-              <p class="font-body text-base font-bold text-plum">{{ entry.name }}</p>
+            <div class="flex flex-col min-w-0">
+              <div class="flex items-center gap-1.5">
+                <p class="font-body text-base font-bold text-plum truncate max-w-[200px]">
+                  {{ entry.name }}
+                </p>
+                <BaseTooltip v-if="entry.createdBy" text="Entry added by you">
+                  <ShieldCheckIcon
+                    class="h-3.5 w-3.5 flex-shrink-0 text-[#00B87A] opacity-60 transition-opacity hover:opacity-100"
+                  />
+                </BaseTooltip>
+              </div>
               <p class="font-body text-xs text-plum/40">
                 Party of {{ entry.partySize }} •
                 <span :class="entry.status === 'CALLED' ? 'text-mint' : ''">

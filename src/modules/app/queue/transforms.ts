@@ -25,6 +25,7 @@ export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
     finishedAt: entry.finishedAt,
     createdAt: entry.createdAt,
     updatedAt: entry.updatedAt,
+    createdBy: entry.createdBy,
   }
 }
 

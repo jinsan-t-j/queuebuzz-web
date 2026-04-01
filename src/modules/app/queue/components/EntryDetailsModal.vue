@@ -120,6 +120,10 @@ const estWaitMin = computed(() => {
             <span class="font-body text-sm text-plum-muted">Guest Name</span>
             <span class="font-body text-base font-bold text-plum">{{ entry.name }}</span>
           </div>
+          <div v-if="entry.createdBy" class="flex items-center justify-between">
+            <span class="font-body text-sm text-plum-muted">Source</span>
+            <span class="font-body text-sm font-bold text-plum">Added by host</span>
+          </div>
           <div v-if="formattedJoinedTime" class="flex items-center justify-between">
             <span class="font-body text-sm text-plum-muted">Joined At</span>
             <span class="font-body text-base font-bold text-plum">{{ formattedJoinedTime }}</span>
