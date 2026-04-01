@@ -227,6 +227,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
               :search-query="rawSearchQuery"
               :is-paused="isPaused"
               :avg-service-mins="activeQueue?.avgServiceMins || 2"
+              :show-party-size="activeQueue?.allowPartyJoining"
               @call-next="handleCallNext"
               @search="handleSearchUpdate($event)"
               @call-guest="handleCallGuest"

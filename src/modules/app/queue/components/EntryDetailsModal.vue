@@ -21,6 +21,7 @@ const props = defineProps<{
   entry: QueueEntry
   isOpen: boolean
   avgServiceMins: number
+  showPartySize: boolean
 }>()
 
 const emit = defineEmits<{
@@ -88,7 +89,7 @@ const estWaitMin = computed(() => {
         <!-- Quick Info Grid -->
         <div class="mb-8 grid grid-cols-2 gap-3">
           <!-- Party Size -->
-          <div class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80">
+          <div v-if="showPartySize" class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80">
             <span class="font-body text-[10px] font-bold uppercase tracking-widest text-plum-muted">
               Party Size
             </span>
@@ -101,7 +102,10 @@ const estWaitMin = computed(() => {
           </div>
 
           <!-- Est. Wait -->
-          <div class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80">
+          <div 
+            class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80"
+            :class="{ 'col-span-2': !showPartySize }"
+          >
             <span class="font-body text-[10px] font-bold uppercase tracking-widest text-plum-muted">
               Est. Wait
             </span>

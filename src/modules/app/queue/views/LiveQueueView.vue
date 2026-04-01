@@ -122,6 +122,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             :is-loading="isLoading"
             :strict-queue-mode="activeQueue?.strictQueueMode"
             :avg-service-mins="activeQueue?.avgServiceMins"
+            :show-party-size="activeQueue?.allowPartyJoining"
             @call-next="handleCallNext"
             @search="handleSearchUpdate"
             @call-guest="handleCallGuest"

@@ -55,6 +55,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  showPartySize: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 // 7. Emits
@@ -174,7 +178,9 @@ onUnmounted(() => {
                 </BaseTooltip>
               </div>
               <p class="font-body text-xs text-plum/40">
-                Party of {{ entry.partySize }} •
+                <template v-if="showPartySize">
+                  Party of {{ entry.partySize }} •
+                </template>
                 <span :class="entry.status === 'CALLED' ? 'text-mint' : ''">
                   {{ (entry.position - 1) * (avgServiceMins || 0) }} min wait
                 </span>
@@ -230,6 +236,7 @@ onUnmounted(() => {
       :entry="selectedEntry"
       :is-open="isDetailsModalOpen"
       :avg-service-mins="avgServiceMins"
+      :show-party-size="showPartySize"
       @close="closeDetails"
       @call="(id) => { emit('call-guest', id); closeDetails(); }"
       @serve="(id) => { emit('serve-guest', id); closeDetails(); }"
