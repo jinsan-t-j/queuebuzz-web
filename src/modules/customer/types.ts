@@ -1,4 +1,4 @@
-export type EntryStatus = 'WAITING' | 'CALLED' | 'SERVED' | 'SKIPPED' | 'IDLE' | 'LEFT'
+export type EntryStatus = 'WAITING' | 'CALLED' | 'SERVED' | 'SKIPPED' | 'IDLE' | 'LEFT' | 'ARRIVED'
 
 export interface Entry {
     id: string

@@ -3,6 +3,7 @@
  * @description Authenticated host app routes. Uses AppLayout with auth guard.
  */
 import { authGuard } from '@/router/guards/auth.guard'
+import { restrictActiveHostGuard } from '@/router/guards/restrictActiveHost.guard'
 import { guestGuard } from '@/router/guards/guest.guard'
 import { restrictCustomerGuard } from '@/router/guards/restrictCustomer.guard'
 import type { RouteRecordRaw } from 'vue-router'
@@ -35,6 +36,7 @@ export const appRoutes: RouteRecordRaw[] = [
       {
         path: 'queue',
         name: 'queue',
+        beforeEnter: [restrictActiveHostGuard],
         component: () => import('@/modules/app/queue/views/CreateQueueView.vue'),
         meta: { title: 'Queue' },
       },

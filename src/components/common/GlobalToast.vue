@@ -13,13 +13,15 @@ const { isVisible, message, type } = useToast()
       isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none',
       type === 'error' 
         ? 'bg-red-500 shadow-[0_12px_24px_rgba(239,68,68,0.3)]' 
-        : type === 'info'
-          ? 'bg-plum shadow-[0_12px_24px_rgba(26,10,46,0.3)]'
-          : 'bg-mint-dark shadow-[0_12px_24px_rgba(0,229,160,0.3)]'
+        : type === 'warning'
+          ? 'bg-orange-500 shadow-[0_12px_24px_rgba(249,115,22,0.3)]'
+          : type === 'info'
+            ? 'bg-plum shadow-[0_12px_24px_rgba(26,10,46,0.3)]'
+            : 'bg-mint-dark shadow-[0_12px_24px_rgba(0,229,160,0.3)]'
     ]"
   >
     <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white/20">
-      <template v-if="type === 'error'">
+      <template v-if="type === 'error' || type === 'warning'">
         <XIcon class="h-3.5 w-3.5 text-white" />
       </template>
       <template v-else>

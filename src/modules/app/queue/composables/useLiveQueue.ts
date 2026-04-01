@@ -32,12 +32,14 @@ export function useLiveQueue() {
         return store.entries.filter((e) => e.name.toLowerCase().includes(q))
     })
 
+    const calledGuests = computed(() => store.entries.filter(e => e.status === 'CALLED'))
+
     const queueUrl = computed(() => {
         let route: RouteLocationResolved
         if (!store.activeQueue) {
-            route = router.resolve({ 
-              name: 'guest-host-queue-ended', 
-              query: { reason: QUEUE_ERROR_REASONS.TERMINATED } 
+            route = router.resolve({
+                name: 'guest-host-queue-ended',
+                query: { reason: QUEUE_ERROR_REASONS.TERMINATED }
             })
         }
 
@@ -76,11 +78,22 @@ export function useLiveQueue() {
     async function handleCallNext() {
         if (!store.activeQueue) return
 
+        if (store.waitingCount === 0) {
+            showToast('No guests are currently waiting in the queue.', { type: 'info' })
+            return
+        }
+
+        if (store.activeQueue.strictQueueMode && calledGuests.value.length > 0) {
+            showToast('Please mark all summoned guests as served to continue.', { type: 'warning' })
+            return
+        }
+
         const success = await store.callEntry()
         if (success) {
             showToast(`Calling next guest...`)
         } else if (store.error) {
-            showToast(store.error, { type: 'error' })
+            const isConflict = store.error.toLowerCase().includes('serve the current guest')
+            showToast(isConflict ? 'Please mark all summoned guests as served to continue.' : store.error, { type: isConflict ? 'warning' : 'error' })
         }
     }
 
@@ -162,6 +175,7 @@ export function useLiveQueue() {
         // Store-backed state (reactive via Pinia)
         activeQueue: computed(() => store.activeQueue),
         entries: computed(() => store.entries),
+        calledGuests,
         isPaused: computed(() => store.isPaused),
         waitingCount: computed(() => store.waitingCount),
         avgWaitTime: computed(() => store.avgWaitTime),

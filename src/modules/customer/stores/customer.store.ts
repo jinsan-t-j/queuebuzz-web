@@ -167,8 +167,9 @@ export const useCustomerStore = defineStore('customer', {
                         }
                     },
                     [CUSTOMER_EVENTS.ENTRY_STATUS_CHANGED]: (payload: any) => {
-                        if (this.entry && payload?.status) {
-                            this.entry = { ...this.entry, status: payload.status }
+                        console.log('Entry status changed', payload)
+                        if (this.entry && payload?.data?.status) {
+                            this.entry = { ...this.entry, status: payload.data.status }
                         }
                     },
                 },
@@ -195,9 +196,6 @@ export const useCustomerStore = defineStore('customer', {
             this.isLoading = true
             try {
                 const result = await CustomerActions.confirmArrival()
-                if (result.success) {
-                    await this.fetchEntry()
-                }
                 return result.success
             } catch (e: any) {
                 this.error = 'Failed to confirm arrival'

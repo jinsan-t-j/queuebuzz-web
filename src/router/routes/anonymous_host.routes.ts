@@ -3,6 +3,7 @@
  * @description Anonymous host-facing pages: the queue experience seen by customers waiting
  * in queue. These use BlankLayout — no host app chrome.
  */
+import { restrictActiveHostGuard } from '@/router/guards/restrictActiveHost.guard'
 import type { RouteRecordRaw } from 'vue-router'
 
 export const anoymousHostRoutes: RouteRecordRaw[] = [
@@ -13,6 +14,7 @@ export const anoymousHostRoutes: RouteRecordRaw[] = [
             {
                 path: 'queue/create',
                 name: 'guest-host-create',
+                beforeEnter: restrictActiveHostGuard,
                 component: () => import('@/modules/app/queue/views/GuestHostCreateQueueView.vue'),
                 meta: { title: 'Create Queue — QueueBuzz' },
             },

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onBeforeMount, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
 
@@ -16,14 +15,27 @@ import PWABanner from '@/modules/customer/components/PWABanner.vue'
 import TicketCaptureTemplate from '@/modules/customer/components/TicketCaptureTemplate.vue'
 
 import { useCustomer } from '../composables/useCustomer'
-import { useCapture } from '@/composables/useCapture'
 import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
 
 const router = useRouter()
 const { showToast } = useToast()
-const { isCapturing: isSaving, hasCaptured: isSaved, captureElement } = useCapture()
 
-const {entry, isLoading, position, ahead, estWaitMin, status, isJoined, leaveQueue, fetchEntry, connectEvents, disconnectEvents} = useCustomer()
+const {
+    entry,
+    isLoading,
+    position,
+    ahead,
+    estWaitMin,
+    status,
+    isJoined,
+    isSaving,
+    isSaved,
+    saveTicketAsImage,
+    leaveQueue,
+    fetchEntry,
+    connectEvents,
+    disconnectEvents
+} = useCustomer()
 const queueStore = useQueueStore()
 
 const isSettingsModalOpen = ref(false)
@@ -31,7 +43,6 @@ const showEmailHighlight = ref(false)
 const queueName = computed(() => queueStore.activeQueue?.name ?? 'Your Queue')
 
 onMounted(() => {
-  // Point to settings after 1 second if recovery email is missing
   setTimeout(() => {
     if (entry.value && !entry.value.email) {
       showEmailHighlight.value = true
@@ -43,20 +54,7 @@ watch(isSettingsModalOpen, (isOpen) => {
   if (isOpen) showEmailHighlight.value = false
 })
 
-async function saveTicketAsImage() {
-  if (!entry.value) return
-  
-  await captureElement(
-    'capture-ticket',
-    `queuebuzz-ticket-${entry.value.ticketNo}.png`,
-    {
-      title: 'My Queue Ticket',
-      text: `I'm waiting at ${queueName.value}. My ticket is #${entry.value.ticketNo}.`
-    }
-  )
-}
-
-
+// logic moved to useCustomer.ts
 
 function handleShareCode() {
   if (!entry.value) return
@@ -77,22 +75,26 @@ function handleShareCode() {
 watch(
   () => status.value,
   (s) => {
-    if (s === 'CALLED') router.push({ name: 'customer-called' })
-    else if (s === 'SERVED') router.push({ name: 'customer-served' })
+    const params = router.currentRoute.value.params
+    if (s === 'CALLED' || s === 'ARRIVED') router.push({ name: 'customer-called', params })
+    else if (s === 'SERVED') router.push({ name: 'customer-served', params })
     else if (s === 'LEFT' || s === 'SKIPPED') {
-      router.push({ name: 'customer-ended', query: { reason: s.toLowerCase() } })
+      router.push({ name: 'customer-ended', params, query: { reason: s.toLowerCase() } })
     }
-  }
+    console.log('Status changed', s)
+  },
+  { immediate: true }
 )
 
 onBeforeMount(async () => {
   // 1. If not in store, attempt to re-hydrate from cookie session
-  if (!isJoined) {
+  if (!isJoined.value) {
     await fetchEntry()
   }
 
   // 2. If still not joined after hydration attempt, redirect to home
-  if (!isJoined) {
+  if (!isJoined.value) {
+    showToast('You are not joined to any queue', {type: 'error'})
     router.push('/')
     return
   }
@@ -104,7 +106,7 @@ onBeforeMount(async () => {
   }
 
   // 4. Ensure SSE stream is active
-  connectEvents(entry.value!.id)
+  connectEvents(entry.value.id)
 })
 
 onUnmounted(() => {

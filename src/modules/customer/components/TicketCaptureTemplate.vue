@@ -58,9 +58,16 @@ onMounted(async () => {
             </div>
 
             <!-- Ticket ID Section -->
-            <div class="bg-white px-10 pb-12 pt-8 text-center relative">
-                <p class="font-body text-xs font-bold uppercase tracking-[0.4em] text-plum/30 mb-4">Ticket Number</p>
-                <h2 class="font-mono text-9xl font-black text-plum tracking-tighter">{{ ticketNumber }}</h2>
+            <div class="bg-white px-8 pb-12 pt-8 text-center relative">
+                <p class="font-body text-xs font-bold uppercase tracking-[0.4em] text-plum/30 mb-2">Ticket Number</p>
+                <div class="flex items-center justify-center min-h-[140px]">
+                  <h2 
+                    class="font-mono font-black text-plum tracking-tighter leading-none"
+                    :class="ticketNumber.length > 4 ? 'text-7xl' : 'text-9xl'"
+                  >
+                    {{ ticketNumber }}
+                  </h2>
+                </div>
                 
                 <div class="mt-12 flex items-center justify-center gap-10">
                     <div class="text-left">

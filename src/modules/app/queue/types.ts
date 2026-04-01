@@ -20,7 +20,7 @@ export interface QueueRecord {
   entries?: QueueEntry[] // Added for hydration
 }
 
-export type QueueEntryStatus = 'WAITING' | 'CALLED' | 'SERVED' | 'SKIPPED' | 'IDLE' | 'LEFT'
+export type QueueEntryStatus = 'WAITING' | 'CALLED' | 'SERVED' | 'SKIPPED' | 'IDLE' | 'LEFT' | 'ARRIVED'
 
 export interface QueueEntry {
   id: string
@@ -68,7 +68,7 @@ export interface TrendSummary {
 }
 
 export interface QueueStatusEventData {
-  token: string
+  id: string
   status: QueueEntryStatus
 }
 
@@ -96,6 +96,14 @@ export interface QueueSseEnvelopeMap {
   user_status_changed: {
     event: 'user_status_changed'
     data: QueueStatusEventData
+  }
+  user_arrived: {
+    event: 'user_arrived'
+    data: {
+      id: string
+      name: string
+      ticketNumber: string
+    }
   }
   queue_status_changed: {
     event: 'queue_status_changed'

@@ -79,17 +79,10 @@ const isDetailsModalOpen = ref(false)
 // 10. Computed properties
 const hasActiveCalledEntry = computed(() => props.entries.some(e => e.status === 'CALLED'))
 const nextCallDisabled = computed(() => {
-  if (props.isLoading || props.isPaused || props.entries.length === 0) return true
+  if (props.isLoading || props.isPaused) return true
   if (props.strictQueueMode && hasActiveCalledEntry.value) return true
   return false
 })
-
-// 11. Methods
-
-function handleCallGuest(id) {
-  emit('call-guest', id)
-  openDropdownId.value = null
-}
 
 function openDetails(entry) {
   selectedEntry.value = entry
@@ -136,7 +129,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Empty state / Entries -->
-    <div class="flex flex-1 flex-col max-h-[400px] overflow-y-auto" :class="entries.length === 0 ? 'items-center justify-center p-6' : 'gap-3 p-4'">
+    <div class="flex flex-1 flex-col max-h-[400px] overflow-y-auto" :class="entries.length === 0 ? 'items-center justify-center p-6' : 'gap-3 p-4 px-6'">
       <template v-if="entries.length === 0">
         <p class="mb-4 font-body text-[10px] font-bold uppercase tracking-[2px] text-plum/30">
           Action Center
@@ -147,49 +140,67 @@ onUnmounted(() => {
         <div
           v-for="entry in entries"
           :key="entry.id"
-          class="group flex cursor-pointer items-center rounded-2xl border px-4 py-3 transition-all hover:border-mint/50 hover:bg-mint/5 hover:shadow-sm"
-          :class="
+          class="group flex cursor-pointer items-center rounded-2xl border px-4 py-4 transition-all duration-300 hover:shadow-md"
+          :class="[
             entry.status === 'CALLED'
-              ? 'border-2 border-mint shadow-[0_1px_2px_rgba(0,0,0,0.05)] text-plum font-bold'
-              : 'border-plum/5 shadow-sm bg-white'
-          "
+              ? 'border-2 border-mint shadow-[0_8px_32px_-8px_rgba(0,229,160,0.4)] bg-mint/[0.03] animate-status-pulse'
+              : entry.status === 'ARRIVED'
+                ? 'border-mint/20 bg-mint/5 shadow-sm'
+                : 'border-plum/5 shadow-sm bg-white hover:border-plum/20'
+          ]"
           @click="openDetails(entry)"
         >
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-4">
             <span
-              class="flex h-8 w-8 items-center justify-center rounded-lg font-mono text-lg font-bold"
+              class="flex h-10 w-10 items-center justify-center rounded-xl font-mono text-lg font-bold transition-all duration-300"
               :class="
                 entry.status === 'CALLED'
                   ? 'bg-plum text-mint'
-                  : 'bg-plum/5 text-plum/40'
+                  : entry.status === 'ARRIVED'
+                    ? 'bg-mint text-sand shadow-sm'
+                    : 'bg-plum/5 text-plum/40'
               "
             >
-              {{ entry.position }}
+              <template v-if="entry.status === 'CALLED'">
+                <CallNextIcon class="h-4 w-4" />
+              </template>
+              <template v-else-if="entry.status === 'ARRIVED'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+              </template>
+              <template v-else>
+                {{ entry.position }}
+              </template>
             </span>
             <div class="flex flex-col min-w-0">
-              <div class="flex items-center gap-1.5">
-                <p class="font-body text-base font-bold text-plum truncate max-w-[200px]">
+              <div class="flex items-center gap-2">
+                <p 
+                  class="font-body text-base font-bold text-plum truncate max-w-[180px]"
+                  :class="entry.status === 'CALLED' ? 'text-plum' : ''"
+                >
                   {{ entry.name }}
                 </p>
+
                 <BaseTooltip v-if="entry.createdBy" text="Entry added by you">
                   <ShieldCheckIcon
                     class="h-3.5 w-3.5 flex-shrink-0 text-[#00B87A] opacity-60 transition-opacity hover:opacity-100"
                   />
                 </BaseTooltip>
               </div>
-              <p class="font-body text-xs text-plum/40">
-                <template v-if="showPartySize">
+              <p class="font-body text-xs text-plum-muted">
+                <template v-if="showPartySize && entry.partySize > 1">
                   Party of {{ entry.partySize }} •
                 </template>
-                <span :class="entry.status === 'CALLED' ? 'text-mint' : ''">
-                  {{ (entry.position - 1) * (avgServiceMins || 0) }} min wait
+                <span :class="entry.status === 'CALLED' ? 'text-mint font-bold' : ''">
+                  {{ entry.status === 'CALLED' ? 'At the counter' : entry.status === 'ARRIVED' ? 'Waiting in shop' : `${(entry.position - 1) * (avgServiceMins || 0)} min wait` }}
                 </span>
               </p>
             </div>
           </div>
           <div class="relative ml-auto guest-dropdown-container">
             <button
-              class="flex h-8 w-8 items-center justify-center rounded-lg transition-colors hover:bg-plum/5 cursor-pointer"
+              class="flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-plum/5 cursor-pointer"
               @click.stop="openDetails(entry)"
             >
               <div class="flex h-4 w-1 flex-col items-center justify-center gap-[2px]">
@@ -243,3 +254,20 @@ onUnmounted(() => {
     />
   </div>
 </template>
+
+<style scoped>
+@keyframes status-pulse {
+  0%, 100% { 
+    border-color: rgba(0, 229, 160, 0.3); 
+    box-shadow: 0 8px 32px -12px rgba(0, 229, 160, 0.2);
+  }
+  50% { 
+    border-color: rgba(0, 229, 160, 1); 
+    box-shadow: 0 8px 32px -8px rgba(0, 229, 160, 0.4);
+  }
+}
+
+.animate-status-pulse {
+  animation: status-pulse 2.5s infinite ease-in-out;
+}
+</style>

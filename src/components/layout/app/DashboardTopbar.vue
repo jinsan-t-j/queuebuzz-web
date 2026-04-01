@@ -17,6 +17,7 @@ import { LogOut, User } from 'lucide-vue-next'
 import router from '@/router'
 
 // 4. Components imports
+import HostNotificationCenter from '@/components/layout/HostNotificationCenter.vue'
 import LogoutConfirmationModal from '@/modules/app/auth/components/LogoutConfirmationModal.vue'
 
 // 5. Props
@@ -61,7 +62,9 @@ function confirmLogout() {
       {{ pageTitle }}
     </h1>
 
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-6">
+      <HostNotificationCenter />
+
       <div class="flex items-center gap-2">
         <div class="flex h-8 w-8 items-center justify-center rounded-full bg-plum-faint">
           <User class="h-4 w-4 text-plum-muted" />

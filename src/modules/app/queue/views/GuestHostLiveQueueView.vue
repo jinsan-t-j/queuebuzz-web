@@ -20,6 +20,8 @@ import EmailNoticePopup from '@/modules/app/queue/components/EmailNoticePopup.vu
 
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
 import HostTips from '../components/HostTips.vue'
+import HostNotifications from '@/components/layout/HostNotifications.vue'
+import HostNotificationCenter from '@/components/layout/HostNotificationCenter.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -161,6 +163,8 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
     <div class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-mint-light opacity-50 blur-[80px]"></div>
     <div class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]"></div>
 
+    <HostNotifications />
+
     <div class="relative z-10 mx-auto max-w-[1280px] px-6 pt-4 pb-2">
       <!-- Loading State -->
       <div v-if="isApiLoading && !activeQueue && !error" class="flex flex-col items-center justify-center min-h-[60vh] gap-6">
@@ -185,7 +189,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       <div v-else-if="activeQueue" class="flex flex-col gap-4">
         <!-- Live Status Info -->
         <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-4">
             <div class="flex items-center gap-3 px-4 py-2 bg-white rounded-full border border-plum-faint shadow-sm">
               <div 
                 class="w-2.5 h-2.5 rounded-full"
@@ -206,11 +210,15 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             </div>
           </div>
           
-          <div v-if="!isStreamConnected && streamState !== 'connecting'" class="text-xs font-body text-danger flex items-center gap-1">
-            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            State might be stale. Reconnecting...
+          <div class="flex items-center gap-6">
+            <div v-if="!isStreamConnected && streamState !== 'connecting'" class="text-xs font-body text-danger flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              State might be stale. Reconnecting...
+            </div>
+            
+            <HostNotificationCenter />
           </div>
         </div>
 

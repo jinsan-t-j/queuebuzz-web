@@ -16,6 +16,7 @@
 // 5. Component imports
 import DashboardSidebar from '@/components/layout/app/DashboardSidebar.vue'
 import DashboardTopbar from '@/components/layout/app/DashboardTopbar.vue'
+import HostNotifications from '@/components/layout/HostNotifications.vue'
 
 // 6. Props
 
@@ -34,6 +35,7 @@ import DashboardTopbar from '@/components/layout/app/DashboardTopbar.vue'
 
 <template>
   <div class="flex h-screen overflow-hidden bg-sand">
+    <HostNotifications />
     <DashboardSidebar />
     <div class="flex flex-1 flex-col overflow-hidden">
       <DashboardTopbar />
