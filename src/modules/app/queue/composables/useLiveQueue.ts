@@ -3,7 +3,7 @@ import { RouteLocationResolved, useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
 import { useQueueAnalysis } from './useQueueAnalysis'
-import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
+import { QUEUE_ERROR_REASONS, ENTRY_STATUS } from '@/modules/app/queue/constants'
 import type { LiveQueueGuestInput, UpdateQueuePayload } from '@/modules/app/queue/types'
 
 type SearchEmitter = (value: string) => void
@@ -26,22 +26,32 @@ export function useLiveQueue() {
     const debouncedSearchQuery = ref('')
     let searchTimeout: ReturnType<typeof setTimeout> | null = null
 
-    const filteredEntries = computed(() => {
-        if (!debouncedSearchQuery.value) return store.entries
+    const filteredActiveEntries = computed(() => {
+        const activeOnly = store.entries.filter((e) =>
+            ([ENTRY_STATUS.WAITING, ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(e.status)
+        )
+        if (!debouncedSearchQuery.value) return activeOnly
         const q = debouncedSearchQuery.value.toLowerCase()
-        return store.entries.filter((e) => e.name.toLowerCase().includes(q))
+        return activeOnly.filter((e) => e.name.toLowerCase().includes(q))
     })
 
-    const calledGuests = computed(() => store.entries.filter(e => e.status === 'CALLED'))
+    const filteredServedEntries = computed(() => {
+        // Show everything that isn't active in the history (Served, Left, Skipped)
+        const historicalOnly = store.entries.filter((e) =>
+            !([ENTRY_STATUS.WAITING, ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(e.status)
+        )
+
+        console.log('historicalOnly', historicalOnly)
+        if (!debouncedSearchQuery.value) return historicalOnly
+        const q = debouncedSearchQuery.value.toLowerCase()
+        return historicalOnly.filter((e) => e.name.toLowerCase().includes(q))
+    })
+
+    const calledGuests = computed(() => store.entries.filter(e => e.status === ENTRY_STATUS.CALLED))
 
     const queueUrl = computed(() => {
         let route: RouteLocationResolved
-        if (!store.activeQueue) {
-            route = router.resolve({
-                name: 'guest-host-queue-ended',
-                query: { reason: QUEUE_ERROR_REASONS.TERMINATED }
-            })
-        }
+        if (!store.activeQueue) return ''
 
         route = router.resolve({
             name: 'customer-join',
@@ -198,7 +208,8 @@ export function useLiveQueue() {
 
         // Search
         rawSearchQuery,
-        filteredEntries,
+        filteredActiveEntries,
+        filteredServedEntries,
 
         // Analysis (served count, completion rate, chart, trend)
         ...analysis,

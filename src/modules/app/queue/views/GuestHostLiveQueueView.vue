@@ -41,7 +41,8 @@ const {
   showSettingsModal,
   
   rawSearchQuery,
-  filteredEntries,
+  filteredActiveEntries,
+  filteredServedEntries,
   
   servedTodayCount,
   completionRatePercent,
@@ -231,7 +232,8 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             />
 
             <LiveQueueCard
-              :entries="filteredEntries"
+              :active-entries="filteredActiveEntries"
+              :served-entries="filteredServedEntries"
               :search-query="rawSearchQuery"
               :is-paused="isPaused"
               :avg-service-mins="activeQueue?.avgServiceMins || 2"

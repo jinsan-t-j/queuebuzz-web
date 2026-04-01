@@ -1,5 +1,7 @@
 import { computed } from 'vue'
+
 import { useQueueStore } from '@/stores/queue.store'
+import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 import type { TrendSummary } from '@/modules/app/queue/types'
 
 /**
@@ -11,52 +13,61 @@ export function useQueueAnalysis() {
   const store = useQueueStore()
 
   const servedTodayCount = computed(() =>
-    store.entries.filter((e) => e.status === 'served').length
+    store.entries.filter((e) => e.status === ENTRY_STATUS.SERVED).length
   )
 
   const completionRatePercent = computed(() => {
+    // Total includes everyone who joined the queue
     const total = store.entries.length
     if (total === 0) return 0
-    const served = store.entries.filter((e) => e.status === 'served').length
+    // We only count SERVED status
+    const served = store.entries.filter((e) => e.status === ENTRY_STATUS.SERVED).length
     return Math.round((served / total) * 100)
   })
 
 
   /**
-   * Build an array of full-hour boundaries between the queue's createdAt
-   * and the current time. Each label gets a matching bar that counts
-   * entries served within that hour.
+   * Build an array of hourly buckets for the last 6 hours.
+   * This ensures the UI remains consistent regardless of how long the queue has been open.
    */
   const hourlyBuckets = computed(() => {
     const queue = store.activeQueue
     if (!queue) return { labels: [] as string[], bars: [] as number[] }
 
-    const start = new Date(queue.createdAt)
-    start.setMinutes(0, 0, 0) // floor to the hour
-
     const now = new Date()
     const labels: string[] = []
     const boundaries: Date[] = []
 
-    const cursor = new Date(start)
-    while (cursor <= now) {
-      const h = cursor.getHours()
+    // Show last 6 hours
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now)
+      d.setHours(now.getHours() - i, 0, 0, 0)
+
+      const h = d.getHours()
       const h12 = h % 12 || 12
-      labels.push(`${h12} ${h >= 12 ? 'pm' : 'am'}`)
-      boundaries.push(new Date(cursor))
-      cursor.setHours(cursor.getHours() + 1)
+      const ampm = h >= 12 ? 'pm' : 'am'
+
+      labels.push(`${h12}${ampm}`)
+      boundaries.push(d)
     }
 
-    // Count served entries per hourly bucket
-    const served = store.entries.filter((e) => e.status === 'served' && e.servedAt)
+    // Count SERVED entries per hourly bucket using their servedAt timestamp
+    const servedEntries = store.entries.filter((e) => e.status === ENTRY_STATUS.SERVED && e.servedAt)
     const bars = new Array(labels.length).fill(0)
 
-    for (const entry of served) {
+    for (const entry of servedEntries) {
       const servedTime = new Date(entry.servedAt!)
-      // Find which bucket this falls into (last boundary <= servedTime)
+      // Find which bucket this falls into
       for (let i = boundaries.length - 1; i >= 0; i--) {
         if (servedTime >= boundaries[i]) {
-          bars[i]++
+          // Verify it's within the specific hour bucket
+          const nextBound = i < boundaries.length - 1
+            ? boundaries[i + 1].getTime()
+            : boundaries[i].getTime() + 3600000
+
+          if (servedTime.getTime() < nextBound) {
+            bars[i]++
+          }
           break
         }
       }
@@ -68,17 +79,17 @@ export function useQueueAnalysis() {
   const chartLabels = computed(() => hourlyBuckets.value.labels)
   const chartBars = computed(() => hourlyBuckets.value.bars)
 
-  /* ── Trend (last hour vs previous hour) ───────── */
+  /* ── Trend (Current hour so far vs Previous full hour) ───────── */
   const trend = computed<TrendSummary>(() => {
     const bars = chartBars.value
-    if (bars.length < 2) return { text: '0% vs last hr', direction: 'flat' }
+    if (bars.length < 2) return { text: 'No data', direction: 'flat' }
 
     const current = bars[bars.length - 1]
     const previous = bars[bars.length - 2]
 
     if (previous === 0) {
       return {
-        text: current > 0 ? '100% vs last hr' : '0% vs last hr',
+        text: current > 0 ? 'Trending up' : 'No change',
         direction: current > 0 ? 'up' : 'flat',
       }
     }
@@ -86,7 +97,13 @@ export function useQueueAnalysis() {
     const diff = current - previous
     const pct = Math.round((Math.abs(diff) / previous) * 100)
     const direction = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat'
-    return { text: `${pct}% vs last hr`, direction }
+
+    // Format trend text nicely
+    const text = diff === 0
+      ? 'Same as last hr'
+      : `${pct}% ${direction} vs last hr`
+
+    return { text, direction }
   })
 
   return {

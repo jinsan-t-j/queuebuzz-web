@@ -63,18 +63,26 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
           </p>
           <span 
             class="mt-3 inline-flex items-center gap-1 rounded-full px-2 py-1"
-            :class="trendDirection === 'down' ? 'bg-danger/10' : 'bg-mint/10'"
+            :class="{
+              'bg-danger/10': trendDirection === 'down',
+              'bg-mint/10': trendDirection === 'up',
+              'bg-plum/5': trendDirection === 'flat' || !trendDirection
+            }"
           >
             <TrendUpIcon 
+              v-if="trendDirection !== 'flat'"
               class="h-[7px] w-3 transition-transform" 
               :class="[
                 trendDirection === 'down' ? 'rotate-180 text-danger' : 'text-mint',
-                trendDirection === 'flat' ? 'opacity-50' : ''
               ]" 
             />
             <span 
               class="font-body text-xs font-medium" 
-              :class="trendDirection === 'down' ? 'text-danger' : 'text-mint'"
+              :class="{
+                'text-danger': trendDirection === 'down',
+                'text-mint': trendDirection === 'up',
+                'text-plum-muted': trendDirection === 'flat' || !trendDirection
+              }"
             >
               {{ trendText }}
             </span>
@@ -93,25 +101,35 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
       </div>
     </div>
 
-    <!-- Bar chart (simplified) -->
-    <div class="flex flex-1 items-end gap-2 px-8 pb-4 pt-8">
+    <!-- Bar chart -->
+    <div class="flex flex-1 items-end gap-3 px-8 pb-3 pt-8">
       <div
         v-for="(bar, idx) in chartBars"
         :key="idx"
-        class="flex flex-1 flex-col items-center gap-2 h-[60px] justify-end"
+        class="group relative flex flex-1 flex-col items-center justify-end h-[60px]"
       >
+        <!-- Tooltip on hover -->
+        <div class="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-plum px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap z-10">
+          {{ bar }} served
+        </div>
+        
         <div
-          class="w-full rounded-t-lg transition-all duration-300"
-          :class="idx === chartBars.length - 1 ? 'bg-mint' : 'bg-plum/10'"
+          class="w-full rounded-t-lg transition-all duration-500 ease-out"
+          :class="[
+            idx === chartBars.length - 1 ? 'bg-mint' : 'bg-plum/10 group-hover:bg-plum/20',
+            bar === 0 ? 'bg-plum/[0.03]' : ''
+          ]"
           :style="{ height: `${Math.max((bar / maxBarValue) * 60, 4)}px` }"
         />
       </div>
     </div>
-    <div class="flex gap-4 px-8 pb-6">
+    
+    <!-- Labels -->
+    <div class="flex gap-3 px-8 pb-8">
       <span
         v-for="label in chartLabels"
         :key="label"
-        class="flex-1 text-center font-mono text-[10px] uppercase tracking-[1px] text-plum/30"
+        class="flex-1 text-center font-mono text-[9px] font-bold uppercase tracking-[1px] text-plum/30"
       >
         {{ label }}
       </span>

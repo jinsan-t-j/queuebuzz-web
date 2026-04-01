@@ -13,7 +13,7 @@ import type {
 } from '@/modules/app/queue/types'
 import { getLiveQueue, getLiveQueueById, pauseQueue, resumeQueue, terminateQueue, addQueueEntry as apiAddQueueEntry, callEntry as apiCallEntry, updateQueue as apiUpdateQueue, serveGuest as apiServeGuest } from '@/modules/app/queue/actions/queue.action'
 import { normalizeLiveQueueEntries, normalizeQueueEntry } from '@/modules/app/queue/transforms'
-import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
+import { QUEUE_ERROR_REASONS, ENTRY_STATUS } from '@/modules/app/queue/constants'
 import { useNotificationStore } from './notification.store'
 
 export const useQueueStore = defineStore('queue', {
@@ -31,17 +31,18 @@ export const useQueueStore = defineStore('queue', {
 
   getters: {
     isPaused: (state) => state.activeQueue?.status === 'paused',
-    waitingCount: (state) => {
+    waitingCount: (state): number => {
       if (state.entries.length > 0) {
-        return state.entries.filter((e) => e.status === 'WAITING').length
+        return state.entries.filter((e) => 
+            ([ENTRY_STATUS.WAITING, ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(e.status)
+        ).length
       }
-
       return state.publicWaitingCount || 0
     },
-    avgWaitTime: (state) => {
+    avgWaitTime: (state): number => {
       if (!state.activeQueue) return 0
       const count = state.entries.length > 0
-        ? state.entries.filter((e) => e.status === 'WAITING').length
+        ? state.entries.filter((e) => ([ENTRY_STATUS.WAITING, ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(e.status)).length
         : (state.publicWaitingCount || 0)
       return (state.activeQueue.avgServiceMins || 0) * count
     },
@@ -147,20 +148,45 @@ export const useQueueStore = defineStore('queue', {
       }
     },
 
+    /**
+     * Updates the local entries list from a new snapshot.
+     * We MERGE the new snapshot with our existing terminal status entries (SERVED, etc)
+     * because the backend may exclude them from live broadcasts to save bandwidth.
+     */
     updateEntries(newEntries: QueueEntry[]) {
-      this.entries = newEntries
+      // 1. Identify all current entries that are in a terminal state
+      const terminalEntries = this.entries.filter((e) => 
+        ([ENTRY_STATUS.SERVED, ENTRY_STATUS.LEFT, ENTRY_STATUS.SKIPPED] as string[]).includes(e.status)
+      )
+
+      // 2. Map existing entries by ID for quick lookups
+      const terminalMap = new Map(terminalEntries.map(e => [e.id, e]));
+
+      // 3. The new snapshot is our source of truth for active entries.
+      // But if a terminal entry is somehow in the snapshot, we take the new one.
+      const snapshotIds = new Set(newEntries.map(e => e.id));
+      
+      // 4. Final List = Snapshot + (Historical entries NOT in snapshot)
+      const historicalToKeep = terminalEntries.filter(e => !snapshotIds.has(e.id));
+      
+      this.entries = [...newEntries, ...historicalToKeep].sort((left, right) => {
+          // Keep the sort by position if possible, otherwise by timestamp or ID
+          const lp = left.position ?? 999999;
+          const rp = right.position ?? 999999;
+          return lp - rp;
+      });
     },
 
     upsertEntry(entry: QueueEntry) {
       const index = this.entries.findIndex((current: QueueEntry) => current.id === entry.id)
       if (index === -1) {
-        this.entries = [...this.entries, entry].sort((left: QueueEntry, right: QueueEntry) => left.position - right.position)
+        this.entries = [...this.entries, entry].sort((left: QueueEntry, right: QueueEntry) => (left.position ?? 9999) - (right.position ?? 9999))
         return
       }
 
       const nextEntries = [...this.entries]
       nextEntries[index] = entry
-      this.entries = nextEntries.sort((left, right) => left.position - right.position)
+      this.entries = nextEntries.sort((left: QueueEntry, right: QueueEntry) => (left.position ?? 9999) - (right.position ?? 9999))
     },
 
     setQueueStatus(status: QueueStatus) {
@@ -283,7 +309,7 @@ export const useQueueStore = defineStore('queue', {
             console.log('Guest Status Changed!', data)
 
             // Special toasts for important status changes
-            if (data.status == 'LEFT' && entry) {
+            if (data.status == ENTRY_STATUS.LEFT && entry) {
               notifyStore.addNotification({
                 title: 'Guest Left',
                 message: `${entry.name} (Ticket ${entry.ticketNo}) has left the queue.`,
@@ -294,7 +320,7 @@ export const useQueueStore = defineStore('queue', {
           user_arrived: (payload) => {
             const event = payload as QueueSseEnvelopeMap['user_arrived']
             const data = event.data
-            this.applyEntryStatus({ id: data.id, status: 'ARRIVED' })
+            this.applyEntryStatus({ id: data.id, status: ENTRY_STATUS.ARRIVED })
 
             notifyStore.addNotification({
               title: 'Guest Arrived!',
@@ -478,6 +504,6 @@ export const useQueueStore = defineStore('queue', {
     },
   },
   persist: {
-    pick: ['activeQueue', 'entries', 'servedEntries', 'servedTodayCount'],
+    pick: ['activeQueue', 'entries'],
   },
 })

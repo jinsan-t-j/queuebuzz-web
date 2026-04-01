@@ -1,3 +1,4 @@
+import type { QueueEntryStatus } from './constants'
 export interface QueueConfig {
   name: string
 }
@@ -20,7 +21,6 @@ export interface QueueRecord {
   entries?: QueueEntry[] // Added for hydration
 }
 
-export type QueueEntryStatus = 'WAITING' | 'CALLED' | 'SERVED' | 'SKIPPED' | 'IDLE' | 'LEFT' | 'ARRIVED'
 
 export interface QueueEntry {
   id: string

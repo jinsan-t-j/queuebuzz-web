@@ -9,6 +9,7 @@ import type { QueueEntry } from '../types'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
+import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 
 // Icons
 import CloseXIcon from '@/assets/icons/close-x.svg?component'
@@ -33,12 +34,14 @@ const emit = defineEmits<{
 const statusConfig = computed(() => {
   if (!props.entry) return { label: '', color: '' }
   switch (props.entry.status) {
-    case 'WAITING':
+    case ENTRY_STATUS.WAITING:
       return { label: 'Waiting in line', color: 'bg-warning/10 text-warning' }
-    case 'CALLED':
+    case ENTRY_STATUS.CALLED:
       return { label: 'Currently Called', color: 'bg-mint text-plum font-bold' }
-    case 'SERVED':
+    case ENTRY_STATUS.SERVED:
       return { label: 'Successfully Served', color: 'bg-mint/10 text-mint' }
+    case ENTRY_STATUS.ARRIVED:
+      return { label: 'Confirmed Arrival', color: 'bg-mint text-plum font-bold' }
     default:
       return { label: props.entry.status.toUpperCase() as any, color: 'bg-plum/10 text-plum' }
   }
@@ -57,7 +60,7 @@ const formattedJoinedTime = computed(() => {
 })
 
 const estWaitMin = computed(() => {
-  if (props.entry.status !== 'WAITING' || !props.entry.position) return 0
+  if (props.entry.status !== ENTRY_STATUS.WAITING || !props.entry.position) return 0
   return Math.max(0, (props.entry.position - 1) * (props.avgServiceMins || 0))
 })
 </script>
@@ -136,8 +139,8 @@ const estWaitMin = computed(() => {
 
         <!-- Actions -->
         <div class="mt-10 flex flex-col gap-3">
-          <!-- If called, show serve -->
-          <div v-if="entry.status == 'CALLED'" class="flex flex-col gap-3">
+          <!-- If called or arrived, show serve -->
+          <div v-if="entry.status == ENTRY_STATUS.CALLED || entry.status == ENTRY_STATUS.ARRIVED" class="flex flex-col gap-3">
             <BaseButton
               variant="primary"
               class="w-full py-4 text-base font-bold"
@@ -146,13 +149,17 @@ const estWaitMin = computed(() => {
               <CheckIcon class="mr-2 h-5 w-5" />
               Mark as Served
             </BaseButton>
+            <BaseButton v-if="entry.status == ENTRY_STATUS.ARRIVED" variant="ghost" class="w-full text-danger" @click="emit('call', entry.id)">
+              <CallNextIcon class="mr-2 h-4 w-4" />
+              Re-call Guest
+            </BaseButton>
             <BaseButton variant="ghost" class="w-full" @click="emit('close')">
               Close
             </BaseButton>
           </div>
 
           <!-- If waiting, show call -->
-          <div v-else-if="entry.status == 'WAITING'" class="flex flex-col gap-3">
+          <div v-else-if="entry.status == ENTRY_STATUS.WAITING" class="flex flex-col gap-3">
             <BaseButton
               variant="primary"
               class="w-full py-4 text-base font-bold"

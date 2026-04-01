@@ -5,14 +5,15 @@
  * "Call Next Guest" button, and optional "Terminate Queue" button.
  * Supports both populated and empty states.
  *
- * @prop {Array} entries - List of queue entry objects.
+ * @prop {Array} activeEntries - Current queue participants (Waiting, Called, etc).
+ * @prop {Array} servedEntries - Historical participants (Served, Skipped, etc).
  * @prop {String} searchQuery - Current search filter text.
  * @emits {call-next} - "Call Next Guest" button clicked.
  * @emits {search} - Search input changed.
  */
 
 // 1. Vue core imports
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 
 // 2. Router / Pinia imports
 
@@ -23,15 +24,21 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 // 5. Component imports
 import EntryDetailsModal from './EntryDetailsModal.vue'
 import BaseTooltip from '@/components/base/BaseTooltip.vue'
+import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 
 import SearchIcon from '@/assets/icons/search.svg?component'
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
 import ShieldCheckIcon from '@/assets/icons/shield-verified.svg?component'
+import CheckIcon from '@/assets/icons/check-circle.svg?component'
 
 // 6. Props
 const props = defineProps({
-  entries: {
+  activeEntries: {
+    type: Array,
+    default: () => [],
+  },
+  servedEntries: {
     type: Array,
     default: () => [],
   },
@@ -69,15 +76,14 @@ const emit = defineEmits([
   'serve-guest',
 ])
 
-// 8. Composable destructuring
-
 // 9. Reactive state
-const openDropdownId = ref(null)
 const selectedEntry = ref(null)
 const isDetailsModalOpen = ref(false)
+const isHistoryExpanded = ref(false)
 
 // 10. Computed properties
-const hasActiveCalledEntry = computed(() => props.entries.some(e => e.status === 'CALLED'))
+const hasActiveCalledEntry = computed(() => props.activeEntries.some(e => e.status === ENTRY_STATUS.CALLED))
+const totalCount = computed(() => props.activeEntries.length + props.servedEntries.length)
 const nextCallDisabled = computed(() => {
   if (props.isLoading || props.isPaused) return true
   if (props.strictQueueMode && hasActiveCalledEntry.value) return true
@@ -96,23 +102,24 @@ function closeDetails() {
   }, 300)
 }
 
-function onClickOutside(e) {
-  if (!e.target.closest('.guest-dropdown-container')) {
-    openDropdownId.value = null
-  }
-}
-
 // 12. Lifecycle hooks
 onMounted(() => {
-  document.addEventListener('click', onClickOutside)
+  // If no active guests but we have history, auto-expand history
+  if (props.activeEntries.length === 0 && props.servedEntries.length > 0) {
+    isHistoryExpanded.value = true
+  }
 })
-onUnmounted(() => {
-  document.removeEventListener('click', onClickOutside)
+
+// 13. Watchers
+watch(() => props.activeEntries.length, (newVal) => {
+  if (newVal === 0 && props.servedEntries.length > 0) {
+    isHistoryExpanded.value = true
+  }
 })
 </script>
 
 <template>
-  <div class="min-h-[580px] flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+  <div class="max-h-[580px] flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <!-- Header -->
     <div class="border-b border-plum/5 bg-plum/[0.02] px-6 py-4">
       <div class="flex items-center gap-3">
@@ -129,42 +136,62 @@ onUnmounted(() => {
     </div>
 
     <!-- Empty state / Entries -->
-    <div class="flex flex-1 flex-col max-h-[400px] overflow-y-auto" :class="entries.length === 0 ? 'items-center justify-center p-6' : 'gap-3 p-4 px-6'">
-      <template v-if="entries.length === 0">
-        <p class="mb-4 font-body text-[10px] font-bold uppercase tracking-[2px] text-plum/30">
-          Action Center
-        </p>
-        <ActionCenterIcon class="h-10 w-11 text-plum/10" />
+    <div class="flex flex-1 flex-col overflow-y-auto p-4 px-6" :class="totalCount === 0 ? 'items-center justify-center' : 'gap-3'">
+      <!-- Active Guests -->
+      <!-- Case 1: No entries at all (Truly empty) -->
+      <template v-if="totalCount === 0 && !searchQuery">
+        <div class="flex flex-col items-center justify-center py-10 opacity-40">
+          <p class="mb-4 font-body text-[10px] font-bold uppercase tracking-[2px] text-plum">
+            Action Center
+          </p>
+          <ActionCenterIcon class="h-10 w-11" />
+        </div>
       </template>
+
+      <!-- Case 2: Active empty, but history has items (Queue Finished) -->
+      <template v-else-if="activeEntries.length === 0 && !searchQuery">
+        <div class="py-10 text-center opacity-40">
+          <p class="font-body text-sm text-plum">Active queue is clear</p>
+        </div>
+      </template>
+      
+      <!-- Case 3: Search results empty -->
+      <template v-else-if="activeEntries.length === 0 && searchQuery">
+        <div class="py-10 text-center opacity-40">
+          <p class="font-body text-sm text-plum">No active guests match "{{ searchQuery }}"</p>
+        </div>
+      </template>
+
+      <!-- Case 4: Populated List -->
       <template v-else>
         <div
-          v-for="entry in entries"
+          v-for="entry in activeEntries"
           :key="entry.id"
           class="group flex cursor-pointer items-center rounded-2xl border px-4 py-4 transition-all duration-300 hover:shadow-md"
           :class="[
-            entry.status === 'CALLED'
+            entry.status === ENTRY_STATUS.CALLED
               ? 'border-2 border-mint shadow-[0_8px_32px_-8px_rgba(0,229,160,0.4)] bg-mint/[0.03] animate-status-pulse'
-              : entry.status === 'ARRIVED'
+              : entry.status === ENTRY_STATUS.ARRIVED
                 ? 'border-mint/20 bg-mint/5 shadow-sm'
                 : 'border-plum/5 shadow-sm bg-white hover:border-plum/20'
           ]"
           @click="openDetails(entry)"
         >
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-4 min-w-0 flex-1">
             <span
-              class="flex h-10 w-10 items-center justify-center rounded-xl font-mono text-lg font-bold transition-all duration-300"
+              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl font-mono text-lg font-bold transition-all duration-300"
               :class="
-                entry.status === 'CALLED'
+                entry.status === ENTRY_STATUS.CALLED
                   ? 'bg-plum text-mint'
-                  : entry.status === 'ARRIVED'
+                  : entry.status === ENTRY_STATUS.ARRIVED
                     ? 'bg-mint text-sand shadow-sm'
                     : 'bg-plum/5 text-plum/40'
               "
             >
-              <template v-if="entry.status === 'CALLED'">
+              <template v-if="entry.status === ENTRY_STATUS.CALLED">
                 <CallNextIcon class="h-4 w-4" />
               </template>
-              <template v-else-if="entry.status === 'ARRIVED'">
+              <template v-else-if="entry.status === ENTRY_STATUS.ARRIVED">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                 </svg>
@@ -176,29 +203,28 @@ onUnmounted(() => {
             <div class="flex flex-col min-w-0">
               <div class="flex items-center gap-2">
                 <p 
-                  class="font-body text-base font-bold text-plum truncate max-w-[180px]"
-                  :class="entry.status === 'CALLED' ? 'text-plum' : ''"
+                  class="font-body text-base font-bold text-plum truncate"
                 >
                   {{ entry.name }}
                 </p>
 
-                <BaseTooltip v-if="entry.createdBy" text="Entry added by you">
+                <BaseTooltip v-if="entry.createdBy" text="Entry added by host">
                   <ShieldCheckIcon
                     class="h-3.5 w-3.5 flex-shrink-0 text-[#00B87A] opacity-60 transition-opacity hover:opacity-100"
                   />
                 </BaseTooltip>
               </div>
-              <p class="font-body text-xs text-plum-muted">
+              <p class="font-body text-xs text-plum-muted truncate">
                 <template v-if="showPartySize && entry.partySize > 1">
-                  Party of {{ entry.partySize }} •
+                  P-{{ entry.partySize }} •
                 </template>
-                <span :class="entry.status === 'CALLED' ? 'text-mint font-bold' : ''">
-                  {{ entry.status === 'CALLED' ? 'At the counter' : entry.status === 'ARRIVED' ? 'Waiting in shop' : `${(entry.position - 1) * (avgServiceMins || 0)} min wait` }}
+                <span :class="entry.status === ENTRY_STATUS.CALLED ? 'text-mint font-bold' : ''">
+                  {{ entry.status === ENTRY_STATUS.CALLED ? 'At the counter' : entry.status === ENTRY_STATUS.ARRIVED ? 'In shop' : `${(entry.position - 1) * (avgServiceMins || 0)} min wait` }}
                 </span>
               </p>
             </div>
           </div>
-          <div class="relative ml-auto guest-dropdown-container">
+          <div class="relative ml-2 guest-dropdown-container">
             <button
               class="flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-plum/5 cursor-pointer"
               @click.stop="openDetails(entry)"
@@ -212,6 +238,52 @@ onUnmounted(() => {
           </div>
         </div>
       </template>
+
+    </div>
+
+    <div v-if="servedEntries.length > 0" class="border-t border-plum/5 bg-plum/[0.01]">
+      <button 
+        class="flex w-full items-center justify-between px-6 py-3 text-plum/40 hover:text-plum/60 transition-colors"
+        @click="isHistoryExpanded = !isHistoryExpanded"
+      >
+        <span class="font-body text-[10px] font-bold uppercase tracking-widest">
+          Served Today ({{ servedEntries.length }})
+        </span>
+        <svg 
+          class="w-4 h-4 transition-transform" 
+          :class="{ 'rotate-180': isHistoryExpanded }"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      <!-- Scoped scroll for history to prevent it taking over the screen on mobile -->
+      <div v-if="isHistoryExpanded" class="max-h-[240px] overflow-y-auto px-6 pb-4 pt-1 flex flex-col gap-2">
+         <div
+          v-for="entry in servedEntries"
+          :key="entry.id"
+          class="group flex cursor-pointer items-center rounded-xl border border-plum/[0.03] bg-sand/30 px-3 py-3 opacity-60 hover:opacity-100 transition-all"
+          @click="openDetails(entry)"
+        >
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+             <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-plum/5 text-plum/30 font-mono text-xs font-bold">
+                <template v-if="entry.servedAt">
+                   <CheckIcon class="h-4 w-4" />
+                </template>
+                <template v-else>
+                   {{ entry.position || '—' }}
+                </template>
+             </span>
+             <div class="flex flex-col min-w-0">
+                <p class="font-body text-sm font-bold text-plum truncate">{{ entry.name }}</p>
+                <p v-if="entry.servedAt" class="font-body text-[10px] text-plum-muted">
+                    Served at {{ new Date(entry.servedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                </p>
+             </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Action buttons -->
@@ -230,16 +302,17 @@ onUnmounted(() => {
         {{ isLoading ? 'Calling...' : 'Call Next Guest' }}
       </button>
       <p
-        v-if="entries.length === 0 || isPaused || (strictQueueMode && hasActiveCalledEntry)"
+        v-if="activeEntries.length === 0 || isPaused || (strictQueueMode && hasActiveCalledEntry)"
         class="mt-3 text-center font-body text-[10px] font-bold uppercase tracking-wider text-plum/30"
       >
         <template v-if="isPaused">Resume queue to call guests</template>
         <template v-else-if="strictQueueMode && hasActiveCalledEntry">
           Serve current guest first
         </template>
-        <template v-else-if="entries.length === 0">No guests waiting</template>
+        <template v-else-if="activeEntries.length === 0">No guests waiting in line</template>
       </p>
     </div>
+
 
     <!-- Entry Details Modal -->
     <EntryDetailsModal
