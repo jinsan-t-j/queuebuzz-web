@@ -185,17 +185,25 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       <div v-else-if="activeQueue" class="flex flex-col gap-4">
         <!-- Live Status Info -->
         <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-3 px-4 py-2 bg-white rounded-full border border-plum-faint shadow-sm">
-            <div 
-              class="w-2.5 h-2.5 rounded-full"
-              :class="[
-                isStreamConnected ? 'bg-mint animate-pulse' : 
-                streamState === 'connecting' ? 'bg-warning animate-spin' : 'bg-danger'
-              ]"
-            ></div>
-            <span class="font-body text-xs font-bold text-plum uppercase tracking-wider">
-              {{ isStreamConnected ? 'Live Connection' : streamState === 'connecting' ? 'Syncing...' : 'Offline' }}
-            </span>
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3 px-4 py-2 bg-white rounded-full border border-plum-faint shadow-sm">
+              <div 
+                class="w-2.5 h-2.5 rounded-full"
+                :class="[
+                  isStreamConnected ? 'bg-mint animate-pulse' : 
+                  streamState === 'connecting' ? 'bg-warning animate-spin' : 'bg-danger'
+                ]"
+              ></div>
+              <span class="font-body text-xs font-bold text-plum uppercase tracking-wider">
+                {{ isStreamConnected ? 'Live Connection' : streamState === 'connecting' ? 'Syncing...' : 'Offline' }}
+              </span>
+            </div>
+
+            <div v-if="activeQueue?.strictQueueMode" class="flex items-center gap-3 px-4 py-2 bg-plum rounded-full border border-plum shadow-sm">
+              <span class="font-body text-xs font-bold text-sand uppercase tracking-wider">
+                Strict Mode Active
+              </span>
+            </div>
           </div>
           
           <div v-if="!isStreamConnected && streamState !== 'connecting'" class="text-xs font-body text-danger flex items-center gap-1">

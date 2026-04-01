@@ -18,6 +18,7 @@ import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.
 import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
 import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
 import HostTips from '@/modules/app/queue/components/HostTips.vue'
+import BaseBadge from '@/components/base/BaseBadge.vue'
 
 const router = useRouter()
 const {
@@ -82,9 +83,14 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       <!-- Header Area -->
       <header class="mb-8 flex items-end justify-between">
         <div>
-          <h1 class="font-display text-4xl font-bold text-plum">
-            {{ activeQueue?.name || 'Active Queue' }}
-          </h1>
+          <div class="flex items-center gap-3">
+            <h1 class="font-display text-4xl font-bold text-plum">
+              {{ activeQueue?.name || 'Active Queue' }}
+            </h1>
+            <BaseBadge v-if="activeQueue?.strictQueueMode" variant="muted" class="bg-plum text-sand">
+              STRICT MODE ACTIVE
+            </BaseBadge>
+          </div>
           <p class="mt-1 font-body text-plum/60">
             Running since {{ activeQueue?.createdAt ? new Date(activeQueue.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
           </p>
