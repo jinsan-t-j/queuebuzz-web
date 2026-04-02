@@ -77,6 +77,7 @@ watch(
   (s) => {
     const params = router.currentRoute.value.params
     if (s === 'CALLED' || s === 'ARRIVED') router.push({ name: 'customer-called', params })
+    else if (s === 'IDLE') router.push({ name: 'customer-idle', params })
     else if (s === 'SERVED') router.push({ name: 'customer-served', params })
     else if (s === 'LEFT' || s === 'SKIPPED') {
       router.push({ name: 'customer-ended', params, query: { reason: s.toLowerCase() } })

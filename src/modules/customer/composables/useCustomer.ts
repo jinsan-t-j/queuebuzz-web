@@ -81,7 +81,11 @@ export function useCustomer() {
 
     async function handleConfirmStillHere() {
         const success = await store.confirmStillHere()
-        if (success) await store.fetchEntry()
+        if (success) {
+            showToast("You're back in line!", { type: 'success' })
+        } else {
+            showToast(store.error ?? 'Failed to confirm status', { type: 'error' })
+        }
         return success
     }
 
@@ -126,7 +130,15 @@ export function useCustomer() {
         confirmArrival: () => handleConfirmArrival(),
         finishService: () => handleFinishService(),
 
-        submitRating: (rating: number) => store.submitRating(rating),
+        submitRating: async (rating: number) => {
+            const success = await store.submitRating(rating)
+            if (success) {
+                showToast('Thank you for your feedback!', { type: 'success' })
+            } else {
+                showToast(store.error ?? 'Failed to submit rating', { type: 'error' })
+            }
+            return success
+        },
         fetchEntry: () => store.fetchEntry(),
         revalidate: (id: string) => store.revalidate(id),
         attemptSessionRecovery: () => store.attemptSessionRecovery(),

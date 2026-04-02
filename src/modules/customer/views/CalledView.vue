@@ -50,7 +50,10 @@ watch(
   () => status.value,
   (s) => {
     const params = router.currentRoute.value.params
-    if (s === 'SERVED') {
+    if (s === 'IDLE') {
+      router.push({ name: 'customer-idle', params })
+    }
+    else if (s === 'SERVED') {
       router.push({ 
         name: 'customer-served', 
         params, 

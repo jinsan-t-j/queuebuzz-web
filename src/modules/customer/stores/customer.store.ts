@@ -194,6 +194,7 @@ export const useCustomerStore = defineStore('customer', {
         async confirmArrival() {
             if (!this.entry) return false
             this.isLoading = true
+            this.error = null
             try {
                 const result = await CustomerActions.confirmArrival()
                 return result.success
@@ -207,6 +208,7 @@ export const useCustomerStore = defineStore('customer', {
         async finishService() {
             if (!this.entry) return false
             this.isLoading = true
+            this.error = null
             try {
                 const result = await CustomerActions.finishService()
                 if (result.success) {
@@ -224,6 +226,7 @@ export const useCustomerStore = defineStore('customer', {
         async submitRating(rating: number) {
             if (!this.entry) return false
             this.isLoading = true
+            this.error = null
             try {
                 const result = await CustomerActions.submitRating(rating)
                 return result.success
@@ -236,6 +239,8 @@ export const useCustomerStore = defineStore('customer', {
         },
 
         async leaveQueue(): Promise<boolean> {
+            this.isLoading = true
+            this.error = null
             try {
                 const result = await CustomerActions.leaveQueue()
                 this.clearEntry()
@@ -243,11 +248,14 @@ export const useCustomerStore = defineStore('customer', {
             } catch (e: any) {
                 this.error = e?.response?.data?.message || 'Failed to leave queue'
                 return false
+            } finally {
+                this.isLoading = false
             }
         },
 
         async attemptSessionRecovery(): Promise<boolean> {
             this.isLoading = true
+            this.error = null
             try {
                 const result = await CustomerActions.recoverGuestSession()
                 if (result) {
@@ -264,6 +272,8 @@ export const useCustomerStore = defineStore('customer', {
         },
 
         async updateEntry(payload: { name?: string, email?: string, partySize?: number }): Promise<boolean> {
+            this.isLoading = true
+            this.error = null
             try {
                 const result = await CustomerActions.updateEntry(payload)
                 if (result.success) {
@@ -277,17 +287,23 @@ export const useCustomerStore = defineStore('customer', {
             } catch (e: any) {
                 this.error = e?.response?.data?.message || 'Failed to update entry'
                 return false
+            } finally {
+                this.isLoading = false
             }
         },
 
         async confirmStillHere(): Promise<boolean> {
             if (!this.entry?.id) return false
+            this.isLoading = true
+            this.error = null
             try {
                 const result = await CustomerActions.confirmStillHere()
                 return result.success
             } catch (e: any) {
                 this.error = e?.response?.data?.message || 'Failed to confirm status'
                 return false
+            } finally {
+                this.isLoading = false
             }
         },
 

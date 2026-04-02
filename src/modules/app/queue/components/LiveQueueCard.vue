@@ -1,96 +1,67 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component LiveQueueCard
  * @description Live queue card with search bar, guest entries list,
  * "Call Next Guest" button, and optional "Terminate Queue" button.
- * Supports both populated and empty states.
- *
- * @prop {Array} activeEntries - Current queue participants (Waiting, Called, etc).
- * @prop {Array} servedEntries - Historical participants (Served, Skipped, etc).
- * @prop {String} searchQuery - Current search filter text.
- * @emits {call-next} - "Call Next Guest" button clicked.
- * @emits {search} - Search input changed.
  */
-
-// 1. Vue core imports
 import { ref, computed, onMounted, watch } from 'vue'
-
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
-import EntryDetailsModal from './EntryDetailsModal.vue'
-import BaseTooltip from '@/components/base/BaseTooltip.vue'
+import { useToast } from '@/composables/useToast'
+import type { QueueEntry } from '../types'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 
+// Icons
 import SearchIcon from '@/assets/icons/search.svg?component'
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
 import ShieldCheckIcon from '@/assets/icons/shield-verified.svg?component'
 import CheckIcon from '@/assets/icons/check-circle.svg?component'
+import ClockTimeIcon from '@/assets/icons/clock-time.svg?component'
+import PartyIcon from '@/assets/icons/add-person.svg?component'
+import ChevronDownIcon from '@/assets/icons/chevron-down.svg?component'
+import EmptyHistoryIcon from '@/assets/icons/empty-history.svg?component'
+
+// Components
+import EntryDetailsModal from './EntryDetailsModal.vue'
+import BaseTooltip from '@/components/base/BaseTooltip.vue'
 
 // 6. Props
-const props = defineProps({
-  activeEntries: {
-    type: Array,
-    default: () => [],
-  },
-  servedEntries: {
-    type: Array,
-    default: () => [],
-  },
-  searchQuery: {
-    type: String,
-    default: '',
-  },
-  isPaused: {
-    type: Boolean,
-    default: false,
-  },
-  avgServiceMins: {
-    type: Number,
-    default: 0,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  strictQueueMode: {
-    type: Boolean,
-    default: false,
-  },
-  showPartySize: {
-    type: Boolean,
-    default: true,
-  },
-})
+const props = defineProps<{
+  activeEntries: QueueEntry[]
+  servedEntries: QueueEntry[]
+  searchQuery?: string
+  isPaused?: boolean
+  avgServiceMins?: number
+  isLoading?: boolean
+  strictQueueMode?: boolean
+  showPartySize?: boolean
+}>()
 
 // 7. Emits
-const emit = defineEmits([
-  'call-next',
-  'call-guest',
-  'search',
-  'serve-guest',
-])
+const emit = defineEmits<{
+  (e: 'call-next'): void
+  (e: 'search', query: string): void
+  (e: 'terminate'): void
+  (e: 'call', id: string): void
+  (e: 'serve', id: string): void
+}>()
 
 // 9. Reactive state
-const selectedEntry = ref(null)
+const selectedEntry = ref<QueueEntry | null>(null)
 const isDetailsModalOpen = ref(false)
 const isHistoryExpanded = ref(false)
+const { showToast } = useToast()
+const recoveredIds = ref(new Set<string>())
 
 // 10. Computed properties
-const hasActiveCalledEntry = computed(() => props.activeEntries.some(e => e.status === ENTRY_STATUS.CALLED))
-const totalCount = computed(() => props.activeEntries.length + props.servedEntries.length)
+const hasActiveCalledEntry = computed(() => (props.activeEntries || []).some(e => e.status === ENTRY_STATUS.CALLED))
+const totalCount = computed(() => (props.activeEntries?.length || 0) + (props.servedEntries?.length || 0))
 const nextCallDisabled = computed(() => {
   if (props.isLoading || props.isPaused) return true
   if (props.strictQueueMode && hasActiveCalledEntry.value) return true
   return false
 })
 
-function openDetails(entry) {
+function openDetails(entry: QueueEntry) {
   selectedEntry.value = entry
   isDetailsModalOpen.value = true
 }
@@ -104,18 +75,34 @@ function closeDetails() {
 
 // 12. Lifecycle hooks
 onMounted(() => {
-  // If no active guests but we have history, auto-expand history
-  if (props.activeEntries.length === 0 && props.servedEntries.length > 0) {
+  if (props.activeEntries?.length === 0 && (props.servedEntries?.length || 0) > 0) {
     isHistoryExpanded.value = true
   }
 })
 
 // 13. Watchers
-watch(() => props.activeEntries.length, (newVal) => {
-  if (newVal === 0 && props.servedEntries.length > 0) {
+watch(() => props.activeEntries?.length, (newVal) => {
+  if (newVal === 0 && (props.servedEntries?.length || 0) > 0) {
     isHistoryExpanded.value = true
   }
 })
+
+// Track arrivals and recoveries for the "Pulse" effect
+watch(() => props.activeEntries, (newEntries, oldEntries) => {
+  if (!oldEntries || !newEntries) return
+  
+  newEntries.forEach(entry => {
+    const oldEntry = (oldEntries as QueueEntry[]).find(e => e.id === entry.id)
+    if (oldEntry && oldEntry.status === ENTRY_STATUS.IDLE && entry.status !== ENTRY_STATUS.IDLE && entry.status !== ENTRY_STATUS.SKIPPED) {
+      // Just recovered!
+      recoveredIds.value.add(entry.id)
+      showToast(`Guest #${entry.ticketNo} is back in the queue!`, { type: 'success' })
+      setTimeout(() => {
+        recoveredIds.value.delete(entry.id)
+      }, 3000)
+    }
+  })
+}, { deep: true })
 </script>
 
 <template>
@@ -129,7 +116,7 @@ watch(() => props.activeEntries.length, (newVal) => {
             :value="searchQuery"
             placeholder="Search guests..."
             class="ml-2 w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum/30 outline-none"
-            @input="emit('search', $event.target.value)"
+            @input="emit('search', ($event.target as HTMLInputElement).value)"
           />
         </div>
       </div>
@@ -173,7 +160,10 @@ watch(() => props.activeEntries.length, (newVal) => {
               ? 'border-2 border-mint shadow-[0_8px_32px_-8px_rgba(0,229,160,0.4)] bg-mint/[0.03] animate-status-pulse'
               : entry.status === ENTRY_STATUS.ARRIVED
                 ? 'border-mint/20 bg-mint/5 shadow-sm'
-                : 'border-plum/5 shadow-sm bg-white hover:border-plum/20'
+                : entry.status === ENTRY_STATUS.IDLE
+                  ? 'border-warning/30 bg-warning/[0.03] opacity-80'
+                  : 'border-plum/5 shadow-sm bg-white hover:border-plum/20',
+            recoveredIds.has(entry.id) ? '!border-mint !bg-mint/10 !scale-[1.02] ring-2 ring-mint ring-offset-1 z-10' : ''
           ]"
           @click="openDetails(entry)"
         >
@@ -185,7 +175,9 @@ watch(() => props.activeEntries.length, (newVal) => {
                   ? 'bg-plum text-mint'
                   : entry.status === ENTRY_STATUS.ARRIVED
                     ? 'bg-mint text-sand shadow-sm'
-                    : 'bg-plum/5 text-plum/40'
+                    : entry.status === ENTRY_STATUS.IDLE
+                      ? 'bg-warning/20 text-warning'
+                      : 'bg-plum/5 text-plum/40'
               "
             >
               <template v-if="entry.status === ENTRY_STATUS.CALLED">
@@ -194,6 +186,11 @@ watch(() => props.activeEntries.length, (newVal) => {
               <template v-else-if="entry.status === ENTRY_STATUS.ARRIVED">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+              </template>
+              <template v-else-if="entry.status === ENTRY_STATUS.IDLE">
+                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </template>
               <template v-else>
@@ -218,8 +215,16 @@ watch(() => props.activeEntries.length, (newVal) => {
                 <template v-if="showPartySize && entry.partySize > 1">
                   P-{{ entry.partySize }} •
                 </template>
-                <span :class="entry.status === ENTRY_STATUS.CALLED ? 'text-mint font-bold' : ''">
-                  {{ entry.status === ENTRY_STATUS.CALLED ? 'At the counter' : entry.status === ENTRY_STATUS.ARRIVED ? 'In shop' : `${(entry.position - 1) * (avgServiceMins || 0)} min wait` }}
+                <span :class="[
+                  entry.status === ENTRY_STATUS.CALLED ? 'text-mint font-bold' : '',
+                  entry.status === ENTRY_STATUS.IDLE ? 'text-warning font-bold italic' : ''
+                ]">
+                  {{ 
+                    entry.status === ENTRY_STATUS.CALLED ? 'At the counter' : 
+                    entry.status === ENTRY_STATUS.ARRIVED ? 'In shop' : 
+                    entry.status === ENTRY_STATUS.IDLE ? 'No Show (Grace Period)' : 
+                    `${(entry.position - 1) * (avgServiceMins || 2)} min wait` 
+                  }}
                 </span>
               </p>
             </div>
@@ -322,8 +327,8 @@ watch(() => props.activeEntries.length, (newVal) => {
       :avg-service-mins="avgServiceMins"
       :show-party-size="showPartySize"
       @close="closeDetails"
-      @call="(id) => { emit('call-guest', id); closeDetails(); }"
-      @serve="(id) => { emit('serve-guest', id); closeDetails(); }"
+      @call="(id) => { emit('call', id); closeDetails(); }"
+      @serve="(id) => { emit('serve', id); closeDetails(); }"
     />
   </div>
 </template>

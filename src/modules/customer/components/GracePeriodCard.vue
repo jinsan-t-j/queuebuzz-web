@@ -14,7 +14,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 // 4. Local composables
-import { useCustomerApi } from '@/modules/customer/composables/useCustomer'
+import { useCustomer } from '@/modules/customer/composables/useCustomer'
 
 // 5. Component imports
 import ClockWarningOrangeIcon from '@/assets/icons/clock-warning-orange.svg?component'
@@ -29,22 +29,11 @@ const props = defineProps({
 const emit = defineEmits(['confirmed-still-here', 'grace-period-expired', 'leave-queue'])
 
 // 8. Composable destructuring
-const { confirmStillHere } = useCustomerApi()
+const { confirmStillHere, isLoading } = useCustomer()
 
 // 9. Reactive state
 const secondsLeft = ref(props.initialSeconds)
-const isConfirming = ref(false)
 let timer = null
-
-// 11. Methods
-async function handleConfirm() {
-  isConfirming.value = true
-  const result = await confirmStillHere('stub-ticket-id')
-  isConfirming.value = false
-  if (result.success) {
-    emit('confirmed-still-here')
-  }
-}
 
 // 12. Lifecycle hooks
 onMounted(() => {
@@ -87,14 +76,14 @@ onUnmounted(() => {
 
     <!-- Confirm button -->
     <button
-      :disabled="isConfirming"
+      :disabled="isLoading"
       :class="[
-        'mt-6 flex h-[60px] w-full items-center justify-center rounded-2xl bg-[#2dd4bf] font-body text-lg font-bold text-plum shadow-[0_8px_10px_rgba(45,212,191,0.20),0_20px_25px_rgba(45,212,191,0.20)] transition-all',
-        isConfirming ? 'cursor-not-allowed opacity-70' : '',
+        'cursor-pointer mt-6 flex h-[60px] w-full items-center justify-center rounded-2xl bg-[#2dd4bf] font-body text-lg font-bold text-plum shadow-[0_8px_10px_rgba(45,212,191,0.20),0_20px_25px_rgba(45,212,191,0.20)] transition-all',
+        isLoading ? 'cursor-not-allowed opacity-70' : '',
       ]"
-      @click="handleConfirm"
+      @click="confirmStillHere"
     >
-      {{ isConfirming ? 'Confirming…' : "I'm Still Here" }}
+      {{ isLoading ? 'Confirming…' : "I'm Still Here" }}
     </button>
 
     <!-- Leave link -->

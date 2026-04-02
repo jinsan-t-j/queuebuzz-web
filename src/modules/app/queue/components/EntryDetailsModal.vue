@@ -42,6 +42,8 @@ const statusConfig = computed(() => {
       return { label: 'Successfully Served', color: 'bg-mint/10 text-mint' }
     case ENTRY_STATUS.ARRIVED:
       return { label: 'Confirmed Arrival', color: 'bg-mint text-plum font-bold' }
+    case ENTRY_STATUS.IDLE:
+      return { label: 'No Show (In Grace Period)', color: 'bg-warning/10 text-warning font-bold' }
     default:
       return { label: props.entry.status.toUpperCase() as any, color: 'bg-plum/10 text-plum' }
   }
@@ -139,8 +141,8 @@ const estWaitMin = computed(() => {
 
         <!-- Actions -->
         <div class="mt-10 flex flex-col gap-3">
-          <!-- If called or arrived, show serve -->
-          <div v-if="entry.status == ENTRY_STATUS.CALLED || entry.status == ENTRY_STATUS.ARRIVED" class="flex flex-col gap-3">
+          <!-- If called, arrived or idle, show serve/re-call -->
+          <div v-if="([ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(entry.status)" class="flex flex-col gap-3">
             <BaseButton
               variant="primary"
               class="w-full py-4 text-base font-bold"
@@ -149,9 +151,9 @@ const estWaitMin = computed(() => {
               <CheckIcon class="mr-2 h-5 w-5" />
               Mark as Served
             </BaseButton>
-            <BaseButton v-if="entry.status == ENTRY_STATUS.ARRIVED" variant="ghost" class="w-full text-danger" @click="emit('call', entry.id)">
+            <BaseButton v-if="([ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(entry.status)" variant="ghost" class="w-full text-danger" @click="emit('call', entry.id)">
               <CallNextIcon class="mr-2 h-4 w-4" />
-              Re-call Guest
+              {{ entry.status === ENTRY_STATUS.IDLE ? 'Call Again' : 'Re-call Guest' }}
             </BaseButton>
             <BaseButton variant="ghost" class="w-full" @click="emit('close')">
               Close

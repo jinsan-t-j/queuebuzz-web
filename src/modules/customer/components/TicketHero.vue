@@ -18,7 +18,6 @@ import { ref, onMounted } from 'vue'
 import QRCode from 'qrcode'
 
 import { Download } from 'lucide-vue-next'
-import BaseButton from '@/components/base/BaseButton.vue'
 import LeaveConfirmationModal from './LeaveConfirmationModal.vue'
 
 // 6. Props
