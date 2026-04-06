@@ -82,23 +82,18 @@ export interface QueueStatusData {
 
 export interface QueueSseEnvelopeMap {
   queue_update: {
-    event: 'queue_update'
     data: QueueEntry[]
   }
-  user_joined: {
-    event: 'user_joined'
+  joined: {
     data: QueueEntry
   }
-  user_called: {
-    event: 'user_called'
+  called: {
     data: QueueStatusEventData
   }
   user_status_changed: {
-    event: 'user_status_changed'
     data: QueueStatusEventData
   }
   user_arrived: {
-    event: 'user_arrived'
     data: {
       id: string
       name: string
@@ -106,11 +101,9 @@ export interface QueueSseEnvelopeMap {
     }
   }
   queue_status_changed: {
-    event: 'queue_status_changed'
     data: QueueStatusData
   }
   queue_expired: {
-    event: 'queue_expired'
     data: QueueExpiredEventData
   }
 }

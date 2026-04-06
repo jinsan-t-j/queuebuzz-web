@@ -33,8 +33,8 @@ export const useQueueStore = defineStore('queue', {
     isPaused: (state) => state.activeQueue?.status === 'paused',
     waitingCount: (state): number => {
       if (state.entries.length > 0) {
-        return state.entries.filter((e) => 
-            ([ENTRY_STATUS.WAITING, ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(e.status)
+        return state.entries.filter((e) =>
+          ([ENTRY_STATUS.WAITING, ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(e.status)
         ).length
       }
       return state.publicWaitingCount || 0
@@ -56,13 +56,10 @@ export const useQueueStore = defineStore('queue', {
   actions: {
     setActiveQueue(queue: QueueRecord) {
       this.activeQueue = queue
-    },
-
-    setLiveQueueState(payload: QueueRecord) {
-      this.activeQueue = payload
-      if (payload.entries) {
-        this.entries = normalizeLiveQueueEntries(payload.entries)
+      if (queue.entries) {
+        this.entries = normalizeLiveQueueEntries(queue.entries)
       }
+      this.error = null
     },
 
     async fetchActiveQueue() {
@@ -70,13 +67,14 @@ export const useQueueStore = defineStore('queue', {
       this.error = null
       try {
         const payload = await getLiveQueue()
-        this.setLiveQueueState(payload)
+        this.setActiveQueue(payload)
         return payload
       } catch (e: any) {
         if (e?.response?.status === 404) {
           this.clearQueue()
           this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
         } else if (e?.response?.status === 401) {
+          this.clearQueue()
           this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
         } else if (e?.response?.status === 403) {
           this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
@@ -94,11 +92,17 @@ export const useQueueStore = defineStore('queue', {
       this.error = null
       try {
         const payload = await getLiveQueueById(id)
-        this.setLiveQueueState(payload)
+        this.setActiveQueue(payload)
         return payload
       } catch (e: any) {
         if (e?.response?.status === 404) {
           this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
+        } else if (e?.response?.status === 401) {
+          this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
+        } else if (e?.response?.status === 403) {
+          this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
+        } else if (e?.response?.status === 410) {
+          this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
         } else {
           this.error = e?.response?.data?.message || QUEUE_ERROR_REASONS.UNKNOWN
         }
@@ -124,27 +128,16 @@ export const useQueueStore = defineStore('queue', {
     async revalidate(id: string) {
       if (!id) return
 
-      if (this.activeQueue && this.activeQueue.id === id) {
-        this.connectToEvents(id)
+      // If we already have this queue active, just ensure we're connected to its live events
+      if (this.activeQueue && (this.activeQueue.id === id || this.activeQueue.slug === id)) {
+        this.connectToEvents(this.activeQueue.id)
         return
       }
 
-      try {
-        await this.initializeQueueById(id)
-      } catch (err: any) {
-        const status = err.response?.status
-        if (status === 401 || status === 404 || status === 410) {
-          this.clearQueue()
-          if (status === 401) {
-            this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
-          } else if (status === 403) {
-            this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
-          } else if (status === 404) {
-            this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
-          } else if (status === 410) {
-            this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
-          }
-        }
+      // If missing from memory (e.g. on page refresh), fetch it directly by the ID from the URL
+      const queue = await this.fetchQueueById(id)
+      if (queue) {
+        this.connectToEvents(queue.id)
       }
     },
 
@@ -155,7 +148,7 @@ export const useQueueStore = defineStore('queue', {
      */
     updateEntries(newEntries: QueueEntry[]) {
       // 1. Identify all current entries that are in a terminal state
-      const terminalEntries = this.entries.filter((e) => 
+      const terminalEntries = this.entries.filter((e) =>
         ([ENTRY_STATUS.SERVED, ENTRY_STATUS.LEFT, ENTRY_STATUS.SKIPPED] as string[]).includes(e.status)
       )
 
@@ -165,15 +158,15 @@ export const useQueueStore = defineStore('queue', {
       // 3. The new snapshot is our source of truth for active entries.
       // But if a terminal entry is somehow in the snapshot, we take the new one.
       const snapshotIds = new Set(newEntries.map(e => e.id));
-      
+
       // 4. Final List = Snapshot + (Historical entries NOT in snapshot)
       const historicalToKeep = terminalEntries.filter(e => !snapshotIds.has(e.id));
-      
+
       this.entries = [...newEntries, ...historicalToKeep].sort((left, right) => {
-          // Keep the sort by position if possible, otherwise by timestamp or ID
-          const lp = left.position ?? 999999;
-          const rp = right.position ?? 999999;
-          return lp - rp;
+        // Keep the sort by position if possible, otherwise by timestamp or ID
+        const lp = left.position ?? 999999;
+        const rp = right.position ?? 999999;
+        return lp - rp;
       });
     },
 
@@ -262,53 +255,50 @@ export const useQueueStore = defineStore('queue', {
         },
         onError: (e) => {
           this.streamState = 'error'
-          if ([401, 403, 404, 410].includes(e.status)) {
+          // Only clear the queue if it's explicitly gone or missing.
+          // For auth errors (401, 403), we keep the data in memory but set the error state.
+          if ([404, 410].includes(e.status as number)) {
             this.clearQueue()
-            if (e.status === 401) {
-              this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
-            } else if (e.status === 403) {
-              this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
-            } else if (e.status === 404) {
-              this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
-            } else if (e.status === 410) {
-              this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
-            }
+          }
+
+          if (e.status === 401) {
+            this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
+          } else if (e.status === 403) {
+            this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
+          } else if (e.status === 404) {
+            this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
+          } else if (e.status === 410) {
+            this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
           }
         },
         events: {
-          queue_update: (payload) => {
-            const event = payload as QueueSseEnvelopeMap['queue_update']
-            this.updateEntries(normalizeLiveQueueEntries(event.data || []))
+          queue_update: (payload: QueueSseEnvelopeMap['queue_update']) => {
+            this.updateEntries((payload.data || []).map(normalizeQueueEntry))
           },
-          user_joined: (payload) => {
-            const event = payload as QueueSseEnvelopeMap['user_joined']
-            if (event.data) {
-              const entry = normalizeQueueEntry(event.data)
+          joined: (payload: QueueSseEnvelopeMap['joined']) => {
+            if (payload.data) {
+              const entry = normalizeQueueEntry(payload.data)
               this.upsertEntry(entry)
 
+              // Only toast for guests who didn't join via host (public joins)
               if (!entry.createdBy) {
                 notifyStore.addNotification({
                   title: 'New Guest!',
-                  message: `${entry.name} (Ticket ${entry.ticketNo}) just joined the queue.`,
-                  type: 'info'
+                  message: `${entry.name} joined the queue (Ticket #${entry.ticketNo})`,
+                  type: 'success',
                 })
               }
             }
           },
-          user_called: (payload) => {
-            const event = payload as QueueSseEnvelopeMap['user_called']
-            this.applyEntryStatus(event.data)
+          called: (payload: QueueSseEnvelopeMap['called']) => {
+            this.applyEntryStatus(payload.data)
           },
-          user_status_changed: (payload) => {
-            const event = payload as QueueSseEnvelopeMap['user_status_changed']
-            const data = event.data
+          user_status_changed: (payload: QueueSseEnvelopeMap['user_status_changed']) => {
+            const data = payload.data
             const entry = this.entries.find(e => e.id === data.id)
 
             this.applyEntryStatus(data)
 
-            console.log('Guest Status Changed!', data)
-
-            // Special toasts for important status changes
             if (data.status == ENTRY_STATUS.LEFT && entry) {
               notifyStore.addNotification({
                 title: 'Guest Left',
@@ -317,31 +307,28 @@ export const useQueueStore = defineStore('queue', {
               })
             }
           },
-          user_arrived: (payload) => {
-            const event = payload as QueueSseEnvelopeMap['user_arrived']
-            const data = event.data
+          user_arrived: (payload: QueueSseEnvelopeMap['user_arrived']) => {
+            const data = payload.data
             this.applyEntryStatus({ id: data.id, status: ENTRY_STATUS.ARRIVED })
-
             notifyStore.addNotification({
-              title: 'Guest Arrived!',
-              message: `${data.name} (Ticket ${data.ticketNumber}) is here.`,
-              type: 'success'
+              title: 'Guest at door!',
+              message: `${data.name} (Ticket ${data.ticketNumber}) has arrived.`,
+              type: 'info',
             })
           },
-          queue_status_changed: (payload) => {
-            const event = payload as QueueSseEnvelopeMap['queue_status_changed']
-            const newStatus = event.data.status
-            this.setQueueStatus(newStatus)
+          queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
+            this.setQueueStatus(payload.data.status)
           },
-          queue_expired: () => {
-            this.clearQueue()
-            this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
-
-            notifyStore.addNotification({
-              title: 'Queue Expired',
-              message: 'This session has ended after 24 hours.',
-              type: 'warning'
-            })
+          queue_expired: (payload: QueueSseEnvelopeMap['queue_expired']) => {
+            if (this.activeQueue && this.activeQueue.id === payload.data.queueId) {
+              this.clearQueue()
+              this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
+              notifyStore.addNotification({
+                title: 'Queue Expired',
+                message: 'This session has ended.',
+                type: 'warning',
+              })
+            }
           },
         },
       })

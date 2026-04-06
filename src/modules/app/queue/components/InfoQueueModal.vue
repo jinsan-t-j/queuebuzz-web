@@ -115,7 +115,7 @@ watch(
 
       <!-- Close button -->
       <button
-        class="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center rounded-2xl text-plum/20 transition-all hover:bg-plum/5 hover:text-plum active:scale-95"
+        class="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center rounded-2xl text-plum/20 transition-all hover:bg-plum/5 hover:text-plum active:scale-95 cursor-pointer"
         @click="emit('close')"
       >
         <CloseXIcon class="h-4 w-4" />
@@ -152,7 +152,7 @@ watch(
           <div v-else class="h-full w-full animate-pulse rounded-xl bg-plum-faint" />
           
           <!-- Subtle icon overlay on hover -->
-          <div class="absolute inset-0 flex items-center justify-center bg-white/20 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px]">
+          <div class="absolute inset-0 flex items-center justify-center bg-white/20 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px] cursor-pointer">
             <div class="rounded-full bg-white p-3 shadow-lg" @click="handleDownload">
               <DownloadIcon v-if="!isCapturing" class="h-6 w-6 text-plum" />
               <div v-else class="h-6 w-6 animate-spin rounded-full border-2 border-plum border-t-transparent" />
@@ -168,7 +168,7 @@ watch(
               {{ currentJoinCode }}
             </span>
             <button
-              class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-plum/40 shadow-sm transition-all hover:bg-plum hover:text-white active:scale-95"
+              class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-plum/40 shadow-sm transition-all hover:bg-plum hover:text-white active:scale-95 cursor-pointer"
               @click="handleShare"
             >
               <CopyIcon v-if="!copied" class="h-3.5 w-3.5" />

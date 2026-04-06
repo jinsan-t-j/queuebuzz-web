@@ -2,17 +2,6 @@ import type {
   QueueEntry,
 } from '@/modules/app/queue/types'
 
-function formatWaitTime(timestamp?: string | null): string {
-  if (!timestamp) {
-    return '0m'
-  }
-
-  const joinedAt = new Date(timestamp)
-  const diffMs = Date.now() - joinedAt.getTime()
-  const diffMinutes = Math.max(0, Math.round(diffMs / 60000))
-  return `${diffMinutes}m`
-}
-
 export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
   return {
     id: entry.id,

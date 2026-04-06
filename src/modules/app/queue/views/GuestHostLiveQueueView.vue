@@ -83,7 +83,8 @@ function checkQueueState() {
   if (!hasInitialized.value) return
 
   // 1. Check for specific error reasons from the store using constants
-  if (error.value) {
+  // Only redirect if we don't have active queue data to show as fallback
+  if (error.value && !activeQueue.value) {
     return handleRedirection(error.value)
   }
 

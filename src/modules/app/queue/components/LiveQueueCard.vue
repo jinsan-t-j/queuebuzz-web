@@ -248,7 +248,7 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
 
     <div v-if="servedEntries.length > 0" class="border-t border-plum/5 bg-plum/[0.01]">
       <button 
-        class="flex w-full items-center justify-between px-6 py-3 text-plum/40 hover:text-plum/60 transition-colors"
+        class="flex w-full items-center justify-between px-6 py-3 text-plum/40 hover:text-plum/60 transition-colors cursor-pointer"
         @click="isHistoryExpanded = !isHistoryExpanded"
       >
         <span class="font-body text-[10px] font-bold uppercase tracking-widest">

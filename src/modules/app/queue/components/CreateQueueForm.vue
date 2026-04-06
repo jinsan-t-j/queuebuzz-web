@@ -174,7 +174,7 @@ function copyCustomLink() {
             type="button"
             v-for="suggestion in suggestions"
             :key="suggestion"
-            class="rounded-full border border-plum-faint px-4 py-1.5 font-body text-[13px] font-medium text-[#5c5267] transition-colors hover:bg-plum-faint"
+            class="rounded-full border border-plum-faint px-4 py-1.5 font-body text-[13px] font-medium text-[#5c5267] transition-colors hover:bg-plum-faint cursor-pointer"
             @click="selectSuggestion(suggestion)"
           >
             {{ suggestion }}
@@ -246,8 +246,8 @@ function copyCustomLink() {
               :class="[
                 'px-4 py-2 rounded-xl font-body text-sm transition-all',
                 maxPartySize === size
-                  ? 'bg-plum text-sand font-semibold'
-                  : 'border border-plum-faint text-plum-muted hover:border-plum'
+                  ? 'bg-plum text-sand font-semibold cursor-pointer'
+                  : 'border border-plum-faint text-plum-muted hover:border-plum cursor-pointer'
               ]"
               @click="maxPartySize = size"
             >
@@ -305,7 +305,7 @@ function copyCustomLink() {
         <div class="rounded-card border border-plum/5 bg-white shadow-[0_4px_24px_rgba(26,10,46,0.05)]">
           <button
             type="button"
-            class="flex w-full items-center justify-between px-6 py-5"
+            class="flex w-full items-center justify-between px-6 py-5 cursor-pointer"
             @click="showEmailSection = !showEmailSection"
           >
             <div class="flex items-center gap-3">
@@ -341,14 +341,14 @@ function copyCustomLink() {
     <div class="mt-8 flex items-center justify-between">
       <button
         type="button"
-        class="font-body text-base font-semibold text-[#5c5267] transition-colors hover:text-plum"
+        class="font-body text-base font-semibold text-[#5c5267] transition-colors hover:text-plum cursor-pointer"
         @click="handleCancel"
       >
         Cancel
       </button>
       <button
         type="submit"
-        class="rounded-input bg-mint px-8 py-3 font-body text-lg font-bold text-plum shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95"
+        class="rounded-input bg-mint px-8 py-3 font-body text-lg font-bold text-plum shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95 cursor-pointer"
       >
         Open Queue →
       </button>

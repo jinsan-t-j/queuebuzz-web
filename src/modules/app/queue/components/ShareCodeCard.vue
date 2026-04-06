@@ -53,14 +53,14 @@ async function handleCopyLink() {
       <!-- Copy / QR buttons -->
       <div class="mt-8 flex items-center justify-center gap-4">
         <button
-          class="flex items-center gap-2 rounded-input bg-mint px-6 py-3 font-body text-xs font-bold text-plum shadow-[0_4px_6px_rgba(0,229,160,0.10),0_10px_15px_rgba(0,229,160,0.10)] transition-colors hover:bg-mint-dark"
+          class="flex items-center gap-2 rounded-input bg-mint px-6 py-3 font-body text-xs font-bold text-plum shadow-[0_4px_6px_rgba(0,229,160,0.10),0_10px_15px_rgba(0,229,160,0.10)] transition-colors hover:bg-mint-dark cursor-pointer"
           @click="handleCopyLink"
         >
           <CopyLinkIcon v-if="!isLinkCopied" class="h-[13px] w-[11px] text-plum" />
           {{ isLinkCopied ? 'Copied!' : 'Copy Link' }}
         </button>
         <button
-          class="flex items-center gap-2 rounded-input bg-plum/5 px-6 py-3 font-body text-xs font-bold text-plum transition-colors hover:bg-plum/10"
+          class="flex items-center gap-2 rounded-input bg-plum/5 px-6 py-3 font-body text-xs font-bold text-plum transition-colors hover:bg-plum/10 cursor-pointer"
           @click="emit('show-qr')"
         >
           <ShowQrIcon class="h-[13px] w-[13px] text-plum" />

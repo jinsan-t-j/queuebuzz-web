@@ -72,7 +72,7 @@ const handleClose = () => {
       <!-- Close button -->
       <button
         type="button"
-        class="absolute right-6 top-6 flex h-8 w-8 items-center justify-center rounded-lg text-plum/40 transition-colors hover:bg-plum/5 hover:text-plum"
+        class="absolute right-6 top-6 flex h-8 w-8 items-center justify-center rounded-lg text-plum/40 transition-colors hover:bg-plum/5 hover:text-plum cursor-pointer"
         @click="handleClose"
       >
         <CloseXIcon class="h-3 w-3" />
@@ -103,7 +103,7 @@ const handleClose = () => {
           <button
             type="button"
             @click="isGuestsOpen = !isGuestsOpen"
-            class="w-full flex items-center justify-between py-2 group transition-all"
+            class="w-full flex items-center justify-between py-2 group transition-all cursor-pointer"
           >
             <div class="flex items-center gap-4">
               <!-- Status Dot Indicator -->
@@ -172,7 +172,7 @@ const handleClose = () => {
                 <button 
                   type="button"
                   @click="accompanying = Math.max(0, accompanying - 1)"
-                  class="w-10 h-10 flex items-center justify-center rounded-xl bg-sand/50 text-plum hover:bg-sand transition-colors disabled:opacity-20"
+                  class="w-10 h-10 flex items-center justify-center rounded-xl bg-sand/50 text-plum hover:bg-sand transition-colors disabled:opacity-20 cursor-pointer"
                   :disabled="accompanying === 0"
                 >
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -190,7 +190,7 @@ const handleClose = () => {
                   class="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300"
                   :class="accompanying >= maxAllowedPartySize - 1 
                     ? 'bg-plum-faint text-plum-muted/40 cursor-not-allowed' 
-                    : 'bg-plum text-white hover:bg-plum-soft active:scale-95 shadow-md shadow-plum/10'"
+                    : 'bg-plum text-white hover:bg-plum-soft active:scale-95 shadow-md shadow-plum/10 cursor-pointer'"
                   :disabled="accompanying >= maxAllowedPartySize - 1"
                 >
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
