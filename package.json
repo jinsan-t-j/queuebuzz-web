@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "typecheck": "vue-tsc --noEmit",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepare": "husky"
   },
   "dependencies": {
     "@fontsource-variable/comfortaa": "^5.2.8",
@@ -39,9 +40,17 @@
   "devDependencies": {
     "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "^6.0.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "puppeteer": "^24.39.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vue-tsc": "^3.2.5"
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
