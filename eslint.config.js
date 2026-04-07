@@ -33,7 +33,18 @@ export default tseslint.config(
       'vue/require-default-prop': 'error',
       'vue/require-prop-types': 'error',
       'vue/no-unused-vars': 'error',
-      'vue/html-self-closing': 'error',
+      'vue/html-self-closing': [
+        'error',
+        {
+          html: {
+            void: 'always',
+            normal: 'always',
+            component: 'always',
+          },
+          svg: 'always',
+          math: 'always',
+        },
+      ],
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
       'vue/no-multiple-template-root': 'off',
       'no-console': 'warn',
