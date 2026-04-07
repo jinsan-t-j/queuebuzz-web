@@ -236,6 +236,24 @@ export const useQueueStore = defineStore('queue', {
 
       this.publicSseClient = createSseClient({
         url: buildApiUrl(API_ROUTES.QUEUE.PUBLIC_EVENTS(queueId)),
+        onOpen: () => {
+          this.error = null
+        },
+        onError: (e) => {
+          if (e.status === 401) {
+            this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
+          } else if (e.status === 403) {
+            this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
+          } else if (e.status === 404) {
+            this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
+          } else if (e.status === 410) {
+            this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
+          }
+
+          if (this.error) {
+            this.clearQueue()
+          }
+        },
         events: {
           queue_init: (payload: QueueSseEnvelopeMap['queue_init']) => {
             if (payload.data) {
@@ -302,11 +320,6 @@ export const useQueueStore = defineStore('queue', {
         },
         onError: (e) => {
           this.streamState = 'error'
-          // Only clear the queue if it's explicitly gone or missing.
-          // For auth errors (401, 403), we keep the data in memory but set the error state.
-          if ([404, 410].includes(e.status as number)) {
-            this.clearQueue()
-          }
 
           if (e.status === 401) {
             this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
@@ -316,6 +329,10 @@ export const useQueueStore = defineStore('queue', {
             this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
           } else if (e.status === 410) {
             this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
+          }
+
+          if (this.error) {
+            this.clearQueue()
           }
         },
         events: {

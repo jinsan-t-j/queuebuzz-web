@@ -79,38 +79,35 @@ function handleRedirection(reason: string) {
   })
 }
 
-function checkQueueState() {
-  if (!hasInitialized.value) return
-
-  // 1. Check for specific error reasons from the store using constants
-  // Only redirect if we don't have active queue data to show as fallback
-  if (error.value && !activeQueue.value) {
-    return handleRedirection(error.value)
+// Watchers
+watch(error, (newError) => {
+  if (newError) {
+    handleRedirection(newError)
   }
+})
 
-  // 2. Fallback: If no queue and no error, assume it was terminated locally
-  if (!activeQueue.value && !isApiLoading.value) {
+// Also watch activeQueue for terminal disappearance
+watch(activeQueue, (newQueue, oldQueue) => {
+  if (!newQueue && oldQueue && !isApiLoading.value) {
     handleRedirection(QUEUE_ERROR_REASONS.QUEUE_ENDED)
   }
-}
-
-// Watchers
-watch([activeQueue, error], checkQueueState)
+})
 
 onBeforeMount(async () => {
   try {
     await revalidateQueue(queueId)
   } catch {
-    // Ignore error, use state logic
+    // If revalidate fails with terminal error, the store's error state
+    // will be caught by the watcher above.
   } finally {
     hasInitialized.value = true
-    checkQueueState()
+    // Final check for empty state
+    if (!activeQueue.value && !error.value && !isApiLoading.value) {
+      handleRedirection(QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND)
+    }
   }
 })
 
-/**
- * ═══ Recovery Email Notice Logic ═══
- */
 const isRecoveryEmailMissing = computed(() => activeQueue.value && !activeQueue.value.recoveryEmail)
 const isNoticeVisible = ref(false)
 const storageKey = 'queuebuzz_hide_email_notice'
@@ -148,7 +145,6 @@ async function onStatusUpdateConfirmed() {
   const isTerminate = statusUpdateMode.value === 'terminate'
   const success = await handleStatusUpdateConfirm()
   if (success && isTerminate) {
-    // Note: Terminates usually trigger the watcher to redirect, but we can also do it here.
     router.push({ name: 'guest-host-complete' })
   }
 }
