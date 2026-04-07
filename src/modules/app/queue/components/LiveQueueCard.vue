@@ -11,14 +11,9 @@ import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 
 // Icons
 import SearchIcon from '@/assets/icons/search.svg?component'
-import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
 import ShieldCheckIcon from '@/assets/icons/shield-verified.svg?component'
 import CheckIcon from '@/assets/icons/check-circle.svg?component'
-import ClockTimeIcon from '@/assets/icons/clock-time.svg?component'
-import PartyIcon from '@/assets/icons/add-person.svg?component'
-import ChevronDownIcon from '@/assets/icons/chevron-down.svg?component'
-import EmptyHistoryIcon from '@/assets/icons/empty-history.svg?component'
 
 // Components
 import EntryDetailsModal from './EntryDetailsModal.vue'
@@ -53,8 +48,12 @@ const { showToast } = useToast()
 const recoveredIds = ref(new Set<string>())
 
 // 10. Computed properties
-const hasActiveCalledEntry = computed(() => (props.activeEntries || []).some(e => e.status === ENTRY_STATUS.CALLED))
-const totalCount = computed(() => (props.activeEntries?.length || 0) + (props.servedEntries?.length || 0))
+const hasActiveCalledEntry = computed(() =>
+  (props.activeEntries || []).some((e) => e.status === ENTRY_STATUS.CALLED),
+)
+const totalCount = computed(
+  () => (props.activeEntries?.length || 0) + (props.servedEntries?.length || 0),
+)
 const nextCallDisabled = computed(() => {
   if (props.isLoading || props.isPaused) return true
   if (props.strictQueueMode && hasActiveCalledEntry.value) return true
@@ -81,36 +80,52 @@ onMounted(() => {
 })
 
 // 13. Watchers
-watch(() => props.activeEntries?.length, (newVal) => {
-  if (newVal === 0 && (props.servedEntries?.length || 0) > 0) {
-    isHistoryExpanded.value = true
-  }
-})
+watch(
+  () => props.activeEntries?.length,
+  (newVal) => {
+    if (newVal === 0 && (props.servedEntries?.length || 0) > 0) {
+      isHistoryExpanded.value = true
+    }
+  },
+)
 
 // Track arrivals and recoveries for the "Pulse" effect
-watch(() => props.activeEntries, (newEntries, oldEntries) => {
-  if (!oldEntries || !newEntries) return
-  
-  newEntries.forEach(entry => {
-    const oldEntry = (oldEntries as QueueEntry[]).find(e => e.id === entry.id)
-    if (oldEntry && oldEntry.status === ENTRY_STATUS.IDLE && entry.status !== ENTRY_STATUS.IDLE && entry.status !== ENTRY_STATUS.SKIPPED) {
-      // Just recovered!
-      recoveredIds.value.add(entry.id)
-      showToast(`Guest #${entry.ticketNo} is back in the queue!`, { type: 'success' })
-      setTimeout(() => {
-        recoveredIds.value.delete(entry.id)
-      }, 3000)
-    }
-  })
-}, { deep: true })
+watch(
+  () => props.activeEntries,
+  (newEntries, oldEntries) => {
+    if (!oldEntries || !newEntries) return
+
+    newEntries.forEach((entry) => {
+      const oldEntry = (oldEntries as QueueEntry[]).find((e) => e.id === entry.id)
+      if (
+        oldEntry &&
+        oldEntry.status === ENTRY_STATUS.IDLE &&
+        entry.status !== ENTRY_STATUS.IDLE &&
+        entry.status !== ENTRY_STATUS.SKIPPED
+      ) {
+        // Just recovered!
+        recoveredIds.value.add(entry.id)
+        showToast(`Guest #${entry.ticketNo} is back in the queue!`, { type: 'success' })
+        setTimeout(() => {
+          recoveredIds.value.delete(entry.id)
+        }, 3000)
+      }
+    })
+  },
+  { deep: true },
+)
 </script>
 
 <template>
-  <div class="max-h-[580px] flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+  <div
+    class="max-h-[580px] flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+  >
     <!-- Header -->
     <div class="border-b border-plum/5 bg-plum/[0.02] px-6 py-4">
       <div class="flex items-center gap-3">
-        <div class="flex flex-1 items-center gap-0 rounded-input border border-plum/5 bg-sand px-4 py-2">
+        <div
+          class="flex flex-1 items-center gap-0 rounded-input border border-plum/5 bg-sand px-4 py-2"
+        >
           <SearchIcon class="h-[10px] w-[10px] text-plum/40" />
           <input
             :value="searchQuery"
@@ -123,7 +138,10 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
     </div>
 
     <!-- Empty state / Entries -->
-    <div class="flex flex-1 flex-col overflow-y-auto p-4 px-6" :class="totalCount === 0 ? 'items-center justify-center' : 'gap-3'">
+    <div
+      class="flex flex-1 flex-col overflow-y-auto p-4 px-6"
+      :class="totalCount === 0 ? 'items-center justify-center' : 'gap-3'"
+    >
       <!-- Active Guests -->
       <!-- Case 1: No entries at all (Truly empty) -->
       <template v-if="totalCount === 0 && !searchQuery">
@@ -141,7 +159,7 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
           <p class="font-body text-sm text-plum">Active queue is clear</p>
         </div>
       </template>
-      
+
       <!-- Case 3: Search results empty -->
       <template v-else-if="activeEntries.length === 0 && searchQuery">
         <div class="py-10 text-center opacity-40">
@@ -163,7 +181,9 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
                 : entry.status === ENTRY_STATUS.IDLE
                   ? 'border-warning/30 bg-warning/[0.03] opacity-80'
                   : 'border-plum/5 shadow-sm bg-white hover:border-plum/20',
-            recoveredIds.has(entry.id) ? '!border-mint !bg-mint/10 !scale-[1.02] ring-2 ring-mint ring-offset-1 z-10' : ''
+            recoveredIds.has(entry.id)
+              ? '!border-mint !bg-mint/10 !scale-[1.02] ring-2 ring-mint ring-offset-1 z-10'
+              : '',
           ]"
           @click="openDetails(entry)"
         >
@@ -185,12 +205,22 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
               </template>
               <template v-else-if="entry.status === ENTRY_STATUS.ARRIVED">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               </template>
               <template v-else-if="entry.status === ENTRY_STATUS.IDLE">
-                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
                 </svg>
               </template>
               <template v-else>
@@ -199,9 +229,7 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
             </span>
             <div class="flex flex-col min-w-0">
               <div class="flex items-center gap-2">
-                <p 
-                  class="font-body text-base font-bold text-plum truncate"
-                >
+                <p class="font-body text-base font-bold text-plum truncate">
                   {{ entry.name }}
                 </p>
 
@@ -215,15 +243,20 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
                 <template v-if="showPartySize && entry.partySize > 1">
                   P-{{ entry.partySize }} •
                 </template>
-                <span :class="[
-                  entry.status === ENTRY_STATUS.CALLED ? 'text-mint font-bold' : '',
-                  entry.status === ENTRY_STATUS.IDLE ? 'text-warning font-bold italic' : ''
-                ]">
-                  {{ 
-                    entry.status === ENTRY_STATUS.CALLED ? 'At the counter' : 
-                    entry.status === ENTRY_STATUS.ARRIVED ? 'In shop' : 
-                    entry.status === ENTRY_STATUS.IDLE ? 'No Show (Grace Period)' : 
-                    `${(entry.position - 1) * (avgServiceMins || 2)} min wait` 
+                <span
+                  :class="[
+                    entry.status === ENTRY_STATUS.CALLED ? 'text-mint font-bold' : '',
+                    entry.status === ENTRY_STATUS.IDLE ? 'text-warning font-bold italic' : '',
+                  ]"
+                >
+                  {{
+                    entry.status === ENTRY_STATUS.CALLED
+                      ? 'At the counter'
+                      : entry.status === ENTRY_STATUS.ARRIVED
+                        ? 'In shop'
+                        : entry.status === ENTRY_STATUS.IDLE
+                          ? 'No Show (Grace Period)'
+                          : `${(entry.position - 1) * (avgServiceMins || 2)} min wait`
                   }}
                 </span>
               </p>
@@ -243,49 +276,66 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
           </div>
         </div>
       </template>
-
     </div>
 
     <div v-if="servedEntries.length > 0" class="border-t border-plum/5 bg-plum/[0.01]">
-      <button 
+      <button
         class="flex w-full items-center justify-between px-6 py-3 text-plum/40 hover:text-plum/60 transition-colors cursor-pointer"
         @click="isHistoryExpanded = !isHistoryExpanded"
       >
         <span class="font-body text-[10px] font-bold uppercase tracking-widest">
           Served Today ({{ servedEntries.length }})
         </span>
-        <svg 
-          class="w-4 h-4 transition-transform" 
+        <svg
+          class="w-4 h-4 transition-transform"
           :class="{ 'rotate-180': isHistoryExpanded }"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
-      
+
       <!-- Scoped scroll for history to prevent it taking over the screen on mobile -->
-      <div v-if="isHistoryExpanded" class="max-h-[240px] overflow-y-auto px-6 pb-4 pt-1 flex flex-col gap-2">
-         <div
+      <div
+        v-if="isHistoryExpanded"
+        class="max-h-[240px] overflow-y-auto px-6 pb-4 pt-1 flex flex-col gap-2"
+      >
+        <div
           v-for="entry in servedEntries"
           :key="entry.id"
           class="group flex cursor-pointer items-center rounded-xl border border-plum/[0.03] bg-sand/30 px-3 py-3 opacity-60 hover:opacity-100 transition-all"
           @click="openDetails(entry)"
         >
           <div class="flex items-center gap-3 min-w-0 flex-1">
-             <span class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-plum/5 text-plum/30 font-mono text-xs font-bold">
-                <template v-if="entry.servedAt">
-                   <CheckIcon class="h-4 w-4" />
-                </template>
-                <template v-else>
-                   {{ entry.position || '—' }}
-                </template>
-             </span>
-             <div class="flex flex-col min-w-0">
-                <p class="font-body text-sm font-bold text-plum truncate">{{ entry.name }}</p>
-                <p v-if="entry.servedAt" class="font-body text-[10px] text-plum-muted">
-                    Served at {{ new Date(entry.servedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
-                </p>
-             </div>
+            <span
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-plum/5 text-plum/30 font-mono text-xs font-bold"
+            >
+              <template v-if="entry.servedAt">
+                <CheckIcon class="h-4 w-4" />
+              </template>
+              <template v-else>
+                {{ entry.position || '—' }}
+              </template>
+            </span>
+            <div class="flex flex-col min-w-0">
+              <p class="font-body text-sm font-bold text-plum truncate">{{ entry.name }}</p>
+              <p v-if="entry.servedAt" class="font-body text-[10px] text-plum-muted">
+                Served at
+                {{
+                  new Date(entry.servedAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -318,7 +368,6 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
       </p>
     </div>
 
-
     <!-- Entry Details Modal -->
     <EntryDetailsModal
       v-if="selectedEntry"
@@ -327,20 +376,31 @@ watch(() => props.activeEntries, (newEntries, oldEntries) => {
       :avg-service-mins="avgServiceMins"
       :show-party-size="showPartySize"
       @close="closeDetails"
-      @call="(id) => { emit('call', id); closeDetails(); }"
-      @serve="(id) => { emit('serve', id); closeDetails(); }"
+      @call="
+        (id) => {
+          emit('call', id)
+          closeDetails()
+        }
+      "
+      @serve="
+        (id) => {
+          emit('serve', id)
+          closeDetails()
+        }
+      "
     />
   </div>
 </template>
 
 <style scoped>
 @keyframes status-pulse {
-  0%, 100% { 
-    border-color: rgba(0, 229, 160, 0.3); 
+  0%,
+  100% {
+    border-color: rgba(0, 229, 160, 0.3);
     box-shadow: 0 8px 32px -12px rgba(0, 229, 160, 0.2);
   }
-  50% { 
-    border-color: rgba(0, 229, 160, 1); 
+  50% {
+    border-color: rgba(0, 229, 160, 1);
     box-shadow: 0 8px 32px -8px rgba(0, 229, 160, 0.4);
   }
 }

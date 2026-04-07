@@ -9,11 +9,11 @@ import CloseIcon from '@/assets/icons/close-x.svg?component'
 import LightningIcon from '@/assets/icons/lightning.svg?component'
 
 const TIPS = [
-  "Did you know? You can enable <strong>Strict Calling Mode</strong> in settings to enforce guest order.",
-  "You can add guests manually using the <strong>Add Guest</strong> button for walk-ins without phones.",
-  "Keep your queue active! Queues expire after 24 hours of inactivity.",
-  "Share your queue link via WhatsApp or QR code to let guests join from anywhere.",
-  "Need to take a break? Use the <strong>Pause</strong> button to temporarily stop new joins."
+  'Did you know? You can enable <strong>Strict Calling Mode</strong> in settings to enforce guest order.',
+  'You can add guests manually using the <strong>Add Guest</strong> button for walk-ins without phones.',
+  'Keep your queue active! Queues expire after 24 hours of inactivity.',
+  'Share your queue link via WhatsApp or QR code to let guests join from anywhere.',
+  'Need to take a break? Use the <strong>Pause</strong> button to temporarily stop new joins.',
 ]
 
 const currentTipIndex = ref(0)
@@ -33,14 +33,14 @@ function hidePermanently() {
 
 function scheduleNextTip() {
   if (isPermanentlyHidden.value) return
-  
+
   // Show a tip every 45-90 seconds randomly
   const delay = Math.floor(Math.random() * (90000 - 45000 + 1) + 45000)
-  
+
   rollInterval = setTimeout(() => {
     currentTipIndex.value = (currentTipIndex.value + 1) % TIPS.length
     isVisible.value = true
-    
+
     // Auto-hide after 10s
     setTimeout(() => {
       if (isVisible.value) isVisible.value = false
@@ -55,7 +55,7 @@ onMounted(() => {
     // Show first tip after 5s initial delay
     setTimeout(() => {
       isVisible.value = true
-      
+
       // Schedule subsequent tips after the first one hides
       setTimeout(() => {
         if (isVisible.value) isVisible.value = false
@@ -85,32 +85,35 @@ onUnmounted(() => {
       class="fixed top-24 right-8 z-[60] w-[440px] rounded-2xl border border-plum/10 bg-white p-4 shadow-[0_20px_50px_rgba(26,10,46,0.15)] overflow-hidden"
     >
       <div class="flex items-start gap-3">
-        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-mint/10 text-mint">
+        <div
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-mint/10 text-mint"
+        >
           <LightningIcon class="h-4 w-4" />
         </div>
-        
+
         <div class="flex-1 pr-4">
-          <p class="font-body text-xs leading-snug text-plum" v-html="TIPS[currentTipIndex]"></p>
-          
-          <button 
-            @click="hidePermanently" 
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <p class="font-body text-xs leading-snug text-plum" v-html="TIPS[currentTipIndex]" />
+
+          <button
             class="mt-2 font-body text-[10px] font-bold uppercase tracking-wider text-plum/30 transition-colors hover:text-danger cursor-pointer"
+            @click="hidePermanently"
           >
             Do not show again
           </button>
         </div>
-        
-        <button 
-          @click="dismiss" 
+
+        <button
           class="flex h-6 w-6 items-center justify-center rounded-full hover:bg-sand transition-colors cursor-pointer"
+          @click="dismiss"
         >
           <CloseIcon class="h-3 text-plum/30" />
         </button>
       </div>
-      
+
       <!-- Decorative progress bar for the 10s timeout -->
       <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-plum/5">
-        <div class="h-full bg-mint tip-progress-fill"></div>
+        <div class="h-full bg-mint tip-progress-fill" />
       </div>
     </div>
   </Transition>
@@ -124,7 +127,11 @@ onUnmounted(() => {
 }
 
 @keyframes tip-progress {
-  from { width: 0%; }
-  to { width: 100%; }
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
 </style>

@@ -35,20 +35,24 @@ onClickOutside(filterDropdownRef, () => {
 
 // Fetch using tanstack query
 const { data, isLoading, isFetching } = useQuery({
-  queryKey: computed(() => ['queuesHistory', { 
-    page: currentPage.value, 
-    limit: itemsPerPage.value, 
-    search: debouncedSearch.value,
-    sortDirection: sortDirection.value,
-    filter: filter.value 
-  }]),
-  queryFn: () => queueStore.fetchHistoryQueues({
-    page: currentPage.value,
-    limit: itemsPerPage.value,
-    search: debouncedSearch.value,
-    sortDirection: sortDirection.value,
-    filter: filter.value
-  }),
+  queryKey: computed(() => [
+    'queuesHistory',
+    {
+      page: currentPage.value,
+      limit: itemsPerPage.value,
+      search: debouncedSearch.value,
+      sortDirection: sortDirection.value,
+      filter: filter.value,
+    },
+  ]),
+  queryFn: () =>
+    queueStore.fetchHistoryQueues({
+      page: currentPage.value,
+      limit: itemsPerPage.value,
+      search: debouncedSearch.value,
+      sortDirection: sortDirection.value,
+      filter: filter.value,
+    }),
   keepPreviousData: true,
 })
 
@@ -80,25 +84,22 @@ function clearSearch() {
 
 function handleExport() {
   if (!pastQueues.value || pastQueues.value.length === 0) return
-  
+
   // Define CSV headers
   const headers = ['ID', 'Date', 'Queue Name', 'Status', 'Total Served', 'Avg Wait']
-  
+
   // Format rows matching currently fetched data
-  const rows = pastQueues.value.map(q => [
+  const rows = pastQueues.value.map((q) => [
     q.id,
     `"${q.dateFormatted}"`,
     `"${q.name}"`,
     `"${q.status}"`,
     q.totalServed,
-    `"${q.avgWait}"`
+    `"${q.avgWait}"`,
   ])
-  
-  const csvContent = [
-    headers.join(','),
-    ...rows.map(row => row.join(','))
-  ].join('\n')
-  
+
+  const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n')
+
   // Create Blob and download
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
@@ -125,63 +126,73 @@ function handleRowClick(id) {
   <div class="relative mx-auto max-w-[752px]">
     <!-- ═══ Stats row ═══ -->
     <div class="flex gap-4">
-      <div class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div
+        class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      >
         <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">Total Queues</p>
         <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">{{ totalQueues }}</p>
       </div>
-      <div class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div
+        class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      >
         <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">Total Served</p>
         <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">{{ totalServed }}</p>
       </div>
-      <div class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div
+        class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      >
         <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">Avg. Wait</p>
         <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-[#4ade80]">{{ avgWait }}</p>
       </div>
     </div>
 
     <!-- ═══ Past Queues TABLE CARD ═══ -->
-    <div class="mt-6 rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+    <div
+      class="mt-6 rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+    >
       <!-- Toolbar: Title + Search + Filters -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] px-6 py-5 gap-4">
+      <div
+        class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] px-6 py-5 gap-4"
+      >
         <h3 class="font-display text-lg text-plum w-48">Past Queues</h3>
-        
+
         <div class="flex flex-1 items-center justify-end gap-3 w-full">
           <!-- Interactive Search Bar -->
           <div class="relative flex-1 max-w-[240px]">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ash" />
-            <input 
-              v-model="searchQuery" 
-              placeholder="Search queue name..." 
+            <input
+              v-model="searchQuery"
+              placeholder="Search queue name..."
               class="w-full rounded-full border border-plum/10 pl-9 pr-8 py-2 text-sm font-body text-plum outline-none focus:border-plum transition-colors"
             />
-            <button 
-              v-if="searchQuery" 
-              @click="clearSearch"
+            <button
+              v-if="searchQuery"
               class="absolute right-3 top-1/2 -translate-y-1/2 text-ash hover:text-plum transition-colors"
+              @click="clearSearch"
             >
               <X class="h-4 w-4" />
             </button>
           </div>
 
           <!-- Dropdown Filter -->
-          <div class="relative" ref="filterDropdownRef">
-            <button 
-              @click="isFilterOpen = !isFilterOpen"
+          <div ref="filterDropdownRef" class="relative">
+            <button
               class="flex items-center gap-2 rounded-full border border-plum/10 px-4 py-2 text-sm font-body font-medium text-plum transition-colors hover:bg-plum/5"
+              @click="isFilterOpen = !isFilterOpen"
             >
               <Filter class="h-4 w-4" />
             </button>
 
             <!-- Dropdown Menu -->
-            <div 
-              v-if="isFilterOpen" 
+            <div
+              v-if="isFilterOpen"
               class="absolute right-0 top-full mt-2 w-48 rounded-lg border border-plum/10 bg-white py-2 shadow-lg z-20"
             >
-              <button 
-                v-for="opt in filterOptions" 
+              <button
+                v-for="opt in filterOptions"
                 :key="opt"
                 class="w-full px-4 py-2 text-left font-body text-sm text-plum hover:bg-plum/5 transition-colors"
-                :class="{'font-bold bg-plum/5': filter === opt}"
+                :class="{ 'font-bold bg-plum/5': filter === opt }"
                 @click="selectFilter(opt)"
               >
                 {{ opt }}
@@ -190,9 +201,9 @@ function handleRowClick(id) {
           </div>
 
           <!-- Export Option -->
-          <button 
-            @click="handleExport"
+          <button
             class="flex items-center gap-2 rounded-full bg-plum/5 px-4 py-2 text-sm font-body font-medium text-plum transition-colors hover:bg-plum/10"
+            @click="handleExport"
           >
             <Download class="h-4 w-4" />
             <span class="hidden sm:inline">Export</span>
@@ -203,49 +214,73 @@ function handleRowClick(id) {
       <!-- Column headers -->
       <div class="flex items-center bg-sand/50 px-6 py-4">
         <!-- Sortable Date Column -->
-        <button 
-          @click="toggleSort"
+        <button
           class="flex items-center gap-1 w-[160px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b] hover:text-plum transition-colors group cursor-pointer"
+          @click="toggleSort"
         >
           DATE
-          <ArrowUpDown class="h-3 w-3 transition-opacity group-hover:opacity-100" :class="sortDirection ? 'opacity-100 text-plum' : 'opacity-40'" />
+          <ArrowUpDown
+            class="h-3 w-3 transition-opacity group-hover:opacity-100"
+            :class="sortDirection ? 'opacity-100 text-plum' : 'opacity-40'"
+          />
         </button>
-        <span class="w-[200px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Queue Name</span>
-        <span class="w-[120px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Status</span>
-        <span class="w-[120px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Total Served</span>
-        <span class="flex-1 font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]">Avg. Wait</span>
+        <span
+          class="w-[200px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]"
+          >Queue Name</span
+        >
+        <span
+          class="w-[120px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]"
+          >Status</span
+        >
+        <span
+          class="w-[120px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]"
+          >Total Served</span
+        >
+        <span class="flex-1 font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]"
+          >Avg. Wait</span
+        >
         <span class="w-6" />
       </div>
 
       <!-- Loading / Empty / Rows -->
       <div class="relative min-h-[200px]">
         <!-- Loading overlay map to generic spinner -->
-        <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
-           <div class="h-8 w-8 animate-spin rounded-full border-4 border-plum border-t-transparent"></div>
+        <div
+          v-if="isLoading"
+          class="absolute inset-0 flex items-center justify-center bg-white/50 z-10"
+        >
+          <div
+            class="h-8 w-8 animate-spin rounded-full border-4 border-plum border-t-transparent"
+          />
         </div>
-        
-        <div v-if="!isLoading && pastQueues.length === 0" class="flex items-center justify-center p-12 text-center text-ash font-body">
-            No matching queues found.
+
+        <div
+          v-if="!isLoading && pastQueues.length === 0"
+          class="flex items-center justify-center p-12 text-center text-ash font-body"
+        >
+          No matching queues found.
         </div>
-        
-        <div 
-          v-else
+
+        <div
           v-for="(queue, idx) in pastQueues"
+          v-else
           :key="queue.id"
           class="flex cursor-pointer items-center px-6 py-5 transition-colors hover:bg-sand/80"
           :class="idx > 0 ? 'border-t border-[#f1f5f9]' : ''"
           @click="handleRowClick(queue.id)"
         >
           <span class="w-[160px] font-body text-sm text-[#475569]">{{ queue.dateFormatted }}</span>
-          <span class="w-[200px] font-body text-sm font-semibold text-plum truncate pr-4">{{ queue.name }}</span>
+          <span class="w-[200px] font-body text-sm font-semibold text-plum truncate pr-4">{{
+            queue.name
+          }}</span>
           <span class="w-[120px] font-body text-xs font-bold leading-5">
-            <span 
+            <span
               class="inline-flex rounded-full px-2.5 py-0.5"
               :class="{
                 'bg-[#dcfce7] text-[#166534]': queue.status === 'Completed',
                 'bg-[#e0e7ff] text-[#3730a3]': queue.status === 'Active',
                 'bg-[#fef9c3] text-[#854d0e]': queue.status === 'Paused',
-                'bg-[#fee2e2] text-[#991b1b]': queue.status === 'Terminated'
+                'bg-[#fee2e2] text-[#991b1b]': queue.status === 'Terminated',
               }"
             >
               {{ queue.status }}
@@ -260,7 +295,10 @@ function handleRowClick(id) {
       <!-- Pagination -->
       <div class="flex items-center justify-between border-t border-[#f1f5f9] px-6 py-5">
         <span class="font-body text-xs text-ash flex items-center gap-2">
-          <span v-if="isFetching && !isLoading" class="h-3 w-3 animate-spin rounded-full border-2 border-ash border-t-transparent"></span>
+          <span
+            v-if="isFetching && !isLoading"
+            class="h-3 w-3 animate-spin rounded-full border-2 border-ash border-t-transparent"
+          />
           Showing page {{ currentPage }} of {{ totalPages }} ({{ totalEntries }} total)
         </span>
         <div class="flex items-center gap-1">
@@ -277,7 +315,7 @@ function handleRowClick(id) {
             class="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg font-body text-xs font-bold transition-colors"
             :class="[
               page === currentPage ? 'bg-plum text-white' : 'text-[#475569] hover:bg-plum-faint',
-              { 'opacity-50 pointer-events-none': isLoading }
+              { 'opacity-50 pointer-events-none': isLoading },
             ]"
             @click="goToPage(page)"
           >
@@ -295,7 +333,9 @@ function handleRowClick(id) {
     </div>
 
     <!-- ═══ Upgrade nudge ═══ -->
-    <div class="relative mt-6 overflow-hidden rounded-card bg-plum p-8 shadow-[0_8px_10px_rgba(0,0,0,0.10),0_20px_25px_rgba(0,0,0,0.10)]">
+    <div
+      class="relative mt-6 overflow-hidden rounded-card bg-plum p-8 shadow-[0_8px_10px_rgba(0,0,0,0.10),0_20px_25px_rgba(0,0,0,0.10)]"
+    >
       <div class="absolute -left-10 top-0 h-28 w-36 rounded-full bg-[#4ade80]/5" />
       <div class="absolute -right-10 top-0 h-28 w-28 rounded-full bg-white/5" />
 
@@ -306,7 +346,10 @@ function handleRowClick(id) {
             Upgrade to Pro to export data for the last 12 months.
           </p>
         </div>
-        <router-link to="/premium" class="rounded-input bg-[#4ade80] px-8 py-3 font-body text-base font-bold text-plum shadow-[0_4px_6px_rgba(74,222,128,0.20),0_10px_15px_rgba(74,222,128,0.20)] transition-colors hover:bg-[#22c55e]">
+        <router-link
+          to="/premium"
+          class="rounded-input bg-[#4ade80] px-8 py-3 font-body text-base font-bold text-plum shadow-[0_4px_6px_rgba(74,222,128,0.20),0_10px_15px_rgba(74,222,128,0.20)] transition-colors hover:bg-[#22c55e]"
+        >
           Go Pro
         </router-link>
       </div>

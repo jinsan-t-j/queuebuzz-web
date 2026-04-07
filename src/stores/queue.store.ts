@@ -4,17 +4,33 @@ import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
 import type {
   QueueEntry,
-  QueueStatus,
   QueueRecord,
   QueueSseEnvelopeMap,
   QueueStatusEventData,
   AddQueueEntryPayload,
   UpdateQueuePayload,
 } from '@/modules/app/queue/types'
-import { getLiveQueue, getLiveQueueById, pauseQueue, resumeQueue, terminateQueue, addQueueEntry as apiAddQueueEntry, callEntry as apiCallEntry, updateQueue as apiUpdateQueue, serveGuest as apiServeGuest } from '@/modules/app/queue/actions/queue.action'
+import {
+  getLiveQueue,
+  getLiveQueueById,
+  pauseQueue,
+  resumeQueue,
+  terminateQueue,
+  addQueueEntry as apiAddQueueEntry,
+  callEntry as apiCallEntry,
+  updateQueue as apiUpdateQueue,
+  serveGuest as apiServeGuest,
+} from '@/modules/app/queue/actions/queue.action'
 import { normalizeLiveQueueEntries, normalizeQueueEntry } from '@/modules/app/queue/transforms'
-import { QUEUE_ERROR_REASONS, ENTRY_STATUS } from '@/modules/app/queue/constants'
+import {
+  QUEUE_ERROR_REASONS,
+  QUEUE_STATUS,
+  ENTRY_STATUS,
+  type QueueStatus,
+  type QueueEntryStatus,
+} from '@/modules/app/queue/constants'
 import { useNotificationStore } from './notification.store'
+import { ApiError, getErrorMessage } from '@/utils/api-response'
 
 export const useQueueStore = defineStore('queue', {
   state: () => ({
@@ -30,20 +46,37 @@ export const useQueueStore = defineStore('queue', {
   }),
 
   getters: {
-    isPaused: (state) => state.activeQueue?.status === 'paused',
+    isPaused: (state) => state.activeQueue?.status === QUEUE_STATUS.PAUSED,
     waitingCount: (state): number => {
       if (state.entries.length > 0) {
         return state.entries.filter((e) =>
-          ([ENTRY_STATUS.WAITING, ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(e.status)
+          (
+            [
+              ENTRY_STATUS.WAITING,
+              ENTRY_STATUS.CALLED,
+              ENTRY_STATUS.ARRIVED,
+              ENTRY_STATUS.IDLE,
+            ] as string[]
+          ).includes(e.status),
         ).length
       }
       return state.publicWaitingCount || 0
     },
     avgWaitTime: (state): number => {
       if (!state.activeQueue) return 0
-      const count = state.entries.length > 0
-        ? state.entries.filter((e) => ([ENTRY_STATUS.WAITING, ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(e.status)).length
-        : (state.publicWaitingCount || 0)
+      const count =
+        state.entries.length > 0
+          ? state.entries.filter((e) =>
+              (
+                [
+                  ENTRY_STATUS.WAITING,
+                  ENTRY_STATUS.CALLED,
+                  ENTRY_STATUS.ARRIVED,
+                  ENTRY_STATUS.IDLE,
+                ] as string[]
+              ).includes(e.status),
+            ).length
+          : state.publicWaitingCount || 0
       return (state.activeQueue.avgServiceMins || 0) * count
     },
     totalCount: (state) => state.entries.length || state.publicWaitingCount || 0,
@@ -69,17 +102,18 @@ export const useQueueStore = defineStore('queue', {
         const payload = await getLiveQueue()
         this.setActiveQueue(payload)
         return payload
-      } catch (e: any) {
-        if (e?.response?.status === 404) {
+      } catch (e: unknown) {
+        const error = e as ApiError
+        if (error.response?.status === 404) {
           this.clearQueue()
           this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
-        } else if (e?.response?.status === 401) {
+        } else if (error.response?.status === 401) {
           this.clearQueue()
           this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
-        } else if (e?.response?.status === 403) {
+        } else if (error.response?.status === 403) {
           this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
         } else {
-          this.error = e?.response?.data?.message || QUEUE_ERROR_REASONS.UNKNOWN
+          this.error = error.response?.data?.message || QUEUE_ERROR_REASONS.UNKNOWN
         }
         return null
       } finally {
@@ -94,17 +128,18 @@ export const useQueueStore = defineStore('queue', {
         const payload = await getLiveQueueById(id)
         this.setActiveQueue(payload)
         return payload
-      } catch (e: any) {
-        if (e?.response?.status === 404) {
+      } catch (e: unknown) {
+        const error = e as ApiError
+        if (error.response?.status === 404) {
           this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
-        } else if (e?.response?.status === 401) {
+        } else if (error.response?.status === 401) {
           this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
-        } else if (e?.response?.status === 403) {
+        } else if (error.response?.status === 403) {
           this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
-        } else if (e?.response?.status === 410) {
+        } else if (error.response?.status === 410) {
           this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
         } else {
-          this.error = e?.response?.data?.message || QUEUE_ERROR_REASONS.UNKNOWN
+          this.error = error.response?.data?.message || QUEUE_ERROR_REASONS.UNKNOWN
         }
         return null
       } finally {
@@ -149,37 +184,41 @@ export const useQueueStore = defineStore('queue', {
     updateEntries(newEntries: QueueEntry[]) {
       // 1. Identify all current entries that are in a terminal state
       const terminalEntries = this.entries.filter((e) =>
-        ([ENTRY_STATUS.SERVED, ENTRY_STATUS.LEFT, ENTRY_STATUS.SKIPPED] as string[]).includes(e.status)
+        ([ENTRY_STATUS.SERVED, ENTRY_STATUS.LEFT, ENTRY_STATUS.SKIPPED] as string[]).includes(
+          e.status,
+        ),
       )
-
-      // 2. Map existing entries by ID for quick lookups
-      const terminalMap = new Map(terminalEntries.map(e => [e.id, e]));
 
       // 3. The new snapshot is our source of truth for active entries.
       // But if a terminal entry is somehow in the snapshot, we take the new one.
-      const snapshotIds = new Set(newEntries.map(e => e.id));
+      const snapshotIds = new Set(newEntries.map((e) => e.id))
 
       // 4. Final List = Snapshot + (Historical entries NOT in snapshot)
-      const historicalToKeep = terminalEntries.filter(e => !snapshotIds.has(e.id));
+      const historicalToKeep = terminalEntries.filter((e) => !snapshotIds.has(e.id))
 
       this.entries = [...newEntries, ...historicalToKeep].sort((left, right) => {
         // Keep the sort by position if possible, otherwise by timestamp or ID
-        const lp = left.position ?? 999999;
-        const rp = right.position ?? 999999;
-        return lp - rp;
-      });
+        const lp = left.position ?? 999999
+        const rp = right.position ?? 999999
+        return lp - rp
+      })
     },
 
     upsertEntry(entry: QueueEntry) {
       const index = this.entries.findIndex((current: QueueEntry) => current.id === entry.id)
       if (index === -1) {
-        this.entries = [...this.entries, entry].sort((left: QueueEntry, right: QueueEntry) => (left.position ?? 9999) - (right.position ?? 9999))
+        this.entries = [...this.entries, entry].sort(
+          (left: QueueEntry, right: QueueEntry) =>
+            (left.position ?? 9999) - (right.position ?? 9999),
+        )
         return
       }
 
       const nextEntries = [...this.entries]
       nextEntries[index] = entry
-      this.entries = nextEntries.sort((left: QueueEntry, right: QueueEntry) => (left.position ?? 9999) - (right.position ?? 9999))
+      this.entries = nextEntries.sort(
+        (left: QueueEntry, right: QueueEntry) => (left.position ?? 9999) - (right.position ?? 9999),
+      )
     },
 
     setQueueStatus(status: QueueStatus) {
@@ -198,21 +237,25 @@ export const useQueueStore = defineStore('queue', {
       this.publicSseClient = createSseClient({
         url: buildApiUrl(API_ROUTES.QUEUE.PUBLIC_EVENTS(queueId)),
         events: {
-          queue_init: (payload: any) => {
-            if (payload.data as QueueRecord) {
+          queue_init: (payload: QueueSseEnvelopeMap['queue_init']) => {
+            if (payload.data) {
               this.activeQueue = payload.data
-              this.publicWaitingCount = payload.data.waiting_count || this.publicWaitingCount
+              this.publicWaitingCount = payload.data.entries?.length || this.publicWaitingCount
             }
           },
-          waiting_count_updated: (payload: any) => {
+          waiting_count_updated: (payload: QueueSseEnvelopeMap['waiting_count_updated']) => {
             // The backend sends { event: '...', data: { count: N } }
-            const count = payload.data?.count ?? payload.count
-            this.publicWaitingCount = count
+            const count = payload.data?.count
+            if (count !== undefined) {
+              this.publicWaitingCount = count
+            }
           },
-          queue_status_changed: (payload: any) => {
+          queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
             // Handle both envelope structure and flat structure
-            const status = payload.data?.status ?? payload.status
-            this.setQueueStatus(status)
+            const status = payload.data?.status
+            if (status) {
+              this.setQueueStatus(status)
+            }
           },
         },
       })
@@ -221,7 +264,11 @@ export const useQueueStore = defineStore('queue', {
     },
 
     connectToEvents(queueId: string) {
-      if (this.sseClient && this.connectedQueueId === queueId && (this.streamState === 'open' || this.streamState === 'connecting')) {
+      if (
+        this.sseClient &&
+        this.connectedQueueId === queueId &&
+        (this.streamState === 'open' || this.streamState === 'connecting')
+      ) {
         return
       }
 
@@ -229,7 +276,7 @@ export const useQueueStore = defineStore('queue', {
       const notifyStore = useNotificationStore()
 
       // Single Visibility Listener setup for the duration of this queue's monitoring
-      if (!(window as any)._q_visibility_handler) {
+      if (!window._q_visibility_handler) {
         const handler = () => {
           const id = this.connectedQueueId
           if (!id) return
@@ -243,7 +290,7 @@ export const useQueueStore = defineStore('queue', {
           }
         }
         document.addEventListener('visibilitychange', handler)
-          ; (window as any)._q_visibility_handler = handler
+        window._q_visibility_handler = handler
       }
 
       this.sseClient = createSseClient({
@@ -295,7 +342,7 @@ export const useQueueStore = defineStore('queue', {
           },
           user_status_changed: (payload: QueueSseEnvelopeMap['user_status_changed']) => {
             const data = payload.data
-            const entry = this.entries.find(e => e.id === data.id)
+            const entry = this.entries.find((e) => e.id === data.id)
 
             this.applyEntryStatus(data)
 
@@ -303,7 +350,7 @@ export const useQueueStore = defineStore('queue', {
               notifyStore.addNotification({
                 title: 'Guest Left',
                 message: `${entry.name} (Ticket ${entry.ticketNo}) has left the queue.`,
-                type: 'info'
+                type: 'info',
               })
             }
           },
@@ -317,16 +364,19 @@ export const useQueueStore = defineStore('queue', {
             })
           },
           queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
-            this.setQueueStatus(payload.data.status)
-          },
-          queue_expired: (payload: QueueSseEnvelopeMap['queue_expired']) => {
-            if (this.activeQueue && this.activeQueue.id === payload.data.queueId) {
+            const status = payload.data.status.toUpperCase() as QueueStatus
+            this.setQueueStatus(status)
+
+            if (status === QUEUE_STATUS.CLOSED || status === QUEUE_STATUS.EXPIRED) {
               this.clearQueue()
               this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
               notifyStore.addNotification({
-                title: 'Queue Expired',
-                message: 'This session has ended.',
-                type: 'warning',
+                title: status === QUEUE_STATUS.EXPIRED ? 'Queue Expired' : 'Queue Ended',
+                message:
+                  status === QUEUE_STATUS.EXPIRED
+                    ? 'This session has ended.'
+                    : 'The host has ended this session.',
+                type: status === QUEUE_STATUS.EXPIRED ? 'warning' : 'info',
               })
             }
           },
@@ -353,17 +403,17 @@ export const useQueueStore = defineStore('queue', {
       this.error = null
 
       // Clean up the visibility listener when explicitly stopping all updates
-      if ((window as any)._q_visibility_handler) {
-        document.removeEventListener('visibilitychange', (window as any)._q_visibility_handler)
-        delete (window as any)._q_visibility_handler
+      if (window._q_visibility_handler) {
+        document.removeEventListener('visibilitychange', window._q_visibility_handler)
+        delete window._q_visibility_handler
       }
     },
 
     applyEntryStatus(data: QueueStatusEventData) {
       this.entries = this.entries.map((entry) =>
         entry.id === data.id
-          ? { ...entry, status: data.status.toUpperCase() as any }
-          : entry
+          ? { ...entry, status: data.status.toUpperCase() as QueueEntryStatus }
+          : entry,
       )
     },
 
@@ -378,8 +428,8 @@ export const useQueueStore = defineStore('queue', {
           this.activeQueue.status = 'paused'
         }
         return true
-      } catch (e: any) {
-        this.error = e?.response?.data?.message || 'Failed to pause queue'
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to pause queue')
         return false
       } finally {
         this.isLoading = false
@@ -397,8 +447,8 @@ export const useQueueStore = defineStore('queue', {
           this.activeQueue.status = 'active'
         }
         return true
-      } catch (e: any) {
-        this.error = e?.response?.data?.message || 'Failed to resume queue'
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to resume queue')
         return false
       } finally {
         this.isLoading = false
@@ -414,8 +464,8 @@ export const useQueueStore = defineStore('queue', {
         await terminateQueue(this.activeQueue.id)
         this.clearQueue()
         return true
-      } catch (e: any) {
-        this.error = e?.response?.data?.message || 'Failed to terminate queue'
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to terminate queue')
         return false
       } finally {
         this.isLoading = false
@@ -429,8 +479,8 @@ export const useQueueStore = defineStore('queue', {
       try {
         await apiAddQueueEntry(this.activeQueue.id, guest)
         return true
-      } catch (e: any) {
-        this.error = e?.response?.data?.message || 'Failed to add guest'
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to add guest')
         return false
       }
     },
@@ -442,9 +492,9 @@ export const useQueueStore = defineStore('queue', {
       try {
         await apiCallEntry(this.activeQueue.id, entryId)
         return true
-      } catch (e: any) {
+      } catch (e: unknown) {
         const action = entryId ? 'ping guest' : 'call next guest'
-        this.error = e?.response?.data?.message || `Failed to ${action}`
+        this.error = getErrorMessage(e, `Failed to ${action}`)
         return false
       }
     },
@@ -456,8 +506,8 @@ export const useQueueStore = defineStore('queue', {
       try {
         await apiServeGuest(this.activeQueue.id, entryId)
         return true
-      } catch (e: any) {
-        this.error = e?.response?.data?.message || 'Failed to serve guest'
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to serve guest')
         return false
       }
     },
@@ -470,8 +520,8 @@ export const useQueueStore = defineStore('queue', {
         const updated = await apiUpdateQueue(this.activeQueue.id, payload)
         this.activeQueue = updated
         return true
-      } catch (e: any) {
-        this.error = e?.response?.data?.message || 'Failed to update queue'
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to update queue')
         return false
       } finally {
         this.isLoading = false

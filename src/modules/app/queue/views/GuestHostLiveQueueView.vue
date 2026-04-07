@@ -39,11 +39,11 @@ const {
   statusUpdateMode,
   showInfoModal,
   showSettingsModal,
-  
+
   rawSearchQuery,
   filteredActiveEntries,
   filteredServedEntries,
-  
+
   servedTodayCount,
   completionRatePercent,
   chartLabels,
@@ -73,9 +73,9 @@ const hasInitialized = ref(false)
  * Handles initial access check and subsequent session/queue state changes.
  */
 function handleRedirection(reason: string) {
-  router.push({ 
-    name: 'guest-host-queue-ended', 
-    query: { reason } 
+  router.push({
+    name: 'guest-host-queue-ended',
+    query: { reason },
   })
 }
 
@@ -100,8 +100,8 @@ watch([activeQueue, error], checkQueueState)
 onBeforeMount(async () => {
   try {
     await revalidateQueue(queueId)
-  } catch (err) {
-    console.error('Failed to revalidate queue:', err)
+  } catch {
+    // Ignore error, use state logic
   } finally {
     hasInitialized.value = true
     checkQueueState()
@@ -162,23 +162,38 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
 <template>
   <div class="relative min-h-screen overflow-hidden">
     <!-- Blob decorations -->
-    <div class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-mint-light opacity-50 blur-[80px]"></div>
-    <div class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]"></div>
+    <div
+      class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-mint-light opacity-50 blur-[80px]"
+    />
+    <div
+      class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]"
+    />
 
     <HostNotifications />
 
     <div class="relative z-10 mx-auto max-w-[1280px] px-6 pt-4 pb-2">
       <!-- Loading State -->
-      <div v-if="isApiLoading && !activeQueue && !error" class="flex flex-col items-center justify-center min-h-[60vh] gap-6">
-        <div class="h-16 w-16 rounded-full border-4 border-plum-faint border-t-mint animate-spin"></div>
+      <div
+        v-if="isApiLoading && !activeQueue && !error"
+        class="flex flex-col items-center justify-center min-h-[60vh] gap-6"
+      >
+        <div class="h-16 w-16 rounded-full border-4 border-plum-faint border-t-mint animate-spin" />
         <p class="font-display text-xl font-bold text-plum/60">Syncing with server...</p>
       </div>
 
       <!-- Error State fallback (if redirection hasn't triggered yet) -->
-      <div v-else-if="error && !activeQueue" class="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center">
+      <div
+        v-else-if="error && !activeQueue"
+        class="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center"
+      >
         <div class="w-16 h-16 rounded-2xl bg-[#FEF2F2] flex items-center justify-center">
           <svg class="w-8 h-8 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
           </svg>
         </div>
         <h2 class="font-display text-2xl font-bold text-plum">System offline or session expired</h2>
@@ -192,34 +207,56 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
         <!-- Live Status Info -->
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-4">
-            <div class="flex items-center gap-3 px-4 py-2 bg-white rounded-full border border-plum-faint shadow-sm">
-              <div 
+            <div
+              class="flex items-center gap-3 px-4 py-2 bg-white rounded-full border border-plum-faint shadow-sm"
+            >
+              <div
                 class="w-2.5 h-2.5 rounded-full"
                 :class="[
-                  isStreamConnected ? 'bg-mint animate-pulse' : 
-                  streamState === 'connecting' ? 'bg-warning animate-spin' : 'bg-danger'
+                  isStreamConnected
+                    ? 'bg-mint animate-pulse'
+                    : streamState === 'connecting'
+                      ? 'bg-warning animate-spin'
+                      : 'bg-danger',
                 ]"
-              ></div>
+              />
               <span class="font-body text-xs font-bold text-plum uppercase tracking-wider">
-                {{ isStreamConnected ? 'Live Connection' : streamState === 'connecting' ? 'Syncing...' : 'Offline' }}
+                {{
+                  isStreamConnected
+                    ? 'Live Connection'
+                    : streamState === 'connecting'
+                      ? 'Syncing...'
+                      : 'Offline'
+                }}
               </span>
             </div>
 
-            <div v-if="activeQueue?.strictQueueMode" class="flex items-center gap-3 px-4 py-2 bg-plum rounded-full border border-plum shadow-sm">
+            <div
+              v-if="activeQueue?.strictQueueMode"
+              class="flex items-center gap-3 px-4 py-2 bg-plum rounded-full border border-plum shadow-sm"
+            >
               <span class="font-body text-xs font-bold text-sand uppercase tracking-wider">
                 Strict Mode Active
               </span>
             </div>
           </div>
-          
+
           <div class="flex items-center gap-6">
-            <div v-if="!isStreamConnected && streamState !== 'connecting'" class="text-xs font-body text-danger flex items-center gap-1">
+            <div
+              v-if="!isStreamConnected && streamState !== 'connecting'"
+              class="text-xs font-body text-danger flex items-center gap-1"
+            >
               <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
               </svg>
               State might be stale. Reconnecting...
             </div>
-            
+
             <HostNotificationCenter />
           </div>
         </div>
@@ -227,10 +264,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
         <div class="flex flex-col gap-8 lg:flex-row">
           <!-- Left column (Stats & Active Entrance) -->
           <div class="flex w-full flex-col gap-4 lg:w-[381px] lg:shrink-0">
-            <QueueStatCards
-              :waiting-count="waitingCount"
-              :avg-wait="avgWaitTime"
-            />
+            <QueueStatCards :waiting-count="waitingCount" :avg-wait="avgWaitTime" />
 
             <LiveQueueCard
               :active-entries="filteredActiveEntries"
@@ -254,7 +288,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
                 :share-url="queueUrl"
                 @show-qr="showInfoModal = true"
               />
-              <QueueActionCard 
+              <QueueActionCard
                 :is-paused="isPaused"
                 @add-guest="showAddGuestModal = true"
                 @update-status="openStatusModal"
@@ -312,7 +346,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       @close="showAddGuestModal = false"
       @submit="handleAddGuestSubmit"
     />
-    
+
     <LiveQueueSettingsModal
       v-if="activeQueue"
       :is-open="showSettingsModal"

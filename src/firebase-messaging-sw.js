@@ -4,8 +4,8 @@
  * This uses the modern Firebase v11 modular SDK and is bundled by Vite.
  */
 
-import { initializeApp } from 'firebase/app';
-import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw';
+import { initializeApp } from 'firebase/app'
+import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw'
 
 const app = initializeApp({
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,25 +13,23 @@ const app = initializeApp({
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
-});
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+})
 
-const messaging = getMessaging(app);
+const messaging = getMessaging(app)
 
 /**
  * Handle background messages
  */
 onBackgroundMessage(messaging, (payload) => {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
-
-  const notificationTitle = payload.notification?.title || 'Wait list update';
+  const notificationTitle = payload.notification?.title || 'Wait list update'
   const notificationOptions = {
     body: payload.notification?.body,
     icon: '/icons/notification-icon.png',
     tag: 'queue-buzz',
     data: payload.data,
-    badge: '/icons/badge-icon.png'
-  };
+    badge: '/icons/badge-icon.png',
+  }
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+  self.registration.showNotification(notificationTitle, notificationOptions)
+})

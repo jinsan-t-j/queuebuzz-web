@@ -3,35 +3,35 @@ import { API_ROUTES } from '@/config/api.constants'
 import type { AuthUser } from '@/modules/app/auth/types'
 
 export interface RegisterHostPayload {
-    email?: string
-    phone?: string
+  email?: string
+  phone?: string
 }
 
 export interface VerifyHostPayload {
-    token?: string
-    phone?: string
-    otp?: string
+  token?: string
+  phone?: string
+  otp?: string
 }
 
 export interface HostProfile {
-    id: string
-    public_id: string
-    tier: string
-    created_at: string
+  id: string
+  public_id: string
+  tier: string
+  created_at: string
 }
 
 export interface CurrentHostResponse {
-    id: string
-    public_id: string
-    name: string
-    email: string
-    tier: 'free' | 'premium'
-    avatar: string | null
+  id: string
+  public_id: string
+  name: string
+  email: string
+  tier: 'free' | 'premium'
+  avatar: string | null
 }
 
 export interface Queue {
-    id: string
-    [key: string]: any
+  id: string
+  [key: string]: unknown
 }
 
 /**
@@ -40,12 +40,15 @@ export interface Queue {
  * @param payload - RegisterHostPayload
  * @returns API response data
  */
-export async function registerHost({ email, phone }: RegisterHostPayload): Promise<{ message: string }> {
-    const payload: RegisterHostPayload = {}
-    if (email) payload.email = email
-    if (phone) payload.phone = phone
+export async function registerHost({
+  email,
+  phone,
+}: RegisterHostPayload): Promise<{ message: string }> {
+  const payload: RegisterHostPayload = {}
+  if (email) payload.email = email
+  if (phone) payload.phone = phone
 
-    return await apiClient.post(API_ROUTES.HOST.REGISTER, payload)
+  return await apiClient.post(API_ROUTES.HOST.REGISTER, payload)
 }
 
 /**
@@ -54,19 +57,19 @@ export async function registerHost({ email, phone }: RegisterHostPayload): Promi
  * @returns API response data
  */
 export async function claimQueue(): Promise<{ message: string }> {
-    return await apiClient.post(
-        API_ROUTES.HOST.CLAIM,
-        undefined,
-        createApiRequestConfig({}, { withCredentials: true }),
-    )
+  return await apiClient.post(
+    API_ROUTES.HOST.CLAIM,
+    undefined,
+    createApiRequestConfig({}, { withCredentials: true }),
+  )
 }
 
 export async function logoutHost(): Promise<{ message: string }> {
-    return await apiClient.post(
-        API_ROUTES.HOST.LOGOUT,
-        undefined,
-        createApiRequestConfig({}, { withCredentials: true }),
-    )
+  return await apiClient.post(
+    API_ROUTES.HOST.LOGOUT,
+    undefined,
+    createApiRequestConfig({}, { withCredentials: true }),
+  )
 }
 
 /**
@@ -75,12 +78,12 @@ export async function logoutHost(): Promise<{ message: string }> {
  * @returns Host profile for bootstrapping app auth state
  */
 export async function fetchCurrentHost(): Promise<AuthUser> {
-    const { data } = await apiClient.get<AuthUser>(
-        API_ROUTES.HOST.ME,
-        createApiRequestConfig({}, { withCredentials: true }),
-    )
+  const { data } = await apiClient.get<AuthUser>(
+    API_ROUTES.HOST.ME,
+    createApiRequestConfig({}, { withCredentials: true }),
+  )
 
-    return data
+  return data
 }
 
 /**
@@ -90,7 +93,7 @@ export async function fetchCurrentHost(): Promise<AuthUser> {
  * @returns API response data with host profile
  */
 export async function getHostProfile(publicId: string): Promise<HostProfile> {
-    return await apiClient.get(API_ROUTES.HOST.GET_PROFILE(publicId))
+  return await apiClient.get(API_ROUTES.HOST.GET_PROFILE(publicId))
 }
 
 /**
@@ -100,5 +103,5 @@ export async function getHostProfile(publicId: string): Promise<HostProfile> {
  * @returns Array of host's active queues
  */
 export async function getHostQueues(publicId: string): Promise<Queue[]> {
-    return await apiClient.get(API_ROUTES.HOST.GET_QUEUES(publicId))
+  return await apiClient.get(API_ROUTES.HOST.GET_QUEUES(publicId))
 }

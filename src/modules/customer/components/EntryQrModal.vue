@@ -3,7 +3,7 @@
  * @component EntryQrModal
  * @description Modal that displays a QR code for the customer's entry.
  * Primarily used by the host to scan and verify arrival.
- * 
+ *
  * @prop {Boolean} isOpen - Modal visibility state.
  * @prop {String} entryId - The entry ID to encode in the QR.
  * @prop {String} ticketNo - Displayed alongside the QR for reference.
@@ -40,9 +40,9 @@ const qrDataUrl = ref('')
 
 async function generateQr() {
   if (!props.entryId) return
-  
+
   try {
-    // We encode the entry ID directly. 
+    // We encode the entry ID directly.
     // The host app's scanner will use this ID to identify the guest.
     qrDataUrl.value = await QRCode.toDataURL(props.entryId, {
       width: 400,
@@ -52,8 +52,8 @@ async function generateQr() {
         light: '#FFFFFF',
       },
     })
-  } catch (err) {
-    console.error('Failed to generate QR code', err)
+  } catch {
+    // QR generation failed
   }
 }
 
@@ -65,9 +65,12 @@ function downloadQr() {
 }
 
 // Re-generate if entry ID changes or modal opens
-watch(() => props.isOpen, (val) => {
-  if (val) generateQr()
-})
+watch(
+  () => props.isOpen,
+  (val) => {
+    if (val) generateQr()
+  },
+)
 
 onMounted(() => {
   if (props.isOpen) generateQr()
@@ -78,7 +81,7 @@ onMounted(() => {
   <BaseModal :is-open="isOpen" @close="emit('close')">
     <div class="relative bg-white p-8">
       <!-- Close button -->
-      <button 
+      <button
         class="cursor-pointer absolute right-6 top-6 rounded-full p-2 text-plum-muted transition-colors hover:bg-plum-faint hover:text-plum"
         @click="emit('close')"
       >
@@ -88,7 +91,9 @@ onMounted(() => {
       <div class="flex flex-col items-center">
         <!-- Header -->
         <div class="mb-8 text-center">
-          <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-mint-light">
+          <div
+            class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-mint-light"
+          >
             <QrGridIcon class="h-6 w-6 text-mint" />
           </div>
           <h3 class="font-display text-xl font-bold text-plum">Your Arrival QR</h3>
@@ -98,37 +103,45 @@ onMounted(() => {
         </div>
 
         <!-- QR Code Container -->
-        <div class="relative mb-8 flex h-64 w-64 items-center justify-center rounded-[32px] border border-plum-faint bg-white p-6 shadow-sm">
-           <img 
-            v-if="qrDataUrl" 
-            :src="qrDataUrl" 
-            alt="Arrival QR" 
+        <div
+          class="relative mb-8 flex h-64 w-64 items-center justify-center rounded-[32px] border border-plum-faint bg-white p-6 shadow-sm"
+        >
+          <img
+            v-if="qrDataUrl"
+            :src="qrDataUrl"
+            alt="Arrival QR"
             class="h-full w-full object-contain"
           />
-          <div v-else class="flex h-full w-full animate-pulse items-center justify-center rounded-2xl bg-plum-faint">
-            <div class="h-12 w-12 rounded-full border-4 border-plum-faint border-t-mint animate-spin" />
+          <div
+            v-else
+            class="flex h-full w-full animate-pulse items-center justify-center rounded-2xl bg-plum-faint"
+          >
+            <div
+              class="h-12 w-12 rounded-full border-4 border-plum-faint border-t-mint animate-spin"
+            />
           </div>
-          
+
           <!-- Neatly styled ticket number badge -->
-          <div v-if="ticketNo" class="absolute -bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-plum px-5 py-2 shadow-xl ring-4 ring-white">
-             <span class="font-body text-[10px] font-bold tracking-[0.2em] text-sand/50 uppercase">Ticket</span>
-             <span class="font-mono text-lg font-black text-sand leading-none">
-               {{ ticketNo }}
-             </span>
+          <div
+            v-if="ticketNo"
+            class="absolute -bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-plum px-5 py-2 shadow-xl ring-4 ring-white"
+          >
+            <span class="font-body text-[10px] font-bold tracking-[0.2em] text-sand/50 uppercase"
+              >Ticket</span
+            >
+            <span class="font-mono text-lg font-black text-sand leading-none">
+              {{ ticketNo }}
+            </span>
           </div>
         </div>
 
         <!-- Actions -->
         <div class="flex w-full flex-col gap-3">
-          <BaseButton 
-            variant="primary" 
-            class="w-full !rounded-2xl !py-4"
-            @click="emit('close')"
-          >
+          <BaseButton variant="primary" class="w-full !rounded-2xl !py-4" @click="emit('close')">
             Got it
           </BaseButton>
-          
-          <button 
+
+          <button
             class="flex items-center justify-center gap-1.5 py-2 font-body text-sm font-semibold text-plum-muted transition-colors hover:text-plum"
             @click="downloadQr"
           >

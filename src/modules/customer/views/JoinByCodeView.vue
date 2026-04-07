@@ -36,10 +36,13 @@ const isFilled = computed(() => codeEntered.value.length === 6)
 // Methods
 function handleInput(index: number, e: Event) {
   const input = e.target as HTMLInputElement
-  const val = input.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(-1)
-  
+  const val = input.value
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase()
+    .slice(-1)
+
   codeChars.value[index] = val
-  
+
   if (val && index < 5) {
     nextTick(() => inputRefs.value[index + 1]?.focus())
   }
@@ -53,19 +56,22 @@ function handleKeydown(index: number, e: KeyboardEvent) {
 
 function handlePaste(e: ClipboardEvent) {
   const pasteData = e.clipboardData?.getData('text') || ''
-  const cleanData = pasteData.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().slice(0, 6)
-  
+  const cleanData = pasteData
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase()
+    .slice(0, 6)
+
   cleanData.split('').forEach((char, i) => {
     if (i < 6) codeChars.value[i] = char
   })
-  
+
   const nextFocus = Math.min(cleanData.length, 5)
   nextTick(() => inputRefs.value[nextFocus]?.focus())
 }
 
 async function findQueue() {
   if (!isFilled.value || isLoading.value) return
-  
+
   const result = await joinByCode(codeEntered.value)
   if (!result || !result.found) {
     triggerError()
@@ -74,7 +80,7 @@ async function findQueue() {
 
 function triggerError() {
   isShaking.value = true
-  setTimeout(() => isShaking.value = false, 500)
+  setTimeout(() => (isShaking.value = false), 500)
   // Brief delay then clear for retry
   setTimeout(() => {
     codeChars.value = ['', '', '', '', '', '']
@@ -84,12 +90,12 @@ function triggerError() {
 
 function handleQrResult(result: string) {
   showScanner.value = false
-  
+
   // 1. Try to extract code from URL if it's a full URL
   // Matches: .../q/QUEUE_ID/join/CODE
   const urlParts = result.split('/')
   const lastPart = urlParts[urlParts.length - 1]
-  
+
   // 2. If it's a code (6 chars) or from URL, use it
   if (lastPart && lastPart.length === 6) {
     lastPart.split('').forEach((char, i) => {
@@ -102,10 +108,10 @@ function handleQrResult(result: string) {
     })
     findQueue()
   } else {
-      // Fallback: If maybe it's just a queueId (UUID length or similar)
-      // but usually QR results are full URLs. 
-      // For now, if it failed, show error.
-      triggerError()
+    // Fallback: If maybe it's just a queueId (UUID length or similar)
+    // but usually QR results are full URLs.
+    // For now, if it failed, show error.
+    triggerError()
   }
 }
 </script>
@@ -114,7 +120,9 @@ function handleQrResult(result: string) {
   <div class="relative flex flex-col px-6 py-12 min-h-[85vh]">
     <!-- Decorative Blurs -->
     <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-mint-light/40 blur-3xl" />
-    <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-plum/5 blur-3xl opacity-50" />
+    <div
+      class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-plum/5 blur-3xl opacity-50"
+    />
 
     <!-- Content -->
     <div class="relative z-10 flex flex-col items-center">
@@ -126,7 +134,7 @@ function handleQrResult(result: string) {
       </p>
 
       <!-- Code Input Grid -->
-      <div 
+      <div
         class="mt-12 flex justify-center gap-2.5"
         :class="{ 'animate-[shake_0.5s_ease-in-out]': isShaking }"
       >
@@ -141,9 +149,11 @@ function handleQrResult(result: string) {
           autocomplete="off"
           class="h-16 w-12 rounded-2xl border-2 text-center font-mono text-3xl font-bold uppercase outline-none transition-all duration-300"
           :class="[
-            error && !isShaking ? 'border-danger bg-danger/5 text-danger' : 
-            codeChars[i] ? 'border-mint bg-white text-plum shadow-lg shadow-mint/10' : 
-            'border-plum-faint bg-white text-plum'
+            error && !isShaking
+              ? 'border-danger bg-danger/5 text-danger'
+              : codeChars[i]
+                ? 'border-mint bg-white text-plum shadow-lg shadow-mint/10'
+                : 'border-plum-faint bg-white text-plum',
           ]"
           @input="handleInput(i, $event)"
           @keydown="handleKeydown(i, $event)"
@@ -153,11 +163,17 @@ function handleQrResult(result: string) {
 
       <!-- Status Messages -->
       <div class="mt-6 min-h-[24px]">
-        <div v-if="error" class="flex items-center gap-2 text-danger animate-in fade-in slide-in-from-top-1">
+        <div
+          v-if="error"
+          class="flex items-center gap-2 text-danger animate-in fade-in slide-in-from-top-1"
+        >
           <ErrorCircleOutlineIcon class="h-4 w-4" />
           <span class="font-body text-xs font-semibold uppercase tracking-wider">Invalid Code</span>
         </div>
-        <p v-else class="font-body text-[11px] font-semibold text-plum-muted uppercase tracking-[0.2em] opacity-40">
+        <p
+          v-else
+          class="font-body text-[11px] font-semibold text-plum-muted uppercase tracking-[0.2em] opacity-40"
+        >
           Not case sensitive
         </p>
       </div>
@@ -168,9 +184,11 @@ function handleQrResult(result: string) {
           :disabled="!isFilled || isLoading"
           class="relative flex h-[64px] w-full items-center justify-center gap-3 overflow-hidden rounded-3xl font-display text-lg font-bold transition-all duration-500"
           :class="[
-            isLoading ? 'bg-plum-faint text-plum/30' :
-            isFilled ? 'bg-mint text-plum shadow-[0_16px_32px_-8px_rgba(0,229,160,0.5)] hover:shadow-[0_20px_40px_-8px_rgba(0,229,160,0.6)] transform hover:-translate-y-1' :
-            'bg-plum/5 text-plum/20 cursor-not-allowed'
+            isLoading
+              ? 'bg-plum-faint text-plum/30'
+              : isFilled
+                ? 'bg-mint text-plum shadow-[0_16px_32px_-8px_rgba(0,229,160,0.5)] hover:shadow-[0_20px_40px_-8px_rgba(0,229,160,0.6)] transform hover:-translate-y-1'
+                : 'bg-plum/5 text-plum/20 cursor-not-allowed',
           ]"
           @click="findQueue"
         >
@@ -193,7 +211,7 @@ function handleQrResult(result: string) {
         </button>
       </div>
 
-      <button 
+      <button
         class="mt-12 font-body text-xs font-bold text-plum-faint uppercase tracking-[0.25em] hover:text-plum transition-colors"
         @click="router.back()"
       >
@@ -203,7 +221,7 @@ function handleQrResult(result: string) {
 
     <!-- QR Scanner Overlay -->
     <Teleport to="body">
-      <BaseQrScanner 
+      <BaseQrScanner
         v-if="showScanner"
         @close="showScanner = false"
         @result="handleQrResult"
@@ -215,8 +233,15 @@ function handleQrResult(result: string) {
 
 <style scoped>
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-10px); }
-  75% { transform: translateX(10px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
 }
 </style>

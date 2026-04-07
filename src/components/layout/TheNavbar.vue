@@ -49,10 +49,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <header 
+  <header
     :class="[
       'sticky top-0 z-50 transition-all duration-300 border-b',
-      isScrolled ? 'bg-white/85 backdrop-blur-md shadow-sm border-plum-faint/50' : 'bg-white border-plum-faint'
+      isScrolled
+        ? 'bg-white/85 backdrop-blur-md shadow-sm border-plum-faint/50'
+        : 'bg-white border-plum-faint',
     ]"
   >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
@@ -87,19 +89,12 @@ onUnmounted(() => {
         </router-link>
       </div>
 
-      <button
-        class="md:hidden"
-        @click="handleToggleMenu"
-        aria-label="Toggle menu"
-      >
+      <button class="md:hidden" aria-label="Toggle menu" @click="handleToggleMenu">
         <component :is="isMobileMenuOpen ? X : Menu" class="h-6 w-6 text-plum" />
       </button>
     </nav>
 
-    <div
-      v-show="isMobileMenuOpen"
-      class="border-t border-plum-faint px-6 py-4 md:hidden"
-    >
+    <div v-show="isMobileMenuOpen" class="border-t border-plum-faint px-6 py-4 md:hidden">
       <div class="flex flex-col gap-4">
         <router-link
           to="/pricing"

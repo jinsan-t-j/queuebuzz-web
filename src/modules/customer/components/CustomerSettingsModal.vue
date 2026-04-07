@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue'
+import { watch, onMounted } from 'vue'
 import { useForm } from 'vee-validate'
 import * as yup from 'yup'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
@@ -10,7 +10,7 @@ import BaseModal from '@/components/base/BaseModal.vue'
 import { useToast } from '@/composables/useToast'
 import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
 
-const props = defineProps<{
+defineProps<{
   isOpen: boolean
 }>()
 
@@ -24,10 +24,11 @@ const { showToast } = useToast()
 const schema = yup.object({
   name: yup.string().required('Name is required').min(2, 'Name is too short'),
   email: yup.string().email('Please enter a valid email address').nullable().optional(),
-  partySize: yup.number()
+  partySize: yup
+    .number()
     .required('Party size is required')
     .min(1, 'Minimum 1')
-    .max(maxAllowedPartySize.value, `Maximum party size is ${maxAllowedPartySize.value}`)
+    .max(maxAllowedPartySize.value, `Maximum party size is ${maxAllowedPartySize.value}`),
 })
 
 const { errors, defineField, handleSubmit, resetForm, isSubmitting } = useForm({
@@ -35,8 +36,8 @@ const { errors, defineField, handleSubmit, resetForm, isSubmitting } = useForm({
   initialValues: {
     name: entry.value?.name || '',
     email: entry.value?.email || '',
-    partySize: entry.value?.partySize || 1
-  }
+    partySize: entry.value?.partySize || 1,
+  },
 })
 
 // defineField for v4.14+ (replaces deprecated defineInputBinds)
@@ -49,7 +50,7 @@ const onSubmit = handleSubmit(async (formValues) => {
   const success = await store.updateEntry({
     name: formValues.name,
     email: formValues.email || undefined,
-    partySize: formValues.partySize
+    partySize: formValues.partySize,
   })
 
   if (success) {
@@ -61,28 +62,32 @@ const onSubmit = handleSubmit(async (formValues) => {
 })
 
 // Sync initial values when entry changes
-watch(() => entry.value, (newEntry) => {
-  if (newEntry && !isSubmitting.value) {
-    resetForm({
-      values: {
-        name: newEntry.name,
-        email: newEntry.email || '',
-        partySize: newEntry.partySize
-      }
-    })
-  }
-}, { deep: true })
+watch(
+  () => entry.value,
+  (newEntry) => {
+    if (newEntry && !isSubmitting.value) {
+      resetForm({
+        values: {
+          name: newEntry.name,
+          email: newEntry.email || '',
+          partySize: newEntry.partySize,
+        },
+      })
+    }
+  },
+  { deep: true },
+)
 
 onMounted(() => {
-    if (store.entry) {
-        resetForm({
-            values: {
-                name: store.entry.name,
-                email: store.entry.email || '',
-                partySize: store.entry.partySize
-            }
-        })
-    }
+  if (store.entry) {
+    resetForm({
+      values: {
+        name: store.entry.name,
+        email: store.entry.email || '',
+        partySize: store.entry.partySize,
+      },
+    })
+  }
 })
 </script>
 
@@ -100,7 +105,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <form @submit.prevent="onSubmit" class="space-y-6">
+      <form class="space-y-6" @submit.prevent="onSubmit">
         <!-- Name Field -->
         <div class="relative">
           <BaseInput
@@ -130,14 +135,16 @@ onMounted(() => {
         <!-- Party Size Field (Stepper) -->
         <div v-if="canJoinWithParty" class="space-y-2">
           <label class="font-body text-sm font-medium text-plum">Party Size</label>
-          <div class="flex items-center justify-between rounded-2xl border border-plum-faint bg-plum-faint/30 p-4">
+          <div
+            class="flex items-center justify-between rounded-2xl border border-plum-faint bg-plum-faint/30 p-4"
+          >
             <p class="font-body text-sm font-semibold text-plum">How many people with you?</p>
             <div class="flex items-center gap-4">
               <button
                 type="button"
                 class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30 border border-plum-faint/10"
                 :disabled="partySize <= 1"
-                @click="partySize > 1 && (partySize--)"
+                @click="partySize > 1 && partySize--"
               >
                 −
               </button>
@@ -148,13 +155,15 @@ onMounted(() => {
                 type="button"
                 class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30 border border-plum-faint/10"
                 :disabled="partySize >= maxAllowedPartySize"
-                @click="partySize < maxAllowedPartySize && (partySize++)"
+                @click="partySize < maxAllowedPartySize && partySize++"
               >
                 +
               </button>
             </div>
           </div>
-          <p v-if="errors.partySize" class="font-body text-xs text-danger">{{ errors.partySize }}</p>
+          <p v-if="errors.partySize" class="font-body text-xs text-danger">
+            {{ errors.partySize }}
+          </p>
         </div>
 
         <!-- Actions -->
@@ -167,7 +176,7 @@ onMounted(() => {
           >
             Save Changes
           </BaseButton>
-          
+
           <BaseButton
             type="button"
             variant="ghost"

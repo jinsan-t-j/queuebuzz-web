@@ -10,10 +10,10 @@ interface Props {
   step?: number
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   min: 0,
   max: 100,
-  step: 1
+  step: 1,
 })
 
 const emit = defineEmits<{
@@ -30,11 +30,11 @@ function handleInput(e: Event) {
   <div class="relative w-full py-4">
     <div class="relative h-[6px] w-full rounded-full bg-plum/5">
       <!-- Active Track -->
-      <div 
+      <div
         class="absolute left-0 top-0 h-full rounded-full bg-mint"
         :style="{ width: `${((modelValue - min) / (max - min)) * 100}%` }"
-      ></div>
-      
+      />
+
       <!-- Input -->
       <input
         type="range"
@@ -51,13 +51,13 @@ function handleInput(e: Event) {
 
 <style scoped>
 /* Slider baseline Reset */
-input[type=range]::-webkit-slider-runnable-track {
+input[type='range']::-webkit-slider-runnable-track {
   -webkit-appearance: none;
   background: transparent;
   border-radius: 0;
 }
 
-input[type=range]::-webkit-slider-thumb {
+input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   border-radius: 50%;
   cursor: pointer;

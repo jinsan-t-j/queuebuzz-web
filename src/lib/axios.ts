@@ -42,17 +42,17 @@ apiClient.interceptors.request.use(
 
     return config
   },
-  (error: any) => Promise.reject(error)
+  (error: unknown) => Promise.reject(error),
 )
 
 let isRefreshing = false
 let failedQueue: Array<{
   resolve: (value?: unknown) => void
-  reject: (reason?: any) => void
+  reject: (reason?: unknown) => void
 }> = []
 
-const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(prom => {
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error)
     } else {
@@ -67,11 +67,10 @@ apiClient.interceptors.response.use(
     response.data = keysToCamelCase(response.data)
     return response.data
   },
-  async (error: any) => {
+  async (error: { config: InternalAxiosRequestConfig; response?: { status: number } }) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-
       if (originalRequest.url?.includes('/auth/refresh/token')) {
         return Promise.reject(error)
       }
@@ -80,9 +79,11 @@ apiClient.interceptors.response.use(
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject })
-        }).then(() => {
-          return apiClient(originalRequest)
-        }).catch((err) => Promise.reject(err))
+        })
+          .then(() => {
+            return apiClient(originalRequest)
+          })
+          .catch((err) => Promise.reject(err))
       }
 
       originalRequest._retry = true
@@ -90,13 +91,13 @@ apiClient.interceptors.response.use(
 
       try {
         await axios.post(`${API_BASE_URL}/auth/refresh/token`, undefined, {
-          withCredentials: true
+          withCredentials: true,
         })
 
         processQueue(null)
 
         return apiClient(originalRequest)
-      } catch (err: any) {
+      } catch (err: unknown) {
         processQueue(err)
 
         return Promise.reject(err)
@@ -106,5 +107,5 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error)
-  }
+  },
 )

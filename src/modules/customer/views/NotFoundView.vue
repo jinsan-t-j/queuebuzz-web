@@ -32,7 +32,9 @@ function goToHome() {
     <!-- Main Content Card -->
     <div class="z-10 flex w-full max-w-sm flex-col items-center">
       <!-- Icon/Illustration -->
-      <div class="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-white shadow-[0_8px_30px_rgb(26,10,46,0.06)] border border-plum-faint">
+      <div
+        class="mb-8 flex h-20 w-20 items-center justify-center rounded-3xl bg-white shadow-[0_8px_30px_rgb(26,10,46,0.06)] border border-plum-faint"
+      >
         <svg
           class="h-10 w-10 text-plum-muted"
           fill="none"
@@ -48,32 +50,24 @@ function goToHome() {
         </svg>
       </div>
 
-      <h1 class="font-display text-2xl font-bold text-plum mb-4">
-        Queue not found
-      </h1>
-      
+      <h1 class="font-display text-2xl font-bold text-plum mb-4">Queue not found</h1>
+
       <p class="font-body text-plum-muted mb-10 leading-relaxed">
-        This queue might have ended, or the link you're using is incorrect. 
-        Don't worry, you can still join using a code or browse other services.
+        This queue might have ended, or the link you're using is incorrect. Don't worry, you can
+        still join using a code or browse other services.
       </p>
 
       <!-- Action Buttons -->
       <div class="flex w-full flex-col gap-3">
-        <BaseButton 
-          variant="primary" 
-          @click="goToJoinByCode"
+        <BaseButton
+          variant="primary"
           class="w-full shadow-lg shadow-mint/20"
+          @click="goToJoinByCode"
         >
           Join with a Code
         </BaseButton>
-        
-        <BaseButton 
-          variant="ghost" 
-          @click="goToHome"
-          class="w-full"
-        >
-          Go to Home
-        </BaseButton>
+
+        <BaseButton variant="ghost" class="w-full" @click="goToHome"> Go to Home </BaseButton>
       </div>
     </div>
 

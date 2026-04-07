@@ -15,9 +15,9 @@ export function useCapture() {
    * Capture a target element and save/share it.
    */
   async function captureElement(
-    elementId: string, 
-    filename: string, 
-    shareData?: { title: string; text: string }
+    elementId: string,
+    filename: string,
+    shareData?: { title: string; text: string },
   ) {
     const element = document.getElementById(elementId)
     if (!element) {
@@ -46,12 +46,7 @@ export function useCapture() {
       })
 
       if (shareData) {
-        const shared = await shareOrDownloadFile(
-          dataUrl,
-          filename,
-          shareData.title,
-          shareData.text
-        )
+        const shared = await shareOrDownloadFile(dataUrl, filename, shareData.title, shareData.text)
         if (shared) {
           showToast('Image shared successfully', { type: 'success' })
         } else {
@@ -64,11 +59,11 @@ export function useCapture() {
       }
 
       hasCaptured.value = true
-    } catch (err: any) {
-      console.error('[Capture] Error:', err)
-      
+    } catch (err: unknown) {
+      const error = err as Error
+
       // Fallback: Skip fonts if it's a common rendering error
-      if (err.message?.includes('font') || err.message?.includes('trim')) {
+      if (error.message?.includes('font') || error.message?.includes('trim')) {
         try {
           const dataUrlFallback = await toPng(element, {
             backgroundColor: '#F7F3EE',
@@ -80,8 +75,8 @@ export function useCapture() {
           hasCaptured.value = true
           showToast('Download started (fallback)', { type: 'success' })
           return
-        } catch (fallbackErr) {
-          console.error('[Capture] Fallback failed:', fallbackErr)
+        } catch {
+          // Fallback failed
         }
       }
 

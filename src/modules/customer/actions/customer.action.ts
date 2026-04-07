@@ -1,11 +1,11 @@
 import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
 import type {
-    JoinQueuePayload,
-    MutationResult,
-    JoinByCodeResult,
-    JoinByCodeResponse,
-    Entry
+  JoinQueuePayload,
+  MutationResult,
+  JoinByCodeResult,
+  JoinByCodeResponse,
+  Entry,
 } from '../types'
 import { ApiSuccessResponse } from '@/types/app'
 
@@ -15,136 +15,139 @@ import { ApiSuccessResponse } from '@/types/app'
  */
 
 export async function joinQueue(queueId: string, payload: JoinQueuePayload): Promise<Entry> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        const body = {
-            display_name: payload.name || 'Guest',
-            email: payload.email,
-            phone: payload.phone,
-            party_size: payload.partySize || 1,
-            notification_enabled: payload.notificationEnabled,
-            fcm_token: payload.fcmToken
-        }
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  const body = {
+    display_name: payload.name || 'Guest',
+    email: payload.email,
+    phone: payload.phone,
+    party_size: payload.partySize || 1,
+    notification_enabled: payload.notificationEnabled,
+    fcm_token: payload.fcmToken,
+  }
 
-        const response = await apiClient.post<ApiSuccessResponse<Entry>>(API_ROUTES.CUSTOMER.JOIN_QUEUE_BY_ID(queueId), body, config) as unknown as ApiSuccessResponse<Entry>
-        return response.data
-    } catch (e) {
-        console.error('Failed to join queue:', e)
-        throw e
-    }
+  const response = (await apiClient.post<ApiSuccessResponse<Entry>>(
+    API_ROUTES.CUSTOMER.JOIN_QUEUE_BY_ID(queueId),
+    body,
+    config,
+  )) as unknown as ApiSuccessResponse<Entry>
+  return response.data
 }
 
 export async function fetchEntry(): Promise<Entry | null> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        const response = await apiClient.get<ApiSuccessResponse<Entry>>(API_ROUTES.CUSTOMER.GET_ENTRY(), config) as unknown as ApiSuccessResponse<Entry>
-        return response.data
-    } catch (e) {
-        console.error('Failed to fetch entry:', e)
-        return null
-    }
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  try {
+    const response = (await apiClient.get<ApiSuccessResponse<Entry>>(
+      API_ROUTES.CUSTOMER.GET_ENTRY(),
+      config,
+    )) as unknown as ApiSuccessResponse<Entry>
+    return response.data
+  } catch {
+    return null
+  }
 }
 
 export async function confirmStillHere(): Promise<MutationResult> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        await apiClient.post(API_ROUTES.CUSTOMER.CONFIRM_STILL_HERE(), {}, config)
-        return { success: true }
-    } catch (e) {
-        console.error('Failed to confirm still here:', e)
-        return { success: false }
-    }
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  try {
+    await apiClient.post(API_ROUTES.CUSTOMER.CONFIRM_STILL_HERE(), {}, config)
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
 }
 
 export async function confirmArrival(): Promise<MutationResult> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        await apiClient.post(API_ROUTES.CUSTOMER.CONFIRM_ARRIVAL(), {}, config)
-        return { success: true }
-    } catch (e) {
-        console.error('Failed to confirm arrival:', e)
-        return { success: false }
-    }
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  try {
+    await apiClient.post(API_ROUTES.CUSTOMER.CONFIRM_ARRIVAL(), {}, config)
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
 }
 
 export async function finishService(): Promise<MutationResult> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        await apiClient.post(API_ROUTES.CUSTOMER.FINISH_SERVICE(), {}, config)
-        return { success: true }
-    } catch (e) {
-        console.error('Failed to finish service:', e)
-        return { success: false }
-    }
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  try {
+    await apiClient.post(API_ROUTES.CUSTOMER.FINISH_SERVICE(), {}, config)
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
 }
 
 export async function leaveQueue(): Promise<MutationResult> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        await apiClient.post(API_ROUTES.CUSTOMER.LEAVE_GUEST, null, config)
-        return { success: true }
-    } catch (e) {
-        console.error('Failed to leave queue:', e)
-        return { success: false }
-    }
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  try {
+    await apiClient.post(API_ROUTES.CUSTOMER.LEAVE_GUEST, null, config)
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
 }
 
 export async function recoverGuestSession(): Promise<Entry | null> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        const response = await apiClient.get<ApiSuccessResponse<Entry>>(API_ROUTES.CUSTOMER.RECOVER_SESSION, config) as unknown as ApiSuccessResponse<Entry>
-        return response.data || null
-    } catch (e) {
-        console.error('Failed to recover session:', e)
-        return null
-    }
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  try {
+    const response = (await apiClient.get<ApiSuccessResponse<Entry>>(
+      API_ROUTES.CUSTOMER.RECOVER_SESSION,
+      config,
+    )) as unknown as ApiSuccessResponse<Entry>
+    return response.data || null
+  } catch {
+    return null
+  }
 }
 
 export async function submitRating(rating: number): Promise<MutationResult> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        await apiClient.post(API_ROUTES.CUSTOMER.SUBMIT_RATING(), { rating }, config)
-        return { success: true }
-    } catch (e) {
-        console.error('Failed to submit rating:', e)
-        return { success: false }
-    }
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  try {
+    await apiClient.post(API_ROUTES.CUSTOMER.SUBMIT_RATING(), { rating }, config)
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
 }
 
-export async function updateEntry(payload: { name?: string, email?: string, partySize?: number }): Promise<MutationResult> {
-    const config = createApiRequestConfig({}, { withCredentials: true })
-    try {
-        const body = {
-            name: payload.name,
-            email: payload.email,
-            party_size: payload.partySize
-        }
-        await apiClient.post(API_ROUTES.CUSTOMER.UPDATE_ENTRY, body, config)
-        return { success: true }
-    } catch (e) {
-        console.error('Failed to update entry:', e)
-        return { success: false }
+export async function updateEntry(payload: {
+  name?: string
+  email?: string
+  partySize?: number
+}): Promise<MutationResult> {
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  try {
+    const body = {
+      name: payload.name,
+      email: payload.email,
+      party_size: payload.partySize,
     }
+    await apiClient.post(API_ROUTES.CUSTOMER.UPDATE_ENTRY, body, config)
+    return { success: true }
+  } catch {
+    return { success: false }
+  }
 }
 
 export async function joinByCode(code: string): Promise<JoinByCodeResult> {
-    const config = createApiRequestConfig()
-    try {
-        const response = await apiClient.get<ApiSuccessResponse<JoinByCodeResponse>>(API_ROUTES.CUSTOMER.JOIN_BY_CODE(code), config) as unknown as ApiSuccessResponse<JoinByCodeResponse>
+  const config = createApiRequestConfig()
+  try {
+    const response = (await apiClient.get<ApiSuccessResponse<JoinByCodeResponse>>(
+      API_ROUTES.CUSTOMER.JOIN_BY_CODE(code),
+      config,
+    )) as unknown as ApiSuccessResponse<JoinByCodeResponse>
 
-        const data = response.data
+    const data = response.data
 
-        if (!data || !data.queueId) {
-            return { found: false }
-        }
-
-        return {
-            found: true,
-            queueName: data.queueName,
-            queueId: data.queueId
-        }
-    } catch (e) {
-        console.error('Failed to resolve code:', e)
-        return { found: false }
+    if (!data || !data.queueId) {
+      return { found: false }
     }
+
+    return {
+      found: true,
+      queueName: data.queueName,
+      queueId: data.queueId,
+    }
+  } catch {
+    return { found: false }
+  }
 }

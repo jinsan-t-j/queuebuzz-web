@@ -41,7 +41,7 @@ export function createSseClient(options: SseClientOptions): SseClient {
         signal: controller.signal,
         credentials: options.withCredentials ? 'include' : 'omit',
         headers: {
-          'Accept': 'text/event-stream',
+          Accept: 'text/event-stream',
         },
       })
 
@@ -96,13 +96,14 @@ export function createSseClient(options: SseClientOptions): SseClient {
           }
         }
       }
-    } catch (err: any) {
-      if (err.name === 'AbortError') return
+    } catch (err: unknown) {
+      const error = err as { name?: string; status?: number; message?: string }
+      if (error.name === 'AbortError') return
 
       isOpen = false
       options.onError?.({
-        status: err.status,
-        message: err.message || 'Unknown SSE error'
+        status: error.status,
+        message: error.message || 'Unknown SSE error',
       })
     } finally {
       isRequestActive = false

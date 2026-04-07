@@ -16,7 +16,7 @@ export function useQrScanner() {
   async function startScanner(
     elementId: string,
     onResult: (text: string) => void,
-    config = { fps: 10, qrbox: { width: 250, height: 250 } }
+    config = { fps: 10, qrbox: { width: 250, height: 250 } },
   ) {
     try {
       if (scanner.value) {
@@ -25,7 +25,7 @@ export function useQrScanner() {
 
       scanner.value = new Html5Qrcode(elementId, {
         formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-        verbose: false
+        verbose: false,
       })
 
       isScanning.value = true
@@ -39,11 +39,13 @@ export function useQrScanner() {
         },
         () => {
           // Failure to detect QR in frame is normal, ignore
-        }
+        },
       )
-    } catch (err: any) {
-      console.error('QR Scanner Error:', err)
-      error.value = err?.message || 'Failed to start camera. Please ensure camera permissions are granted.'
+    } catch (err: unknown) {
+      const errorTyped = err as { message?: string }
+      error.value =
+        errorTyped.message ||
+        'Failed to start camera. Please ensure camera permissions are granted.'
       isScanning.value = false
       throw err
     }
@@ -58,8 +60,8 @@ export function useQrScanner() {
         await scanner.value.stop()
         scanner.value = null
         isScanning.value = false
-      } catch (err) {
-        console.error('Failed to stop scanner:', err)
+      } catch {
+        // Failed to stop scanner
       }
     }
   }
@@ -72,6 +74,6 @@ export function useQrScanner() {
     isScanning,
     error,
     startScanner,
-    stopScanner
+    stopScanner,
   }
 }

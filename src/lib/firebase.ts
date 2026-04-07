@@ -11,7 +11,7 @@ const firebaseConfig = {
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
 const app = initializeApp(firebaseConfig)
@@ -23,7 +23,6 @@ const app = initializeApp(firebaseConfig)
  */
 export async function getFCMToken() {
   if (!('Notification' in window)) {
-    console.warn('Notifications not supported in this browser.')
     return null
   }
 
@@ -33,12 +32,11 @@ export async function getFCMToken() {
     // Recovery of current registration token
     // vapidKey is required for Web Push. Replace with your actual key.
     const token = await getToken(messaging, {
-      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY
+      vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
     })
 
     return token
-  } catch (error) {
-    console.error('An error occurred while retrieving FCM token:', error)
+  } catch {
     return null
   }
 }

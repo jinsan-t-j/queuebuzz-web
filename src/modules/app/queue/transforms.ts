@@ -1,6 +1,5 @@
-import type {
-  QueueEntry,
-} from '@/modules/app/queue/types'
+import type { QueueEntry } from '@/modules/app/queue/types'
+import type { QueueEntryStatus } from '@/modules/app/queue/constants'
 
 export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
   return {
@@ -9,7 +8,7 @@ export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
     position: entry.position,
     name: entry.name || 'Guest',
     partySize: entry.partySize ?? 1,
-    status: entry.status.toUpperCase() as any,
+    status: entry.status.toUpperCase() as QueueEntryStatus,
     servedAt: entry.servedAt,
     finishedAt: entry.finishedAt,
     createdAt: entry.createdAt,
@@ -19,7 +18,5 @@ export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
 }
 
 export function normalizeLiveQueueEntries(entries: QueueEntry[]): QueueEntry[] {
-  return [...entries]
-    .sort((left, right) => left.position - right.position)
-    .map(normalizeQueueEntry)
+  return [...entries].sort((left, right) => left.position - right.position).map(normalizeQueueEntry)
 }

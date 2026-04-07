@@ -45,7 +45,7 @@ const statusConfig = computed(() => {
     case ENTRY_STATUS.IDLE:
       return { label: 'No Show (In Grace Period)', color: 'bg-warning/10 text-warning font-bold' }
     default:
-      return { label: props.entry.status.toUpperCase() as any, color: 'bg-plum/10 text-plum' }
+      return { label: String(props.entry.status).toUpperCase(), color: 'bg-plum/10 text-plum' }
   }
 })
 
@@ -56,7 +56,7 @@ const formattedJoinedTime = computed(() => {
       hour: '2-digit',
       minute: '2-digit',
     })
-  } catch (e) {
+  } catch {
     return ''
   }
 })
@@ -94,7 +94,10 @@ const estWaitMin = computed(() => {
         <!-- Quick Info Grid -->
         <div class="mb-8 grid grid-cols-2 gap-3">
           <!-- Party Size -->
-          <div v-if="showPartySize" class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80">
+          <div
+            v-if="showPartySize"
+            class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80"
+          >
             <span class="font-body text-[10px] font-bold uppercase tracking-widest text-plum-muted">
               Party Size
             </span>
@@ -107,7 +110,7 @@ const estWaitMin = computed(() => {
           </div>
 
           <!-- Est. Wait -->
-          <div 
+          <div
             class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80"
             :class="{ 'col-span-2': !showPartySize }"
           >
@@ -142,7 +145,14 @@ const estWaitMin = computed(() => {
         <!-- Actions -->
         <div class="mt-10 flex flex-col gap-3">
           <!-- If called, arrived or idle, show serve/re-call -->
-          <div v-if="([ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(entry.status)" class="flex flex-col gap-3">
+          <div
+            v-if="
+              ([ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(
+                entry.status,
+              )
+            "
+            class="flex flex-col gap-3"
+          >
             <BaseButton
               variant="primary"
               class="w-full py-4 text-base font-bold"
@@ -151,13 +161,16 @@ const estWaitMin = computed(() => {
               <CheckIcon class="mr-2 h-5 w-5" />
               Mark as Served
             </BaseButton>
-            <BaseButton v-if="([ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(entry.status)" variant="ghost" class="w-full text-danger" @click="emit('call', entry.id)">
+            <BaseButton
+              v-if="([ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(entry.status)"
+              variant="ghost"
+              class="w-full text-danger"
+              @click="emit('call', entry.id)"
+            >
               <CallNextIcon class="mr-2 h-4 w-4" />
               {{ entry.status === ENTRY_STATUS.IDLE ? 'Call Again' : 'Re-call Guest' }}
             </BaseButton>
-            <BaseButton variant="ghost" class="w-full" @click="emit('close')">
-              Close
-            </BaseButton>
+            <BaseButton variant="ghost" class="w-full" @click="emit('close')"> Close </BaseButton>
           </div>
 
           <!-- If waiting, show call -->
@@ -170,9 +183,7 @@ const estWaitMin = computed(() => {
               <CallNextIcon class="mr-2 h-5 w-5" />
               Call Guest
             </BaseButton>
-            <BaseButton variant="ghost" class="w-full" @click="emit('close')">
-              Cancel
-            </BaseButton>
+            <BaseButton variant="ghost" class="w-full" @click="emit('close')"> Cancel </BaseButton>
           </div>
 
           <!-- Default close for other statuses -->

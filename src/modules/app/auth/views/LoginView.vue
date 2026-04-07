@@ -66,9 +66,10 @@ function handleMagicLinkSuccess() {
           </h1>
 
           <!-- Subtitle -->
-          <p class="mt-4 max-w-[315px] font-display text-xl font-medium leading-relaxed text-[#475569]">
-            Step back into your workspace and
-            keep the magic flowing through secure access.
+          <p
+            class="mt-4 max-w-[315px] font-display text-xl font-medium leading-relaxed text-[#475569]"
+          >
+            Step back into your workspace and keep the magic flowing through secure access.
           </p>
         </div>
       </div>
@@ -113,9 +114,17 @@ function handleMagicLinkSuccess() {
             By continuing, you agree to our
           </p>
           <p class="mt-1 font-display text-[8px] font-bold uppercase tracking-[1.1px]">
-            <router-link to="/terms" class="text-mint border-b-2 border-mint/20 hover:text-mint-dark">Terms of Service</router-link>
+            <router-link
+              to="/terms"
+              class="text-mint border-b-2 border-mint/20 hover:text-mint-dark"
+              >Terms of Service</router-link
+            >
             <span class="text-ash"> &amp; </span>
-            <router-link to="/privacy" class="text-mint border-b-2 border-mint/20 hover:text-mint-dark">Privacy Policy</router-link>
+            <router-link
+              to="/privacy"
+              class="text-mint border-b-2 border-mint/20 hover:text-mint-dark"
+              >Privacy Policy</router-link
+            >
           </p>
         </div>
       </div>

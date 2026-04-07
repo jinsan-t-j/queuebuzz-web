@@ -49,11 +49,7 @@ const props = defineProps({
 })
 
 // 7. Emits
-const emit = defineEmits([
-  'send-sign-in-link',
-  'continue-without-account',
-  'update:email',
-])
+const emit = defineEmits(['send-sign-in-link', 'continue-without-account', 'update:email'])
 
 // 8. Composable destructuring
 
@@ -84,22 +80,34 @@ function handleSendLink() {
 <template>
   <div class="relative min-h-screen overflow-hidden">
     <!-- Blob decorations -->
-    <div class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-mint-light opacity-50 blur-[80px]" />
-    <div class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]" />
+    <div
+      class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-mint-light opacity-50 blur-[80px]"
+    />
+    <div
+      class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]"
+    />
 
     <!-- ═══ Main Content ═══ -->
     <div class="relative z-10 mx-auto max-w-[512px] px-6 py-4">
       <!-- ═══ Session Summary Card ═══ -->
-      <div class="rounded-card bg-white px-10 py-10 text-center shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div
+        class="rounded-card bg-white px-10 py-10 text-center shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      >
         <!-- Stats pills -->
         <div class="flex items-center justify-center gap-3">
-          <span class="rounded-pill border border-plum-faint px-4 py-1.5 font-body text-sm font-bold text-plum">
+          <span
+            class="rounded-pill border border-plum-faint px-4 py-1.5 font-body text-sm font-bold text-plum"
+          >
             Served {{ servedCount }}
           </span>
-          <span class="rounded-pill border border-plum-faint px-4 py-1.5 font-body text-sm font-bold text-plum">
+          <span
+            class="rounded-pill border border-plum-faint px-4 py-1.5 font-body text-sm font-bold text-plum"
+          >
             Total {{ totalTime }}
           </span>
-          <span class="rounded-pill border border-plum-faint px-4 py-1.5 font-body text-sm font-bold text-plum">
+          <span
+            class="rounded-pill border border-plum-faint px-4 py-1.5 font-body text-sm font-bold text-plum"
+          >
             Avg {{ avgTime }}
           </span>
         </div>
@@ -111,23 +119,19 @@ function handleSendLink() {
       </div>
 
       <!-- ═══ Registration CTA Card ═══ -->
-      <div class="mt-6 rounded-card bg-white p-10 shadow-[0_8px_10px_rgba(0,0,0,0.10),0_20px_25px_rgba(0,0,0,0.10)]">
+      <div
+        class="mt-6 rounded-card bg-white p-10 shadow-[0_8px_10px_rgba(0,0,0,0.10),0_20px_25px_rgba(0,0,0,0.10)]"
+      >
         <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-plum/60">
           Save Your Work
         </p>
         <h2 class="mt-1 font-body text-2xl font-bold leading-8 text-plum">
-          Create your free account to keep
-          these stats and manage your next
-          queue.
+          Create your free account to keep these stats and manage your next queue.
         </h2>
 
         <!-- Feature list -->
         <div class="mt-8 flex flex-col gap-4">
-          <div
-            v-for="feature in features"
-            :key="feature"
-            class="flex items-center gap-3"
-          >
+          <div v-for="feature in features" :key="feature" class="flex items-center gap-3">
             <CheckMintIcon class="h-3 w-3 text-plum" />
             <span class="font-body text-base font-medium text-plum">{{ feature }}</span>
           </div>
@@ -136,9 +140,7 @@ function handleSendLink() {
         <!-- Email form -->
         <div class="mt-8 flex flex-col gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="font-body text-sm font-bold text-plum">
-              Email address
-            </label>
+            <label class="font-body text-sm font-bold text-plum"> Email address </label>
             <input
               :value="localEmail"
               type="email"
@@ -166,8 +168,8 @@ function handleSendLink() {
           >
             Continue without an account
             <ArrowRightMutedIcon class="h-[11px] w-[13px]" />
-        </a>
-      </router-link>
+          </a>
+        </router-link>
       </div>
     </div>
   </div>

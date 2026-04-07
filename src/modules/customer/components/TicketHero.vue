@@ -52,7 +52,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="rounded-3xl border border-plum-faint bg-white p-5 shadow-[0_4px_24px_rgba(26,10,46,0.08)]">
+  <div
+    class="rounded-3xl border border-plum-faint bg-white p-5 shadow-[0_4px_24px_rgba(26,10,46,0.08)]"
+  >
     <div class="flex">
       <!-- Left: Ticket info -->
       <div class="flex w-[40%] flex-col justify-center">
@@ -72,7 +74,9 @@ onMounted(async () => {
       </div>
 
       <!-- Right: QR code -->
-      <div class="group relative flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(26,10,46,0.12)]">
+      <div
+        class="group relative flex w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl transition-all duration-300 hover:shadow-[0_12px_40px_rgba(26,10,46,0.12)]"
+      >
         <img
           v-if="qrDataUrl"
           :src="qrDataUrl"
@@ -82,20 +86,26 @@ onMounted(async () => {
         />
 
         <!-- Hover Overlay (Premium feel from InfoQueueModal) -->
-        <div 
+        <div
           class="absolute inset-0 flex flex-col items-center justify-center bg-white/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-[2px]"
           @click="emit('save-ticket')"
         >
-          <div class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-xl">
+          <div
+            class="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-xl"
+          >
             <Download class="h-5 w-5 text-plum" />
           </div>
-          <span class="font-body text-[10px] font-bold uppercase tracking-widest text-plum shadow-sm">
+          <span
+            class="font-body text-[10px] font-bold uppercase tracking-widest text-plum shadow-sm"
+          >
             Save Ticket
           </span>
         </div>
 
         <!-- Static Fallback label (visible when mobile/not hovered) -->
-        <div class="mt-1 flex items-center gap-1 opacity-40 group-hover:opacity-0 transition-opacity lg:hidden">
+        <div
+          class="mt-1 flex items-center gap-1 opacity-40 group-hover:opacity-0 transition-opacity lg:hidden"
+        >
           <Download class="h-2.5 w-2.5 text-plum" />
           <span class="font-body text-[10px] font-bold uppercase tracking-wider text-plum">
             Tap to Save
@@ -114,11 +124,7 @@ onMounted(async () => {
       </button>
 
       <!-- Leave Queue confirmation modal -->
-      <LeaveConfirmationModal
-        :is-open="isOpen"
-        @close="isOpen = false"
-        @confirm="confirmLeave"
-      />
+      <LeaveConfirmationModal :is-open="isOpen" @close="isOpen = false" @confirm="confirmLeave" />
     </div>
   </div>
 </template>

@@ -19,8 +19,8 @@ const props = defineProps({
   role: {
     type: String,
     required: true,
-    validator: (val) => ['host', 'guest'].includes(val)
-  }
+    validator: (val) => ['host', 'guest'].includes(val),
+  },
 })
 
 const emit = defineEmits(['queue-created'])
@@ -33,29 +33,34 @@ const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 
 
 const schema = computed(() => {
   const baseSchema = {
-    queueName: yup.string().required('Queue name is required').max(50, 'Queue name must be at most 50 characters'),
+    queueName: yup
+      .string()
+      .required('Queue name is required')
+      .max(50, 'Queue name must be at most 50 characters'),
     serviceTime: yup.number().required('Service time is required').min(1).max(30),
     allowPartyJoining: yup.boolean().default(false),
     maxPartySize: yup.number().when('allowPartyJoining', {
       is: true,
       then: (schema) => schema.required('Limit is required').min(1).max(50),
-      otherwise: (schema) => schema.notRequired()
-    })
+      otherwise: (schema) => schema.notRequired(),
+    }),
   }
-  
+
   if (props.role === 'host') {
     return yup.object({
       ...baseSchema,
-      slug: yup.string()
+      slug: yup
+        .string()
         .nullable()
-        .matches(/^[a-z0-9-]+$/, { excludeEmptyString: true, message: 'Only lowercase letters, numbers, and hyphens allowed' })
+        .matches(/^[a-z0-9-]+$/, {
+          excludeEmptyString: true,
+          message: 'Only lowercase letters, numbers, and hyphens allowed',
+        }),
     })
   } else {
     return yup.object({
       ...baseSchema,
-      recoveryEmail: yup.string()
-        .nullable()
-        .email('Must be a valid email address')
+      recoveryEmail: yup.string().nullable().email('Must be a valid email address'),
     })
   }
 })
@@ -68,8 +73,8 @@ const { handleSubmit, errors, setFieldError } = useForm({
     allowPartyJoining: false,
     maxPartySize: 5,
     slug: null,
-    recoveryEmail: null
-  }
+    recoveryEmail: null,
+  },
 })
 
 // Fields setup
@@ -112,7 +117,7 @@ watch(slug, (newSlug) => {
 
 const onSubmit = handleSubmit(async (values) => {
   if (errors.value.slug || isCheckingSlug.value) return
-  
+
   try {
     const payload = {
       name: values.queueName,
@@ -125,15 +130,15 @@ const onSubmit = handleSubmit(async (values) => {
     const queue = await createQueue(payload)
     if (queue) {
       queueStore.setActiveQueue(queue)
-      
+
       if (props.role === 'guest') {
         authStore.setGuestSession(queue.id)
       }
-      
+
       emit('queue-created', queue)
     }
-  } catch (error) {
-    console.error('Error creating queue:', error)
+  } catch {
+    // Error handling logic
   }
 })
 
@@ -149,7 +154,7 @@ function copyCustomLink() {
   const customLink = `https://queuebuzz.com/${slug.value}`
   copyToClipboard(customLink)
   isSlugCopied.value = true
-  setTimeout(() => isSlugCopied.value = false, 2000)
+  setTimeout(() => (isSlugCopied.value = false), 2000)
 }
 </script>
 
@@ -157,23 +162,32 @@ function copyCustomLink() {
   <form @submit.prevent="onSubmit">
     <div class="mt-8 flex flex-col gap-5">
       <!-- ═══ Card 1: Queue Name ═══ -->
-      <div class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]">
-        <label class="mb-3 block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]">
+      <div
+        class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
+      >
+        <label
+          class="mb-3 block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]"
+        >
           Queue Name
         </label>
         <input
           v-model="queueName"
           placeholder=" What are people queuing for?"
           class="mb-2 w-full border-none bg-transparent font-display text-[22px] font-semibold text-plum placeholder:text-plum/20 outline-none"
-          :class="{ 'placeholder:text-red-500/50 text-red-500': errors.queueName, 'text-plum': !errors.queueName }"
+          :class="{
+            'placeholder:text-red-500/50 text-red-500': errors.queueName,
+            'text-plum': !errors.queueName,
+          }"
         />
-        <div v-if="errors.queueName" class="mb-3 font-body text-xs text-red-500">{{ errors.queueName }}</div>
-        
+        <div v-if="errors.queueName" class="mb-3 font-body text-xs text-red-500">
+          {{ errors.queueName }}
+        </div>
+
         <div class="flex flex-wrap gap-2">
           <button
-            type="button"
             v-for="suggestion in suggestions"
             :key="suggestion"
+            type="button"
             class="rounded-full border border-plum-faint px-4 py-1.5 font-body text-[13px] font-medium text-[#5c5267] transition-colors hover:bg-plum-faint cursor-pointer"
             @click="selectSuggestion(suggestion)"
           >
@@ -183,47 +197,57 @@ function copyCustomLink() {
       </div>
 
       <!-- ═══ Card 2: Service Time ═══ -->
-      <div class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)] relative">
-        <label class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]">
+      <div
+        class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)] relative"
+      >
+        <label
+          class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]"
+        >
           Avg. Service Time Per Person
         </label>
 
         <div class="mt-8 flex flex-col gap-4 relative">
           <!-- Value callout tooltip over slider -->
           <div class="flex flex-col relative w-full">
-            <div 
+            <div
               class="absolute -top-[37px] -translate-x-1/2 rounded-[5px] border border-[#e8e6ea] px-3 py-1.5 font-body text-[13px] font-semibold text-plum shadow-[0_4px_6px_rgba(0,0,0,0.10),0_10px_15px_rgba(0,0,0,0.10)] transition-all bg-white whitespace-nowrap"
-              :style="{ left: `calc(${((serviceTime - 1) / 29) * 100}% + (${12 - (((serviceTime - 1) / 29) * 24)}px))` }"
+              :style="{
+                left: `calc(${((serviceTime - 1) / 29) * 100}% + (${12 - ((serviceTime - 1) / 29) * 24}px))`,
+              }"
             >
               {{ serviceTime }} min
             </div>
-            
+
             <input
-              type="range"
               v-model="serviceTime"
+              type="range"
               min="1"
               max="30"
               class="w-full accent-mint h-2 bg-plum/10 rounded-lg appearance-none cursor-pointer"
             />
-            
+
             <div class="mt-2 flex justify-between font-body text-[13px] text-[#5c5267]">
               <span>1 min</span>
               <span>30 min</span>
             </div>
-            <div v-if="errors.serviceTime" class="mt-1 font-body text-xs text-red-500">{{ errors.serviceTime }}</div>
+            <div v-if="errors.serviceTime" class="mt-1 font-body text-xs text-red-500">
+              {{ errors.serviceTime }}
+            </div>
           </div>
         </div>
 
-        <p class="mt-6 font-body text-xs text-[#5c5267]">
-          Used to calculate wait time estimates.
-        </p>
+        <p class="mt-6 font-body text-xs text-[#5c5267]">Used to calculate wait time estimates.</p>
       </div>
 
       <!-- ═══ Card 3: Party Settings ═══ -->
-      <div class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]">
+      <div
+        class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
+      >
         <div class="flex items-center justify-between">
           <div>
-            <label class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]">
+            <label
+              class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]"
+            >
               Party Settings
             </label>
             <p class="mt-1 font-body text-xs text-[#5c5267]">
@@ -233,11 +257,16 @@ function copyCustomLink() {
           <BaseToggle v-model="allowPartyJoining" />
         </div>
 
-        <div v-if="allowPartyJoining" class="mt-8 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300">
-          <label class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267] mb-6">
+        <div
+          v-if="allowPartyJoining"
+          class="mt-8 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
+        >
+          <label
+            class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267] mb-6"
+          >
             Max Party Size
           </label>
-          
+
           <div class="flex flex-wrap gap-2">
             <button
               v-for="size in [2, 4, 6, 8, 10, 15, 20]"
@@ -247,7 +276,7 @@ function copyCustomLink() {
                 'px-4 py-2 rounded-xl font-body text-sm transition-all',
                 maxPartySize === size
                   ? 'bg-plum text-sand font-semibold cursor-pointer'
-                  : 'border border-plum-faint text-plum-muted hover:border-plum cursor-pointer'
+                  : 'border border-plum-faint text-plum-muted hover:border-plum cursor-pointer',
               ]"
               @click="maxPartySize = size"
             >
@@ -264,17 +293,25 @@ function copyCustomLink() {
               />
             </div>
           </div>
-          <div v-if="errors.maxPartySize" class="mt-2 font-body text-xs text-red-500">{{ errors.maxPartySize }}</div>
+          <div v-if="errors.maxPartySize" class="mt-2 font-body text-xs text-red-500">
+            {{ errors.maxPartySize }}
+          </div>
         </div>
       </div>
 
       <!-- ═══ Card 3: Host vs Guest Version ═══ -->
       <template v-if="role === 'host'">
-        <div class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]">
-          <label class="mb-3 block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]">
+        <div
+          class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
+        >
+          <label
+            class="mb-3 block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]"
+          >
             Queue Link
           </label>
-          <div class="inline-flex items-center bg-sand border border-sand-dark w-full p-3 rounded-xl transition-colors focus-within:border-plum/30">
+          <div
+            class="inline-flex items-center bg-sand border border-sand-dark w-full p-3 rounded-xl transition-colors focus-within:border-plum/30"
+          >
             <span class="font-body text-[18px] text-plum hidden sm:inline">queuebuzz.com/</span>
             <input
               v-model="slug"
@@ -285,16 +322,18 @@ function copyCustomLink() {
               <SpinnerLoadingIcon v-if="isCheckingSlug" class="h-4 w-4 animate-spin text-plum/50" />
               <VerifiedCheckIcon v-else-if="slug && !errors.slug" class="h-4 w-4 text-mint" />
             </div>
-            <button 
-              type="button" 
-              @click="copyCustomLink"
+            <button
+              type="button"
               class="inline-flex items-center text-center gap-2 rounded-xl bg-mint px-4 py-2 font-body text-base font-bold text-plum cursor-pointer transition-colors hover:bg-mint-dark min-w-[100px] justify-center"
+              @click="copyCustomLink"
             >
               <CopyCodeIcon v-if="!isSlugCopied" class="h-[17px] w-[14px] text-plum" />
               {{ isSlugCopied ? 'Copied!' : 'Copy' }}
             </button>
           </div>
-          <div v-if="errors.slug" class="mt-2 font-body text-xs text-red-500">{{ errors.slug }}</div>
+          <div v-if="errors.slug" class="mt-2 font-body text-xs text-red-500">
+            {{ errors.slug }}
+          </div>
           <p class="mt-4 font-body text-xs text-[#5c5267]">
             This is the address people use to find your queue. If empty, we’ll use a random version.
           </p>
@@ -302,7 +341,9 @@ function copyCustomLink() {
       </template>
 
       <template v-else>
-        <div class="rounded-card border border-plum/5 bg-white shadow-[0_4px_24px_rgba(26,10,46,0.05)]">
+        <div
+          class="rounded-card border border-plum/5 bg-white shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
+        >
           <button
             type="button"
             class="flex w-full items-center justify-between px-6 py-5 cursor-pointer"
@@ -320,15 +361,20 @@ function copyCustomLink() {
             />
           </button>
 
-          <div v-show="showEmailSection" class="border-t border-[#e8e6ea] px-6 pb-6 pt-6 origin-top transition-all duration-300">
+          <div
+            v-show="showEmailSection"
+            class="border-t border-[#e8e6ea] px-6 pb-6 pt-6 origin-top transition-all duration-300"
+          >
             <input
               v-model.lazy="recoveryEmail"
               type="email"
               placeholder="your@email.com"
               class="w-full border-none bg-transparent font-body text-base text-plum placeholder:text-[#5c5267]/40 outline-none"
-              :class="{'text-red-500 placeholder:text-red-500/40': errors.recoveryEmail}"
+              :class="{ 'text-red-500 placeholder:text-red-500/40': errors.recoveryEmail }"
             />
-            <div v-if="errors.recoveryEmail" class="mt-2 font-body text-xs text-red-500">{{ errors.recoveryEmail }}</div>
+            <div v-if="errors.recoveryEmail" class="mt-2 font-body text-xs text-red-500">
+              {{ errors.recoveryEmail }}
+            </div>
             <p class="mt-4 font-body text-xs text-[#5c5267]">
               Email yourself a magic link to resume management from any device, anywhere.
             </p>

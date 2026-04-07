@@ -8,7 +8,7 @@
 
 // 6. Props
 defineProps({
-  estWaitMin: { type: Number},
+  estWaitMin: { type: Number, default: 0 },
 })
 </script>
 

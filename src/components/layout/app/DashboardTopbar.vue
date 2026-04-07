@@ -26,7 +26,7 @@ import LogoutConfirmationModal from '@/modules/app/auth/components/LogoutConfirm
 
 // 8. Composable destructuring
 const route = useRoute()
-const {user, logout} = useAuthStore()
+const { user, logout } = useAuthStore()
 
 // 9. Reactive state
 const isLogoutModalOpen = ref(false)
@@ -73,13 +73,13 @@ function confirmLogout() {
       </div>
       <button
         class="rounded-input p-2 text-plum-muted transition-colors hover:bg-plum-faint hover:text-plum"
-        @click="handleLogout"
         aria-label="Sign out"
+        @click="handleLogout"
       >
         <LogOut class="h-5 w-5" />
       </button>
     </div>
-    
+
     <LogoutConfirmationModal
       :is-open="isLogoutModalOpen"
       @cancel="isLogoutModalOpen = false"

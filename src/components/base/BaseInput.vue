@@ -71,10 +71,7 @@ function handleInput(event) {
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label
-      v-if="label"
-      class="font-body text-sm font-medium text-plum"
-    >
+    <label v-if="label" class="font-body text-sm font-medium text-plum">
       {{ label }}
     </label>
     <input
@@ -91,10 +88,7 @@ function handleInput(event) {
       ]"
       @input="handleInput"
     />
-    <p
-      v-if="hasError"
-      class="font-body text-xs text-danger"
-    >
+    <p v-if="hasError" class="font-body text-xs text-danger">
       {{ error }}
     </p>
   </div>

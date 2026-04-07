@@ -17,5 +17,13 @@ export const ENTRY_STATUS = {
   ARRIVED: 'ARRIVED',
 } as const
 
-export type QueueErrorReason = typeof QUEUE_ERROR_REASONS[keyof typeof QUEUE_ERROR_REASONS]
-export type QueueEntryStatus = typeof ENTRY_STATUS[keyof typeof ENTRY_STATUS]
+export const QUEUE_STATUS = {
+  ACTIVE: 'ACTIVE',
+  PAUSED: 'PAUSED',
+  CLOSED: 'CLOSED',
+  EXPIRED: 'EXPIRED',
+} as const
+
+export type QueueErrorReason = (typeof QUEUE_ERROR_REASONS)[keyof typeof QUEUE_ERROR_REASONS]
+export type QueueEntryStatus = (typeof ENTRY_STATUS)[keyof typeof ENTRY_STATUS]
+export type QueueStatus = (typeof QUEUE_STATUS)[keyof typeof QUEUE_STATUS]

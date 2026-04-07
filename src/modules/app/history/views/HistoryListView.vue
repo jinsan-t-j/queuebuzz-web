@@ -9,9 +9,9 @@ import { useHistoryApi } from '../composables/useHistoryApi'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
-import { 
-  Search as SearchIcon, 
-  Filter as FilterIcon, 
+import {
+  Search as SearchIcon,
+  Filter as FilterIcon,
   Download as DownloadIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
@@ -19,16 +19,16 @@ import {
   Check as CheckIcon,
   X as XIcon,
   Inbox as InboxIcon,
-  ArrowRight as ArrowRightIcon
+  ArrowRight as ArrowRightIcon,
 } from 'lucide-vue-next'
-import { 
-  DropdownMenu, 
-  DropdownMenuTrigger, 
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
   DropdownMenuContent,
 } from '@/components/ui/dropdown-menu'
 
 const router = useRouter()
-const { isLoading, error, fetchQueues } = useHistoryApi()
+const { isLoading, fetchQueues } = useHistoryApi()
 
 // State
 const queues = ref([])
@@ -53,9 +53,9 @@ async function loadData() {
     page: currentPage.value,
     limit: 10,
     search: searchQuery.value,
-    filter: activeFilter.value === 'all' ? undefined : activeFilter.value
+    filter: activeFilter.value === 'all' ? undefined : activeFilter.value,
   })
-  
+
   if (result) {
     queues.value = result.data
     totalPages.value = result.totalPages
@@ -101,10 +101,8 @@ function downloadCsv() {
   const headers = ['Date', 'Queue Name', 'Status', 'Served', 'Wait']
   const csvRows = [
     headers.join(','),
-    ...queues.value.map(q => 
-      [q.dateFormatted, q.name, q.status, q.totalServed, q.avgWait]
-        .map(v => `"${v}"`)
-        .join(',')
+    ...queues.value.map((q) =>
+      [q.dateFormatted, q.name, q.status, q.totalServed, q.avgWait].map((v) => `"${v}"`).join(','),
     ),
   ]
   const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
@@ -114,16 +112,23 @@ function downloadCsv() {
   a.download = `queuebuzz-history-${Date.now()}.csv`
   a.click()
   URL.revokeObjectURL(url)
-  setTimeout(() => { isExporting.value = false }, 500)
+  setTimeout(() => {
+    isExporting.value = false
+  }, 500)
 }
 
 function getStatusVariant(status) {
   switch (status.toLowerCase()) {
-    case 'completed': return 'success'
-    case 'active': return 'primary'
-    case 'paused': return 'warning'
-    case 'terminated': return 'danger'
-    default: return 'secondary'
+    case 'completed':
+      return 'success'
+    case 'active':
+      return 'primary'
+    case 'paused':
+      return 'warning'
+    case 'terminated':
+      return 'danger'
+    default:
+      return 'secondary'
   }
 }
 </script>
@@ -134,11 +139,13 @@ function getStatusVariant(status) {
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
         <h1 class="font-display font-bold text-3xl text-plum">Queue History</h1>
-        <p class="font-body text-plum-muted mt-1">Review performance and data from your past sessions.</p>
+        <p class="font-body text-plum-muted mt-1">
+          Review performance and data from your past sessions.
+        </p>
       </div>
-      
+
       <div class="flex items-center gap-3">
-        <BaseButton variant="ghost" @click="downloadCsv" :loading="isExporting">
+        <BaseButton variant="ghost" :loading="isExporting" @click="downloadCsv">
           <DownloadIcon class="w-4 h-4 mr-2" />
           Export CSV
         </BaseButton>
@@ -148,23 +155,33 @@ function getStatusVariant(status) {
     <!-- Stats Overview (Mocks) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <BaseCard class="p-6">
-        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">Total Queues</p>
+        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">
+          Total Queues
+        </p>
         <p class="font-mono text-3xl font-bold text-plum mt-2">42</p>
       </BaseCard>
       <BaseCard class="p-6">
-        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">Total Customers Served</p>
+        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">
+          Total Customers Served
+        </p>
         <p class="font-mono text-3xl font-bold text-plum mt-2">1,204</p>
       </BaseCard>
       <BaseCard class="p-6">
-        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">Average Wait Time</p>
+        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">
+          Average Wait Time
+        </p>
         <p class="font-mono text-3xl font-bold text-mint mt-2">14m</p>
       </BaseCard>
     </div>
 
     <!-- Toolbar -->
-    <div class="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-plum-faint shadow-sm">
+    <div
+      class="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-plum-faint shadow-sm"
+    >
       <div class="relative w-full md:w-96">
-        <SearchIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-plum-muted pointer-events-none" />
+        <SearchIcon
+          class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-plum-muted pointer-events-none"
+        />
         <input
           v-model="searchQuery"
           type="search"
@@ -183,15 +200,19 @@ function getStatusVariant(status) {
       <div class="flex items-center gap-2 w-full md:w-auto">
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <button class="flex items-center gap-2 h-[48px] px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum transition-colors bg-white w-full md:w-auto justify-between">
+            <button
+              class="flex items-center gap-2 h-[48px] px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum transition-colors bg-white w-full md:w-auto justify-between"
+            >
               <span class="flex items-center gap-2">
                 <FilterIcon class="w-4 h-4 text-plum-muted" />
-                {{ filters.find(f => f.value === activeFilter)?.label }}
+                {{ filters.find((f) => f.value === activeFilter)?.label }}
               </span>
               <ChevronDownIcon class="w-3 h-3 text-plum-muted" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent class="bg-white rounded-2xl border border-plum-faint shadow-[0_8px_40px_rgba(26,10,46,0.12)] p-1 min-w-[200px]">
+          <DropdownMenuContent
+            class="bg-white rounded-2xl border border-plum-faint shadow-[0_8px_40px_rgba(26,10,46,0.12)] p-1 min-w-[200px]"
+          >
             <button
               v-for="filter in filters"
               :key="filter.value"
@@ -219,12 +240,32 @@ function getStatusVariant(status) {
         <table class="w-full text-left">
           <thead>
             <tr class="border-b border-plum-faint bg-sand/20">
-              <th class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">Date</th>
-              <th class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">Queue Name</th>
-              <th class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">Status</th>
-              <th class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">Served</th>
-              <th class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted text-right">Avg. Wait</th>
-              <th class="px-6 py-4"></th>
+              <th
+                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted"
+              >
+                Date
+              </th>
+              <th
+                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted"
+              >
+                Queue Name
+              </th>
+              <th
+                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted"
+              >
+                Status
+              </th>
+              <th
+                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted"
+              >
+                Served
+              </th>
+              <th
+                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted text-right"
+              >
+                Avg. Wait
+              </th>
+              <th class="px-6 py-4" />
             </tr>
           </thead>
           <tbody class="divide-y divide-plum-faint">
@@ -234,8 +275,10 @@ function getStatusVariant(status) {
                 <td class="px-6 py-5"><div class="h-4 w-40 bg-plum-faint rounded" /></td>
                 <td class="px-6 py-5"><div class="h-6 w-20 bg-plum-faint rounded-full" /></td>
                 <td class="px-6 py-5"><div class="h-4 w-12 bg-plum-faint rounded" /></td>
-                <td class="px-6 py-5 text-right"><div class="h-4 w-12 bg-plum-faint rounded ml-auto" /></td>
-                <td class="px-6 py-5"></td>
+                <td class="px-6 py-5 text-right">
+                  <div class="h-4 w-12 bg-plum-faint rounded ml-auto" />
+                </td>
+                <td class="px-6 py-5" />
               </tr>
             </template>
             <template v-else-if="queues.length === 0">
@@ -246,14 +289,16 @@ function getStatusVariant(status) {
                       <InboxIcon class="w-8 h-8 text-plum-muted" />
                     </div>
                     <p class="font-display font-bold text-xl text-plum">No history found</p>
-                    <p class="font-body text-plum-muted max-w-xs">We couldn't find any queues matching your current search or filters.</p>
+                    <p class="font-body text-plum-muted max-w-xs">
+                      We couldn't find any queues matching your current search or filters.
+                    </p>
                   </div>
                 </td>
               </tr>
             </template>
             <tr
-              v-else
               v-for="queue in queues"
+              v-else
               :key="queue.id"
               class="group hover:bg-sand/30 transition-colors cursor-pointer"
               @click="viewDetail(queue.id)"
@@ -262,7 +307,10 @@ function getStatusVariant(status) {
                 <span class="font-body text-sm text-plum">{{ queue.dateFormatted }}</span>
               </td>
               <td class="px-6 py-5">
-                <span class="font-body font-semibold text-sm text-plum group-hover:text-mint transition-colors">{{ queue.name }}</span>
+                <span
+                  class="font-body font-semibold text-sm text-plum group-hover:text-mint transition-colors"
+                  >{{ queue.name }}</span
+                >
               </td>
               <td class="px-6 py-5">
                 <BaseBadge :variant="getStatusVariant(queue.status)">{{ queue.status }}</BaseBadge>
@@ -274,7 +322,9 @@ function getStatusVariant(status) {
                 <span class="font-mono text-sm text-plum">{{ queue.avgWait }}</span>
               </td>
               <td class="px-6 py-5 text-right">
-                <ArrowRightIcon class="w-4 h-4 text-plum-muted opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                <ArrowRightIcon
+                  class="w-4 h-4 text-plum-muted opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
+                />
               </td>
             </tr>
           </tbody>
@@ -305,8 +355,8 @@ function getStatusVariant(status) {
           </div>
         </template>
         <div
-          v-else
           v-for="queue in queues"
+          v-else
           :key="queue.id"
           class="p-6 hover:bg-sand/30 transition-colors"
           @click="viewDetail(queue.id)"
@@ -322,7 +372,9 @@ function getStatusVariant(status) {
               <p class="font-mono text-sm text-plum font-semibold">{{ queue.totalServed }}</p>
             </div>
             <div>
-              <p class="font-body text-[10px] uppercase tracking-wider text-plum-muted">Avg. Wait</p>
+              <p class="font-body text-[10px] uppercase tracking-wider text-plum-muted">
+                Avg. Wait
+              </p>
               <p class="font-mono text-sm text-plum font-semibold">{{ queue.avgWait }}</p>
             </div>
           </div>
@@ -330,10 +382,16 @@ function getStatusVariant(status) {
       </div>
 
       <!-- Pagination Footer -->
-      <div class="p-4 bg-sand/10 border-t border-plum-faint flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div
+        class="p-4 bg-sand/10 border-t border-plum-faint flex flex-col sm:flex-row items-center justify-between gap-4"
+      >
         <p class="font-body text-xs text-plum-muted">
-          Showing <span class="text-plum font-medium">{{ totalCount > 0 ? (currentPage - 1) * 10 + 1 : 0 }}</span> to 
-          <span class="text-plum font-medium">{{ Math.min(currentPage * 10, totalCount) }}</span> of 
+          Showing
+          <span class="text-plum font-medium">{{
+            totalCount > 0 ? (currentPage - 1) * 10 + 1 : 0
+          }}</span>
+          to
+          <span class="text-plum font-medium">{{ Math.min(currentPage * 10, totalCount) }}</span> of
           <span class="text-plum font-medium">{{ totalCount }}</span> queues
         </p>
 
@@ -377,19 +435,33 @@ function getStatusVariant(status) {
     </BaseCard>
 
     <!-- Pro Nudge -->
-    <div class="relative overflow-hidden rounded-[32px] bg-plum p-8 md:p-12 text-white border border-plum-soft">
-      <div class="absolute top-0 right-0 w-64 h-64 bg-mint/10 blur-[100px] rounded-full -mr-32 -mt-32" />
-      <div class="absolute bottom-0 left-0 w-64 h-64 bg-plum-soft blur-[100px] rounded-full -ml-32 -mb-32 opacity-50" />
-      
-      <div class="relative flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+    <div
+      class="relative overflow-hidden rounded-[32px] bg-plum p-8 md:p-12 text-white border border-plum-soft"
+    >
+      <div
+        class="absolute top-0 right-0 w-64 h-64 bg-mint/10 blur-[100px] rounded-full -mr-32 -mt-32"
+      />
+      <div
+        class="absolute bottom-0 left-0 w-64 h-64 bg-plum-soft blur-[100px] rounded-full -ml-32 -mb-32 opacity-50"
+      />
+
+      <div
+        class="relative flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left"
+      >
         <div class="max-w-xl">
-          <h3 class="font-display font-bold text-2xl md:text-3xl mb-4">Unlock 12-Month Analytics</h3>
+          <h3 class="font-display font-bold text-2xl md:text-3xl mb-4">
+            Unlock 12-Month Analytics
+          </h3>
           <p class="font-body text-plum-muted text-sm md:text-md leading-relaxed">
-            On the free plan, you can only see the last 30 days of history. 
-            Upgrade to Pro to access your full session history and generate custom monthly reports.
+            On the free plan, you can only see the last 30 days of history. Upgrade to Pro to access
+            your full session history and generate custom monthly reports.
           </p>
         </div>
-        <BaseButton variant="primary" size="lg" class="bg-mint text-plum hover:bg-mint/90 whitespace-nowrap px-10">
+        <BaseButton
+          variant="primary"
+          size="lg"
+          class="bg-mint text-plum hover:bg-mint/90 whitespace-nowrap px-10"
+        >
           Upgrade to Pro
         </BaseButton>
       </div>

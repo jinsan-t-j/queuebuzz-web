@@ -12,7 +12,7 @@ import BaseInput from '@/components/base/BaseInput.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
-const props = defineProps({
+defineProps({
   isOpen: {
     type: Boolean,
     default: false,
@@ -23,19 +23,24 @@ const emit = defineEmits(['close', 'submit'])
 
 const { canJoinWithParty, maxAllowedPartySize } = useLiveQueue()
 
-const schema = computed(() => yup.object({
-  name: yup.string().required('Guest name is required'),
-  phone: yup.string().nullable(),
-  accompanying: yup.number()
-    .min(0)
-    .max(Math.max(0, maxAllowedPartySize.value - 1), 
-         canJoinWithParty.value 
-           ? `Maximum ${maxAllowedPartySize.value - 1} accompanying guests allowed` 
-           : 'Party joining is not allowed for this queue')
-    .default(0),
-}))
+const schema = computed(() =>
+  yup.object({
+    name: yup.string().required('Guest name is required'),
+    phone: yup.string().nullable(),
+    accompanying: yup
+      .number()
+      .min(0)
+      .max(
+        Math.max(0, maxAllowedPartySize.value - 1),
+        canJoinWithParty.value
+          ? `Maximum ${maxAllowedPartySize.value - 1} accompanying guests allowed`
+          : 'Party joining is not allowed for this queue',
+      )
+      .default(0),
+  }),
+)
 
-const { handleSubmit, errors, resetForm, values: formValues } = useForm({
+const { handleSubmit, errors, resetForm } = useForm({
   validationSchema: schema,
   initialValues: {
     name: '',
@@ -66,7 +71,7 @@ const handleClose = () => {
 
 <template>
   <BaseModal :is-open="isOpen" @close="handleClose">
-    <div 
+    <div
       class="relative w-full rounded-[48px] bg-[#f8f8f8] px-16 pb-12 pt-10 text-center shadow-[0_30px_70px_rgba(0,0,0,0.10)]"
     >
       <!-- Close button -->
@@ -82,7 +87,7 @@ const handleClose = () => {
         Add Guest
       </h2>
 
-      <form @submit.prevent="onSubmit" class="text-left space-y-6">
+      <form class="text-left space-y-6" @submit.prevent="onSubmit">
         <div class="space-y-4">
           <BaseInput
             v-model="name"
@@ -102,45 +107,70 @@ const handleClose = () => {
         <div v-if="canJoinWithParty" class="space-y-2">
           <button
             type="button"
-            @click="isGuestsOpen = !isGuestsOpen"
             class="w-full flex items-center justify-between py-2 group transition-all cursor-pointer"
+            @click="isGuestsOpen = !isGuestsOpen"
           >
             <div class="flex items-center gap-4">
               <!-- Status Dot Indicator -->
               <div class="relative flex items-center justify-center">
-                <div 
+                <div
                   v-if="accompanying > 0"
                   class="absolute w-3 h-3 bg-mint rounded-full blur-[4px] animate-pulse opacity-60"
                 />
-                <div 
+                <div
                   class="relative w-2.5 h-2.5 rounded-full transition-all duration-500"
                   :class="accompanying > 0 ? 'bg-mint scale-125' : 'bg-plum-faint'"
                 />
               </div>
 
               <div class="flex flex-col items-start leading-tight">
-                <span 
+                <span
                   class="font-body text-sm transition-all duration-300"
-                  :class="accompanying > 0 ? 'text-plum font-bold text-base' : 'text-plum-muted group-hover:text-plum'"
+                  :class="
+                    accompanying > 0
+                      ? 'text-plum font-bold text-base'
+                      : 'text-plum-muted group-hover:text-plum'
+                  "
                 >
-                  {{ accompanying > 0 ? `Joining as party of ${accompanying + 1}` : 'Add accompanying guests' }}
+                  {{
+                    accompanying > 0
+                      ? `Joining as party of ${accompanying + 1}`
+                      : 'Add accompanying guests'
+                  }}
                 </span>
-                <p class="font-body text-[10px] text-plum-muted font-medium uppercase tracking-[0.05em] mt-0.5">
+                <p
+                  class="font-body text-[10px] text-plum-muted font-medium uppercase tracking-[0.05em] mt-0.5"
+                >
                   {{ accompanying > 0 ? `Head of Party + ${accompanying} others` : 'Solo entry' }}
                 </p>
               </div>
             </div>
-            
+
             <svg
-              :class="['w-4 h-4 text-plum-muted cursor-pointer transition-transform duration-300', isGuestsOpen ? 'rotate-180' : '']"
-              fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              :class="[
+                'w-4 h-4 text-plum-muted cursor-pointer transition-transform duration-300',
+                isGuestsOpen ? 'rotate-180' : '',
+              ]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
 
-          <div v-show="isGuestsOpen" class="pb-6 pt-2 px-1 animate-in fade-in slide-in-from-top-1 duration-300">
-            <div class="flex items-center justify-between bg-white rounded-2xl border border-plum-faint p-2 shadow-sm">
+          <div
+            v-show="isGuestsOpen"
+            class="pb-6 pt-2 px-1 animate-in fade-in slide-in-from-top-1 duration-300"
+          >
+            <div
+              class="flex items-center justify-between bg-white rounded-2xl border border-plum-faint p-2 shadow-sm"
+            >
               <div class="flex flex-col ml-3 relative h-10 justify-center">
                 <transition
                   enter-active-class="transition-all duration-300 ease-out"
@@ -150,33 +180,38 @@ const handleClose = () => {
                   leave-from-class="opacity-100 translate-y-0"
                   leave-to-class="opacity-0 -translate-y-2"
                 >
-                  <span 
-                    v-if="accompanying < maxAllowedPartySize - 1" 
-                    key="label" 
+                  <span
+                    v-if="accompanying < maxAllowedPartySize - 1"
+                    key="label"
                     class="font-body text-xs text-plum-muted"
                   >
                     How many are there?
                   </span>
-                  <div 
-                    v-else 
-                    key="error" 
-                    class="flex flex-col leading-tight"
-                  >
-                    <span class="text-[10px] font-bold text-danger uppercase tracking-tight">Limit reached</span>
-                    <span class="text-[11px] font-body text-plum-muted">Max {{ maxAllowedPartySize - 1 }} more guests only</span>
+                  <div v-else key="error" class="flex flex-col leading-tight">
+                    <span class="text-[10px] font-bold text-danger uppercase tracking-tight"
+                      >Limit reached</span
+                    >
+                    <span class="text-[11px] font-body text-plum-muted"
+                      >Max {{ maxAllowedPartySize - 1 }} more guests only</span
+                    >
                   </div>
                 </transition>
               </div>
-              
+
               <div class="flex items-center gap-4">
-                <button 
+                <button
                   type="button"
-                  @click="accompanying = Math.max(0, accompanying - 1)"
                   class="w-10 h-10 flex items-center justify-center rounded-xl bg-sand/50 text-plum hover:bg-sand transition-colors disabled:opacity-20 cursor-pointer"
                   :disabled="accompanying === 0"
+                  @click="accompanying = Math.max(0, accompanying - 1)"
                 >
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M20 12H4"
+                    />
                   </svg>
                 </button>
 
@@ -184,17 +219,24 @@ const handleClose = () => {
                   {{ accompanying }}
                 </span>
 
-                <button 
+                <button
                   type="button"
-                  @click="accompanying = Math.min(maxAllowedPartySize - 1, accompanying + 1)"
                   class="w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-300"
-                  :class="accompanying >= maxAllowedPartySize - 1 
-                    ? 'bg-plum-faint text-plum-muted/40 cursor-not-allowed' 
-                    : 'bg-plum text-white hover:bg-plum-soft active:scale-95 shadow-md shadow-plum/10 cursor-pointer'"
+                  :class="
+                    accompanying >= maxAllowedPartySize - 1
+                      ? 'bg-plum-faint text-plum-muted/40 cursor-not-allowed'
+                      : 'bg-plum text-white hover:bg-plum-soft active:scale-95 shadow-md shadow-plum/10 cursor-pointer'
+                  "
                   :disabled="accompanying >= maxAllowedPartySize - 1"
+                  @click="accompanying = Math.min(maxAllowedPartySize - 1, accompanying + 1)"
                 >
                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2.5"
+                      d="M12 4v16m8-8H4"
+                    />
                   </svg>
                 </button>
               </div>

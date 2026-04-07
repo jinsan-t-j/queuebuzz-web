@@ -8,27 +8,27 @@ const icons = {
   info: Info,
   success: CheckCircle,
   warning: AlertTriangle,
-  error: AlertOctagon
+  error: AlertOctagon,
 }
 
 const colors = {
   info: 'bg-plum-faint text-plum border-plum/10',
   success: 'bg-[#ECFDF5] text-[#065F46] border-[#059669]/10',
   warning: 'bg-orange-50 text-orange-700 border-orange-200',
-  error: 'bg-red-50 text-red-700 border-red-200'
+  error: 'bg-red-50 text-red-700 border-red-200',
 }
 
 const iconColors = {
   info: 'text-plum/40',
   success: 'text-mint',
   warning: 'text-orange-500',
-  error: 'text-danger'
+  error: 'text-danger',
 }
 </script>
 
 <template>
   <div class="fixed top-6 right-6 z-[100] flex flex-col gap-3 w-[360px] pointer-events-none">
-    <TransitionGroup 
+    <TransitionGroup
       enter-active-class="transform transition ease-out duration-500"
       enter-from-class="translate-x-full opacity-0 scale-95"
       enter-to-class="translate-x-0 opacity-100 scale-100"
@@ -44,13 +44,13 @@ const iconColors = {
         :class="[colors[n.type] || 'border-plum-faint']"
       >
         <div class="flex items-start gap-4">
-          <div 
+          <div
             class="flex-shrink-0 h-9 w-9 rounded-xl flex items-center justify-center bg-white/50 border border-white"
             :class="[iconColors[n.type]]"
           >
             <component :is="icons[n.type] || Bell" class="h-5 w-5" />
           </div>
-          
+
           <div class="flex-1 pr-4">
             <h4 class="font-display text-sm font-bold leading-tight">
               {{ n.title }}
@@ -59,10 +59,10 @@ const iconColors = {
               {{ n.message }}
             </p>
           </div>
-          
-          <button 
-            @click="store.removeActiveNotification(n.id)"
+
+          <button
             class="flex-shrink-0 rounded-lg p-1.5 hover:bg-black/5 transition-colors"
+            @click="store.removeActiveNotification(n.id)"
           >
             <X class="h-3.5 w-3.5 opacity-40 hover:opacity-100" />
           </button>
@@ -70,9 +70,7 @@ const iconColors = {
 
         <!-- Animated Progress Bar -->
         <div class="absolute bottom-0 left-0 right-0 h-[3px] bg-black/5">
-          <div 
-            class="h-full bg-current opacity-20 notification-progress-fill"
-          ></div>
+          <div class="h-full bg-current opacity-20 notification-progress-fill" />
         </div>
       </div>
     </TransitionGroup>
@@ -87,7 +85,11 @@ const iconColors = {
 }
 
 @keyframes notification-progress {
-  from { width: 0%; }
-  to { width: 100%; }
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
 </style>

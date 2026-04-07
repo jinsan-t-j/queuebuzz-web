@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useNotificationStore } from '@/stores/notification.store'
-import { Bell, X, CheckCircle, AlertTriangle, Info, AlertOctagon, Trash2, Clock } from 'lucide-vue-next'
+import {
+  Bell,
+  X,
+  CheckCircle,
+  AlertTriangle,
+  Info,
+  AlertOctagon,
+  Trash2,
+  Clock,
+} from 'lucide-vue-next'
 import { formatDistanceToNow } from 'date-fns'
 
 const store = useNotificationStore()
@@ -11,14 +20,14 @@ const icons = {
   info: Info,
   success: CheckCircle,
   warning: AlertTriangle,
-  error: AlertOctagon
+  error: AlertOctagon,
 }
 
 const colors = {
   info: 'bg-plum-faint text-plum',
   success: 'bg-mint-light text-plum',
   warning: 'bg-orange-50 text-orange-600',
-  error: 'bg-red-50 text-red-600'
+  error: 'bg-red-50 text-red-600',
 }
 
 function toggle() {
@@ -45,9 +54,9 @@ watch(isOpen, (val) => {
   <div class="relative">
     <!-- Trigger Button -->
     <button
-      @click="toggle"
       class="relative cursor-pointer flex h-10 w-10 items-center justify-center rounded-2xl border border-plum-faint bg-white text-plum shadow-sm transition-all hover:border-plum hover:shadow-md"
       :class="{ 'ring-2 ring-plum/10': isOpen }"
+      @click="toggle"
     >
       <Bell class="h-5 w-5" />
       <span
@@ -62,8 +71,8 @@ watch(isOpen, (val) => {
     <Teleport to="body">
       <div v-if="isOpen" class="fixed inset-0 z-[100] flex justify-end overflow-hidden">
         <!-- Backdrop -->
-        <div 
-          class="absolute inset-0 bg-plum/20 backdrop-blur-sm transition-opacity" 
+        <div
+          class="absolute inset-0 bg-plum/20 backdrop-blur-sm transition-opacity"
           @click="isOpen = false"
         />
 
@@ -78,21 +87,24 @@ watch(isOpen, (val) => {
               <p class="font-body text-xs text-plum-muted">Track queue events in real-time</p>
             </div>
             <button
-              @click="isOpen = false"
               class="cursor-pointer flex h-8 w-8 items-center justify-center rounded-xl bg-plum-faint text-plum-muted transition-colors hover:bg-plum hover:text-sand"
+              @click="isOpen = false"
             >
               <X class="h-4 w-4" />
             </button>
           </div>
 
           <!-- Actions -->
-          <div v-if="store.history.length > 0" class="flex items-center justify-between px-6 py-3 bg-sand/30">
+          <div
+            v-if="store.history.length > 0"
+            class="flex items-center justify-between px-6 py-3 bg-sand/30"
+          >
             <span class="font-body text-xs text-plum-muted font-medium">
               {{ store.history.length }} notification{{ store.history.length > 1 ? 's' : '' }}
             </span>
             <button
-              @click="store.clearHistory"
               class="flex items-center gap-1.5 font-body text-xs font-bold text-danger hover:underline"
+              @click="store.clearHistory"
             >
               <Trash2 class="h-3 w-3" />
               Clear all
@@ -101,8 +113,13 @@ watch(isOpen, (val) => {
 
           <!-- List Section -->
           <div class="flex-1 overflow-y-auto px-6 py-4">
-            <div v-if="store.history.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
-              <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-plum-faint">
+            <div
+              v-if="store.history.length === 0"
+              class="flex flex-col items-center justify-center py-20 text-center"
+            >
+              <div
+                class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-plum-faint"
+              >
                 <Bell class="h-8 w-8 text-plum/30" />
               </div>
               <p class="font-display text-base font-bold text-plum">No activity yet</p>
@@ -118,13 +135,10 @@ watch(isOpen, (val) => {
                 class="group relative overflow-hidden rounded-2xl border border-plum-faint bg-white p-4 transition-all hover:border-plum/20 hover:shadow-sm"
               >
                 <!-- Unread Indicator -->
-                <div 
-                  v-if="!n.isRead"
-                  class="absolute left-0 top-0 h-full w-1 bg-plum"
-                ></div>
+                <div v-if="!n.isRead" class="absolute left-0 top-0 h-full w-1 bg-plum" />
 
                 <div class="flex items-start gap-3">
-                  <div 
+                  <div
                     class="flex h-8 w-8 items-center justify-center rounded-xl transition-colors"
                     :class="colors[n.type] || 'bg-plum-faint text-plum-muted'"
                   >
@@ -137,7 +151,9 @@ watch(isOpen, (val) => {
                     <p class="mt-0.5 font-body text-xs text-plum-muted leading-relaxed">
                       {{ n.message }}
                     </p>
-                    <div class="mt-2 flex items-center gap-1.5 font-body text-[10px] font-bold uppercase tracking-wider text-plum/30">
+                    <div
+                      class="mt-2 flex items-center gap-1.5 font-body text-[10px] font-bold uppercase tracking-wider text-plum/30"
+                    >
                       <Clock class="h-2.5 w-2.5" />
                       {{ formatDistanceToNow(n.createdAt, { addSuffix: true }) }}
                     </div>
@@ -150,7 +166,8 @@ watch(isOpen, (val) => {
           <!-- Bottom Summary (Optional) -->
           <div class="border-t border-plum-faint p-6">
             <p class="text-center font-body text-[11px] text-plum-muted leading-relaxed">
-              We preserve up to 50 recent events for your session. Recalculations might cause slight delays.
+              We preserve up to 50 recent events for your session. Recalculations might cause slight
+              delays.
             </p>
           </div>
         </div>
@@ -165,8 +182,12 @@ watch(isOpen, (val) => {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .slide-in-from-right {
@@ -174,7 +195,11 @@ watch(isOpen, (val) => {
 }
 
 @keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 </style>

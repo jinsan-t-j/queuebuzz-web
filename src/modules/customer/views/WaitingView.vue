@@ -21,20 +21,20 @@ const router = useRouter()
 const { showToast } = useToast()
 
 const {
-    entry,
-    isLoading,
-    position,
-    ahead,
-    estWaitMin,
-    status,
-    isJoined,
-    isSaving,
-    isSaved,
-    saveTicketAsImage,
-    leaveQueue,
-    fetchEntry,
-    connectEvents,
-    disconnectEvents
+  entry,
+  isLoading,
+  position,
+  ahead,
+  estWaitMin,
+  status,
+  isJoined,
+  isSaving,
+  isSaved,
+  saveTicketAsImage,
+  leaveQueue,
+  fetchEntry,
+  connectEvents,
+  disconnectEvents,
 } = useCustomer()
 const queueStore = useQueueStore()
 
@@ -82,9 +82,8 @@ watch(
     else if (s === 'LEFT' || s === 'SKIPPED') {
       router.push({ name: 'customer-ended', params, query: { reason: s.toLowerCase() } })
     }
-    console.log('Status changed', s)
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 onBeforeMount(async () => {
@@ -95,7 +94,7 @@ onBeforeMount(async () => {
 
   // 2. If still not joined after hydration attempt, redirect to home
   if (!isJoined.value) {
-    showToast('You are not joined to any queue', {type: 'error'})
+    showToast('You are not joined to any queue', { type: 'error' })
     router.push('/')
     return
   }
@@ -113,12 +112,13 @@ onBeforeMount(async () => {
 onUnmounted(() => {
   disconnectEvents()
 })
-
 </script>
 
 <template>
   <div class="relative flex flex-col min-h-[80vh]">
-    <h1 class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum transition-all duration-300">
+    <h1
+      class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum transition-all duration-300"
+    >
       {{ queueName }}
     </h1>
 
@@ -126,7 +126,11 @@ onUnmounted(() => {
     <div v-if="isLoading && !entry" class="flex flex-col gap-4 px-5 py-4">
       <div class="h-40 animate-pulse rounded-3xl bg-plum-faint" />
       <div class="flex gap-2.5">
-        <div v-for="i in 3" :key="i" class="h-24 flex-1 animate-pulse rounded-[18px] bg-plum-faint" />
+        <div
+          v-for="i in 3"
+          :key="i"
+          class="h-24 flex-1 animate-pulse rounded-[18px] bg-plum-faint"
+        />
       </div>
       <div class="h-4 animate-pulse rounded-full bg-plum-faint" />
     </div>
@@ -137,8 +141,12 @@ onUnmounted(() => {
 
       <div ref="ticketRef" class="relative">
         <!-- Blob decorations behind ticket & stats -->
-        <div class="pointer-events-none absolute -right-10 -top-10 h-[250px] w-[250px] rounded-full bg-mint-light blur-[40px] z-0" />
-        <div class="pointer-events-none absolute -bottom-24 -left-12 h-[320px] w-[320px] rounded-full bg-warning/45 blur-[70px] z-0" />
+        <div
+          class="pointer-events-none absolute -right-10 -top-10 h-[250px] w-[250px] rounded-full bg-mint-light blur-[40px] z-0"
+        />
+        <div
+          class="pointer-events-none absolute -bottom-24 -left-12 h-[320px] w-[320px] rounded-full bg-warning/45 blur-[70px] z-0"
+        />
 
         <div class="relative z-10 flex flex-col gap-5 p-1">
           <TicketHero
@@ -149,48 +157,47 @@ onUnmounted(() => {
             @save-ticket="saveTicketAsImage"
           />
 
-          <WaitingStats
-            :position="position"
-            :ahead="ahead"
-            :est-wait-min="estWaitMin"
-          />
+          <WaitingStats :position="position" :ahead="ahead" :est-wait-min="estWaitMin" />
         </div>
       </div>
 
-      <WaitingProgress
-        :position="position"
-      />
+      <WaitingProgress :position="position" />
 
       <WaitingAdUnit :est-wait-min="estWaitMin" />
 
       <!-- Entry Settings Section -->
-      <BaseCard 
+      <BaseCard
         :class="[
           'p-6 border-dashed transition-all duration-700',
-          showEmailHighlight 
-            ? 'border-mint bg-mint-light/30 ring-2 ring-mint ring-offset-sand scale-[1.02] shadow-[0_0_20px_rgba(0,229,160,0.25)]' 
-            : 'border-plum-faint bg-white/50'
+          showEmailHighlight
+            ? 'border-mint bg-mint-light/30 ring-2 ring-mint ring-offset-sand scale-[1.02] shadow-[0_0_20px_rgba(0,229,160,0.25)]'
+            : 'border-plum-faint bg-white/50',
         ]"
       >
         <div class="flex items-center justify-between gap-4">
           <div class="flex-1">
             <div class="flex items-center gap-2 mb-0.5">
               <h3 class="font-display text-base font-bold text-plum">Settings</h3>
-              <span v-if="showEmailHighlight" class="animate-pulse rounded-full bg-mint px-2 py-0.5 font-body text-[10px] font-bold text-plum">
-                 Recommended
+              <span
+                v-if="showEmailHighlight"
+                class="animate-pulse rounded-full bg-mint px-2 py-0.5 font-body text-[10px] font-bold text-plum"
+              >
+                Recommended
               </span>
             </div>
             <p class="font-body text-xs text-plum-muted/80">
               Update details or add a recovery email to keep your spot.
             </p>
           </div>
-          <button 
+          <button
             class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-plum-faint bg-white text-plum shadow-sm hover:border-plum transition-colors relative"
             @click="isSettingsModalOpen = true"
           >
             <SettingsIcon class="h-5 w-5" />
             <span v-if="showEmailHighlight" class="absolute -right-1 -top-1 flex h-3 w-3">
-              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-mint opacity-75" />
+              <span
+                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-mint opacity-75"
+              />
               <span class="relative inline-flex h-3 w-3 rounded-full bg-mint" />
             </span>
           </button>
@@ -213,9 +220,7 @@ onUnmounted(() => {
         join-date="Mar 31, 2026"
       />
 
-      <CustomerSettingsModal 
-        v-model:is-open="isSettingsModalOpen"
-      />
+      <CustomerSettingsModal v-model:is-open="isSettingsModalOpen" />
     </div>
   </div>
 </template>

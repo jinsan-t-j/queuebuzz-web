@@ -17,14 +17,12 @@ export function downloadFile(dataUrl: string, filename: string): void {
  * Falls back to traditional download if sharing isn't supported or fails.
  */
 export async function shareOrDownloadFile(
-  dataUrl: string, 
-  filename: string, 
-  title: string, 
-  text: string
+  dataUrl: string,
+  filename: string,
+  title: string,
+  text: string,
 ): Promise<boolean> {
-  const isWebShareSupported = 
-    navigator.share && 
-    navigator.canShare
+  const isWebShareSupported = navigator.share && navigator.canShare
 
   if (isWebShareSupported) {
     try {
@@ -40,8 +38,7 @@ export async function shareOrDownloadFile(
         })
         return true
       }
-    } catch (err) {
-      console.warn('[WebShare] Failed or cancelled:', err)
+    } catch {
       // Fallback below
     }
   }

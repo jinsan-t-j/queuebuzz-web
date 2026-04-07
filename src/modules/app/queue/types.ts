@@ -1,9 +1,7 @@
-import type { QueueEntryStatus } from './constants'
+import type { QueueEntryStatus, QueueStatus } from './constants'
 export interface QueueConfig {
   name: string
 }
-
-export type QueueStatus = 'active' | 'paused' | 'closed' | 'expired'
 
 export interface QueueRecord {
   id: string
@@ -20,7 +18,6 @@ export interface QueueRecord {
   expiresAt?: string
   entries?: QueueEntry[] // Added for hydration
 }
-
 
 export interface QueueEntry {
   id: string
@@ -46,18 +43,18 @@ export interface LiveQueueGuestInput {
 
 // Actions Payloads (Re-imported into store from here)
 export interface AddQueueEntryPayload {
-  name: string;
-  phone?: string;
-  email?: string;
-  partySize?: number;
+  name: string
+  phone?: string
+  email?: string
+  partySize?: number
 }
 
 export interface UpdateQueuePayload {
-  name?: string;
-  avgServiceMins?: number;
-  slug?: string;
-  recoveryEmail?: string;
-  strictQueueMode?: boolean;
+  name?: string
+  avgServiceMins?: number
+  slug?: string
+  recoveryEmail?: string
+  strictQueueMode?: boolean
 }
 
 export type TrendDirection = 'up' | 'down' | 'flat'
@@ -70,10 +67,6 @@ export interface TrendSummary {
 export interface QueueStatusEventData {
   id: string
   status: QueueEntryStatus
-}
-
-export interface QueueExpiredEventData {
-  queueId: string
 }
 
 export interface QueueStatusData {
@@ -103,7 +96,12 @@ export interface QueueSseEnvelopeMap {
   queue_status_changed: {
     data: QueueStatusData
   }
-  queue_expired: {
-    data: QueueExpiredEventData
+  queue_init: {
+    data: QueueRecord
+  }
+  waiting_count_updated: {
+    data: {
+      count: number
+    }
   }
 }

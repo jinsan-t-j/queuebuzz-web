@@ -11,15 +11,15 @@ import { useRouter } from 'vue-router'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
-
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
-import { CheckIcon } from 'lucide-vue-next'
+
 import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
 
 import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import EntryQrModal from '../components/EntryQrModal.vue'
 import { fetchEntry } from '../actions/customer.action'
 
+defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'service-finished'])
 const router = useRouter()
 const { showToast } = useToast()
 const {
@@ -33,7 +33,7 @@ const {
   finishService,
   leaveQueue,
   connectEvents,
-  disconnectEvents
+  disconnectEvents,
 } = useCustomer()
 const queueStore = useQueueStore()
 
@@ -43,8 +43,6 @@ const isQrModalOpen = ref(false)
 const isConfirming = ref(false)
 const isFinishing = ref(false)
 
-const emit = defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'service-finished'])
-
 // Watch for status changes to redirect if served or skipped
 watch(
   () => status.value,
@@ -52,22 +50,19 @@ watch(
     const params = router.currentRoute.value.params
     if (s === 'IDLE') {
       router.push({ name: 'customer-idle', params })
-    }
-    else if (s === 'SERVED') {
-      router.push({ 
-        name: 'customer-served', 
-        params, 
-        query: { t: ticketNumber.value } 
+    } else if (s === 'SERVED') {
+      router.push({
+        name: 'customer-served',
+        params,
+        query: { t: ticketNumber.value },
       })
-    }
-    else if (s === 'ARRIVED') {
+    } else if (s === 'ARRIVED') {
       // Stay on this page but shows "Arrived" state
-    }
-    else if (s === 'LEFT' || s === 'SKIPPED') {
+    } else if (s === 'LEFT' || s === 'SKIPPED') {
       router.push({ name: 'customer-ended', params, query: { reason: s.toLowerCase() } })
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const ticketNumber = computed(() => entry.value?.ticketNumber || '...')
@@ -81,7 +76,7 @@ onBeforeMount(async () => {
 
   // 2. If still not joined after hydration attempt, redirect to home
   if (!isJoined.value) {
-    showToast('You are not joined to any queue', {type: 'error'})
+    showToast('You are not joined to any queue', { type: 'error' })
     router.push('/')
     return
   }
@@ -116,10 +111,10 @@ const handleFinishService = async () => {
   isFinishing.value = false
   if (success) {
     isFinishModalOpen.value = false
-    router.push({ 
-      name: 'customer-served', 
+    router.push({
+      name: 'customer-served',
       params: router.currentRoute.value.params,
-      query: { t: tNumber }
+      query: { t: tNumber },
     })
   }
 }
@@ -129,10 +124,10 @@ const handleFinishService = async () => {
   <div class="relative flex flex-col">
     <!-- Blob decorations — Called screen specific (two large mint blobs) -->
     <div
-      class="pointer-events-none absolute -top-20 left-1/2   h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-mint/16 blur-[80px]"
+      class="pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-mint/16 blur-[80px]"
     />
     <div
-      class="pointer-events-none absolute -bottom-16 -left-10   h-[350px] w-[350px] rounded-full bg-mint/16 blur-[80px]"
+      class="pointer-events-none absolute -bottom-16 -left-10 h-[350px] w-[350px] rounded-full bg-mint/16 blur-[80px]"
     />
 
     <!-- Queue name header -->
@@ -148,12 +143,20 @@ const handleFinishService = async () => {
       </div>
 
       <!-- Ticket card -->
-      <div class="relative mt-6 overflow-hidden rounded-[40px] border-2 border-mint bg-[#fdfcfe] p-6 text-center shadow-[0_20px_50px_rgba(0,229,160,0.12)]">
+      <div
+        class="relative mt-6 overflow-hidden rounded-[40px] border-2 border-mint bg-[#fdfcfe] p-6 text-center shadow-[0_20px_50px_rgba(0,229,160,0.12)]"
+      >
         <!-- Decorative notches -->
-        <div class="absolute -left-[7px] top-1/2 h-6 w-3.5 -translate-y-1/2 rounded-r-full bg-sand" />
-        <div class="absolute -right-[7px] top-1/2 h-6 w-3.5 -translate-y-1/2 rounded-l-full bg-sand" />
+        <div
+          class="absolute -left-[7px] top-1/2 h-6 w-3.5 -translate-y-1/2 rounded-r-full bg-sand"
+        />
+        <div
+          class="absolute -right-[7px] top-1/2 h-6 w-3.5 -translate-y-1/2 rounded-l-full bg-sand"
+        />
 
-        <p class="font-body text-xs font-normal uppercase tracking-[2.4px] text-plum/60">Your Ticket</p>
+        <p class="font-body text-xs font-normal uppercase tracking-[2.4px] text-plum/60">
+          Your Ticket
+        </p>
         <p class="mt-4 font-mono text-[92px] font-black leading-[92px] text-plum">
           {{ ticketNumber.split('-')[0] }}-<br />{{ ticketNumber.split('-')[1] || '0042' }}
         </p>
@@ -190,15 +193,13 @@ const handleFinishService = async () => {
           status === 'ARRIVED'
             ? 'bg-plum text-sand shadow-lg border border-plum'
             : 'bg-mint text-plum shadow-[0_8px_10px_rgba(0,229,160,0.20),0_20px_25px_rgba(0,229,160,0.20)]',
-          (isConfirming || isFinishing) ? 'cursor-not-allowed opacity-70' : '',
+          isConfirming || isFinishing ? 'cursor-not-allowed opacity-70' : '',
         ]"
         @click="handleMainCta"
       >
         <template v-if="isConfirming">Confirming…</template>
         <template v-else-if="isFinishing">Finishing…</template>
-        <template v-else-if="status === 'ARRIVED'">
-          Service Finished?
-        </template>
+        <template v-else-if="status === 'ARRIVED'"> Service Finished? </template>
         <template v-else>I'm Here</template>
       </button>
 

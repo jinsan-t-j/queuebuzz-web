@@ -26,9 +26,9 @@ import { User, AtSign, ChevronDown, Info } from 'lucide-vue-next'
 
 // 6. Props
 const props = defineProps({
-  queueName: { type: String },
-  peopleInQueue: { type: Number },
-  estWaitMin: { type: Number },
+  queueName: { type: String, default: '' },
+  peopleInQueue: { type: Number, default: 0 },
+  estWaitMin: { type: Number, default: 0 },
   canJoinWithParty: { type: Boolean, default: false },
   maxAllowedPartySize: { type: Number, default: 10 },
   isLoading: { type: Boolean, default: false },
@@ -41,10 +41,12 @@ const emit = defineEmits(['join-queue', 'go-to-join-by-code'])
 const schema = yup.object({
   displayName: yup.string().max(30, 'Name too long').optional(),
   email: yup.string().email('Invalid email address').optional(),
-  accompanying: yup.number()
+  accompanying: yup
+    .number()
     .min(0)
-    .max(Math.max(0, (props.maxAllowedPartySize || 10) - 1), 
-      `Max ${(props.maxAllowedPartySize || 10) - 1} companions`
+    .max(
+      Math.max(0, (props.maxAllowedPartySize || 10) - 1),
+      `Max ${(props.maxAllowedPartySize || 10) - 1} companions`,
     )
     .default(0),
 })
@@ -56,7 +58,7 @@ const { handleSubmit, isSubmitting } = useForm({
     displayName: '',
     email: '',
     accompanying: 0,
-  }
+  },
 })
 
 const { value: displayName, errorMessage: nameError } = useField('displayName')
@@ -78,7 +80,7 @@ function toggleEmail() {
  */
 async function ensureNotificationPermission() {
   if (!('Notification' in window)) return true
-  
+
   if (Notification.permission === 'granted') return true
   if (Notification.permission === 'denied') return false
 
@@ -124,9 +126,13 @@ const handleJoin = handleSubmit(async (values) => {
       <p class="mt-2.5 font-display text-[84px] font-normal leading-[84px] text-plum">
         {{ peopleInQueue }}
       </p>
-      <div class="mx-auto mt-2.5 flex w-fit items-center gap-2 rounded-full border border-plum-faint/50 bg-sand px-4 py-2">
+      <div
+        class="mx-auto mt-2.5 flex w-fit items-center gap-2 rounded-full border border-plum-faint/50 bg-sand px-4 py-2"
+      >
         <ClockFilledIcon class="h-4 w-4 text-mint" />
-        <span v-if="estWaitMin === 0" class="font-body text-md font-medium text-plum">Few moments</span>
+        <span v-if="estWaitMin === 0" class="font-body text-md font-medium text-plum"
+          >Few moments</span
+        >
         <span v-else class="font-mono text-lg font-bold text-plum">~{{ estWaitMin }} min</span>
         <span class="font-body text-lg text-plum-muted">Wait</span>
       </div>
@@ -140,16 +146,16 @@ const handleJoin = handleSubmit(async (values) => {
     <h2 class="mt-8 font-body text-2xl font-bold text-plum">Secure your spot</h2>
 
     <!-- Name input card -->
-    <div 
+    <div
       :class="[
         'mt-6 flex items-start gap-4 rounded-3xl border p-4 transition-colors',
-        nameError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-white'
+        nameError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-white',
       ]"
     >
-      <div 
+      <div
         :class="[
           'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-          nameError ? 'bg-danger/10' : 'bg-plum-faint'
+          nameError ? 'bg-danger/10' : 'bg-plum-faint',
         ]"
       >
         <User :class="['h-4 w-4', nameError ? 'text-danger' : 'text-plum-muted']" />
@@ -174,8 +180,18 @@ const handleJoin = handleSubmit(async (values) => {
         @click="isGuestsOpen = !isGuestsOpen"
       >
         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10">
-          <svg class="h-5 w-5 text-warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          <svg
+            class="h-5 w-5 text-warning"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            />
           </svg>
         </div>
         <div class="flex-1 text-left">
@@ -199,9 +215,12 @@ const handleJoin = handleSubmit(async (values) => {
         leave-from-class="translate-y-0 opacity-100"
         leave-to-class="translate-y-1 opacity-0"
       >
-        <div v-if="isGuestsOpen" class="flex items-center justify-between rounded-3xl border border-plum-faint bg-plum-faint/30 p-4">
+        <div
+          v-if="isGuestsOpen"
+          class="flex items-center justify-between rounded-3xl border border-plum-faint bg-plum-faint/30 p-4"
+        >
           <p class="font-body text-sm font-semibold text-plum">How many people with you?</p>
-          
+
           <div class="flex items-center gap-4">
             <button
               type="button"
@@ -228,11 +247,15 @@ const handleJoin = handleSubmit(async (values) => {
     </div>
 
     <!-- Buzz toggle card -->
-    <div class="mt-6 flex items-center justify-between rounded-3xl border border-plum-faint bg-white p-4">
+    <div
+      class="mt-6 flex items-center justify-between rounded-3xl border border-plum-faint bg-white p-4"
+    >
       <div class="flex items-center gap-3">
         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mint-light">
           <svg class="h-5 w-5 text-mint" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.15 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.15 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z" />
+            <path
+              d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.15 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.15 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"
+            />
           </svg>
         </div>
         <div>
@@ -246,12 +269,11 @@ const handleJoin = handleSubmit(async (values) => {
     <!-- Email recovery accordion -->
     <div class="mt-6">
       <!-- Header row -->
-      <button
-        class="flex w-full cursor-pointer items-center gap-4 py-4"
-        @click="toggleEmail"
-      >
+      <button class="flex w-full cursor-pointer items-center gap-4 py-4" @click="toggleEmail">
         <AtSign class="h-4 w-4 shrink-0 text-plum-muted" />
-        <span class="flex-1 text-left font-body text-sm font-medium text-plum-muted">Add email for recovery</span>
+        <span class="flex-1 text-left font-body text-sm font-medium text-plum-muted"
+          >Add email for recovery</span
+        >
         <ChevronDown
           :class="[
             'h-2.5 w-2.5 text-plum-muted transition-transform duration-200',
@@ -261,27 +283,26 @@ const handleJoin = handleSubmit(async (values) => {
       </button>
 
       <!-- Expanded panel -->
-      <div 
-        v-show="isEmailExpanded" 
+      <div
+        v-show="isEmailExpanded"
         :class="[
           'rounded-2xl border p-4 transition-colors',
-          emailError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-plum-faint/30'
+          emailError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-plum-faint/30',
         ]"
       >
         <div class="bg-white p-3 rounded-xl">
           <input
-          v-model="email"
-          type="email"
-          placeholder="your@email.com"
-          class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none"
-        />
+            v-model="email"
+            type="email"
+            placeholder="your@email.com"
+            class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none"
+          />
         </div>
         <p v-if="emailError" class="mt-1 font-body text-[10px] text-danger">{{ emailError }}</p>
         <div class="mt-3 flex items-start gap-2">
           <Info class="mt-0.5 h-3 w-3 shrink-0 text-plum-muted/80" />
           <p class="font-body text-xs leading-relaxed text-plum-muted/80">
-            Receive updates &amp; recover your spot if you close
-            the browser.
+            Receive updates &amp; recover your spot if you close the browser.
           </p>
         </div>
       </div>
@@ -292,19 +313,21 @@ const handleJoin = handleSubmit(async (values) => {
       :disabled="isSubmitting || isLoading"
       :class="[
         'mt-6 flex h-[60px] w-full items-center justify-center gap-2 rounded-2xl bg-mint font-body text-lg font-semibold text-plum shadow-[0_8px_24px_rgba(0,229,160,0.50)] transition-all',
-        (isSubmitting || isLoading) ? 'cursor-not-allowed opacity-70' : 'hover:shadow-[0_12px_32px_rgba(0,229,160,0.60)]',
+        isSubmitting || isLoading
+          ? 'cursor-not-allowed opacity-70'
+          : 'hover:shadow-[0_12px_32px_rgba(0,229,160,0.60)]',
       ]"
       @click="handleJoin"
     >
-      {{ (isSubmitting || isLoading) ? 'Joining…' : 'Join the Queue' }}
+      {{ isSubmitting || isLoading ? 'Joining…' : 'Join the Queue' }}
       <ArrowRightBoldIcon v-if="!(isSubmitting || isLoading)" class="h-4 w-4 text-plum" />
     </button>
 
     <!-- Join by code link -->
     <p class="mt-5 text-center font-body text-sm text-plum-muted">
       Already have a ticket?
-      <button 
-        type="button" 
+      <button
+        type="button"
         class="font-body text-sm text-plum-muted underline underline-offset-4 hover:text-plum transition-colors"
         @click="emit('go-to-join-by-code')"
       >

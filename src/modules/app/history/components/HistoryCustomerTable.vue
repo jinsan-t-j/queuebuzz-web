@@ -11,7 +11,7 @@
  */
 
 import { ref, computed, watch } from 'vue'
-import { Search, X, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { Search, X } from 'lucide-vue-next'
 
 const props = defineProps({
   entries: {
@@ -46,9 +46,7 @@ const filteredEntries = computed(() => {
   if (!searchQuery.value.trim()) return props.entries
   const q = searchQuery.value.toLowerCase()
   return props.entries.filter(
-    (e) =>
-      e.name.toLowerCase().includes(q) ||
-      e.ticket.toLowerCase().includes(q)
+    (e) => e.name.toLowerCase().includes(q) || e.ticket.toLowerCase().includes(q),
   )
 })
 
@@ -56,9 +54,7 @@ const filteredEntries = computed(() => {
 const currentPage = ref(1)
 const pageSize = 10
 
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(filteredEntries.value.length / pageSize))
-)
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredEntries.value.length / pageSize)))
 
 const paginatedEntries = computed(() => {
   const start = (currentPage.value - 1) * pageSize
@@ -71,10 +67,7 @@ const showingFrom = computed(() => {
 })
 
 const showingTo = computed(() => {
-  return Math.min(
-    currentPage.value * pageSize,
-    filteredEntries.value.length
-  )
+  return Math.min(currentPage.value * pageSize, filteredEntries.value.length)
 })
 
 function goTo(page) {
@@ -108,9 +101,7 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
 </script>
 
 <template>
-  <div
-    class="rounded-2xl border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-  >
+  <div class="rounded-2xl border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <!-- Header with search -->
     <div
       class="flex flex-col gap-4 border-b border-plum/5 px-6 py-5 md:flex-row md:items-center md:justify-between"
@@ -140,11 +131,7 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
 
     <!-- Loading skeleton -->
     <div v-if="isLoading" class="px-6 py-4">
-      <div
-        v-for="i in 5"
-        :key="i"
-        class="flex gap-6 border-b border-plum/5 py-4 last:border-0"
-      >
+      <div v-for="i in 5" :key="i" class="flex gap-6 border-b border-plum/5 py-4 last:border-0">
         <div class="h-4 w-12 rounded bg-plum-faint animate-pulse" />
         <div class="h-4 w-24 rounded bg-plum-faint animate-pulse" />
         <div class="h-4 w-16 rounded bg-plum-faint animate-pulse" />
@@ -161,9 +148,7 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
         v-if="filteredEntries.length === 0"
         class="flex flex-col items-center justify-center py-16 gap-3"
       >
-        <p class="font-display text-base font-semibold text-plum">
-          No entries found
-        </p>
+        <p class="font-display text-base font-semibold text-plum">No entries found</p>
         <p class="font-body text-sm text-plum-muted">
           Try a different search term or clear the search.
         </p>
@@ -185,11 +170,7 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
 
         <!-- Body -->
         <tbody>
-          <tr
-            v-for="entry in paginatedEntries"
-            :key="entry.id"
-            class="border-t border-plum/5"
-          >
+          <tr v-for="entry in paginatedEntries" :key="entry.id" class="border-t border-plum/5">
             <td class="px-6 py-3.5">
               <span class="font-mono text-sm font-bold text-mint">
                 {{ entry.ticket }}

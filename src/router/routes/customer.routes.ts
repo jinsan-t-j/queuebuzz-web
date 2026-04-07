@@ -5,7 +5,7 @@
  */
 import { restrictHostGuard } from '@/router/guards/restrictHost.guard'
 import { restrictCustomerGuard } from '@/router/guards/restrictCustomer.guard'
-import type { RouteRecordRaw } from 'vue-router'
+import type { RouteRecordRaw, RouteLocationNormalized } from 'vue-router'
 
 export const customerRoutes: RouteRecordRaw[] = [
   {
@@ -55,7 +55,7 @@ export const customerRoutes: RouteRecordRaw[] = [
         name: 'customer-ended',
         component: () => import('@/modules/customer/views/EntryEndedView.vue'),
         meta: { title: 'Session Ended' },
-        props: (route: any) => ({ reason: route.query.reason })
+        props: (route: RouteLocationNormalized) => ({ reason: route.query.reason }),
       },
       // Global customer wildcard for unknown queue-specific paths
       {

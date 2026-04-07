@@ -13,7 +13,7 @@
 // 1. Vue core imports
 
 // 6. Props
-const props = defineProps({
+defineProps({
   position: { type: Number, default: null },
   ahead: { type: Number, default: null },
   estWaitMin: { type: Number, default: null },
@@ -25,21 +25,33 @@ const props = defineProps({
     <!-- Three stat cards -->
     <div class="flex gap-2.5">
       <!-- Position -->
-      <div class="flex flex-1 flex-col items-center rounded-[18px] border border-white bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div
+        class="flex flex-1 flex-col items-center rounded-[18px] border border-white bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      >
         <span class="font-mono text-4xl leading-[45px] text-plum">#{{ position }}</span>
-        <span class="mt-1 font-body text-[10px] font-bold uppercase tracking-tight text-plum-muted">Position</span>
+        <span class="mt-1 font-body text-[10px] font-bold uppercase tracking-tight text-plum-muted"
+          >Position</span
+        >
       </div>
 
       <!-- Ahead -->
-      <div class="flex flex-1 flex-col items-center rounded-[18px] border border-white bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div
+        class="flex flex-1 flex-col items-center rounded-[18px] border border-white bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      >
         <span class="font-mono text-4xl leading-[45px] text-plum">{{ ahead }}</span>
-        <span class="mt-1 font-body text-[10px] font-bold uppercase tracking-tight text-plum-muted">Ahead</span>
+        <span class="mt-1 font-body text-[10px] font-bold uppercase tracking-tight text-plum-muted"
+          >Ahead</span
+        >
       </div>
 
       <!-- Est. Wait -->
-      <div class="flex flex-1 flex-col items-center rounded-[18px] border border-white bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+      <div
+        class="flex flex-1 flex-col items-center rounded-[18px] border border-white bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      >
         <span class="font-mono text-[28px] text-mint">~{{ estWaitMin }}m</span>
-        <span class="mt-1 font-body text-[10px] font-bold uppercase tracking-tight text-plum-muted">Est. Wait</span>
+        <span class="mt-1 font-body text-[10px] font-bold uppercase tracking-tight text-plum-muted"
+          >Est. Wait</span
+        >
       </div>
     </div>
   </div>

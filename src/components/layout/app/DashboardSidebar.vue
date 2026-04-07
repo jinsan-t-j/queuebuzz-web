@@ -41,7 +41,7 @@ const props = defineProps({
   pausedAt: {
     type: [String, Date],
     default: null,
-  }
+  },
 })
 
 const emit = defineEmits(['pause-queue', 'resume-queue', 'terminate-queue'])
@@ -62,7 +62,7 @@ const pausedTimeFormatted = computed(() => {
   const totalSeconds = Math.floor(diffMs / 1000)
   const minutes = Math.floor(totalSeconds / 60)
   const seconds = totalSeconds % 60
-  
+
   return `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`
 })
 
@@ -145,11 +145,7 @@ function isActive(item) {
           :class="isActive(item) ? 'text-plum' : item.indent ? 'text-ash' : 'text-white/60'"
         />
         <span class="flex-1">{{ item.name }}</span>
-        <component
-          v-if="item.badge"
-          :is="item.badge"
-          class="h-4 w-4"
-        />
+        <component :is="item.badge" v-if="item.badge" class="h-4 w-4" />
       </router-link>
     </nav>
 
@@ -160,16 +156,13 @@ function isActive(item) {
       :class="isQueuePaused ? 'border-warning/30' : 'border-white/10'"
     >
       <div class="flex items-center justify-between mb-4">
-        <p 
+        <p
           class="font-body text-[10px] font-bold uppercase tracking-[1px]"
           :class="isQueuePaused ? 'text-warning' : 'text-white/40'"
         >
           Queue {{ isQueuePaused ? 'PAUSED' : 'RUNNING' }}
         </p>
-        <span 
-          v-if="isQueuePaused" 
-          class="font-mono text-xs font-bold text-warning"
-        >
+        <span v-if="isQueuePaused" class="font-mono text-xs font-bold text-warning">
           {{ pausedTimeFormatted }}
         </span>
       </div>
