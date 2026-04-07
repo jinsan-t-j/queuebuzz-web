@@ -16,7 +16,7 @@ jobs:
     outputs:
       node_version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - id: version
         run: |
           if [ -f .nvmrc ]; then
@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Use Node.js
         uses: actions/setup-node@v4
