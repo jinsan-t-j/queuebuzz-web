@@ -18,7 +18,7 @@
     "@fontsource/fraunces": "^5.2.9",
     "@fontsource/geist-mono": "^5.2.7",
     "@tailwindcss/vite": "^4.2.1",
-    "@tanstack/vue-query": "^5.92.9",
+    "@tanstack/vue-query": "^5.96.2",
     "@vee-validate/yup": "^4.15.1",
     "@vueuse/core": "^14.2.1",
     "@vueuse/motion": "^3.0.3",
