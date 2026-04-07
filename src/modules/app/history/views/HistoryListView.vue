@@ -6,6 +6,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHistoryApi } from '../composables/useHistoryApi'
+import { onClickOutside } from '@vueuse/core'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -21,11 +22,6 @@ import {
   Inbox as InboxIcon,
   ArrowRight as ArrowRightIcon,
 } from 'lucide-vue-next'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-} from '@/components/ui/dropdown-menu'
 
 const router = useRouter()
 const { isLoading, fetchQueues } = useHistoryApi()
@@ -38,6 +34,8 @@ const currentPage = ref(1)
 const searchQuery = ref('')
 const activeFilter = ref('all')
 const isExporting = ref(false)
+const isFilterOpen = ref(false)
+const filterDropdownRef = ref(null)
 
 const filters = [
   { value: 'all', label: 'All queues' },
@@ -46,6 +44,10 @@ const filters = [
   { value: 'completed', label: 'Completed' },
   { value: 'terminated', label: 'Terminated' },
 ]
+
+onClickOutside(filterDropdownRef, () => {
+  isFilterOpen.value = false
+})
 
 // Data Fetching
 async function loadData() {
@@ -79,6 +81,7 @@ watch(searchQuery, () => {
 function handleFilterChange(val) {
   activeFilter.value = val
   currentPage.value = 1
+  isFilterOpen.value = false
   loadData()
 }
 
@@ -197,21 +200,33 @@ function getStatusVariant(status) {
         </button>
       </div>
 
-      <div class="flex items-center gap-2 w-full md:w-auto">
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <button
-              class="flex items-center gap-2 h-[48px] px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum transition-colors bg-white w-full md:w-auto justify-between"
-            >
-              <span class="flex items-center gap-2">
-                <FilterIcon class="w-4 h-4 text-plum-muted" />
-                {{ filters.find((f) => f.value === activeFilter)?.label }}
-              </span>
-              <ChevronDownIcon class="w-3 h-3 text-plum-muted" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            class="bg-white rounded-2xl border border-plum-faint shadow-[0_8px_40px_rgba(26,10,46,0.12)] p-1 min-w-[200px]"
+      <div ref="filterDropdownRef" class="flex items-center gap-2 w-full md:w-auto relative">
+        <button
+          class="flex items-center gap-2 h-[48px] px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum transition-colors bg-white w-full md:w-auto justify-between"
+          @click="isFilterOpen = !isFilterOpen"
+        >
+          <span class="flex items-center gap-2">
+            <FilterIcon class="w-4 h-4 text-plum-muted" />
+            {{ filters.find((f) => f.value === activeFilter)?.label }}
+          </span>
+          <ChevronDownIcon
+            class="w-3 h-3 text-plum-muted transition-transform duration-200"
+            :class="{ 'rotate-180': isFilterOpen }"
+          />
+        </button>
+
+        <!-- Custom Dropdown Content -->
+        <transition
+          enter-active-class="transition duration-100 ease-out"
+          enter-from-class="transform scale-95 opacity-0"
+          enter-to-class="transform scale-100 opacity-100"
+          leave-active-class="transition duration-75 ease-in"
+          leave-from-class="transform scale-100 opacity-100"
+          leave-to-class="transform scale-95 opacity-0"
+        >
+          <div
+            v-if="isFilterOpen"
+            class="absolute top-full right-0 mt-2 z-50 bg-white rounded-2xl border border-plum-faint shadow-[0_8px_40px_rgba(26,10,46,0.12)] p-1 min-w-[200px]"
           >
             <button
               v-for="filter in filters"
@@ -228,8 +243,8 @@ function getStatusVariant(status) {
               {{ filter.label }}
               <CheckIcon v-if="activeFilter === filter.value" class="w-4 h-4 text-mint" />
             </button>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </div>
+        </transition>
       </div>
     </div>
 
