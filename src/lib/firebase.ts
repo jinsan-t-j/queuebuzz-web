@@ -1,9 +1,8 @@
 /**
  * @lib firebase
- * @description Standard Firebase initialization for FCM.
+ * @description Lazy Firebase initialization for FCM.
  */
-import { initializeApp } from 'firebase/app'
-import { getMessaging, getToken } from 'firebase/messaging'
+import type { FirebaseApp } from 'firebase/app'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -14,7 +13,18 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
-const app = initializeApp(firebaseConfig)
+let app: FirebaseApp | null = null
+
+/**
+ * Lazily initialize Firebase app — only on first use.
+ */
+async function getApp(): Promise<FirebaseApp> {
+  if (!app) {
+    const { initializeApp } = await import('firebase/app')
+    app = initializeApp(firebaseConfig)
+  }
+  return app
+}
 
 /**
  * Capture FCM Token
@@ -27,7 +37,8 @@ export async function getFCMToken() {
   }
 
   try {
-    const messaging = getMessaging(app)
+    const { getMessaging, getToken } = await import('firebase/messaging')
+    const messaging = getMessaging(await getApp())
 
     // Recovery of current registration token
     // vapidKey is required for Web Push. Replace with your actual key.

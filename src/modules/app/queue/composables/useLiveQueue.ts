@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, onScopeDispose } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
@@ -87,6 +87,10 @@ export function useLiveQueue() {
     }, 300)
     emitSearch?.(val)
   }
+
+  onScopeDispose(() => {
+    if (searchTimeout) clearTimeout(searchTimeout)
+  })
 
   async function handleAddGuestSubmit(values: LiveQueueGuestInput) {
     const success = await store.addQueueEntry(values)

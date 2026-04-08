@@ -1,12 +1,21 @@
 import { ref, onUnmounted } from 'vue'
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
+
+interface QrCodeScanner {
+  start: (
+    cameraIdOrConfig: { facingMode: string },
+    config: { fps: number; qrbox: { width: number; height: number } },
+    onSuccess: (text: string) => void,
+    onFailure: () => void,
+  ) => Promise<void>
+  stop: () => Promise<void>
+}
 
 /**
  * @composable useQrScanner
  * @description Manages the lifecycle of a QR code scanner using html5-qrcode.
  */
 export function useQrScanner() {
-  const scanner = ref<Html5Qrcode | null>(null)
+  const scanner = ref<QrCodeScanner | null>(null)
   const isScanning = ref(false)
   const error = ref<string | null>(null)
 
@@ -23,15 +32,18 @@ export function useQrScanner() {
         await stopScanner()
       }
 
-      scanner.value = new Html5Qrcode(elementId, {
+      const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode')
+
+      const instance = new Html5Qrcode(elementId, {
         formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
         verbose: false,
       })
 
+      scanner.value = instance as unknown as QrCodeScanner
       isScanning.value = true
       error.value = null
 
-      await scanner.value.start(
+      await instance.start(
         { facingMode: 'environment' },
         config,
         (decodedText) => {
@@ -68,7 +80,11 @@ export function useQrScanner() {
 
   onUnmounted(() => {
     stopScanner()
+    window.removeEventListener('pagehide', stopScanner)
   })
+
+  // stop camera when page is hidden/navigated away
+  window.addEventListener('pagehide', stopScanner)
 
   return {
     isScanning,

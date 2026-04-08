@@ -106,7 +106,9 @@ onBeforeMount(async () => {
   }
 
   // 4. Ensure SSE stream is active
-  connectEvents(entry.value.id)
+  if (entry.value?.id) {
+    connectEvents(entry.value.id)
+  }
 })
 
 onUnmounted(() => {
@@ -180,12 +182,12 @@ onUnmounted(() => {
               <h3 class="font-display text-base font-bold text-plum">Settings</h3>
               <span
                 v-if="showEmailHighlight"
-                class="animate-pulse rounded-full bg-mint px-2 py-0.5 font-body text-[10px] font-bold text-plum"
+                class="animate-pulse rounded-full bg-mint px-2 py-0.5 font-body text-sm font-bold text-plum"
               >
                 Recommended
               </span>
             </div>
-            <p class="font-body text-xs text-plum-muted/80">
+            <p class="font-body text-sm text-plum-muted/80">
               Update details or add a recovery email to keep your spot.
             </p>
           </div>

@@ -4,7 +4,7 @@
  * @description Live queue card with search bar, guest entries list,
  * "Call Next Guest" button, and optional "Terminate Queue" button.
  */
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useToast } from '@/composables/useToast'
 import type { QueueEntry } from '../types'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
@@ -14,6 +14,7 @@ import SearchIcon from '@/assets/icons/search.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
 import ShieldCheckIcon from '@/assets/icons/shield-verified.svg?component'
 import CheckIcon from '@/assets/icons/check-circle.svg?component'
+import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 
 // Components
 import EntryDetailsModal from './EntryDetailsModal.vue'
@@ -35,9 +36,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'call-next'): void
   (e: 'search', query: string): void
-  (e: 'terminate'): void
-  (e: 'call', id: string): void
-  (e: 'serve', id: string): void
+  (e: 'call-guest', id: string): void
+  (e: 'serve-guest', id: string): void
 }>()
 
 // 9. Reactive state
@@ -60,6 +60,8 @@ const nextCallDisabled = computed(() => {
   return false
 })
 
+let closeTimer: ReturnType<typeof setTimeout> | null = null
+
 function openDetails(entry: QueueEntry) {
   selectedEntry.value = entry
   isDetailsModalOpen.value = true
@@ -67,10 +69,16 @@ function openDetails(entry: QueueEntry) {
 
 function closeDetails() {
   isDetailsModalOpen.value = false
-  setTimeout(() => {
+  if (closeTimer) clearTimeout(closeTimer)
+  closeTimer = setTimeout(() => {
     selectedEntry.value = null
+    closeTimer = null
   }, 300)
 }
+
+onUnmounted(() => {
+  if (closeTimer) clearTimeout(closeTimer)
+})
 
 // 12. Lifecycle hooks
 onMounted(() => {
@@ -89,31 +97,36 @@ watch(
   },
 )
 
-// Track arrivals and recoveries for the "Pulse" effect
-watch(
-  () => props.activeEntries,
-  (newEntries, oldEntries) => {
-    if (!oldEntries || !newEntries) return
-
-    newEntries.forEach((entry) => {
-      const oldEntry = (oldEntries as QueueEntry[]).find((e) => e.id === entry.id)
-      if (
-        oldEntry &&
-        oldEntry.status === ENTRY_STATUS.IDLE &&
-        entry.status !== ENTRY_STATUS.IDLE &&
-        entry.status !== ENTRY_STATUS.SKIPPED
-      ) {
-        // Just recovered!
-        recoveredIds.value.add(entry.id)
-        showToast(`Guest #${entry.ticketNo} is back in the queue!`, { type: 'success' })
-        setTimeout(() => {
-          recoveredIds.value.delete(entry.id)
-        }, 3000)
-      }
-    })
-  },
-  { deep: true },
+// Track arrivals and recoveries via a lightweight status-key (avoids deep watch)
+const entryStatusKey = computed(() =>
+  (props.activeEntries || []).map((e) => `${e.id}:${e.status}`).join(','),
 )
+
+watch(entryStatusKey, (newKey, oldKey) => {
+  if (!oldKey || !newKey) return
+  const oldMap = new Map(
+    oldKey
+      .split(',')
+      .filter(Boolean)
+      .map((p) => {
+        const [id, s] = p.split(':')
+        return [id, s] as [string, string]
+      }),
+  )
+
+  for (const entry of props.activeEntries || []) {
+    const oldStatus = oldMap.get(entry.id)
+    if (
+      oldStatus === ENTRY_STATUS.IDLE &&
+      entry.status !== ENTRY_STATUS.IDLE &&
+      entry.status !== ENTRY_STATUS.SKIPPED
+    ) {
+      recoveredIds.value.add(entry.id)
+      showToast(`Guest #${entry.ticketNo} is back in the queue!`, { type: 'success' })
+      setTimeout(() => recoveredIds.value.delete(entry.id), 3000)
+    }
+  }
+})
 </script>
 
 <template>
@@ -130,7 +143,7 @@ watch(
           <input
             :value="searchQuery"
             placeholder="Search guests..."
-            class="ml-2 w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum/30 outline-none"
+            class="ml-2 w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted tracking-[2px]"
             @input="emit('search', ($event.target as HTMLInputElement).value)"
           />
         </div>
@@ -146,7 +159,7 @@ watch(
       <!-- Case 1: No entries at all (Truly empty) -->
       <template v-if="totalCount === 0 && !searchQuery">
         <div class="flex flex-col items-center justify-center py-10 opacity-40">
-          <p class="mb-4 font-body text-[10px] font-bold uppercase tracking-[2px] text-plum">
+          <p class="mb-4 font-body text-sm font-bold uppercase tracking-[2px] text-plum">
             Action Center
           </p>
           <ActionCenterIcon class="h-10 w-11" />
@@ -239,7 +252,7 @@ watch(
                   />
                 </BaseTooltip>
               </div>
-              <p class="font-body text-xs text-plum-muted truncate">
+              <p class="font-body text-sm text-plum-muted truncate">
                 <template v-if="showPartySize && entry.partySize > 1">
                   P-{{ entry.partySize }} •
                 </template>
@@ -280,10 +293,10 @@ watch(
 
     <div v-if="servedEntries.length > 0" class="border-t border-plum/5 bg-plum/[0.01]">
       <button
-        class="flex w-full items-center justify-between px-6 py-3 text-plum/40 hover:text-plum/60 transition-colors cursor-pointer"
+        class="flex w-full items-center justify-between px-6 py-3 text-plum-muted transition-colors hover:text-plum/60 cursor-pointer"
         @click="isHistoryExpanded = !isHistoryExpanded"
       >
-        <span class="font-body text-[10px] font-bold uppercase tracking-widest">
+        <span class="font-body text-sm font-bold uppercase tracking-widest">
           Served Today ({{ servedEntries.length }})
         </span>
         <svg
@@ -315,7 +328,7 @@ watch(
         >
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <span
-              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-plum/5 text-plum/30 font-mono text-xs font-bold"
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-plum/5 text-plum/30 font-mono text-sm font-bold"
             >
               <template v-if="entry.servedAt">
                 <CheckIcon class="h-4 w-4" />
@@ -326,7 +339,7 @@ watch(
             </span>
             <div class="flex flex-col min-w-0">
               <p class="font-body text-sm font-bold text-plum truncate">{{ entry.name }}</p>
-              <p v-if="entry.servedAt" class="font-body text-[10px] text-plum-muted">
+              <p v-if="entry.servedAt" class="font-body text-sm text-plum-muted">
                 Served at
                 {{
                   new Date(entry.servedAt).toLocaleTimeString([], {
@@ -358,7 +371,7 @@ watch(
       </button>
       <p
         v-if="activeEntries.length === 0 || isPaused || (strictQueueMode && hasActiveCalledEntry)"
-        class="mt-3 text-center font-body text-[10px] font-bold uppercase tracking-wider text-plum/30"
+        class="mt-3 text-center font-body text-sm font-bold uppercase tracking-wider text-plum/30"
       >
         <template v-if="isPaused">Resume queue to call guests</template>
         <template v-else-if="strictQueueMode && hasActiveCalledEntry">
@@ -378,13 +391,13 @@ watch(
       @close="closeDetails"
       @call="
         (id) => {
-          emit('call', id)
+          emit('call-guest', id)
           closeDetails()
         }
       "
       @serve="
         (id) => {
-          emit('serve', id)
+          emit('serve-guest', id)
           closeDetails()
         }
       "
@@ -394,18 +407,22 @@ watch(
 
 <style scoped>
 @keyframes status-pulse {
-  0%,
-  100% {
-    border-color: rgba(0, 229, 160, 0.3);
-    box-shadow: 0 8px 32px -12px rgba(0, 229, 160, 0.2);
+  0% {
+    transform: scale(1);
+    opacity: 1;
   }
   50% {
-    border-color: rgba(0, 229, 160, 1);
-    box-shadow: 0 8px 32px -8px rgba(0, 229, 160, 0.4);
+    transform: scale(1.02);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
 .animate-status-pulse {
-  animation: status-pulse 2.5s infinite ease-in-out;
+  animation: status-pulse 2s infinite ease-in-out;
+  contain: layout style paint;
 }
 </style>

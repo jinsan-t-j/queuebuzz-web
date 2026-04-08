@@ -50,7 +50,7 @@ onUnmounted(async () => {
     <header class="flex items-center justify-between p-6">
       <div class="flex flex-col gap-1">
         <h2 class="font-display text-xl font-bold text-white">{{ title }}</h2>
-        <p class="font-body text-xs text-plum-muted">{{ subtitle }}</p>
+        <p class="font-body text-sm text-plum-muted">{{ subtitle }}</p>
       </div>
       <button
         class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
@@ -120,7 +120,7 @@ onUnmounted(async () => {
         class="mt-12 flex items-center gap-3 bg-white/5 px-4 py-2.5 rounded-2xl animate-in slide-in-from-bottom-4 duration-500"
       >
         <Sparkles class="w-4 h-4 text-mint" />
-        <span class="font-body text-[13px] font-medium">Scanning automatically...</span>
+        <span class="font-body text-sm font-medium">Scanning automatically...</span>
       </div>
     </div>
   </div>

@@ -32,6 +32,8 @@ import {
 import { useNotificationStore } from './notification.store'
 import { ApiError, getErrorMessage } from '@/utils/api-response'
 
+let visibilityHandler: (() => void) | null = null
+
 export const useQueueStore = defineStore('queue', {
   state: () => ({
     activeQueue: null as QueueRecord | null,
@@ -156,8 +158,16 @@ export const useQueueStore = defineStore('queue', {
     },
 
     async initializeQueueById(id: string) {
-      this.connectToPublicEvents(id)
-      return !!this.activeQueue
+      this.isLoading = true
+      try {
+        // First, get the metadata via REST for faster FCP/LCP
+        await this.fetchQueueById(id)
+        // Then connect to live events
+        this.connectToPublicEvents(id)
+        return !!this.activeQueue
+      } finally {
+        this.isLoading = false
+      }
     },
 
     async revalidate(id: string) {
@@ -294,7 +304,7 @@ export const useQueueStore = defineStore('queue', {
       const notifyStore = useNotificationStore()
 
       // Single Visibility Listener setup for the duration of this queue's monitoring
-      if (!window._q_visibility_handler) {
+      if (!visibilityHandler) {
         const handler = () => {
           const id = this.connectedQueueId
           if (!id) return
@@ -308,7 +318,7 @@ export const useQueueStore = defineStore('queue', {
           }
         }
         document.addEventListener('visibilitychange', handler)
-        window._q_visibility_handler = handler
+        visibilityHandler = handler
       }
 
       this.sseClient = createSseClient({
@@ -420,9 +430,9 @@ export const useQueueStore = defineStore('queue', {
       this.error = null
 
       // Clean up the visibility listener when explicitly stopping all updates
-      if (window._q_visibility_handler) {
-        document.removeEventListener('visibilitychange', window._q_visibility_handler)
-        delete window._q_visibility_handler
+      if (visibilityHandler) {
+        document.removeEventListener('visibilitychange', visibilityHandler)
+        visibilityHandler = null
       }
     },
 
@@ -558,6 +568,6 @@ export const useQueueStore = defineStore('queue', {
     },
   },
   persist: {
-    pick: ['activeQueue', 'entries'],
+    pick: ['activeQueue'],
   },
 })

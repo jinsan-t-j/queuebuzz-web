@@ -27,6 +27,7 @@ const emit = defineEmits(['update:modelValue'])
     :aria-checked="props.modelValue"
     :class="[
       'relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint',
+      'before:content-[\'\'] before:absolute before:-inset-3 before:z-10',
       props.modelValue ? 'bg-mint' : 'bg-plum-faint',
     ]"
     @click="emit('update:modelValue', !props.modelValue)"

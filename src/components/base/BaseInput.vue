@@ -88,7 +88,7 @@ function handleInput(event) {
       ]"
       @input="handleInput"
     />
-    <p v-if="hasError" class="font-body text-xs text-danger">
+    <p v-if="hasError" class="font-body text-sm text-danger">
       {{ error }}
     </p>
   </div>

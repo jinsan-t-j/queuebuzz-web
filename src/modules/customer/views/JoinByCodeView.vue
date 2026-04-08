@@ -5,11 +5,13 @@
  * Supports partial fill, searching, and error states.
  */
 
-import { ref, computed, nextTick, onMounted } from 'vue'
+import { ref, computed, nextTick, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 
-import BaseQrScanner from '@/components/base/BaseQrScanner.vue'
+// Lazy load heavy components
+const BaseQrScanner = defineAsyncComponent(() => import('@/components/base/BaseQrScanner.vue'))
+
 import ArrowRightFilledIcon from '@/assets/icons/arrow-right-filled.svg?component'
 import QrCodeScanIcon from '@/assets/icons/qr-code-scan.svg?component'
 import ErrorCircleOutlineIcon from '@/assets/icons/error-circle-outline.svg?component'
@@ -61,12 +63,15 @@ function handlePaste(e: ClipboardEvent) {
     .toUpperCase()
     .slice(0, 6)
 
-  cleanData.split('').forEach((char, i) => {
-    if (i < 6) codeChars.value[i] = char
-  })
+  if (cleanData.length > 0) {
+    e.preventDefault()
+    cleanData.split('').forEach((char, i) => {
+      if (i < 6) codeChars.value[i] = char
+    })
 
-  const nextFocus = Math.min(cleanData.length, 5)
-  nextTick(() => inputRefs.value[nextFocus]?.focus())
+    const nextFocus = Math.min(cleanData.length, 5)
+    nextTick(() => inputRefs.value[nextFocus]?.focus())
+  }
 }
 
 async function findQueue() {
@@ -134,32 +139,36 @@ function handleQrResult(result: string) {
       </p>
 
       <!-- Code Input Grid -->
-      <div
-        class="mt-12 flex justify-center gap-2.5"
-        :class="{ 'animate-[shake_0.5s_ease-in-out]': isShaking }"
-      >
-        <input
-          v-for="(char, i) in codeChars"
-          :key="i"
-          ref="inputRefs"
-          v-model="codeChars[i]"
-          type="text"
-          maxlength="1"
-          inputmode="text"
-          autocomplete="off"
-          class="h-16 w-12 rounded-2xl border-2 text-center font-mono text-3xl font-bold uppercase outline-none transition-all duration-300"
-          :class="[
-            error && !isShaking
-              ? 'border-danger bg-danger/5 text-danger'
-              : codeChars[i]
-                ? 'border-mint bg-white text-plum shadow-lg shadow-mint/10'
-                : 'border-plum-faint bg-white text-plum',
-          ]"
-          @input="handleInput(i, $event)"
-          @keydown="handleKeydown(i, $event)"
-          @paste.prevent="handlePaste"
-        />
-      </div>
+      <fieldset class="border-none p-0 m-0">
+        <legend class="sr-only">Enter 6-character queue code</legend>
+        <div
+          class="mt-12 flex justify-center gap-3"
+          :class="{ 'animate-[shake_0.5s_ease-in-out]': isShaking }"
+        >
+          <input
+            v-for="(char, i) in codeChars"
+            :key="i"
+            ref="inputRefs"
+            v-model="codeChars[i]"
+            type="text"
+            maxlength="1"
+            inputmode="text"
+            autocomplete="one-time-code"
+            :aria-label="`Code character ${i + 1}`"
+            class="h-16 w-14 rounded-2xl border-2 text-center font-mono text-3xl font-bold uppercase outline-none transition-all duration-300"
+            :class="[
+              error && !isShaking
+                ? 'border-danger bg-danger/5 text-danger'
+                : codeChars[i]
+                  ? 'border-mint bg-white text-plum shadow-lg shadow-mint/10'
+                  : 'border-plum-faint bg-white text-plum',
+            ]"
+            @input="handleInput(i, $event)"
+            @keydown="handleKeydown(i, $event)"
+            @paste="handlePaste"
+          />
+        </div>
+      </fieldset>
 
       <!-- Status Messages -->
       <div class="mt-6 min-h-[24px]">
@@ -168,12 +177,9 @@ function handleQrResult(result: string) {
           class="flex items-center gap-2 text-danger animate-in fade-in slide-in-from-top-1"
         >
           <ErrorCircleOutlineIcon class="h-4 w-4" />
-          <span class="font-body text-xs font-semibold uppercase tracking-wider">Invalid Code</span>
+          <span class="font-body text-sm font-semibold uppercase tracking-wider">Invalid Code</span>
         </div>
-        <p
-          v-else
-          class="font-body text-[11px] font-semibold text-plum-muted uppercase tracking-[0.2em] opacity-40"
-        >
+        <p v-else class="font-body text-sm font-semibold text-plum-soft uppercase tracking-[0.2em]">
           Not case sensitive
         </p>
       </div>
@@ -185,10 +191,10 @@ function handleQrResult(result: string) {
           class="relative flex h-[64px] w-full items-center justify-center gap-3 overflow-hidden rounded-3xl font-display text-lg font-bold transition-all duration-500"
           :class="[
             isLoading
-              ? 'bg-plum-faint text-plum/30'
+              ? 'bg-plum-faint text-plum-soft'
               : isFilled
                 ? 'bg-mint text-plum shadow-[0_16px_32px_-8px_rgba(0,229,160,0.5)] hover:shadow-[0_20px_40px_-8px_rgba(0,229,160,0.6)] transform hover:-translate-y-1'
-                : 'bg-plum/5 text-plum/20 cursor-not-allowed',
+                : 'bg-plum/5 text-plum-muted cursor-not-allowed',
           ]"
           @click="findQueue"
         >
@@ -203,7 +209,7 @@ function handleQrResult(result: string) {
         </button>
 
         <button
-          class="flex h-16 w-full items-center justify-center gap-2.5 rounded-3xl border-2 border-dashed border-plum-faint font-body text-sm font-bold text-plum/60 hover:bg-white hover:border-plum/20 transition-all duration-300"
+          class="flex h-16 w-full items-center justify-center gap-2.5 rounded-3xl border-2 border-dashed border-plum-faint font-body text-sm font-bold text-plum transition-all duration-300"
           @click="showScanner = true"
         >
           <QrCodeScanIcon class="h-5 w-5" />
@@ -212,7 +218,7 @@ function handleQrResult(result: string) {
       </div>
 
       <button
-        class="mt-12 font-body text-xs font-bold text-plum-faint uppercase tracking-[0.25em] hover:text-plum transition-colors"
+        class="mt-12 font-body text-sm font-bold text-plum uppercase tracking-[0.25em] hover:text-plum-soft transition-colors py-4 px-8 min-h-[48px]"
         @click="router.back()"
       >
         Go Back

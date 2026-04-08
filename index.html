@@ -5,20 +5,39 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self';
-        style-src 'self' 'unsafe-inline';
-        font-src 'self';
-        connect-src 'self' http://localhost:4000 ws: wss:;
-        img-src 'self' data: blob:;
-      " />
-  <title>QueueBuzz — feels like a breeze</title>
-</head>
+  <meta name="description" content="QueueBuzz — The fastest virtual queue management for modern businesses. No app download, no sign-up for customers. Just scan and join." />
+  <meta name="theme-color" content="#1A0A2E" />
+  <link rel="manifest" href="/manifest.json" />
 
-<body>
+  <!-- iOS PWA Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="QueueBuzz" />
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://queuebuzz.com/" />
+  <meta property="og:title" content="QueueBuzz — Virtual Queues for Physical Spaces" />
+  <meta property="og:description" content="Skip the wait with virtual queuing. Simple for businesses, seamless for customers." />
+  <meta property="og:image" content="https://queuebuzz.com/og-image.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://queuebuzz.com/" />
+  <meta property="twitter:title" content="QueueBuzz — Virtual Queues for Physical Spaces" />
+  <meta property="twitter:description" content="Skip the wait with virtual queuing. Simple for businesses, seamless for customers." />
+  <meta property="twitter:image" content="https://queuebuzz.com/og-image.png" />
+
+  <title>QueueBuzz — feels like a breeze</title>
+  <style>
+    body { background-color: #F7F3EE; margin: 0; min-height: 100vh; font-family: sans-serif; }
+    #app { min-height: 100vh; }
+  </style>
+</head>
+<body class="antialiased">
   <div id="app"></div>
-  <script type="module" src="/src/main.js"></script>
+  <script type="module" src="/src/main.ts"></script>
 </body>
 
 </html>

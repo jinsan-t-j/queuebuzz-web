@@ -31,13 +31,15 @@ const tabs = [
 const processedData = computed(() => {
   if (!props.data || !props.data.length) return []
   const isServed = activeTab.value === 'served'
-  
-  const values = props.data.map((d) => isServed ? (d.value || 0) : (d.avgWait ? parseInt(d.avgWait) : 0))
+
+  const values = props.data.map((d) =>
+    isServed ? d.value || 0 : d.avgWait ? parseInt(d.avgWait) : 0,
+  )
   const maxValue = Math.max(...values, 1)
 
   return props.data.map((d, i) => ({
     ...d,
-    barHeight: d.isFuture ? '20%' : `${(values[i] / maxValue) * 100}%`
+    barHeight: d.isFuture ? '20%' : `${(values[i] / maxValue) * 100}%`,
   }))
 })
 </script>
@@ -47,7 +49,7 @@ const processedData = computed(() => {
     class="rounded-[14px] border border-ash-border bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
   >
     <!-- Header -->
-    <div class="flex items-center justify-between">
+    <div v-once class="flex items-center justify-between">
       <h3 class="font-display text-base font-bold text-plum">This Week</h3>
       <!-- Tab switcher -->
       <div class="flex gap-1 rounded-lg bg-plum-faint/50 p-0.5">
@@ -55,7 +57,7 @@ const processedData = computed(() => {
           v-for="tab in tabs"
           :key="tab.key"
           :class="[
-            'rounded-md px-3 py-1 font-body text-xs font-medium transition-colors',
+            'rounded-md px-4 py-2 font-body text-sm font-medium transition-colors min-h-[40px] md:min-h-[36px]',
             activeTab === tab.key
               ? 'bg-white text-plum shadow-xs'
               : 'text-plum-muted hover:text-plum',
@@ -68,21 +70,13 @@ const processedData = computed(() => {
     </div>
 
     <!-- Empty state -->
-    <div
-      v-if="!hasData"
-      class="flex flex-col items-center justify-center py-12 gap-3"
-    >
-      <div
-        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint"
-      >
+    <div v-if="!hasData" v-once class="flex flex-col items-center justify-center py-12 gap-3">
+      <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <BarChartEmptyIcon class="h-5 w-5 text-plum-muted" />
       </div>
       <p class="font-display text-base font-semibold text-plum">No data yet</p>
-      <p
-        class="max-w-[225px] text-center font-body text-sm text-plum-muted leading-5"
-      >
-        We'll chart your weekly traffic here once your first queue becomes
-        active.
+      <p class="max-w-[225px] text-center font-body text-sm text-plum-muted leading-5">
+        We'll chart your weekly traffic here once your first queue becomes active.
       </p>
     </div>
 
@@ -93,6 +87,7 @@ const processedData = computed(() => {
         <div
           v-for="item in processedData"
           :key="item.day"
+          v-memo="[item.day, item.barHeight, item.isToday]"
           class="flex flex-1 flex-col items-center gap-2 h-full"
         >
           <div class="relative w-full flex justify-center h-full items-end">
@@ -116,7 +111,7 @@ const processedData = computed(() => {
         <span
           v-for="item in processedData"
           :key="item.day"
-          class="flex-1 text-center font-mono text-[10px] uppercase text-plum-muted"
+          class="flex-1 text-center font-mono text-sm uppercase text-plum-muted"
         >
           {{ item.day }}
         </span>

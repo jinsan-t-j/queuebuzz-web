@@ -33,9 +33,7 @@ defineProps({
 </script>
 
 <template>
-  <div
-    class="rounded-xl border border-plum-faint bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-  >
+  <div class="rounded-xl border border-plum-faint bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <!-- Loading skeleton -->
     <template v-if="isLoading">
       <div class="h-3 w-20 rounded bg-plum-faint animate-pulse" />
@@ -44,9 +42,7 @@ defineProps({
 
     <!-- Content -->
     <template v-else>
-      <p
-        class="font-body text-xs font-semibold uppercase tracking-[0.6px] text-plum-muted"
-      >
+      <p class="font-body text-sm font-semibold uppercase tracking-[0.6px] text-plum-muted">
         {{ label }}
       </p>
       <p

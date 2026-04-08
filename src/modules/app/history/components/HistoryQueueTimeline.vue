@@ -43,13 +43,13 @@ function dotColor(type) {
 
           <!-- Content -->
           <div class="flex flex-col">
-            <span class="font-mono text-xs text-plum/40">
+            <span class="font-mono text-sm text-plum/40">
               {{ event.time }}
             </span>
             <span class="font-body text-sm font-bold text-plum">
               {{ event.label }}
             </span>
-            <span v-if="event.sub" class="font-body text-xs text-plum-muted">
+            <span v-if="event.sub" class="font-body text-sm text-plum-muted">
               {{ event.sub }}
             </span>
           </div>

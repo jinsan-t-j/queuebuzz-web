@@ -51,7 +51,7 @@ const chartPlot = computed(() => {
 
   const dots = props.chartData.map((d, i) => ({
     x: padding + i * stepX,
-    y: height - padding - ((d.rate / maxRate) * (height - padding * 2)),
+    y: height - padding - (d.rate / maxRate) * (height - padding * 2),
     rate: d.rate,
   }))
 
@@ -75,23 +75,14 @@ const dayLabels = computed(() => {
 </script>
 
 <template>
-  <div
-    class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-  >
+  <div class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <!-- Empty state -->
-    <div
-      v-if="!hasData"
-      class="flex flex-col items-center justify-center py-16 gap-3"
-    >
-      <div
-        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint"
-      >
+    <div v-if="!hasData" class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <MountainEmptyIcon class="h-5 w-5 text-plum-muted" />
       </div>
       <p class="font-display text-base font-semibold text-plum">No data yet</p>
-      <p
-        class="max-w-[240px] text-center font-body text-sm text-plum-muted leading-5"
-      >
+      <p class="max-w-[240px] text-center font-body text-sm text-plum-muted leading-5">
         We will show an analysis of the same customers returning to your queues.
       </p>
     </div>
@@ -100,18 +91,16 @@ const dayLabels = computed(() => {
     <template v-else>
       <!-- Day vs Return Rate -->
       <div class="flex items-center justify-between pb-2 mb-2">
-        <h4
-          class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted"
-        >
+        <h4 class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted">
           Day vs. Return Rate
         </h4>
-        
+
         <div class="flex gap-1 rounded-lg bg-plum-faint/50 p-0.5">
           <button
             v-for="tab in timeframes"
             :key="tab.key"
             :class="[
-              'rounded-md px-3 py-1 font-body text-xs font-medium transition-colors',
+              'rounded-md px-3 py-1 font-body text-sm font-medium transition-colors',
               activeTimeframe === tab.key
                 ? 'bg-white text-plum shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
                 : 'text-plum-muted hover:text-plum',
@@ -124,11 +113,7 @@ const dayLabels = computed(() => {
       </div>
 
       <div class="mt-4">
-        <svg
-          viewBox="0 0 440 120"
-          class="w-full h-auto"
-          preserveAspectRatio="xMidYMid meet"
-        >
+        <svg viewBox="0 0 440 120" class="w-full h-auto" preserveAspectRatio="xMidYMid meet">
           <path
             :d="chartPlot.path"
             fill="none"
@@ -153,7 +138,7 @@ const dayLabels = computed(() => {
           <span
             v-for="label in dayLabels"
             :key="label"
-            class="font-mono text-[10px] uppercase text-plum-muted"
+            class="font-mono text-sm uppercase text-plum-muted"
           >
             {{ label }}
           </span>
@@ -164,19 +149,13 @@ const dayLabels = computed(() => {
       <div class="my-6 border-t border-plum-faint" />
 
       <!-- Queues vs Return Rate -->
-      <h4
-        class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted"
-      >
+      <h4 class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted">
         Queues vs. Return Rate
       </h4>
 
       <div class="mt-4 flex flex-col gap-3">
-        <div
-          v-for="item in byQueue"
-          :key="item.label"
-          class="flex items-center gap-3"
-        >
-          <span class="w-14 shrink-0 font-mono text-[10px] text-plum-muted">
+        <div v-for="item in byQueue" :key="item.label" class="flex items-center gap-3">
+          <span class="w-14 shrink-0 font-mono text-sm text-plum-muted">
             {{ item.label }}
           </span>
           <div class="flex-1 h-4 rounded-full bg-plum-faint/50 overflow-hidden">
@@ -185,7 +164,7 @@ const dayLabels = computed(() => {
               :style="{ width: `${item.rate}%` }"
             />
           </div>
-          <span class="w-8 text-right font-mono text-[10px] font-bold text-plum">
+          <span class="w-8 text-right font-mono text-sm font-bold text-plum">
             {{ item.rate }}%
           </span>
         </div>

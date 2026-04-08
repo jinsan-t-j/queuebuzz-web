@@ -51,7 +51,7 @@ const variantClasses = computed(() => {
 <template>
   <span
     :class="[
-      'inline-flex items-center rounded-pill px-2.5 py-0.5 font-body text-xs font-semibold',
+      'inline-flex items-center rounded-pill px-2.5 py-0.5 font-body text-sm font-semibold',
       variantClasses,
     ]"
   >

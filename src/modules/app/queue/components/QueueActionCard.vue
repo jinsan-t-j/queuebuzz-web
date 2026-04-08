@@ -51,7 +51,7 @@ function handleTerminateClick() {
             class="h-5 w-5 text-plum group-hover:text-white transition-colors group-disabled:group-hover:text-plum"
           />
         </div>
-        <span class="font-body text-xs font-bold text-plum">Add Guest</span>
+        <span class="font-body text-sm font-bold text-plum">Add Guest</span>
       </button>
 
       <button
@@ -66,7 +66,7 @@ function handleTerminateClick() {
             <PauseCircleIcon class="h-5 w-5 text-plum group-hover:text-white transition-colors" />
           </template>
         </div>
-        <span class="font-body text-xs font-bold text-plum">{{
+        <span class="font-body text-sm font-bold text-plum">{{
           isPaused ? 'Resume' : 'Pause'
         }}</span>
       </button>
@@ -78,7 +78,7 @@ function handleTerminateClick() {
         <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-plum transition-colors">
           <navSettingsIcon class="h-4 w-4 text-plum group-hover:text-white transition-colors" />
         </div>
-        <span class="font-body text-xs font-bold text-plum">Settings</span>
+        <span class="font-body text-sm font-bold text-plum">Settings</span>
       </button>
 
       <button
@@ -88,7 +88,7 @@ function handleTerminateClick() {
         <div class="rounded-full bg-white p-2 shadow-sm group-hover:bg-danger transition-colors">
           <CloseCircleIcon class="h-4 w-4 text-danger group-hover:text-white transition-colors" />
         </div>
-        <span class="font-body text-xs font-bold text-danger">Terminate</span>
+        <span class="font-body text-sm font-bold text-danger">Terminate</span>
       </button>
     </div>
   </div>

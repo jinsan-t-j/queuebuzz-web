@@ -201,7 +201,7 @@ function discardChanges() {
             </template>
             <template v-else>
               <CameraUploadIcon class="h-5 w-[22px] text-ash" />
-              <span class="mt-1 font-body text-[10px] text-ash">Upload</span>
+              <span class="mt-1 font-body text-sm text-ash">Upload</span>
             </template>
           </button>
 
@@ -215,7 +215,7 @@ function discardChanges() {
 
           <div>
             <p class="font-body text-sm font-bold text-plum">Avatar Image</p>
-            <p class="font-body text-xs text-ash">JPG, PNG or GIF. Max size 2MB.</p>
+            <p class="font-body text-sm text-ash">JPG, PNG or GIF. Max size 2MB.</p>
           </div>
         </div>
 
@@ -224,7 +224,7 @@ function discardChanges() {
           <!-- Full Name -->
           <div>
             <label
-              class="mb-2 block font-body text-xs font-bold uppercase tracking-[0.6px] text-[#64748b]"
+              class="mb-2 block font-body text-sm font-bold uppercase tracking-[0.6px] text-[#64748b]"
             >
               Full Name
             </label>
@@ -234,7 +234,7 @@ function discardChanges() {
               class="w-full rounded-[14px] border px-[18px] py-3 font-body text-base text-plum placeholder:text-ash outline-none transition-colors focus:border-plum"
               :class="errors.fullName ? 'border-red-500' : 'border-plum-faint'"
             />
-            <span v-if="errors.fullName" class="text-xs text-red-500 font-body">{{
+            <span v-if="errors.fullName" class="text-sm text-red-500 font-body">{{
               errors.fullName
             }}</span>
           </div>
@@ -242,7 +242,7 @@ function discardChanges() {
           <!-- Public URL -->
           <div>
             <label
-              class="mb-2 block font-body text-xs font-bold uppercase tracking-[0.6px] text-[#64748b]"
+              class="mb-2 block font-body text-sm font-bold uppercase tracking-[0.6px] text-[#64748b]"
             >
               Public URL
             </label>
@@ -250,7 +250,7 @@ function discardChanges() {
               class="flex overflow-hidden rounded-[14px] border transition-colors focus-within:border-plum"
               :class="errors.publicUrl ? 'border-red-500' : 'border-plum-faint'"
             >
-              <span class="flex items-center bg-transparent pl-3 font-mono text-xs text-[#64748b]"
+              <span class="flex items-center bg-transparent pl-3 font-mono text-sm text-[#64748b]"
                 >queuebuzz.com/</span
               >
               <input
@@ -259,7 +259,7 @@ function discardChanges() {
                 class="w-full border-none py-3 pr-[18px] font-body text-base text-plum placeholder:text-ash outline-none"
               />
             </div>
-            <span v-if="errors.publicUrl" class="text-xs text-red-500 font-body">{{
+            <span v-if="errors.publicUrl" class="text-sm text-red-500 font-body">{{
               errors.publicUrl
             }}</span>
           </div>
@@ -267,7 +267,7 @@ function discardChanges() {
           <!-- Email Address -->
           <div>
             <label
-              class="mb-2 block font-body text-xs font-bold uppercase tracking-[0.6px] text-[#64748b]"
+              class="mb-2 block font-body text-sm font-bold uppercase tracking-[0.6px] text-[#64748b]"
             >
               Email Address
             </label>
@@ -293,10 +293,10 @@ function discardChanges() {
                 class="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1"
               >
                 <VerifiedCheckIcon class="h-3 w-[13px] text-[#4ade80]" />
-                <span class="font-body text-[10px] font-bold text-[#4ade80]">VERIFIED</span>
+                <span class="font-body text-sm font-bold text-[#4ade80]">VERIFIED</span>
               </div>
             </div>
-            <span v-if="errors.email" class="text-xs text-red-500 font-body">{{
+            <span v-if="errors.email" class="text-sm text-red-500 font-body">{{
               errors.email
             }}</span>
           </div>
@@ -304,7 +304,7 @@ function discardChanges() {
           <!-- Phone Number -->
           <div>
             <label
-              class="mb-2 block font-body text-xs font-bold uppercase tracking-[0.6px] text-[#64748b]"
+              class="mb-2 block font-body text-sm font-bold uppercase tracking-[0.6px] text-[#64748b]"
             >
               Phone Number
             </label>
@@ -327,7 +327,7 @@ function discardChanges() {
           <!-- Default Queue Name -->
           <div>
             <label
-              class="mb-2 block font-body text-xs font-bold uppercase tracking-[0.6px] text-[#64748b]"
+              class="mb-2 block font-body text-sm font-bold uppercase tracking-[0.6px] text-[#64748b]"
             >
               Default Queue Name
             </label>
@@ -337,7 +337,7 @@ function discardChanges() {
               class="w-full rounded-[14px] border px-[18px] py-3 font-body text-base text-plum placeholder:text-ash outline-none transition-colors focus:border-plum"
               :class="errors.defaultQueueName ? 'border-red-500' : 'border-plum-faint'"
             />
-            <span v-if="errors.defaultQueueName" class="text-xs text-red-500 font-body">{{
+            <span v-if="errors.defaultQueueName" class="text-sm text-red-500 font-body">{{
               errors.defaultQueueName
             }}</span>
           </div>
@@ -345,7 +345,7 @@ function discardChanges() {
           <!-- Estimated Service Time -->
           <div>
             <div class="mb-4 flex items-center justify-between">
-              <label class="font-body text-xs font-bold uppercase tracking-[0.6px] text-[#64748b]">
+              <label class="font-body text-sm font-bold uppercase tracking-[0.6px] text-[#64748b]">
                 Estimated Service Time
               </label>
               <span class="font-mono text-base font-bold text-[#6b21a8]"
@@ -364,7 +364,7 @@ function discardChanges() {
           <!-- Idle Timeout -->
           <div>
             <label
-              class="mb-4 block font-body text-xs font-bold uppercase tracking-[0.6px] text-[#64748b]"
+              class="mb-4 block font-body text-sm font-bold uppercase tracking-[0.6px] text-[#64748b]"
             >
               Idle Timeout
             </label>
@@ -373,7 +373,7 @@ function discardChanges() {
                 v-for="option in idleTimeoutOptions"
                 :key="option"
                 type="button"
-                class="rounded-full px-4 py-2 font-body text-xs font-bold transition-colors"
+                class="rounded-full px-4 py-2 font-body text-sm font-bold transition-colors"
                 :class="
                   idleTimeout === option
                     ? 'bg-plum text-white shadow-sm'
@@ -389,7 +389,7 @@ function discardChanges() {
           <!-- Grace Period -->
           <div>
             <label
-              class="mb-4 block font-body text-xs font-bold uppercase tracking-[0.6px] text-[#64748b]"
+              class="mb-4 block font-body text-sm font-bold uppercase tracking-[0.6px] text-[#64748b]"
             >
               Grace Period
             </label>
@@ -398,7 +398,7 @@ function discardChanges() {
                 v-for="option in gracePeriodOptions"
                 :key="option"
                 type="button"
-                class="rounded-full px-4 py-2 font-body text-xs font-bold transition-colors"
+                class="rounded-full px-4 py-2 font-body text-sm font-bold transition-colors"
                 :class="
                   gracePeriod === option
                     ? 'bg-mint text-white shadow-sm'
@@ -468,7 +468,7 @@ function discardChanges() {
       >
         <div class="mb-2 flex justify-end">
           <span
-            class="rounded-sm bg-[#6b21a8] px-2 py-0.5 font-body text-[10px] font-black tracking-tight text-white"
+            class="rounded-sm bg-[#6b21a8] px-2 py-0.5 font-body text-sm font-black tracking-tight text-white"
             >PRO</span
           >
         </div>
@@ -500,7 +500,7 @@ function discardChanges() {
         <div class="flex flex-col gap-8">
           <div>
             <label
-              class="mb-4 block font-body text-xs font-bold uppercase tracking-[0.6px] text-[#64748b]"
+              class="mb-4 block font-body text-sm font-bold uppercase tracking-[0.6px] text-[#64748b]"
             >
               Data Retention
             </label>
@@ -509,7 +509,7 @@ function discardChanges() {
                 v-for="option in dataRetentionOptions"
                 :key="option"
                 type="button"
-                class="rounded-full px-4 py-2 font-body text-xs font-bold transition-colors"
+                class="rounded-full px-4 py-2 font-body text-sm font-bold transition-colors"
                 :class="
                   dataRetention === option
                     ? 'border border-[#6b21a8] text-[#6b21a8] bg-[#6b21a8]/5'

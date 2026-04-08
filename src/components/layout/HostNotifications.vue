@@ -55,7 +55,7 @@ const iconColors = {
             <h4 class="font-display text-sm font-bold leading-tight">
               {{ n.title }}
             </h4>
-            <p class="mt-1 font-body text-xs font-medium opacity-70 leading-relaxed">
+            <p class="mt-1 font-body text-sm font-medium opacity-70 leading-relaxed">
               {{ n.message }}
             </p>
           </div>

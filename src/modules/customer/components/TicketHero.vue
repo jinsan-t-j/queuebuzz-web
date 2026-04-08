@@ -58,7 +58,7 @@ onMounted(async () => {
     <div class="flex">
       <!-- Left: Ticket info -->
       <div class="flex w-[40%] flex-col justify-center">
-        <p class="font-body text-xs font-semibold uppercase tracking-[2.4px] text-plum-muted">
+        <p class="font-body text-sm font-semibold uppercase tracking-[2.4px] text-plum-muted">
           Your Ticket
         </p>
         <p class="mt-1 font-mono text-5xl font-bold leading-tight text-mint">
@@ -95,9 +95,7 @@ onMounted(async () => {
           >
             <Download class="h-5 w-5 text-plum" />
           </div>
-          <span
-            class="font-body text-[10px] font-bold uppercase tracking-widest text-plum shadow-sm"
-          >
+          <span class="font-body text-sm font-bold uppercase tracking-widest text-plum shadow-sm">
             Save Ticket
           </span>
         </div>
@@ -107,7 +105,7 @@ onMounted(async () => {
           class="mt-1 flex items-center gap-1 opacity-40 group-hover:opacity-0 transition-opacity lg:hidden"
         >
           <Download class="h-2.5 w-2.5 text-plum" />
-          <span class="font-body text-[10px] font-bold uppercase tracking-wider text-plum">
+          <span class="font-body text-sm font-bold uppercase tracking-wider text-plum">
             Tap to Save
           </span>
         </div>

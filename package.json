@@ -10,18 +10,17 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
+    "lighthouse": "npm run build && lhci autorun",
     "prepare": "husky"
   },
   "dependencies": {
     "@fontsource-variable/comfortaa": "^5.2.8",
     "@fontsource/dm-sans": "^5.2.8",
-    "@fontsource/fraunces": "^5.2.9",
     "@fontsource/geist-mono": "^5.2.7",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/vue-query": "^5.96.2",
     "@vee-validate/yup": "^4.15.1",
     "@vueuse/core": "^14.2.1",
-    "@vueuse/motion": "^3.0.3",
     "axios": "^1.14.0",
     "date-fns": "^4.1.0",
     "dompurify": "^3.3.3",
@@ -40,6 +39,8 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@emnapi/core": "1.9.2",
+    "@emnapi/runtime": "1.9.2",
     "@eslint/js": "^10.0.1",
     "@lhci/cli": "^0.15.1",
     "@types/node": "^25.5.2",

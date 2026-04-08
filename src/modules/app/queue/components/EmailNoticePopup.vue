@@ -71,7 +71,7 @@ function handleSubmit() {
             <h3 class="font-display text-base font-bold text-plum leading-tight">
               Save your queue
             </h3>
-            <p class="font-body text-[11px] text-plum-muted mt-0.5">
+            <p class="font-body text-sm text-plum-muted mt-0.5">
               Recovery email needed to resume later.
             </p>
           </div>
@@ -96,7 +96,7 @@ function handleSubmit() {
 
           <p
             v-if="error"
-            class="font-body text-[10px] font-bold text-danger uppercase tracking-wider animate-in fade-in slide-in-from-top-1"
+            class="font-body text-sm font-bold text-danger uppercase tracking-wider animate-in fade-in slide-in-from-top-1"
           >
             {{ error }}
           </p>
@@ -109,7 +109,7 @@ function handleSubmit() {
           >
             <div class="flex items-center justify-center gap-2">
               <SpinnerLoadingIcon v-if="isLoading" class="h-4 w-4 animate-spin" />
-              <span class="font-bold uppercase tracking-[1px] text-xs">Secure Access</span>
+              <span class="font-bold uppercase tracking-[1px] text-sm">Secure Access</span>
             </div>
           </BaseButton>
 
@@ -129,7 +129,7 @@ function handleSubmit() {
               <VerifiedCheckIcon v-if="doNotShowAgain" class="h-2.5 w-2.5" />
             </div>
             <span
-              class="font-body text-[10px] text-plum-muted group-hover/check:text-plum transition-colors"
+              class="font-body text-sm text-plum-muted group-hover/check:text-plum transition-colors"
             >
               Don't show this notification again
             </span>

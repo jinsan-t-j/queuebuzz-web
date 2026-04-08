@@ -34,8 +34,13 @@ function handleToggleMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
 
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 10
+let rafId = null
+function handleScroll() {
+  if (rafId) return
+  rafId = requestAnimationFrame(() => {
+    isScrolled.value = window.scrollY > 10
+    rafId = null
+  })
 }
 
 // 12. Lifecycle hooks
@@ -45,6 +50,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  if (rafId) cancelAnimationFrame(rafId)
 })
 </script>
 
@@ -58,38 +64,42 @@ onUnmounted(() => {
     ]"
   >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-      <router-link to="/" class="font-display text-2xl font-bold text-plum">
+      <router-link to="/" class="font-display text-2xl font-bold text-plum py-4 px-2">
         QueueBuzz
       </router-link>
 
       <div class="hidden items-center gap-8 md:flex">
         <router-link
           to="/pricing"
-          class="font-body text-sm font-medium text-plum-muted transition-colors hover:text-plum"
+          class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
         >
           Pricing
         </router-link>
         <router-link
           to="/support"
-          class="font-body text-sm font-medium text-plum-muted transition-colors hover:text-plum"
+          class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
         >
           Support
         </router-link>
         <router-link
           to="/login"
-          class="font-body text-sm font-medium text-plum-muted transition-colors hover:text-plum"
+          class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
         >
           Sign In
         </router-link>
         <router-link
           to="/login"
-          class="rounded-pill bg-mint px-5 py-2.5 font-body text-sm font-semibold text-plum transition-colors hover:bg-mint-dark"
+          class="rounded-pill bg-mint px-5 py-3.5 font-body text-sm font-semibold text-plum transition-colors hover:bg-mint-dark min-h-[48px] inline-flex items-center"
         >
           Get Started Free
         </router-link>
       </div>
 
-      <button class="md:hidden" aria-label="Toggle menu" @click="handleToggleMenu">
+      <button
+        class="md:hidden flex items-center justify-center min-h-12 min-w-12"
+        aria-label="Toggle menu"
+        @click="handleToggleMenu"
+      >
         <component :is="isMobileMenuOpen ? X : Menu" class="h-6 w-6 text-plum" />
       </button>
     </nav>
@@ -98,28 +108,28 @@ onUnmounted(() => {
       <div class="flex flex-col gap-4">
         <router-link
           to="/pricing"
-          class="font-body text-sm font-medium text-plum-muted"
+          class="font-body text-sm font-medium text-plum-soft py-4 px-2"
           @click="isMobileMenuOpen = false"
         >
           Pricing
         </router-link>
         <router-link
           to="/support"
-          class="font-body text-sm font-medium text-plum-muted"
+          class="font-body text-sm font-medium text-plum-soft py-4 px-2"
           @click="isMobileMenuOpen = false"
         >
           Support
         </router-link>
         <router-link
           to="/login"
-          class="font-body text-sm font-medium text-plum-muted"
+          class="font-body text-sm font-medium text-plum-soft py-4 px-2"
           @click="isMobileMenuOpen = false"
         >
           Sign In
         </router-link>
         <router-link
           to="/login"
-          class="rounded-pill bg-mint px-5 py-2.5 text-center font-body text-sm font-semibold text-plum"
+          class="rounded-pill bg-mint px-5 py-3.5 text-center font-body text-sm font-semibold text-plum min-h-[48px] flex items-center justify-center"
           @click="isMobileMenuOpen = false"
         >
           Get Started Free

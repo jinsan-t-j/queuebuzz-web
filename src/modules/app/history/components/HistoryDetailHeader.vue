@@ -61,7 +61,7 @@ const emit = defineEmits(['go-back', 'export-csv', 'export-pdf'])
             {{ queueName }}
           </h1>
           <span
-            class="rounded-md bg-plum px-3 py-1 font-body text-xs font-bold uppercase tracking-[1.2px] text-white"
+            class="rounded-md bg-plum px-3 py-1 font-body text-sm font-bold uppercase tracking-[1.2px] text-white"
           >
             {{ status }}
           </span>
@@ -88,14 +88,8 @@ const emit = defineEmits(['go-back', 'export-csv', 'export-pdf'])
           class="inline-flex items-center gap-1.5 rounded-lg border border-plum/10 bg-transparent px-3 py-2 font-body text-sm font-bold text-plum transition-colors hover:border-plum disabled:opacity-50"
           @click="emit('export-csv')"
         >
-          <Loader2
-            v-if="isExportingCsv"
-            class="h-3 w-3 animate-spin"
-          />
-          <DownloadArrowIcon
-            v-else
-            class="h-3 w-3"
-          />
+          <Loader2 v-if="isExportingCsv" class="h-3 w-3 animate-spin" />
+          <DownloadArrowIcon v-else class="h-3 w-3" />
           CSV
         </button>
         <button
@@ -103,14 +97,8 @@ const emit = defineEmits(['go-back', 'export-csv', 'export-pdf'])
           class="inline-flex items-center gap-1.5 rounded-lg border border-plum/10 bg-transparent px-3 py-2 font-body text-sm font-bold text-plum transition-colors hover:border-plum disabled:opacity-50"
           @click="emit('export-pdf')"
         >
-          <Loader2
-            v-if="isExportingPdf"
-            class="h-3 w-3 animate-spin"
-          />
-          <DownloadArrowIcon
-            v-else
-            class="h-3 w-3"
-          />
+          <Loader2 v-if="isExportingPdf" class="h-3 w-3 animate-spin" />
+          <DownloadArrowIcon v-else class="h-3 w-3" />
           PDF
         </button>
       </div>

@@ -48,7 +48,7 @@ defineEmits(['go-to-queue', 'start-queue'])
   >
     <div class="flex items-center gap-4">
       <!-- Pulsing dot -->
-      <span :class="['relative flex h-3 w-3']">
+      <span :class="['relative flex h-3 w-3']" style="contain: paint">
         <span
           v-if="isActive"
           class="absolute inline-flex h-full w-full animate-ping rounded-full bg-mint opacity-75"
@@ -65,7 +65,7 @@ defineEmits(['go-to-queue', 'start-queue'])
         <p class="font-body text-sm text-plum">
           {{ isActive ? `${queueName} is live` : 'No queue running' }}
         </p>
-        <p v-if="isActive" class="font-body text-xs font-light text-plum-muted">
+        <p v-if="isActive" class="font-body text-sm font-light text-plum-muted">
           Started {{ startedAt }}
         </p>
       </div>
@@ -73,7 +73,7 @@ defineEmits(['go-to-queue', 'start-queue'])
 
     <router-link
       :to="isActive ? '/dashboard/queue/live' : '/dashboard/queue'"
-      class="inline-flex items-center gap-2 rounded-xl bg-mint/80 px-5 py-2 font-body text-sm font-bold text-plum transition-colors hover:bg-mint cursor-pointer"
+      class="inline-flex h-12 items-center gap-2 rounded-xl bg-mint/80 px-6 font-body text-sm font-bold text-plum transition-colors hover:bg-mint cursor-pointer"
     >
       {{ isActive ? 'Go to live queue' : 'Start a Queue' }}
       <ArrowRight class="h-3 w-3" />

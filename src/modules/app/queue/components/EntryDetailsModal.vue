@@ -98,7 +98,7 @@ const estWaitMin = computed(() => {
             v-if="showPartySize"
             class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80"
           >
-            <span class="font-body text-[10px] font-bold uppercase tracking-widest text-plum-muted">
+            <span class="font-body text-sm font-bold uppercase tracking-widest text-plum-muted">
               Party Size
             </span>
             <div class="mt-2 flex items-center gap-2">
@@ -114,7 +114,7 @@ const estWaitMin = computed(() => {
             class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80"
             :class="{ 'col-span-2': !showPartySize }"
           >
-            <span class="font-body text-[10px] font-bold uppercase tracking-widest text-plum-muted">
+            <span class="font-body text-sm font-bold uppercase tracking-widest text-plum-muted">
               Est. Wait
             </span>
             <div class="mt-2 flex items-center gap-2 text-plum">

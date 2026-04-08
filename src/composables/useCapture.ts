@@ -1,5 +1,4 @@
 import { ref } from 'vue'
-import { toPng } from 'html-to-image'
 import { useToast } from '@/composables/useToast'
 import { shareOrDownloadFile } from '@/utils/file.util'
 
@@ -35,6 +34,7 @@ export function useCapture() {
       // 2. Extra delay for rendered components like QR inside the capture template
       await new Promise((r) => setTimeout(r, 600))
 
+      const { toPng } = await import('html-to-image')
       const dataUrl = await toPng(element, {
         backgroundColor: '#F7F3EE', // bg-sand
         pixelRatio: 2,
@@ -65,7 +65,8 @@ export function useCapture() {
       // Fallback: Skip fonts if it's a common rendering error
       if (error.message?.includes('font') || error.message?.includes('trim')) {
         try {
-          const dataUrlFallback = await toPng(element, {
+          const { toPng: toPngFallback } = await import('html-to-image')
+          const dataUrlFallback = await toPngFallback(element, {
             backgroundColor: '#F7F3EE',
             pixelRatio: 1,
             skipFonts: true,

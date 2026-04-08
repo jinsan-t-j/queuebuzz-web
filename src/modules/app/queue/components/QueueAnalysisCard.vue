@@ -44,7 +44,9 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+  <div
+    class="flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+  >
     <!-- Header -->
     <div class="px-8 py-6">
       <h3 class="font-display text-xl font-bold text-plum">Queue Analysis</h3>
@@ -55,33 +57,31 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
       <div class="flex">
         <!-- Served Today -->
         <div class="flex-1">
-          <p class="font-body text-[11px] font-bold uppercase tracking-[1.1px] text-plum/40">
+          <p class="font-body text-sm font-bold uppercase tracking-[1.1px] text-plum/40">
             Served Today
           </p>
           <p class="mt-2 font-mono text-[60px] font-bold leading-none tracking-tight text-plum">
             {{ servedToday }}
           </p>
-          <span 
+          <span
             class="mt-3 inline-flex items-center gap-1 rounded-full px-2 py-1"
             :class="{
               'bg-danger/10': trendDirection === 'down',
               'bg-mint/10': trendDirection === 'up',
-              'bg-plum/5': trendDirection === 'flat' || !trendDirection
+              'bg-plum/5': trendDirection === 'flat' || !trendDirection,
             }"
           >
-            <TrendUpIcon 
+            <TrendUpIcon
               v-if="trendDirection !== 'flat'"
-              class="h-[7px] w-3 transition-transform" 
-              :class="[
-                trendDirection === 'down' ? 'rotate-180 text-danger' : 'text-mint',
-              ]" 
+              class="h-[7px] w-3 transition-transform"
+              :class="[trendDirection === 'down' ? 'rotate-180 text-danger' : 'text-mint']"
             />
-            <span 
-              class="font-body text-xs font-medium" 
+            <span
+              class="font-body text-sm font-medium"
               :class="{
                 'text-danger': trendDirection === 'down',
                 'text-mint': trendDirection === 'up',
-                'text-plum-muted': trendDirection === 'flat' || !trendDirection
+                'text-plum-muted': trendDirection === 'flat' || !trendDirection,
               }"
             >
               {{ trendText }}
@@ -90,11 +90,13 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
         </div>
         <!-- Completion Rate -->
         <div class="flex flex-col border-l border-plum/10 pl-8">
-          <p class="font-body text-[11px] font-bold uppercase tracking-[1.1px] text-plum/40">
+          <p class="font-body text-sm font-bold uppercase tracking-[1.1px] text-plum/40">
             Completion Rate
           </p>
           <div class="mt-2 flex items-baseline">
-            <span class="font-mono text-4xl font-bold leading-10 text-plum">{{ completionRate }}</span>
+            <span class="font-mono text-4xl font-bold leading-10 text-plum">{{
+              completionRate
+            }}</span>
             <span class="font-mono text-xl font-bold text-plum/40">%</span>
           </div>
         </div>
@@ -109,27 +111,29 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
         class="group relative flex flex-1 flex-col items-center justify-end h-[60px]"
       >
         <!-- Tooltip on hover -->
-        <div class="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-plum px-2 py-1 text-[10px] font-bold text-white opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap z-10">
+        <div
+          class="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-plum px-2 py-1 text-sm font-bold text-white opacity-0 transition-opacity group-hover:opacity-100 whitespace-nowrap z-10"
+        >
           {{ bar }} served
         </div>
-        
+
         <div
           class="w-full rounded-t-lg transition-all duration-500 ease-out"
           :class="[
             idx === chartBars.length - 1 ? 'bg-mint' : 'bg-plum/10 group-hover:bg-plum/20',
-            bar === 0 ? 'bg-plum/[0.03]' : ''
+            bar === 0 ? 'bg-plum/[0.03]' : '',
           ]"
           :style="{ height: `${Math.max((bar / maxBarValue) * 60, 4)}px` }"
         />
       </div>
     </div>
-    
+
     <!-- Labels -->
     <div class="flex gap-3 px-8 pb-8">
       <span
         v-for="label in chartLabels"
         :key="label"
-        class="flex-1 text-center font-mono text-[9px] font-bold uppercase tracking-[1px] text-plum/30"
+        class="flex-1 text-center font-mono text-sm font-bold uppercase tracking-[1px] text-plum/30"
       >
         {{ label }}
       </span>

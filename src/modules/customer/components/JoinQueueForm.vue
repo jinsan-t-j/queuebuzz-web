@@ -16,7 +16,6 @@ import { ref } from 'vue'
 // 3. Third-party imports
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
-import { getFCMToken } from '@/lib/firebase'
 
 // 5. Component imports
 import BaseToggle from '@/components/base/BaseToggle.vue'
@@ -95,6 +94,8 @@ const handleJoin = handleSubmit(async (values) => {
   if (notificationEnabled) {
     const hasPermission = await ensureNotificationPermission()
     if (hasPermission) {
+      // Lazy import Firebase only when needed to optimize bundle and unused JS
+      const { getFCMToken } = await import('@/lib/firebase')
       fcmToken = await getFCMToken()
     } else {
       notificationEnabled = false
@@ -120,7 +121,7 @@ const handleJoin = handleSubmit(async (values) => {
   <div class="flex flex-col px-5 py-4">
     <!-- Stats card -->
     <div class="rounded-3xl border border-plum-faint bg-white p-5 text-center">
-      <p class="font-body text-xs font-semibold uppercase tracking-[2.4px] text-plum-muted">
+      <p class="font-body text-sm font-semibold uppercase tracking-[2.4px] text-plum-muted">
         People in queue
       </p>
       <p class="mt-2.5 font-display text-[84px] font-normal leading-[84px] text-plum">
@@ -136,7 +137,7 @@ const handleJoin = handleSubmit(async (values) => {
         <span v-else class="font-mono text-lg font-bold text-plum">~{{ estWaitMin }} min</span>
         <span class="font-body text-lg text-plum-muted">Wait</span>
       </div>
-      <p class="mt-2.5 font-body text-[9px] leading-snug text-plum-muted">
+      <p class="mt-2.5 font-body text-sm leading-snug text-plum-muted">
         Your wait time is estimated,<br />
         it may slightly shift as the queue moves.
       </p>
@@ -167,8 +168,8 @@ const handleJoin = handleSubmit(async (values) => {
           placeholder="What should we call you?"
           class="w-full border-none bg-transparent font-body text-[17px] text-plum placeholder:text-plum-muted/40 focus:outline-none"
         />
-        <p v-if="nameError" class="mt-1 font-body text-[11px] text-danger">{{ nameError }}</p>
-        <p v-else class="mt-1 font-body text-[11px] text-plum-muted">Appears as Guest if skipped</p>
+        <p v-if="nameError" class="mt-1 font-body text-sm text-danger">{{ nameError }}</p>
+        <p v-else class="mt-1 font-body text-sm text-plum-muted">Appears as Guest if skipped</p>
       </div>
     </div>
 
@@ -196,7 +197,7 @@ const handleJoin = handleSubmit(async (values) => {
         </div>
         <div class="flex-1 text-left">
           <p class="font-body text-[15px] font-semibold text-plum">Joining with others?</p>
-          <p class="font-body text-xs text-plum-muted">Add companions to your spot</p>
+          <p class="font-body text-sm text-plum-muted">Add companions to your spot</p>
         </div>
         <ChevronDown
           :class="[
@@ -224,18 +225,18 @@ const handleJoin = handleSubmit(async (values) => {
           <div class="flex items-center gap-4">
             <button
               type="button"
-              class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
+              class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
               :disabled="accompanying <= 0"
               @click="accompanying--"
             >
               −
             </button>
-            <span class="min-w-[20px] text-center font-mono text-lg font-bold text-plum">
+            <span class="min-w-[24px] text-center font-mono text-lg font-bold text-plum">
               {{ accompanying }}
             </span>
             <button
               type="button"
-              class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
+              class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
               :disabled="accompanying >= props.maxAllowedPartySize - 1"
               @click="accompanying++"
             >
@@ -248,7 +249,7 @@ const handleJoin = handleSubmit(async (values) => {
 
     <!-- Buzz toggle card -->
     <div
-      class="mt-6 flex items-center justify-between rounded-3xl border border-plum-faint bg-white p-4"
+      class="mt-6 flex min-h-[56px] items-center justify-between rounded-3xl border border-plum-faint bg-white p-4"
     >
       <div class="flex items-center gap-3">
         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mint-light">
@@ -260,23 +261,28 @@ const handleJoin = handleSubmit(async (values) => {
         </div>
         <div>
           <p class="font-body text-[15px] font-semibold text-plum">Buzz me when ready</p>
-          <p class="font-body text-xs text-plum-muted">Get a push notification</p>
+          <p class="font-body text-sm text-plum-muted">Get a push notification</p>
         </div>
       </div>
-      <BaseToggle v-model="buzzEnabled" />
+      <div class="flex items-center min-h-[44px]">
+        <BaseToggle v-model="buzzEnabled" />
+      </div>
     </div>
 
     <!-- Email recovery accordion -->
     <div class="mt-6">
       <!-- Header row -->
-      <button class="flex w-full cursor-pointer items-center gap-4 py-4" @click="toggleEmail">
+      <button
+        class="flex w-full min-h-[48px] cursor-pointer items-center gap-4 py-3"
+        @click="toggleEmail"
+      >
         <AtSign class="h-4 w-4 shrink-0 text-plum-muted" />
         <span class="flex-1 text-left font-body text-sm font-medium text-plum-muted"
           >Add email for recovery</span
         >
         <ChevronDown
           :class="[
-            'h-2.5 w-2.5 text-plum-muted transition-transform duration-200',
+            'h-3 w-3 text-plum-muted transition-transform duration-200',
             isEmailExpanded ? 'rotate-180' : '',
           ]"
         />
@@ -290,18 +296,18 @@ const handleJoin = handleSubmit(async (values) => {
           emailError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-plum-faint/30',
         ]"
       >
-        <div class="bg-white p-3 rounded-xl">
+        <div class="bg-white p-3.5 rounded-xl">
           <input
             v-model="email"
             type="email"
             placeholder="your@email.com"
-            class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none"
+            class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none min-h-[48px]"
           />
         </div>
-        <p v-if="emailError" class="mt-1 font-body text-[10px] text-danger">{{ emailError }}</p>
+        <p v-if="emailError" class="mt-1 font-body text-sm text-danger">{{ emailError }}</p>
         <div class="mt-3 flex items-start gap-2">
           <Info class="mt-0.5 h-3 w-3 shrink-0 text-plum-muted/80" />
-          <p class="font-body text-xs leading-relaxed text-plum-muted/80">
+          <p class="font-body text-sm leading-relaxed text-plum-muted/80">
             Receive updates &amp; recover your spot if you close the browser.
           </p>
         </div>
@@ -312,7 +318,7 @@ const handleJoin = handleSubmit(async (values) => {
     <button
       :disabled="isSubmitting || isLoading"
       :class="[
-        'mt-6 flex h-[60px] w-full items-center justify-center gap-2 rounded-2xl bg-mint font-body text-lg font-semibold text-plum shadow-[0_8px_24px_rgba(0,229,160,0.50)] transition-all',
+        'mt-6 flex h-[64px] w-full items-center justify-center gap-2 rounded-2xl bg-mint font-body text-lg font-semibold text-plum shadow-[0_8px_24px_rgba(0,229,160,0.50)] transition-all',
         isSubmitting || isLoading
           ? 'cursor-not-allowed opacity-70'
           : 'hover:shadow-[0_12px_32px_rgba(0,229,160,0.60)]',
@@ -324,11 +330,11 @@ const handleJoin = handleSubmit(async (values) => {
     </button>
 
     <!-- Join by code link -->
-    <p class="mt-5 text-center font-body text-sm text-plum-muted">
+    <p class="mt-6 text-center font-body text-sm text-plum-muted">
       Already have a ticket?
       <button
         type="button"
-        class="font-body text-sm text-plum-muted underline underline-offset-4 hover:text-plum transition-colors"
+        class="font-body text-sm text-plum-muted underline underline-offset-4 hover:text-plum transition-colors p-4"
         @click="emit('go-to-join-by-code')"
       >
         Enter your join code

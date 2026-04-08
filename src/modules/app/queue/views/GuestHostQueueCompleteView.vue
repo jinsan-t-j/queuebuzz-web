@@ -122,7 +122,7 @@ function handleSendLink() {
       <div
         class="mt-6 rounded-card bg-white p-10 shadow-[0_8px_10px_rgba(0,0,0,0.10),0_20px_25px_rgba(0,0,0,0.10)]"
       >
-        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-plum/60">
+        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-plum/60">
           Save Your Work
         </p>
         <h2 class="mt-1 font-body text-2xl font-bold leading-8 text-plum">

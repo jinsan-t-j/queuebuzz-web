@@ -158,19 +158,19 @@ function getStatusVariant(status) {
     <!-- Stats Overview (Mocks) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <BaseCard class="p-6">
-        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">
+        <p class="font-body text-sm font-semibold uppercase tracking-wider text-plum-muted">
           Total Queues
         </p>
         <p class="font-mono text-3xl font-bold text-plum mt-2">42</p>
       </BaseCard>
       <BaseCard class="p-6">
-        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">
+        <p class="font-body text-sm font-semibold uppercase tracking-wider text-plum-muted">
           Total Customers Served
         </p>
         <p class="font-mono text-3xl font-bold text-plum mt-2">1,204</p>
       </BaseCard>
       <BaseCard class="p-6">
-        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">
+        <p class="font-body text-sm font-semibold uppercase tracking-wider text-plum-muted">
           Average Wait Time
         </p>
         <p class="font-mono text-3xl font-bold text-mint mt-2">14m</p>
@@ -256,27 +256,27 @@ function getStatusVariant(status) {
           <thead>
             <tr class="border-b border-plum-faint bg-sand/20">
               <th
-                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted"
+                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
               >
                 Date
               </th>
               <th
-                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted"
+                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
               >
                 Queue Name
               </th>
               <th
-                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted"
+                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
               >
                 Status
               </th>
               <th
-                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted"
+                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
               >
                 Served
               </th>
               <th
-                class="px-6 py-4 font-body text-xs font-semibold uppercase tracking-wider text-plum-muted text-right"
+                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted text-right"
               >
                 Avg. Wait
               </th>
@@ -377,19 +377,17 @@ function getStatusVariant(status) {
           @click="viewDetail(queue.id)"
         >
           <div class="flex justify-between items-start mb-2">
-            <span class="font-body text-xs text-plum-muted">{{ queue.dateFormatted }}</span>
+            <span class="font-body text-sm text-plum-muted">{{ queue.dateFormatted }}</span>
             <BaseBadge :variant="getStatusVariant(queue.status)">{{ queue.status }}</BaseBadge>
           </div>
           <h4 class="font-body font-semibold text-plum mb-3">{{ queue.name }}</h4>
           <div class="flex gap-6">
             <div>
-              <p class="font-body text-[10px] uppercase tracking-wider text-plum-muted">Served</p>
+              <p class="font-body text-sm uppercase tracking-wider text-plum-muted">Served</p>
               <p class="font-mono text-sm text-plum font-semibold">{{ queue.totalServed }}</p>
             </div>
             <div>
-              <p class="font-body text-[10px] uppercase tracking-wider text-plum-muted">
-                Avg. Wait
-              </p>
+              <p class="font-body text-sm uppercase tracking-wider text-plum-muted">Avg. Wait</p>
               <p class="font-mono text-sm text-plum font-semibold">{{ queue.avgWait }}</p>
             </div>
           </div>
@@ -400,7 +398,7 @@ function getStatusVariant(status) {
       <div
         class="p-4 bg-sand/10 border-t border-plum-faint flex flex-col sm:flex-row items-center justify-between gap-4"
       >
-        <p class="font-body text-xs text-plum-muted">
+        <p class="font-body text-sm text-plum-muted">
           Showing
           <span class="text-plum font-medium">{{
             totalCount > 0 ? (currentPage - 1) * 10 + 1 : 0

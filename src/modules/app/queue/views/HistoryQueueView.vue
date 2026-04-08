@@ -129,19 +129,19 @@ function handleRowClick(id) {
       <div
         class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
       >
-        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">Total Queues</p>
+        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-ash">Total Queues</p>
         <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">{{ totalQueues }}</p>
       </div>
       <div
         class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
       >
-        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">Total Served</p>
+        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-ash">Total Served</p>
         <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">{{ totalServed }}</p>
       </div>
       <div
         class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
       >
-        <p class="font-body text-xs font-bold uppercase tracking-[1.2px] text-ash">Avg. Wait</p>
+        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-ash">Avg. Wait</p>
         <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-[#4ade80]">{{ avgWait }}</p>
       </div>
     </div>
@@ -215,7 +215,7 @@ function handleRowClick(id) {
       <div class="flex items-center bg-sand/50 px-6 py-4">
         <!-- Sortable Date Column -->
         <button
-          class="flex items-center gap-1 w-[160px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b] hover:text-plum transition-colors group cursor-pointer"
+          class="flex items-center gap-1 w-[160px] font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b] hover:text-plum transition-colors group cursor-pointer"
           @click="toggleSort"
         >
           DATE
@@ -224,19 +224,16 @@ function handleRowClick(id) {
             :class="sortDirection ? 'opacity-100 text-plum' : 'opacity-40'"
           />
         </button>
-        <span
-          class="w-[200px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]"
+        <span class="w-[200px] font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b]"
           >Queue Name</span
         >
-        <span
-          class="w-[120px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]"
+        <span class="w-[120px] font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b]"
           >Status</span
         >
-        <span
-          class="w-[120px] font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]"
+        <span class="w-[120px] font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b]"
           >Total Served</span
         >
-        <span class="flex-1 font-body text-[10px] font-bold uppercase tracking-[1px] text-[#64748b]"
+        <span class="flex-1 font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b]"
           >Avg. Wait</span
         >
         <span class="w-6" />
@@ -273,7 +270,7 @@ function handleRowClick(id) {
           <span class="w-[200px] font-body text-sm font-semibold text-plum truncate pr-4">{{
             queue.name
           }}</span>
-          <span class="w-[120px] font-body text-xs font-bold leading-5">
+          <span class="w-[120px] font-body text-sm font-bold leading-5">
             <span
               class="inline-flex rounded-full px-2.5 py-0.5"
               :class="{
@@ -294,7 +291,7 @@ function handleRowClick(id) {
 
       <!-- Pagination -->
       <div class="flex items-center justify-between border-t border-[#f1f5f9] px-6 py-5">
-        <span class="font-body text-xs text-ash flex items-center gap-2">
+        <span class="font-body text-sm text-ash flex items-center gap-2">
           <span
             v-if="isFetching && !isLoading"
             class="h-3 w-3 animate-spin rounded-full border-2 border-ash border-t-transparent"
@@ -303,7 +300,7 @@ function handleRowClick(id) {
         </span>
         <div class="flex items-center gap-1">
           <button
-            class="rounded-lg px-3 py-1 font-body text-xs font-bold text-ash transition-colors hover:bg-plum-faint disabled:opacity-50"
+            class="rounded-lg px-3 py-1 font-body text-sm font-bold text-ash transition-colors hover:bg-plum-faint disabled:opacity-50"
             :disabled="currentPage <= 1 || isLoading"
             @click="goToPage(currentPage - 1)"
           >
@@ -312,7 +309,7 @@ function handleRowClick(id) {
           <button
             v-for="page in totalPages"
             :key="page"
-            class="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg font-body text-xs font-bold transition-colors"
+            class="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg font-body text-sm font-bold transition-colors"
             :class="[
               page === currentPage ? 'bg-plum text-white' : 'text-[#475569] hover:bg-plum-faint',
               { 'opacity-50 pointer-events-none': isLoading },
@@ -322,7 +319,7 @@ function handleRowClick(id) {
             {{ page }}
           </button>
           <button
-            class="rounded-lg px-3 py-1 font-body text-xs font-bold text-[#475569] transition-colors hover:bg-plum-faint disabled:opacity-50"
+            class="rounded-lg px-3 py-1 font-body text-sm font-bold text-[#475569] transition-colors hover:bg-plum-faint disabled:opacity-50"
             :disabled="currentPage >= totalPages || isLoading"
             @click="goToPage(currentPage + 1)"
           >

@@ -67,7 +67,7 @@ onMounted(async () => {
 
       <!-- Ticket ID Section -->
       <div class="bg-white px-8 pb-12 pt-8 text-center relative">
-        <p class="font-body text-xs font-bold uppercase tracking-[0.4em] text-plum/30 mb-2">
+        <p class="font-body text-sm font-bold uppercase tracking-[0.4em] text-plum/30 mb-2">
           Ticket Number
         </p>
         <div class="flex items-center justify-center min-h-[140px]">
@@ -81,12 +81,12 @@ onMounted(async () => {
 
         <div class="mt-12 flex items-center justify-center gap-10">
           <div class="text-left">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-plum/20">Date</p>
+            <p class="text-sm font-bold uppercase tracking-wider text-plum/20">Date</p>
             <p class="text-base font-bold">{{ joinDate }}</p>
           </div>
           <div class="h-8 w-px bg-plum/5" />
           <div class="text-left">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-plum/20">Serial No.</p>
+            <p class="text-sm font-bold uppercase tracking-wider text-plum/20">Serial No.</p>
             <p class="text-base font-bold">QB-{{ String(Date.now()).slice(-6) }}</p>
           </div>
         </div>
@@ -100,7 +100,7 @@ onMounted(async () => {
           <img v-if="qrDataUrl" :src="qrDataUrl" class="h-44 w-44" alt="QR" />
           <div v-else class="h-44 w-44 animate-pulse bg-plum-faint" />
         </div>
-        <p class="mt-8 font-body text-[10px] font-bold uppercase tracking-[0.2em] text-plum/40">
+        <p class="mt-8 font-body text-sm font-bold uppercase tracking-[0.2em] text-plum/40">
           Present this QR at the counter
         </p>
       </div>
@@ -108,7 +108,7 @@ onMounted(async () => {
       <!-- Platform Footer -->
       <div class="bg-plum/5 px-10 py-8 flex items-center justify-between">
         <span class="font-display text-base font-bold text-plum/50">QueueBuzz</span>
-        <span class="font-body text-[10px] font-bold text-plum/30">queuebuzz.app</span>
+        <span class="font-body text-sm font-bold text-plum/30">queuebuzz.app</span>
       </div>
     </div>
   </div>

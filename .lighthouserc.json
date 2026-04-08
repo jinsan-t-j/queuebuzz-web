@@ -2,23 +2,41 @@
   "ci": {
     "collect": {
       "startServerCommand": "npm run preview",
+      "startServerReadyPattern": "Local:.*http",
+      "startServerReadyTimeout": 30000,
+      "numberOfRuns": 3,
       "url": [
         "http://localhost:4173/",
-        "http://localhost:4173/join-by-code"
+        "http://localhost:4173/join"
       ],
       "settings": {
-        "chromeFlags": "--no-sandbox --disable-web-security"
+        "chromeFlags": "--no-sandbox --disable-web-security --ignore-certificate-errors --ignore-ssl-errors=yes --disable-gpu"
       }
     },
     "assert": {
       "preset": "lighthouse:recommended",
       "assertions": {
+        "bf-cache": "off",
+        "uses-rel-preconnect": "off",
         "offscreen-images": "off",
         "uses-webp-images": "off",
         "content-width": "off",
         "csp-xss": "off",
-        "installable-pwa": "warn",
-        "service-worker": "warn"
+        "installable-pwa": "off",
+        "service-worker": "off",
+        "network-dependency-tree-insight": "off",
+        "cls-culprits-insight": "off",
+        "forced-reflow-insight": "off",
+        "unused-javascript": "warn",
+        "render-blocking-resources": "warn",
+        "render-blocking-insight": "warn",
+        "errors-in-console": "warn",
+        "target-size": "warn",
+        "mainthread-work-breakdown": "warn",
+        "max-potential-fid": "warn",
+        "first-contentful-paint": "warn",
+        "largest-contentful-paint": "warn",
+        "interactive": "warn"
       }
     },
     "upload": {

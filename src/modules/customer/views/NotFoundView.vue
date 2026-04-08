@@ -72,7 +72,7 @@ function goToHome() {
     </div>
 
     <!-- Subtext/Hint -->
-    <p class="mt-12 font-body text-xs text-plum-muted/60">
+    <p class="mt-12 font-body text-sm text-plum-muted/60">
       Need help? Contact the business directly.
     </p>
   </div>

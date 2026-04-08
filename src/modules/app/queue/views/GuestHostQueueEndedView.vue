@@ -187,7 +187,7 @@ function handleSendLink() {
         <div
           class="rounded-[40px] bg-plum p-10 shadow-[0_20px_50px_rgba(26,10,46,0.25)] border border-white/10"
         >
-          <p class="font-body text-xs font-bold uppercase tracking-[1.5px] text-mint">
+          <p class="font-body text-sm font-bold uppercase tracking-[1.5px] text-mint">
             Upgrade Your Experience
           </p>
           <h2 class="mt-2 font-display text-2xl font-bold leading-tight text-sand">
@@ -211,7 +211,7 @@ function handleSendLink() {
           <!-- Email form -->
           <div class="mt-10 flex flex-col gap-4">
             <div class="flex flex-col gap-2.5">
-              <label class="font-body text-xs font-bold uppercase tracking-wider text-sand/50 ml-1">
+              <label class="font-body text-sm font-bold uppercase tracking-wider text-sand/50 ml-1">
                 Email address
               </label>
               <input

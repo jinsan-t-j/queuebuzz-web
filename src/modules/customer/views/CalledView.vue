@@ -154,7 +154,7 @@ const handleFinishService = async () => {
           class="absolute -right-[7px] top-1/2 h-6 w-3.5 -translate-y-1/2 rounded-l-full bg-sand"
         />
 
-        <p class="font-body text-xs font-normal uppercase tracking-[2.4px] text-plum/60">
+        <p class="font-body text-sm font-normal uppercase tracking-[2.4px] text-plum/60">
           Your Ticket
         </p>
         <p class="mt-4 font-mono text-[92px] font-black leading-[92px] text-plum">
@@ -172,7 +172,7 @@ const handleFinishService = async () => {
 
         <!-- Save Ticket Button (Secondary) -->
         <button
-          class="mx-auto mt-2 flex items-center gap-1.5 px-4 py-2 font-body text-xs font-semibold text-plum-muted transition-opacity hover:opacity-80"
+          class="mx-auto mt-2 flex items-center gap-1.5 px-4 py-2 font-body text-sm font-semibold text-plum-muted transition-opacity hover:opacity-80"
           :disabled="isSaving"
           @click="saveTicketAsImage"
         >
@@ -181,7 +181,7 @@ const handleFinishService = async () => {
       </div>
 
       <!-- Hurray message -->
-      <p class="mt-8 text-center font-body text-xs font-light text-plum-soft">
+      <p class="mt-8 text-center font-body text-sm font-light text-plum-soft">
         🎉 Hurray Its your turn, Please head in.
       </p>
 

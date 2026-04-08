@@ -20,7 +20,6 @@ defineProps({
 })
 
 const currentYear = computed(() => new Date().getFullYear())
-
 </script>
 
 <template>
@@ -29,15 +28,29 @@ const currentYear = computed(() => new Date().getFullYear())
       <!-- Free notice (shown on join screen) -->
       <div v-if="showFreeNotice" class="flex items-center gap-2">
         <ShieldVerifiedIcon class="h-3 w-3 text-plum-muted" />
-        <span class="font-body text-xs font-medium text-plum-muted">Free · No signup required</span>
+        <span class="font-body text-sm font-medium text-plum-muted">Free · No signup required</span>
       </div>
 
       <!-- Copyright -->
-      <p class="text-center font-body text-[10px] capitalize tracking-tight text-plum-muted">
+      <p class="text-center font-body text-sm capitalize tracking-tight text-plum-muted">
         © {{ currentYear }} queuebuzz. All rights reserved
       </p>
-      <p class="text-center font-body text-[10px] capitalize tracking-tight text-plum-muted">
-        <router-link to="/terms" target="_blank" class="hover:text-plum">Terms & Conditions</router-link> | <router-link to="/privacy" target="_blank" class="hover:text-plum">Privacy Policy</router-link>
+      <p
+        class="text-center font-body text-sm capitalize tracking-tight text-plum-muted flex flex-wrap items-center justify-center gap-1"
+      >
+        <router-link
+          to="/terms"
+          target="_blank"
+          class="hover:text-plum min-h-[48px] flex items-center px-2"
+          >Terms & Conditions</router-link
+        >
+        <span class="opacity-30">|</span>
+        <router-link
+          to="/privacy"
+          target="_blank"
+          class="hover:text-plum min-h-[48px] flex items-center px-2"
+          >Privacy Policy</router-link
+        >
       </p>
     </div>
   </footer>

@@ -3,23 +3,43 @@
  * @component GuestHostLiveQueueView
  * @description Anonymous (guest) host active queue dashboard.
  */
-import { onBeforeMount, watch, computed, ref, onMounted, onUnmounted } from 'vue'
+import {
+  onBeforeMount,
+  watch,
+  computed,
+  ref,
+  onMounted,
+  onUnmounted,
+  defineAsyncComponent,
+} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
-import QueueStatusUpdateModal from '@/modules/app/queue/components/QueueStatusUpdateModal.vue'
-import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
-import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
 import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
-import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
-import EmailNoticePopup from '@/modules/app/queue/components/EmailNoticePopup.vue'
+
+// Modals + tips: only loaded on user action
+const QueueStatusUpdateModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/QueueStatusUpdateModal.vue'),
+)
+const InfoQueueModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/InfoQueueModal.vue'),
+)
+const AddGuestModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/AddGuestModal.vue'),
+)
+const LiveQueueSettingsModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/LiveQueueSettingsModal.vue'),
+)
+const EmailNoticePopup = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/EmailNoticePopup.vue'),
+)
+const HostTips = defineAsyncComponent(() => import('../components/HostTips.vue'))
 
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
-import HostTips from '../components/HostTips.vue'
 import HostNotifications from '@/components/layout/HostNotifications.vue'
 import HostNotificationCenter from '@/components/layout/HostNotificationCenter.vue'
 
@@ -216,7 +236,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
                       : 'bg-danger',
                 ]"
               />
-              <span class="font-body text-xs font-bold text-plum uppercase tracking-wider">
+              <span class="font-body text-sm font-bold text-plum uppercase tracking-wider">
                 {{
                   isStreamConnected
                     ? 'Live Connection'
@@ -231,7 +251,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
               v-if="activeQueue?.strictQueueMode"
               class="flex items-center gap-3 px-4 py-2 bg-plum rounded-full border border-plum shadow-sm"
             >
-              <span class="font-body text-xs font-bold text-sand uppercase tracking-wider">
+              <span class="font-body text-sm font-bold text-sand uppercase tracking-wider">
                 Strict Mode Active
               </span>
             </div>
@@ -240,7 +260,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
           <div class="flex items-center gap-6">
             <div
               v-if="!isStreamConnected && streamState !== 'connecting'"
-              class="text-xs font-body text-danger flex items-center gap-1"
+              class="text-sm font-body text-danger flex items-center gap-1"
             >
               <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
