@@ -212,7 +212,7 @@ onBeforeUnmount(() => {
           <h2 class="font-display text-[22px] font-bold text-plum">
             {{ isLoading ? '' : greeting }}
           </h2>
-          <p v-if="!isLoading" class="mt-1 font-body text-[13px] text-plum-muted">
+          <p v-if="!isLoading" class="mt-1 font-body text-sm text-plum-muted">
             {{ dateString }}
           </p>
         </div>

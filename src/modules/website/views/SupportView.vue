@@ -60,7 +60,7 @@ const handleSubmit = async () => {
         <form class="flex flex-col gap-5" @submit.prevent="handleSubmit">
           <div class="flex flex-col md:flex-row gap-5">
             <div class="flex-1 flex flex-col gap-1.5">
-              <label for="name" class="font-body text-[13px] font-medium text-plum">Name</label>
+              <label for="name" class="font-body text-sm font-medium text-plum">Name</label>
               <input
                 id="name"
                 v-model="formData.name"
@@ -72,7 +72,7 @@ const handleSubmit = async () => {
             </div>
 
             <div class="flex-1 flex flex-col gap-1.5">
-              <label for="email" class="font-body text-[13px] font-medium text-plum"
+              <label for="email" class="font-body text-sm font-medium text-plum"
                 >Email Address</label
               >
               <input
@@ -87,7 +87,7 @@ const handleSubmit = async () => {
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label for="subject" class="font-body text-[13px] font-medium text-plum">Subject</label>
+            <label for="subject" class="font-body text-sm font-medium text-plum">Subject</label>
             <input
               id="subject"
               v-model="formData.subject"
@@ -99,7 +99,7 @@ const handleSubmit = async () => {
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label for="message" class="font-body text-[13px] font-medium text-plum">Message</label>
+            <label for="message" class="font-body text-sm font-medium text-plum">Message</label>
             <textarea
               id="message"
               v-model="formData.message"

@@ -26,11 +26,11 @@ const emit = defineEmits(['enable-buzz'])
   <div class="flex items-center justify-center gap-2">
     <template v-if="buzzEnabled">
       <span class="h-1.5 w-1.5 rounded-full bg-mint" />
-      <span class="font-body text-[13px] text-plum-muted">You'll be buzzed when it's your turn</span>
+      <span class="font-body text-sm text-plum-muted">You'll be buzzed when it's your turn</span>
     </template>
     <template v-else>
       <span class="h-1.5 w-1.5 rounded-full bg-warning" />
-      <button class="cursor-pointer font-body text-[13px] text-warning" @click="emit('enable-buzz')">
+      <button class="cursor-pointer font-body text-sm text-warning" @click="emit('enable-buzz')">
         Tap to enable notifications
       </button>
     </template>

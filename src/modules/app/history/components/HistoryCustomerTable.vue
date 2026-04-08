@@ -224,7 +224,7 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
       v-if="!isLoading && filteredEntries.length > 0"
       class="flex items-center justify-between border-t border-plum/5 px-6 py-4"
     >
-      <p class="font-body text-[13px] text-plum/60">
+      <p class="font-body text-sm text-plum/60">
         Showing {{ showingFrom }}–{{ showingTo }} of
         {{ totalCount || filteredEntries.length }}
       </p>

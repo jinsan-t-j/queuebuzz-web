@@ -188,7 +188,7 @@ function copyCustomLink() {
             v-for="suggestion in suggestions"
             :key="suggestion"
             type="button"
-            class="rounded-full border border-plum-faint px-4 py-1.5 font-body text-[13px] font-medium text-[#5c5267] transition-colors hover:bg-plum-faint cursor-pointer"
+            class="rounded-full border border-plum-faint px-4 py-1.5 font-body text-sm font-medium text-[#5c5267] transition-colors hover:bg-plum-faint cursor-pointer"
             @click="selectSuggestion(suggestion)"
           >
             {{ suggestion }}
@@ -208,7 +208,7 @@ function copyCustomLink() {
           <!-- Value callout tooltip over slider -->
           <div class="flex flex-col relative w-full">
             <div
-              class="absolute -top-[37px] -translate-x-1/2 rounded-[5px] border border-[#e8e6ea] px-3 py-1.5 font-body text-[13px] font-semibold text-plum shadow-[0_4px_6px_rgba(0,0,0,0.10),0_10px_15px_rgba(0,0,0,0.10)] transition-all bg-white whitespace-nowrap"
+              class="absolute -top-[37px] -translate-x-1/2 rounded-[5px] border border-[#e8e6ea] px-3 py-1.5 font-body text-sm font-semibold text-plum shadow-[0_4px_6px_rgba(0,0,0,0.10),0_10px_15px_rgba(0,0,0,0.10)] transition-all bg-white whitespace-nowrap"
               :style="{
                 left: `calc(${((serviceTime - 1) / 29) * 100}% + (${12 - ((serviceTime - 1) / 29) * 24}px))`,
               }"
@@ -224,7 +224,7 @@ function copyCustomLink() {
               class="w-full accent-mint h-2 bg-plum/10 rounded-lg appearance-none cursor-pointer"
             />
 
-            <div class="mt-2 flex justify-between font-body text-[13px] text-[#5c5267]">
+            <div class="mt-2 flex justify-between font-body text-sm text-[#5c5267]">
               <span>1 min</span>
               <span>30 min</span>
             </div>

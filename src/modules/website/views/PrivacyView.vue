@@ -23,7 +23,7 @@ import { CalendarIcon } from 'lucide-vue-next'
       </p>
       <div class="mt-4 md:mt-[20px] flex items-center justify-center md:justify-start">
         <CalendarIcon class="w-[14px] h-[14px] text-plum-muted" />
-        <span class="font-body text-[12px] md:text-[13px] text-plum-muted ml-[6px]">
+        <span class="font-body text-xs md:text-sm text-plum-muted ml-[6px]">
           Last updated: 1 June 2025
         </span>
       </div>

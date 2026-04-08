@@ -45,10 +45,10 @@ export default defineConfig(({ mode }) => {
           })
         },
       },
-      // Inject <link rel="preload"> for critical latin font files post-build.
-      // Eliminates the CSS→font waterfall that delays LCP by ~300ms.
+      // Inject <link rel="preload"> for critical fonts and CSS post-build.
+      // Eliminates waterfalls that delay LCP.
       {
-        name: 'font-preload',
+        name: 'critical-preload',
         enforce: 'post',
         transformIndexHtml: {
           order: 'post',
@@ -56,7 +56,7 @@ export default defineConfig(({ mode }) => {
             const bundle = ctx.bundle
             if (!bundle) return []
 
-            const fontPreloads = []
+            const preloads = []
             const criticalFonts = [
               'comfortaa-latin-wght-normal',
               'dm-sans-latin-400-normal',
@@ -64,10 +64,11 @@ export default defineConfig(({ mode }) => {
             ]
 
             for (const fileName of Object.keys(bundle)) {
-              if (!fileName.endsWith('.woff2')) continue
               const base = path.basename(fileName)
-              if (criticalFonts.some((f) => base.includes(f))) {
-                fontPreloads.push({
+
+              // Font preloading
+              if (fileName.endsWith('.woff2') && criticalFonts.some((f) => base.includes(f))) {
+                preloads.push({
                   tag: 'link',
                   attrs: {
                     rel: 'preload',
@@ -79,8 +80,21 @@ export default defineConfig(({ mode }) => {
                   injectTo: 'head-prepend',
                 })
               }
+
+              // CSS Preloading (to reduce render-blocking perception)
+              if (fileName.endsWith('.css') && base.startsWith('main-')) {
+                preloads.push({
+                  tag: 'link',
+                  attrs: {
+                    rel: 'preload',
+                    href: `/${fileName}`,
+                    as: 'style',
+                  },
+                  injectTo: 'head-prepend',
+                })
+              }
             }
-            return fontPreloads
+            return preloads
           },
         },
       },

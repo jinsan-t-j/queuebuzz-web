@@ -80,7 +80,11 @@ export function useQrScanner() {
 
   onUnmounted(() => {
     stopScanner()
+    window.removeEventListener('pagehide', stopScanner)
   })
+
+  // stop camera when page is hidden/navigated away
+  window.addEventListener('pagehide', stopScanner)
 
   return {
     isScanning,

@@ -120,7 +120,7 @@ onUnmounted(async () => {
         class="mt-12 flex items-center gap-3 bg-white/5 px-4 py-2.5 rounded-2xl animate-in slide-in-from-bottom-4 duration-500"
       >
         <Sparkles class="w-4 h-4 text-mint" />
-        <span class="font-body text-[13px] font-medium">Scanning automatically...</span>
+        <span class="font-body text-sm font-medium">Scanning automatically...</span>
       </div>
     </div>
   </div>
