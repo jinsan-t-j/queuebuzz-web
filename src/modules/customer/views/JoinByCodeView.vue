@@ -172,7 +172,7 @@ function handleQrResult(result: string) {
         </div>
         <p
           v-else
-          class="font-body text-[11px] font-semibold text-plum-muted uppercase tracking-[0.2em] opacity-40"
+          class="font-body text-xs font-semibold text-plum-muted uppercase tracking-[0.2em] opacity-40"
         >
           Not case sensitive
         </p>

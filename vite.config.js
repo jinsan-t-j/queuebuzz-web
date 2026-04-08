@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
       port: parseInt(env.VITE_PORT) || 5173,
     },
     build: {
-      sourcemap: env.VITE_ENV != 'production' ? 'inline' : false,
+      sourcemap: false,
       rollupOptions: {
         input: {
           main: fileURLToPath(new URL('./index.html', import.meta.url)),
