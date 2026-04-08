@@ -4,60 +4,64 @@
  */
 
 // Base URL mapped from Vite env variables
-export const API_BASE_URL: string = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
+export const API_BASE_URL: string =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
 export const API_ORIGIN_URL: string = new URL(API_BASE_URL, window.location.origin).origin
-export const API_BASE_PATH: string = new URL(API_BASE_URL, window.location.origin).pathname.replace(/\/$/, '')
+export const API_BASE_PATH: string = new URL(API_BASE_URL, window.location.origin).pathname.replace(
+  /\/$/,
+  '',
+)
 
 export function buildApiUrl(path: string): string {
-    return new URL(`${API_BASE_PATH}${path}`, API_ORIGIN_URL).toString()
+  return new URL(`${API_BASE_PATH}${path}`, API_ORIGIN_URL).toString()
 }
 
 export const AUTH_ROUTES = {
-    SOCIAL_START: (provider: string): string => `${API_ORIGIN_URL}/auth/social/${provider}/start`,
+  SOCIAL_START: (provider: string): string => `${API_ORIGIN_URL}/auth/social/${provider}/start`,
 } as const
 
 // Centralized route definitions
 export const API_ROUTES = {
-    HOST: {
-        // Auth routes
-        REGISTER: '/auth/register',
-        LOGOUT: '/auth/logout',
-        ME: '/host/me',
-        // Queue routes
-        CLAIM: '/host/claim',
-        GET_PROFILE: (publicId: string): string => `/host/${publicId}`,
-        GET_QUEUES: (publicId: string): string => `/host/${publicId}/queues`,
-    },
-    QUEUE: {
-        CHECK_SLUG: '/queue/slug-check',
-        GET_LIVE_QUEUE: '/queue/live',
-        GET_LIVE_QUEUE_BY_ID: (id: string): string => `/queue/${id}/live`,
-        PUBLIC_EVENTS: (id: string): string => `/queue/${id}/events/public`,
-        CONNECT_EVENTS: (id: string): string => `/queue/${id}/events`,
-        PAUSE: (id: string): string => `/queue/${id}/pause`,
-        RESUME: (id: string): string => `/queue/${id}/resume`,
-        TERMINATE: (id: string): string => `/queue/${id}/terminate`,
-        CALL_ENTRY: (id: string, entryId?: string): string => `/queue/${id}/call/${entryId || ''}`,
-        SERVE: (id: string, entryId: string): string => `/queue/${id}/serve/${entryId}`,
-        ADD_ENTRY: (id: string): string => `/queue/${id}/add-entry`,
-        UPDATE: (id: string): string => `/queue/${id}`,
-    },
-    CUSTOMER: {
-        JOIN_QUEUE_BY_ID: (id: string): string => `/customer/entry/join/${id}`,
-        JOIN_BY_CODE: (code: string): string => `/customer/entry/join-by-code/${code}`,
-        GET_ENTRY: () => `/customer/entry`,
-        ENTRY_EVENTS: () => `/customer/entry/events`,
-        CONFIRM_STILL_HERE: () => `/customer/entry/confirm`,
-        CONFIRM_ARRIVAL: () => `/customer/entry/arrived`,
-        FINISH_SERVICE: () => `/customer/entry/finish`,
-        LEAVE_GUEST: '/customer/entry/leave',
-        RECOVER_SESSION: '/customer/entry/recover-session',
-        SUBMIT_RATING: () => `/customer/entry/rating`,
-        UPDATE_ENTRY: '/customer/entry/update',
-    },
-    SHARED: {
-        CREATE_QUEUE: '/queue/create',
-    }
+  HOST: {
+    // Auth routes
+    REGISTER: '/auth/register',
+    LOGOUT: '/auth/logout',
+    ME: '/host/me',
+    // Queue routes
+    CLAIM: '/host/claim',
+    GET_PROFILE: (publicId: string): string => `/host/${publicId}`,
+    GET_QUEUES: (publicId: string): string => `/host/${publicId}/queues`,
+  },
+  QUEUE: {
+    CHECK_SLUG: '/queue/slug-check',
+    GET_LIVE_QUEUE: '/queue/live',
+    GET_LIVE_QUEUE_BY_ID: (id: string): string => `/queue/${id}/live`,
+    PUBLIC_EVENTS: (id: string): string => `/queue/${id}/events/public`,
+    CONNECT_EVENTS: (id: string): string => `/queue/${id}/events`,
+    PAUSE: (id: string): string => `/queue/${id}/pause`,
+    RESUME: (id: string): string => `/queue/${id}/resume`,
+    TERMINATE: (id: string): string => `/queue/${id}/terminate`,
+    CALL_ENTRY: (id: string, entryId?: string): string => `/queue/${id}/call/${entryId || ''}`,
+    SERVE: (id: string, entryId: string): string => `/queue/${id}/serve/${entryId}`,
+    ADD_ENTRY: (id: string): string => `/queue/${id}/add-entry`,
+    UPDATE: (id: string): string => `/queue/${id}`,
+  },
+  CUSTOMER: {
+    JOIN_QUEUE_BY_ID: (id: string): string => `/customer/entry/join/${id}`,
+    JOIN_BY_CODE: (code: string): string => `/customer/entry/join-by-code/${code}`,
+    GET_ENTRY: () => `/customer/entry`,
+    ENTRY_EVENTS: () => `/customer/entry/events`,
+    CONFIRM_STILL_HERE: () => `/customer/entry/confirm`,
+    CONFIRM_ARRIVAL: () => `/customer/entry/arrived`,
+    FINISH_SERVICE: () => `/customer/entry/finish`,
+    LEAVE_GUEST: '/customer/entry/leave',
+    RECOVER_SESSION: '/customer/entry/recover-session',
+    SUBMIT_RATING: () => `/customer/entry/rating`,
+    UPDATE_ENTRY: '/customer/entry/update',
+  },
+  SHARED: {
+    CREATE_QUEUE: '/queue/create',
+  },
 
-    // Add more modules (e.g. QUEUE, GUEST) here as they grow
+  // Add more modules (e.g. QUEUE, GUEST) here as they grow
 } as const
