@@ -27,8 +27,8 @@ export default defineConfig(({ mode }) => {
             }
             next()
           })
-        }
-      }
+        },
+      },
     ],
     resolve: {
       alias: {
@@ -39,20 +39,22 @@ export default defineConfig(({ mode }) => {
       port: parseInt(env.VITE_PORT) || 5173,
     },
     build: {
-      sourcemap: env.VITE_ENV != 'production' ? 'inline-source-map' : false,
+      sourcemap: env.VITE_ENV != 'production' ? 'inline' : false,
       rollupOptions: {
         input: {
           main: fileURLToPath(new URL('./index.html', import.meta.url)),
-          'firebase-messaging-sw': fileURLToPath(new URL('./src/firebase-messaging-sw.js', import.meta.url))
+          'firebase-messaging-sw': fileURLToPath(
+            new URL('./src/firebase-messaging-sw.js', import.meta.url),
+          ),
         },
         output: {
           entryFileNames: (chunkInfo) => {
             return chunkInfo.name === 'firebase-messaging-sw'
               ? '[name].js'
               : 'assets/[name]-[hash].js'
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   }
 })
