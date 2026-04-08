@@ -5,20 +5,30 @@
  * Managed via useLiveQueue and useQueueStore.
  */
 import { useRouter } from 'vue-router'
-import { onBeforeMount } from 'vue'
+import { onBeforeMount, defineAsyncComponent } from 'vue'
 
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
-import QueueStatusUpdateModal from '@/modules/app/queue/components/QueueStatusUpdateModal.vue'
-import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
-import AddGuestModal from '@/modules/app/queue/components/AddGuestModal.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.vue'
 import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
-import LiveQueueSettingsModal from '@/modules/app/queue/components/LiveQueueSettingsModal.vue'
-import HostTips from '@/modules/app/queue/components/HostTips.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
+
+// Modals: only loaded on user action
+const QueueStatusUpdateModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/QueueStatusUpdateModal.vue'),
+)
+const InfoQueueModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/InfoQueueModal.vue'),
+)
+const AddGuestModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/AddGuestModal.vue'),
+)
+const LiveQueueSettingsModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/LiveQueueSettingsModal.vue'),
+)
+const HostTips = defineAsyncComponent(() => import('@/modules/app/queue/components/HostTips.vue'))
 
 const router = useRouter()
 const {
@@ -34,11 +44,11 @@ const {
   statusUpdateMode,
   showInfoModal,
   showSettingsModal,
-  
+
   rawSearchQuery,
   filteredActiveEntries,
   filteredServedEntries,
-  
+
   servedTodayCount,
   completionRatePercent,
   chartLabels,
@@ -56,25 +66,25 @@ const {
 } = useLiveQueue()
 
 onBeforeMount(async () => {
-    if (!activeQueue.value) {
-        const queue = await initializeHostQueue()
-        if (!queue) {
-            router.push({ name: 'dashboard' })
-        }
+  if (!activeQueue.value) {
+    const queue = await initializeHostQueue()
+    if (!queue) {
+      router.push({ name: 'dashboard' })
     }
+  }
 })
 
 async function onStatusUpdateConfirmed() {
-    const isTerminate = statusUpdateMode.value === 'terminate'
-    const success = await handleStatusUpdateConfirm()
-    if (success && isTerminate) {
-        router.push({ name: 'dashboard' })
-    }
+  const isTerminate = statusUpdateMode.value === 'terminate'
+  const success = await handleStatusUpdateConfirm()
+  if (success && isTerminate) {
+    router.push({ name: 'dashboard' })
+  }
 }
 
 function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
-    statusUpdateMode.value = mode
-    showStatusUpdateModal.value = true
+  statusUpdateMode.value = mode
+  showStatusUpdateModal.value = true
 }
 </script>
 
@@ -88,17 +98,29 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             <h1 class="font-display text-4xl font-bold text-plum">
               {{ activeQueue?.name || 'Active Queue' }}
             </h1>
-            <BaseBadge v-if="activeQueue?.strictQueueMode" variant="muted" class="bg-plum text-sand">
+            <BaseBadge
+              v-if="activeQueue?.strictQueueMode"
+              variant="muted"
+              class="bg-plum text-sand"
+            >
               STRICT MODE ACTIVE
             </BaseBadge>
           </div>
           <p class="mt-1 font-body text-plum/60">
-            Running since {{ activeQueue?.createdAt ? new Date(activeQueue.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
+            Running since
+            {{
+              activeQueue?.createdAt
+                ? new Date(activeQueue.createdAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : '--:--'
+            }}
           </p>
         </div>
-        
+
         <div class="flex items-center gap-3">
-          <button 
+          <button
             class="flex items-center gap-2 rounded-xl bg-white px-4 py-2 font-body text-sm font-bold text-plum shadow-sm border border-plum/5 hover:bg-plum/5 transition-colors cursor-pointer"
             @click="showInfoModal = true"
           >
@@ -111,10 +133,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
         <!-- Left Column: Statistics & Live List -->
         <div class="lg:col-span-4 flex flex-col gap-6">
-          <QueueStatCards
-            :waiting-count="waitingCount"
-            :avg-wait="avgWaitTime"
-          />
+          <QueueStatCards :waiting-count="waitingCount" :avg-wait="avgWaitTime" />
 
           <LiveQueueCard
             :active-entries="filteredActiveEntries"
@@ -135,19 +154,18 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
         <!-- Right Column: Share & Insights -->
         <div class="lg:col-span-8 flex flex-col gap-8">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-             <ShareCodeCard
-                :join-code="activeQueue?.joinCode"
-                :share-url="queueUrl"
-                @show-qr="showInfoModal = true"
-              />
-              
-              <QueueActionCard 
-                :is-paused="isPaused"
-                @add-guest="showAddGuestModal = true"
-                @update-status="openStatusModal"
-                @open-settings="showSettingsModal = true"
-              />
+            <ShareCodeCard
+              :join-code="activeQueue?.joinCode"
+              :share-url="queueUrl"
+              @show-qr="showInfoModal = true"
+            />
 
+            <QueueActionCard
+              :is-paused="isPaused"
+              @add-guest="showAddGuestModal = true"
+              @update-status="openStatusModal"
+              @open-settings="showSettingsModal = true"
+            />
           </div>
 
           <QueueAnalysisCard
@@ -184,7 +202,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       @close="showAddGuestModal = false"
       @submit="handleAddGuestSubmit"
     />
-    
+
     <LiveQueueSettingsModal
       v-if="activeQueue"
       :is-open="showSettingsModal"

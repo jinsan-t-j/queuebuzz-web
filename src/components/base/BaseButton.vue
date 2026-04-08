@@ -65,9 +65,9 @@ const variantClasses = computed(() => {
 
 const sizeClasses = computed(() => {
   const map = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-5 py-2.5 text-sm',
-    lg: 'px-7 py-3 text-base',
+    sm: 'px-4 py-2 text-xs min-h-[48px]',
+    md: 'px-6 py-2.5 text-sm min-h-[48px]',
+    lg: 'px-8 py-3 text-base min-h-[56px]',
   }
   return map[props.size]
 })
@@ -95,10 +95,7 @@ function handleClick(event) {
     ]"
     @click="handleClick"
   >
-    <Loader2
-      v-show="isLoading"
-      class="h-4 w-4 animate-spin"
-    />
+    <Loader2 v-show="isLoading" class="h-4 w-4 animate-spin" />
     <slot />
   </button>
 </template>

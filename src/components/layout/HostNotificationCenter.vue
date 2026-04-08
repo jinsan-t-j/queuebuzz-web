@@ -37,8 +37,8 @@ function toggle() {
   }
 }
 
-// Close on escape
-watch(isOpen, (val) => {
+// Close on escape — uses onCleanup to prevent listener accumulation
+watch(isOpen, (val, _, onCleanup) => {
   if (val) {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -46,6 +46,7 @@ watch(isOpen, (val) => {
       }
     }
     window.addEventListener('keydown', handleEsc)
+    onCleanup(() => window.removeEventListener('keydown', handleEsc))
   }
 })
 </script>

@@ -1,15 +1,3 @@
-/* ─────────────────────────────────────────────
-   FONT IMPORTS — Fontsource (self-hosted)
-   To change a font: update the @import lines
-   AND the --font-* variable below. That's it.
-   ───────────────────────────────────────────── */
-@import '@fontsource-variable/comfortaa';
-@import '@fontsource/dm-sans/400.css';
-@import '@fontsource/dm-sans/500.css';
-@import '@fontsource/dm-sans/600.css';
-@import '@fontsource/dm-sans/700.css';
-@import '@fontsource/geist-mono/400.css';
-@import '@fontsource/geist-mono/600.css';
 
 @import 'tailwindcss';
 
@@ -33,11 +21,11 @@
   --color-plum: #1A0A2E;
   --color-plum-soft: #2D1B4E;
   --color-plum-soft-2: #3D2B5E;
-  --color-plum-muted: #7B6B95;
+  --color-plum-muted: #64557B; /* Darkened from #7B6B95 for 4.5:1 contrast on sand */
   --color-plum-faint: #E8E2F0;
   --color-mint: #00E5A0;
   --color-mint-light: #D4FFF1;
-  --color-mint-dark: #00B87A;
+  --color-mint-dark: #006B47; /* Darkened from #00B87A for 4.5:1 contrast on mint-light */
   --color-warning: #F97316;
   --color-danger: #EF4444;
   --color-white: #FFFFFF;

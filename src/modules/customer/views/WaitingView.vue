@@ -106,7 +106,9 @@ onBeforeMount(async () => {
   }
 
   // 4. Ensure SSE stream is active
-  connectEvents(entry.value.id)
+  if (entry.value?.id) {
+    connectEvents(entry.value.id)
+  }
 })
 
 onUnmounted(() => {

@@ -7,7 +7,8 @@
  */
 
 // 1. Vue core imports
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, shallowRef, computed, onMounted, onBeforeUnmount, defineAsyncComponent } from 'vue'
+import { ArrowRight, AlertCircle } from 'lucide-vue-next'
 
 // 2. Router / Pinia imports
 
@@ -20,17 +21,8 @@ import { useDashboardApi } from '../composables/useDashboardApi'
 import BaseButton from '@/components/base/BaseButton.vue'
 import QueueStatusBar from '../components/QueueStatusBar.vue'
 import DashboardStatCard from '../components/DashboardStatCard.vue'
-import DashboardWeekChart from '../components/DashboardWeekChart.vue'
-import DashboardRecentSessions from '../components/DashboardRecentSessions.vue'
-import DashboardReturnRate from '../components/DashboardReturnRate.vue'
-import DashboardDroppedSkipped from '../components/DashboardDroppedSkipped.vue'
-import DashboardPeakHours from '../components/DashboardPeakHours.vue'
-import DashboardQuickSetup from '../components/DashboardQuickSetup.vue'
-import { ArrowRight, AlertCircle } from 'lucide-vue-next'
 
-// 6. Props
-
-// 7. Emits
+// 6. Macros
 const emit = defineEmits([
   'go-to-queue',
   'start-queue',
@@ -41,18 +33,36 @@ const emit = defineEmits([
   'step-click',
 ])
 
+// 7. Below-fold async components
+const DashboardWeekChart = defineAsyncComponent(
+  () => import('../components/DashboardWeekChart.vue'),
+)
+const DashboardRecentSessions = defineAsyncComponent(
+  () => import('../components/DashboardRecentSessions.vue'),
+)
+const DashboardReturnRate = defineAsyncComponent(
+  () => import('../components/DashboardReturnRate.vue'),
+)
+const DashboardDroppedSkipped = defineAsyncComponent(
+  () => import('../components/DashboardDroppedSkipped.vue'),
+)
+const DashboardPeakHours = defineAsyncComponent(
+  () => import('../components/DashboardPeakHours.vue'),
+)
+const DashboardQuickSetup = defineAsyncComponent(
+  () => import('../components/DashboardQuickSetup.vue'),
+)
+
 // 8. Composable destructuring
 const { isLoading, error, fetchDashboard } = useDashboardApi()
 
 // 9. Reactive state
-const dashboardData = ref(null)
+const dashboardData = shallowRef(null)
 const currentHour = ref(new Date().getHours())
 let greetingTimer = null
 
 // 10. Computed properties
-const isNewAccount = computed(
-  () => !dashboardData.value?.recentSessions?.length
-)
+const isNewAccount = computed(() => !dashboardData.value?.recentSessions?.length)
 
 const greeting = computed(() => {
   const name = dashboardData.value?.greeting?.name || 'there'
@@ -61,10 +71,7 @@ const greeting = computed(() => {
   return `Good evening, ${name}`
 })
 
-const locale =
-  typeof navigator !== 'undefined'
-    ? navigator.language || 'en-US'
-    : 'en-US'
+const locale = typeof navigator !== 'undefined' ? navigator.language || 'en-US' : 'en-US'
 
 const dateFormatter = new Intl.DateTimeFormat(locale, {
   weekday: 'long',
@@ -83,19 +90,11 @@ const dateString = computed(() => {
 const activeQueue = computed(() => dashboardData.value?.activeQueue || {})
 const stats = computed(() => dashboardData.value?.stats || {})
 const weekChart = computed(() => dashboardData.value?.weekChart || [])
-const recentSessions = computed(
-  () => dashboardData.value?.recentSessions || []
-)
-const returnRate = computed(
-  () => dashboardData.value?.returnRate || { hasData: false }
-)
-const droppedSkipped = computed(
-  () => dashboardData.value?.droppedSkipped || []
-)
+const recentSessions = computed(() => dashboardData.value?.recentSessions || [])
+const returnRate = computed(() => dashboardData.value?.returnRate || { hasData: false })
+const droppedSkipped = computed(() => dashboardData.value?.droppedSkipped || [])
 const peakHours = computed(() => dashboardData.value?.peakHours || [])
-const quickSetup = computed(
-  () => dashboardData.value?.quickSetup || { show: false, steps: [] }
-)
+const quickSetup = computed(() => dashboardData.value?.quickSetup || { show: false, steps: [] })
 
 const showQuickSetup = computed(() => {
   const setup = quickSetup.value
@@ -173,22 +172,13 @@ onBeforeUnmount(() => {
 <template>
   <div class="flex flex-col gap-8">
     <!-- Error state -->
-    <div
-      v-if="error && !isLoading"
-      class="flex flex-col items-center justify-center py-12 gap-3"
-    >
-      <div
-        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF2F2]"
-      >
+    <div v-if="error && !isLoading" class="flex flex-col items-center justify-center py-12 gap-3">
+      <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF2F2]">
         <AlertCircle class="h-6 w-6 text-danger" />
       </div>
-      <p class="font-display text-lg font-bold text-plum">
-        Something went wrong
-      </p>
+      <p class="font-display text-lg font-bold text-plum">Something went wrong</p>
       <p class="font-body text-sm text-plum-muted">{{ error }}</p>
-      <BaseButton variant="ghost" size="sm" @click="retry">
-        Try again
-      </BaseButton>
+      <BaseButton variant="ghost" size="sm" @click="retry"> Try again </BaseButton>
     </div>
 
     <template v-else>
@@ -202,9 +192,8 @@ onBeforeUnmount(() => {
             Welcome to QueueBuzz, {{ dashboardData?.greeting?.name || 'John Doe' }}
           </h1>
           <p class="max-w-lg font-body text-base text-plum-muted leading-relaxed">
-            Let's get your first queue set up and manage your customers
-            efficiently. Your dashboard will start showing data as soon as
-            customers join.
+            Let's get your first queue set up and manage your customers efficiently. Your dashboard
+            will start showing data as soon as customers join.
           </p>
         </div>
         <button
@@ -223,10 +212,7 @@ onBeforeUnmount(() => {
           <h2 class="font-display text-[22px] font-bold text-plum">
             {{ isLoading ? '' : greeting }}
           </h2>
-          <p
-            v-if="!isLoading"
-            class="mt-1 font-body text-[13px] text-plum-muted"
-          >
+          <p v-if="!isLoading" class="mt-1 font-body text-[13px] text-plum-muted">
             {{ dateString }}
           </p>
         </div>
@@ -234,6 +220,7 @@ onBeforeUnmount(() => {
         <!-- Queue Status Bar -->
         <QueueStatusBar
           v-if="!isLoading"
+          v-memo="[activeQueue.queueName, activeQueue.isActive]"
           :queue-name="activeQueue.queueName"
           :started-at="activeQueue.startedAt"
           :is-active="activeQueue.isActive"
@@ -269,17 +256,11 @@ onBeforeUnmount(() => {
       </div>
 
       <!-- Two Column Layout -->
-      <div
-        v-if="!isLoading"
-        class="flex flex-col gap-8 md:flex-row"
-      >
+      <div v-if="!isLoading" class="flex flex-col gap-8 md:flex-row">
         <!-- Left Column (wider) -->
         <div class="flex flex-col gap-8 md:flex-[1.4] md:min-w-0">
           <!-- Week Chart -->
-          <DashboardWeekChart
-            :data="weekChart"
-            :has-data="hasWeekData"
-          />
+          <DashboardWeekChart :data="weekChart" :has-data="hasWeekData" />
 
           <!-- Return Rate (hidden entirely when no data / empty state) -->
           <DashboardReturnRate
@@ -290,10 +271,7 @@ onBeforeUnmount(() => {
           />
 
           <!-- Return Rate empty state for new accounts -->
-          <DashboardReturnRate
-            v-if="isNewAccount"
-            :has-data="false"
-          />
+          <DashboardReturnRate v-if="isNewAccount" :has-data="false" />
 
           <!-- Quick Setup (visible when steps remain) -->
           <DashboardQuickSetup
@@ -318,18 +296,12 @@ onBeforeUnmount(() => {
           <DashboardDroppedSkipped :data="droppedSkipped" />
 
           <!-- Peak Hours -->
-          <DashboardPeakHours
-            :data="peakHours"
-            :has-data="hasPeakData"
-          />
+          <DashboardPeakHours :data="peakHours" :has-data="hasPeakData" />
         </div>
       </div>
 
       <!-- Loading skeleton for two-column area -->
-      <div
-        v-if="isLoading"
-        class="flex flex-col gap-8 md:flex-row"
-      >
+      <div v-if="isLoading" class="flex flex-col gap-8 md:flex-row">
         <div class="flex flex-col gap-8 md:flex-[1.4]">
           <div class="h-72 rounded-[14px] bg-plum-faint animate-pulse" />
           <div class="h-96 rounded-xl bg-plum-faint animate-pulse" />

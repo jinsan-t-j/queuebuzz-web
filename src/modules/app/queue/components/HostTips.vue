@@ -19,7 +19,17 @@ const TIPS = [
 const currentTipIndex = ref(0)
 const isVisible = ref(false)
 const isPermanentlyHidden = ref(false)
-let rollInterval: ReturnType<typeof setTimeout> | null = null
+const timerIds: ReturnType<typeof setTimeout>[] = []
+
+function trackTimer(id: ReturnType<typeof setTimeout>) {
+  timerIds.push(id)
+  return id
+}
+
+function clearAllTimers() {
+  for (const id of timerIds) clearTimeout(id)
+  timerIds.length = 0
+}
 
 function dismiss() {
   isVisible.value = false
@@ -29,44 +39,46 @@ function hidePermanently() {
   localStorage.setItem('queuebuzz_hide_host_tips', 'true')
   isPermanentlyHidden.value = true
   isVisible.value = false
+  clearAllTimers()
+}
+
+function scheduleAutoHide() {
+  trackTimer(
+    setTimeout(() => {
+      if (isVisible.value) isVisible.value = false
+      scheduleNextTip()
+    }, 10000),
+  )
 }
 
 function scheduleNextTip() {
   if (isPermanentlyHidden.value) return
 
-  // Show a tip every 45-90 seconds randomly
   const delay = Math.floor(Math.random() * (90000 - 45000 + 1) + 45000)
 
-  rollInterval = setTimeout(() => {
-    currentTipIndex.value = (currentTipIndex.value + 1) % TIPS.length
-    isVisible.value = true
-
-    // Auto-hide after 10s
+  trackTimer(
     setTimeout(() => {
-      if (isVisible.value) isVisible.value = false
-      scheduleNextTip()
-    }, 10000)
-  }, delay)
+      currentTipIndex.value = (currentTipIndex.value + 1) % TIPS.length
+      isVisible.value = true
+      scheduleAutoHide()
+    }, delay),
+  )
 }
 
 onMounted(() => {
   isPermanentlyHidden.value = localStorage.getItem('queuebuzz_hide_host_tips') === 'true'
   if (!isPermanentlyHidden.value) {
-    // Show first tip after 5s initial delay
-    setTimeout(() => {
-      isVisible.value = true
-
-      // Schedule subsequent tips after the first one hides
+    trackTimer(
       setTimeout(() => {
-        if (isVisible.value) isVisible.value = false
-        scheduleNextTip()
-      }, 10000)
-    }, 5000)
+        isVisible.value = true
+        scheduleAutoHide()
+      }, 5000),
+    )
   }
 })
 
 onUnmounted(() => {
-  if (rollInterval) clearTimeout(rollInterval)
+  clearAllTimers()
 })
 </script>
 

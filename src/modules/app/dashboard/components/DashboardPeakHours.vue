@@ -40,19 +40,15 @@ const processedData = computed(() => {
   const maxVal = Math.max(...props.data.map((d) => d.value), 1)
   return props.data.map((d) => ({
     ...d,
-    barHeight: `${(d.value / maxVal) * 100}%`
+    barHeight: `${(d.value / maxVal) * 100}%`,
   }))
 })
 </script>
 
 <template>
-  <div
-    class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-  >
+  <div class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <div class="flex items-center justify-between">
-      <h4
-        class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted"
-      >
+      <h4 class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted">
         Peak Hours
       </h4>
 
@@ -61,7 +57,7 @@ const processedData = computed(() => {
           v-for="tab in timeframes"
           :key="tab.key"
           :class="[
-            'rounded-md px-3 py-1 font-body text-xs font-medium transition-colors',
+            'rounded-md px-4 py-2 font-body text-xs font-medium transition-colors min-h-[48px]',
             activeTimeframe === tab.key
               ? 'bg-white text-plum shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
               : 'text-plum-muted hover:text-plum',
@@ -74,10 +70,7 @@ const processedData = computed(() => {
     </div>
 
     <!-- Empty state -->
-    <div
-      v-if="!hasData"
-      class="flex flex-col items-center justify-center py-8 gap-3"
-    >
+    <div v-if="!hasData" class="flex flex-col items-center justify-center py-8 gap-3">
       <PeakEmptyIcon class="h-7 w-8 text-plum-faint" />
       <p class="font-body text-sm text-ash">Not enough data yet</p>
     </div>

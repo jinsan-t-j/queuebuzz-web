@@ -90,10 +90,11 @@ const shouldRender = computed(() => isVisible.value)
 
           <!-- Close button -->
           <button
-            class="absolute right-3 top-3 rounded-full p-2 text-plum-muted transition-colors hover:bg-sand active:scale-95"
+            class="absolute right-3 top-3 rounded-full min-h-[48px] min-w-[48px] flex items-center justify-center text-plum-muted transition-colors hover:bg-sand active:scale-95"
+            aria-label="Close banner"
             @click="dismiss"
           >
-            <X class="h-4 w-4" />
+            <X class="h-6 w-6" />
           </button>
         </div>
       </div>

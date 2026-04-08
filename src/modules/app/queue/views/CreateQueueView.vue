@@ -6,10 +6,14 @@
  * Uses v-if to fully unmount the form once the queue is live.
  */
 
-import { ref } from 'vue'
-import CreateQueueForm from '@/modules/app/queue/components/CreateQueueForm.vue'
-import LiveQueueView from '@/modules/app/queue/views/LiveQueueView.vue'
-import InfoQueueModal from '@/modules/app/queue/components/InfoQueueModal.vue'
+import { ref, defineAsyncComponent } from 'vue'
+const CreateQueueForm = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/CreateQueueForm.vue'),
+)
+const LiveQueueView = defineAsyncComponent(() => import('./LiveQueueView.vue'))
+const InfoQueueModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/InfoQueueModal.vue'),
+)
 
 const activeQueueData = ref(null)
 const showSuccessModal = ref(false)
@@ -23,9 +27,7 @@ function handleQueueCreated(queueData) {
 <template>
   <!-- ═══ Create form (unmounted once queue is live) ═══ -->
   <div v-if="!activeQueueData" class="mx-auto max-w-[680px]">
-    <h1 class="font-display text-[40px] font-extrabold text-plum">
-      Let's get started.
-    </h1>
+    <h1 class="font-display text-[40px] font-extrabold text-plum">Let's get started.</h1>
 
     <CreateQueueForm role="host" @queue-created="handleQueueCreated" />
   </div>

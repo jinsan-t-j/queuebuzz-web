@@ -39,7 +39,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
     </section>
 
     <!-- Features Section -->
-    <section class="mx-auto max-w-7xl px-6 py-16">
+    <section v-once class="mx-auto max-w-7xl px-6 py-16">
       <div class="grid gap-8 md:grid-cols-3">
         <div class="rounded-card bg-white p-8 shadow-card">
           <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-mint-light">
@@ -72,7 +72,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
     </section>
 
     <!-- Join by Code Section (Customer Focused) -->
-    <section class="mx-auto max-w-4xl px-6 py-24">
+    <section v-once class="mx-auto max-w-4xl px-6 py-24">
       <div
         class="relative overflow-hidden rounded-[40px] bg-white p-12 text-center shadow-[0_32px_64px_-16px_rgba(26,10,46,0.1)] border border-plum-faint"
       >
@@ -95,7 +95,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
               <div
                 class="flex h-16 w-full items-center justify-between rounded-2xl border-2 border-dashed border-plum-faint bg-sand/30 px-6 cursor-pointer hover:border-mint hover:bg-mint-light/10 transition-all duration-300"
               >
-                <span class="font-mono text-xl font-bold tracking-[0.25em] text-plum/40 uppercase"
+                <span class="font-mono text-xl font-bold tracking-[0.25em] text-plum-soft uppercase"
                   >ENTER-CODE</span
                 >
                 <div
@@ -118,7 +118,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
     </section>
 
     <!-- CTA Section -->
-    <section class="bg-plum py-20 text-center">
+    <section v-once class="bg-plum py-20 text-center">
       <h2 class="font-display text-3xl font-bold text-white md:text-4xl">
         No sign-up hassle. Just start.
       </h2>
