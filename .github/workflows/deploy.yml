@@ -29,6 +29,11 @@ jobs:
   deploy:
     needs: get-node-version
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
     
     # Select environment based on branch
     environment:
