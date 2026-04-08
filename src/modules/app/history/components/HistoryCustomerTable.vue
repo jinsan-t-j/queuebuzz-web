@@ -161,7 +161,7 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
             <th
               v-for="col in columns"
               :key="col"
-              class="px-6 py-3 text-left font-body text-xs font-bold uppercase tracking-[0.6px] text-plum/40"
+              class="px-6 py-3 text-left font-body text-sm font-bold uppercase tracking-[0.6px] text-plum/40"
             >
               {{ col }}
             </th>
@@ -194,7 +194,7 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
             <td class="px-6 py-3.5">
               <span
                 :class="[
-                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-body text-xs font-semibold',
+                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-body text-sm font-semibold',
                   statusClasses(entry.status),
                 ]"
               >

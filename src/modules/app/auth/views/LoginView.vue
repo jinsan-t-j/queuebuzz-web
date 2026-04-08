@@ -82,7 +82,7 @@ function handleMagicLinkSuccess() {
         <!-- OR divider -->
         <div class="flex w-full max-w-[448px] items-center gap-4">
           <div class="flex-1 border-t border-ash-border" />
-          <span class="font-display text-xs font-bold uppercase tracking-[3.6px] text-ash">
+          <span class="font-display text-sm font-bold uppercase tracking-[3.6px] text-ash">
             Or
           </span>
           <div class="flex-1 border-t border-ash-border" />

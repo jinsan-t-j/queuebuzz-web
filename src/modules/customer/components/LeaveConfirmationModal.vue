@@ -22,7 +22,7 @@ withDefaults(defineProps<Props>(), {
   message: 'You will lose your current position and will need to re-join the line from the start.',
   confirmText: 'Yes, Leave Now',
   cancelText: 'Keep my spot',
-  variant: 'danger'
+  variant: 'danger',
 })
 
 const emit = defineEmits<{
@@ -40,15 +40,15 @@ function handleConfirm() {
   <BaseModal :is-open="isOpen" @close="emit('close')">
     <div class="relative w-full overflow-hidden bg-white p-8 text-center shadow-xl">
       <div class="flex flex-col items-center">
-        <div 
+        <div
           :class="[
             'mb-5 flex h-14 w-14 items-center justify-center rounded-full transition-colors',
-            variant === 'danger' ? 'bg-danger/10 text-danger' : 'bg-mint-light/60 text-plum'
+            variant === 'danger' ? 'bg-danger/10 text-danger' : 'bg-mint-light/60 text-plum',
           ]"
         >
           <AlertCircle class="h-7 w-7" />
         </div>
-        
+
         <h3 class="font-display text-2xl font-bold text-plum">
           {{ title }}
         </h3>
@@ -66,7 +66,7 @@ function handleConfirm() {
           </BaseButton>
           <BaseButton
             variant="ghost"
-            class="w-full h-11 text-plum-muted font-bold tracking-widest text-[10px] uppercase transition-all"
+            class="w-full h-11 text-plum-muted font-bold tracking-widest text-sm uppercase transition-all"
             @click="emit('close')"
           >
             {{ cancelText }}

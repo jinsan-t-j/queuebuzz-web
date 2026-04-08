@@ -165,7 +165,7 @@ watch(
 
         <!-- Join Code Display -->
         <div class="mb-4 rounded-3xl bg-sand/50 p-6 border border-plum/5">
-          <p class="font-body text-[10px] font-bold uppercase tracking-[0.2em] text-plum/30 mb-2">
+          <p class="font-body text-sm font-bold uppercase tracking-[0.2em] text-plum/30 mb-2">
             JOIN CODE
           </p>
           <div class="flex items-center justify-center gap-4">
@@ -196,7 +196,7 @@ watch(
 
           <BaseButton
             variant="ghost"
-            class="w-full h-14 text-plum/60 hover:text-plum font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2"
+            class="w-full h-14 text-plum/60 hover:text-plum font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2"
             @click="handleShare"
           >
             <ShareIcon class="h-4 w-4" />

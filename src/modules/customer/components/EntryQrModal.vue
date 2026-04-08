@@ -126,7 +126,7 @@ onMounted(() => {
             v-if="ticketNo"
             class="absolute -bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-2xl bg-plum px-5 py-2 shadow-xl ring-4 ring-white"
           >
-            <span class="font-body text-[10px] font-bold tracking-[0.2em] text-sand/50 uppercase"
+            <span class="font-body text-sm font-bold tracking-[0.2em] text-sand/50 uppercase"
               >Ticket</span
             >
             <span class="font-mono text-lg font-black text-sand leading-none">

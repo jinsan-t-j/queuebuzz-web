@@ -127,7 +127,7 @@ onMounted(() => {
             type="email"
             :error="errors.email"
           />
-          <p class="mt-1 font-body text-[11px] text-plum-muted/70">
+          <p class="mt-1 font-body text-sm text-plum-muted/70">
             Highly recommended to avoid losing your spot if you close the browser.
           </p>
         </div>
@@ -161,7 +161,7 @@ onMounted(() => {
               </button>
             </div>
           </div>
-          <p v-if="errors.partySize" class="font-body text-xs text-danger">
+          <p v-if="errors.partySize" class="font-body text-sm text-danger">
             {{ errors.partySize }}
           </p>
         </div>

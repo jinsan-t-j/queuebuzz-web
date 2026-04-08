@@ -177,9 +177,9 @@ function handleQrResult(result: string) {
           class="flex items-center gap-2 text-danger animate-in fade-in slide-in-from-top-1"
         >
           <ErrorCircleOutlineIcon class="h-4 w-4" />
-          <span class="font-body text-xs font-semibold uppercase tracking-wider">Invalid Code</span>
+          <span class="font-body text-sm font-semibold uppercase tracking-wider">Invalid Code</span>
         </div>
-        <p v-else class="font-body text-xs font-semibold text-plum-soft uppercase tracking-[0.2em]">
+        <p v-else class="font-body text-sm font-semibold text-plum-soft uppercase tracking-[0.2em]">
           Not case sensitive
         </p>
       </div>
@@ -218,7 +218,7 @@ function handleQrResult(result: string) {
       </div>
 
       <button
-        class="mt-12 font-body text-xs font-bold text-plum uppercase tracking-[0.25em] hover:text-plum-soft transition-colors py-4 px-8 min-h-[48px]"
+        class="mt-12 font-body text-sm font-bold text-plum uppercase tracking-[0.25em] hover:text-plum-soft transition-colors py-4 px-8 min-h-[48px]"
         @click="router.back()"
       >
         Go Back

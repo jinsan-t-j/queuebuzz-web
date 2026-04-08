@@ -159,7 +159,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
       <!-- Case 1: No entries at all (Truly empty) -->
       <template v-if="totalCount === 0 && !searchQuery">
         <div class="flex flex-col items-center justify-center py-10 opacity-40">
-          <p class="mb-4 font-body text-[10px] font-bold uppercase tracking-[2px] text-plum">
+          <p class="mb-4 font-body text-sm font-bold uppercase tracking-[2px] text-plum">
             Action Center
           </p>
           <ActionCenterIcon class="h-10 w-11" />
@@ -252,7 +252,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
                   />
                 </BaseTooltip>
               </div>
-              <p class="font-body text-xs text-plum-muted truncate">
+              <p class="font-body text-sm text-plum-muted truncate">
                 <template v-if="showPartySize && entry.partySize > 1">
                   P-{{ entry.partySize }} •
                 </template>
@@ -296,7 +296,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
         class="flex w-full items-center justify-between px-6 py-3 text-plum-muted transition-colors hover:text-plum/60 cursor-pointer"
         @click="isHistoryExpanded = !isHistoryExpanded"
       >
-        <span class="font-body text-[10px] font-bold uppercase tracking-widest">
+        <span class="font-body text-sm font-bold uppercase tracking-widest">
           Served Today ({{ servedEntries.length }})
         </span>
         <svg
@@ -328,7 +328,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
         >
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <span
-              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-plum/5 text-plum/30 font-mono text-xs font-bold"
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-plum/5 text-plum/30 font-mono text-sm font-bold"
             >
               <template v-if="entry.servedAt">
                 <CheckIcon class="h-4 w-4" />
@@ -339,7 +339,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
             </span>
             <div class="flex flex-col min-w-0">
               <p class="font-body text-sm font-bold text-plum truncate">{{ entry.name }}</p>
-              <p v-if="entry.servedAt" class="font-body text-[10px] text-plum-muted">
+              <p v-if="entry.servedAt" class="font-body text-sm text-plum-muted">
                 Served at
                 {{
                   new Date(entry.servedAt).toLocaleTimeString([], {
@@ -371,7 +371,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
       </button>
       <p
         v-if="activeEntries.length === 0 || isPaused || (strictQueueMode && hasActiveCalledEntry)"
-        class="mt-3 text-center font-body text-[10px] font-bold uppercase tracking-wider text-plum/30"
+        class="mt-3 text-center font-body text-sm font-bold uppercase tracking-wider text-plum/30"
       >
         <template v-if="isPaused">Resume queue to call guests</template>
         <template v-else-if="strictQueueMode && hasActiveCalledEntry">

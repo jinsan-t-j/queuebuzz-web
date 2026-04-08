@@ -71,20 +71,18 @@ const shouldRender = computed(() => isVisible.value)
           <!-- Content -->
           <div class="flex-1 pr-6 text-left">
             <h3 class="font-body text-sm font-bold text-plum">Add to Home Screen</h3>
-            <p class="mt-1 font-body text-xs leading-relaxed text-plum-muted">
+            <p class="mt-1 font-body text-sm leading-relaxed text-plum-muted">
               Safari requires this to receive <strong class="text-plum">buzz alerts</strong> and
               real-time updates while you wait.
             </p>
 
             <div
-              class="mt-3 flex items-center gap-1.5 font-body text-[10px] font-semibold uppercase tracking-wider text-plum-muted"
+              class="mt-3 flex items-center gap-1.5 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
             >
               <span>Tap</span>
               <Share class="h-3 w-3" />
               <span>then</span>
-              <span class="rounded bg-sand px-1 py-0.5 text-[9px] text-plum"
-                >Add to Home Screen</span
-              >
+              <span class="rounded bg-sand px-1 py-0.5 text-sm text-plum">Add to Home Screen</span>
             </div>
           </div>
 

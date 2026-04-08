@@ -133,7 +133,7 @@ function selectSuggestion(suggestion: string) {
             class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10"
           >
             <label
-              class="mb-3 block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-plum/50"
+              class="mb-3 block font-body text-sm font-bold uppercase tracking-[1.65px] text-plum/50"
             >
               Queue Name
             </label>
@@ -149,7 +149,7 @@ function selectSuggestion(suggestion: string) {
                 class="absolute right-0 top-3 h-5 w-5 text-mint"
               />
             </div>
-            <div v-if="errors.queueName" class="mb-3 font-body text-xs text-danger">
+            <div v-if="errors.queueName" class="mb-3 font-body text-sm text-danger">
               {{ errors.queueName }}
             </div>
 
@@ -158,7 +158,7 @@ function selectSuggestion(suggestion: string) {
                 v-for="suggestion in suggestions"
                 :key="suggestion"
                 type="button"
-                class="rounded-full border border-plum-faint px-3 py-1 font-body text-xs font-medium text-plum/60 transition-colors hover:bg-plum-faint hover:text-plum cursor-pointer"
+                class="rounded-full border border-plum-faint px-3 py-1 font-body text-sm font-medium text-plum/60 transition-colors hover:bg-plum-faint hover:text-plum cursor-pointer"
                 @click="selectSuggestion(suggestion)"
               >
                 {{ suggestion }}
@@ -172,20 +172,20 @@ function selectSuggestion(suggestion: string) {
           >
             <div class="flex items-center justify-between mb-4">
               <label
-                class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-plum/50"
+                class="block font-body text-sm font-bold uppercase tracking-[1.65px] text-plum/50"
               >
                 Avg. Service Time
               </label>
               <div class="flex items-center gap-1.5 rounded-lg bg-mint/10 px-2 py-1">
                 <TimeIcon class="h-3 w-3 text-mint" />
-                <span class="font-body text-xs font-bold text-mint">{{ avgServiceMins }}m</span>
+                <span class="font-body text-sm font-bold text-mint">{{ avgServiceMins }}m</span>
               </div>
             </div>
 
             <div class="mt-2">
               <BaseSlider v-model="avgServiceMins" :min="1" :max="60" :step="1" />
               <div
-                class="flex justify-between font-body text-[10px] text-plum/40 font-bold uppercase tracking-wider mt-1"
+                class="flex justify-between font-body text-sm text-plum/40 font-bold uppercase tracking-wider mt-1"
               >
                 <span>Quick (1m)</span>
                 <span>Relaxed (60m)</span>
@@ -200,11 +200,11 @@ function selectSuggestion(suggestion: string) {
             <div class="flex items-center justify-between">
               <div class="flex flex-col gap-1">
                 <label
-                  class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-plum/50"
+                  class="block font-body text-sm font-bold uppercase tracking-[1.65px] text-plum/50"
                 >
                   Strict Calling Mode
                 </label>
-                <p class="font-body text-[10px] text-plum/40 leading-relaxed max-w-[200px]">
+                <p class="font-body text-sm text-plum/40 leading-relaxed max-w-[200px]">
                   Call next guest only after marking current guest as served.
                 </p>
               </div>
@@ -219,13 +219,13 @@ function selectSuggestion(suggestion: string) {
           >
             <div class="flex items-center justify-between mb-3">
               <label
-                class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-plum/50"
+                class="block font-body text-sm font-bold uppercase tracking-[1.65px] text-plum/50"
               >
                 Recovery Email
               </label>
               <div v-if="isRecoveryEmailSet" class="flex items-center gap-1">
                 <VerifiedCheckIcon class="h-3 w-3 text-mint" />
-                <span class="font-body text-[10px] font-bold text-mint uppercase tracking-wider"
+                <span class="font-body text-sm font-bold text-mint uppercase tracking-wider"
                   >Locked</span
                 >
               </div>
@@ -242,15 +242,15 @@ function selectSuggestion(suggestion: string) {
               />
               <p
                 v-if="!isRecoveryEmailSet"
-                class="mt-2 font-body text-[10px] text-plum/40 leading-relaxed italic"
+                class="mt-2 font-body text-sm text-plum/40 leading-relaxed italic"
               >
                 * Needed to resume this queue if you close the browser. Cannot be changed once set.
               </p>
-              <p v-else class="mt-2 font-body text-[10px] text-plum/40 leading-relaxed">
+              <p v-else class="mt-2 font-body text-sm text-plum/40 leading-relaxed">
                 Settings locked for security.
               </p>
             </div>
-            <div v-if="errors.recoveryEmail" class="mt-2 font-body text-xs text-danger">
+            <div v-if="errors.recoveryEmail" class="mt-2 font-body text-sm text-danger">
               {{ errors.recoveryEmail }}
             </div>
           </div>

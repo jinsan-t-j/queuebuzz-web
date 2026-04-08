@@ -53,19 +53,20 @@ function handleJoinByCode() {
       class="flex flex-col items-center px-6 py-12 flex-1 animate-in fade-in"
     >
       <!-- Skeleton Header (LCP Target) -->
-      <div class="h-10 w-64 bg-plum-faint rounded-2xl animate-pulse mx-auto opacity-50" />
+      <div v-once class="h-12 w-64 bg-plum-faint rounded-2xl animate-pulse mx-auto" />
 
       <!-- Skeleton Form Container -->
       <div
-        class="mt-10 w-full max-w-sm rounded-card border border-plum-faint bg-white p-6 shadow-sm"
+        v-once
+        class="mt-10 w-full max-w-sm rounded-[40px] border border-plum-faint bg-white p-8 shadow-sm"
       >
-        <div class="h-6 w-32 bg-plum-faint rounded animate-pulse mb-6" />
-        <div class="h-12 w-full bg-plum-faint rounded-xl animate-pulse mb-4" />
-        <div class="h-12 w-full bg-plum-faint rounded-xl animate-pulse" />
+        <div class="h-8 w-40 bg-plum-faint rounded-lg animate-pulse mb-8" />
+        <div class="h-24 w-full bg-sand rounded-3xl animate-pulse mb-6" />
+        <div class="h-[60px] w-full bg-plum-faint rounded-2xl animate-pulse" />
       </div>
 
-      <p class="mt-8 font-body text-xs text-plum-muted uppercase tracking-widest animate-pulse">
-        Fetching queue details...
+      <p class="mt-8 font-body text-sm text-plum-muted uppercase tracking-widest animate-pulse">
+        Connecting to queue...
       </p>
     </div>
 

@@ -236,7 +236,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
                       : 'bg-danger',
                 ]"
               />
-              <span class="font-body text-xs font-bold text-plum uppercase tracking-wider">
+              <span class="font-body text-sm font-bold text-plum uppercase tracking-wider">
                 {{
                   isStreamConnected
                     ? 'Live Connection'
@@ -251,7 +251,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
               v-if="activeQueue?.strictQueueMode"
               class="flex items-center gap-3 px-4 py-2 bg-plum rounded-full border border-plum shadow-sm"
             >
-              <span class="font-body text-xs font-bold text-sand uppercase tracking-wider">
+              <span class="font-body text-sm font-bold text-sand uppercase tracking-wider">
                 Strict Mode Active
               </span>
             </div>
@@ -260,7 +260,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
           <div class="flex items-center gap-6">
             <div
               v-if="!isStreamConnected && streamState !== 'connecting'"
-              class="text-xs font-body text-danger flex items-center gap-1"
+              class="text-sm font-body text-danger flex items-center gap-1"
             >
               <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path

@@ -65,7 +65,7 @@ const variantClasses = computed(() => {
 
 const sizeClasses = computed(() => {
   const map = {
-    sm: 'px-4 py-2 text-xs min-h-[48px]',
+    sm: 'px-4 py-2 text-sm min-h-[48px]',
     md: 'px-6 py-2.5 text-sm min-h-[48px]',
     lg: 'px-8 py-3 text-base min-h-[56px]',
   }

@@ -139,7 +139,7 @@ const handleClose = () => {
                   }}
                 </span>
                 <p
-                  class="font-body text-[10px] text-plum-muted font-medium uppercase tracking-[0.05em] mt-0.5"
+                  class="font-body text-sm text-plum-muted font-medium uppercase tracking-[0.05em] mt-0.5"
                 >
                   {{ accompanying > 0 ? `Head of Party + ${accompanying} others` : 'Solo entry' }}
                 </p>
@@ -183,15 +183,15 @@ const handleClose = () => {
                   <span
                     v-if="accompanying < maxAllowedPartySize - 1"
                     key="label"
-                    class="font-body text-xs text-plum-muted"
+                    class="font-body text-sm text-plum-muted"
                   >
                     How many are there?
                   </span>
                   <div v-else key="error" class="flex flex-col leading-tight">
-                    <span class="text-[10px] font-bold text-danger uppercase tracking-tight"
+                    <span class="text-sm font-bold text-danger uppercase tracking-tight"
                       >Limit reached</span
                     >
-                    <span class="text-[11px] font-body text-plum-muted"
+                    <span class="text-sm font-body text-plum-muted"
                       >Max {{ maxAllowedPartySize - 1 }} more guests only</span
                     >
                   </div>

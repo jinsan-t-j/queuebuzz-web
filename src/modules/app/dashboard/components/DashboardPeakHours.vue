@@ -57,7 +57,7 @@ const processedData = computed(() => {
           v-for="tab in timeframes"
           :key="tab.key"
           :class="[
-            'rounded-md px-4 py-2 font-body text-xs font-medium transition-colors min-h-[48px]',
+            'rounded-md px-4 py-2 font-body text-sm font-medium transition-colors min-h-[48px]',
             activeTimeframe === tab.key
               ? 'bg-white text-plum shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
               : 'text-plum-muted hover:text-plum',
@@ -92,9 +92,9 @@ const processedData = computed(() => {
 
       <!-- Hour labels -->
       <div class="mt-2 flex justify-between">
-        <span class="font-mono text-[10px] text-plum-muted">12 AM</span>
-        <span class="font-mono text-[10px] text-plum-muted">12 PM</span>
-        <span class="font-mono text-[10px] text-plum-muted">11 PM</span>
+        <span class="font-mono text-sm text-plum-muted">12 AM</span>
+        <span class="font-mono text-sm text-plum-muted">12 PM</span>
+        <span class="font-mono text-sm text-plum-muted">11 PM</span>
       </div>
     </div>
   </div>

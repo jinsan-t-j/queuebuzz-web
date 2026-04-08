@@ -14,7 +14,7 @@ defineProps({
 
 <template>
   <div v-if="estWaitMin > 3" class="text-center">
-    <p class="mb-3 font-body text-[10px] font-bold uppercase tracking-[1px] text-plum-muted/60">
+    <p class="mb-3 font-body text-sm font-bold uppercase tracking-[1px] text-plum-muted/60">
       Sponsored
     </p>
     <div class="rounded-xl border border-plum-faint bg-white p-2">

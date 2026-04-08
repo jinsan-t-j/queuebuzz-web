@@ -74,13 +74,9 @@ function cellColor(value) {
 </script>
 
 <template>
-  <div
-    class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-  >
+  <div class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
     <div class="flex items-center justify-between">
-      <h4
-        class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted"
-      >
+      <h4 class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted">
         Dropped & Skipped
       </h4>
 
@@ -89,7 +85,7 @@ function cellColor(value) {
           v-for="tab in timeframes"
           :key="tab.key"
           :class="[
-            'rounded-md px-3 py-1 font-body text-xs font-medium transition-colors',
+            'rounded-md px-3 py-1 font-body text-sm font-medium transition-colors',
             activeTimeframe === tab.key
               ? 'bg-white text-plum shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
               : 'text-plum-muted hover:text-plum',
@@ -102,19 +98,12 @@ function cellColor(value) {
     </div>
 
     <!-- Empty state -->
-    <div
-      v-if="!hasData"
-      class="flex flex-col items-center justify-center py-10 gap-3"
-    >
-      <div
-        class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint"
-      >
+    <div v-if="!hasData" class="flex flex-col items-center justify-center py-10 gap-3">
+      <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <WavesEmptyIcon class="h-5 w-5 text-plum-muted" />
       </div>
       <p class="font-display text-base font-semibold text-plum">No data yet</p>
-      <p
-        class="max-w-[240px] text-center font-body text-sm text-plum-muted leading-5"
-      >
+      <p class="max-w-[240px] text-center font-body text-sm text-plum-muted leading-5">
         We'll show you the heap map of your lost or skipped traffic.
       </p>
     </div>
@@ -122,27 +111,20 @@ function cellColor(value) {
     <!-- Heatmap grid -->
     <div v-else class="mt-4">
       <div class="flex flex-col gap-1.5">
-        <div
-          v-for="(row, rowIdx) in gridCells"
-          :key="rowIdx"
-          class="flex gap-1.5"
-        >
+        <div v-for="(row, rowIdx) in gridCells" :key="rowIdx" class="flex gap-1.5">
           <div
             v-for="(value, colIdx) in row"
             :key="colIdx"
-            :class="[
-              'h-6 flex-1 rounded-xs transition-colors',
-              cellColor(value),
-            ]"
+            :class="['h-6 flex-1 rounded-xs transition-colors', cellColor(value)]"
           />
         </div>
       </div>
 
       <!-- Hour labels -->
       <div class="mt-2 flex justify-between">
-        <span class="font-mono text-[10px] text-plum-muted">08:00</span>
-        <span class="font-mono text-[10px] text-plum-muted">14:00</span>
-        <span class="font-mono text-[10px] text-plum-muted">20:00</span>
+        <span class="font-mono text-sm text-plum-muted">08:00</span>
+        <span class="font-mono text-sm text-plum-muted">14:00</span>
+        <span class="font-mono text-sm text-plum-muted">20:00</span>
       </div>
     </div>
   </div>

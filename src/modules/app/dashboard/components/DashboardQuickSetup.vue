@@ -49,10 +49,7 @@ const emit = defineEmits(['step-click'])
                 : 'border-2 border-ash-border',
           ]"
         >
-          <Check
-            v-if="step.isDone"
-            class="h-3 w-3 text-white"
-          />
+          <Check v-if="step.isDone" class="h-3 w-3 text-white" />
           <span
             v-else-if="idx === 0 || steps[idx - 1]?.isDone"
             class="h-2 w-2 rounded-full bg-white"
@@ -69,7 +66,7 @@ const emit = defineEmits(['step-click'])
           >
             {{ step.label }}
           </p>
-          <p class="font-body text-[10px] text-plum-muted mt-0.5">
+          <p class="font-body text-sm text-plum-muted mt-0.5">
             {{ step.sub }}
           </p>
         </div>
@@ -79,10 +76,7 @@ const emit = defineEmits(['step-click'])
           v-if="step.isDone || idx === 0 || steps[idx - 1]?.isDone"
           class="h-4 w-4 shrink-0 text-ash"
         />
-        <Lock
-          v-else
-          class="h-4 w-4 shrink-0 text-ash-light"
-        />
+        <Lock v-else class="h-4 w-4 shrink-0 text-ash-light" />
       </button>
     </div>
   </div>

@@ -17,6 +17,7 @@
       "preset": "lighthouse:recommended",
       "assertions": {
         "bf-cache": "off",
+        "uses-rel-preconnect": "off",
         "offscreen-images": "off",
         "uses-webp-images": "off",
         "content-width": "off",

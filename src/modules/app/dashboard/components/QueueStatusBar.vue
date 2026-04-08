@@ -65,7 +65,7 @@ defineEmits(['go-to-queue', 'start-queue'])
         <p class="font-body text-sm text-plum">
           {{ isActive ? `${queueName} is live` : 'No queue running' }}
         </p>
-        <p v-if="isActive" class="font-body text-xs font-light text-plum-muted">
+        <p v-if="isActive" class="font-body text-sm font-light text-plum-muted">
           Started {{ startedAt }}
         </p>
       </div>

@@ -114,7 +114,7 @@ function getStatusVariant(status) {
     <!-- Quick Stats -->
     <div v-if="queueDetail" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
       <BaseCard class="p-5 border-l-4 border-l-plum">
-        <p class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1">
+        <p class="font-body text-sm uppercase font-bold tracking-widest text-plum-muted mb-1">
           Total Bookings
         </p>
         <div class="flex items-end gap-2">
@@ -124,7 +124,7 @@ function getStatusVariant(status) {
       </BaseCard>
 
       <BaseCard class="p-5 border-l-4 border-l-mint">
-        <p class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1">
+        <p class="font-body text-sm uppercase font-bold tracking-widest text-plum-muted mb-1">
           Served
         </p>
         <div class="flex items-end gap-2">
@@ -134,7 +134,7 @@ function getStatusVariant(status) {
       </BaseCard>
 
       <BaseCard class="p-5 border-l-4 border-l-danger">
-        <p class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1">
+        <p class="font-body text-sm uppercase font-bold tracking-widest text-plum-muted mb-1">
           Skipped / Drops
         </p>
         <div class="flex items-end gap-2">
@@ -146,7 +146,7 @@ function getStatusVariant(status) {
       </BaseCard>
 
       <BaseCard class="p-5 border-l-4 border-l-plum-soft">
-        <p class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1">
+        <p class="font-body text-sm uppercase font-bold tracking-widest text-plum-muted mb-1">
           Avg. Wait Time
         </p>
         <div class="flex items-end gap-2">
@@ -182,27 +182,27 @@ function getStatusVariant(status) {
             <thead>
               <tr class="bg-sand/30 border-b border-plum-faint">
                 <th
-                  class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
                 >
                   Ticket
                 </th>
                 <th
-                  class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
                 >
                   Customer Name
                 </th>
                 <th
-                  class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
                 >
                   Status
                 </th>
                 <th
-                  class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
                 >
                   Joined At
                 </th>
                 <th
-                  class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
                 >
                   Wait Time
                 </th>
@@ -253,7 +253,7 @@ function getStatusVariant(status) {
         <div
           class="px-6 py-4 border-t border-plum-faint bg-sand/5 flex items-center justify-between"
         >
-          <p class="font-body text-xs text-plum-muted">
+          <p class="font-body text-sm text-plum-muted">
             Showing {{ queueDetail?.entries.length || 0 }} customers from this session
           </p>
           <div class="flex items-center gap-2">

@@ -157,12 +157,12 @@ function isActive(item) {
     >
       <div class="flex items-center justify-between mb-4">
         <p
-          class="font-body text-[10px] font-bold uppercase tracking-[1px]"
+          class="font-body text-sm font-bold uppercase tracking-[1px]"
           :class="isQueuePaused ? 'text-warning' : 'text-white/40'"
         >
           Queue {{ isQueuePaused ? 'PAUSED' : 'RUNNING' }}
         </p>
-        <span v-if="isQueuePaused" class="font-mono text-xs font-bold text-warning">
+        <span v-if="isQueuePaused" class="font-mono text-sm font-bold text-warning">
           {{ pausedTimeFormatted }}
         </span>
       </div>
@@ -198,7 +198,7 @@ function isActive(item) {
     <div class="border-t border-white/10 p-4">
       <router-link
         to="/premium"
-        class="flex items-center gap-[9px] px-3 py-2.5 font-body text-xs text-mint transition-colors hover:text-mint-dark"
+        class="flex items-center gap-[9px] px-3 py-2.5 font-body text-sm text-mint transition-colors hover:text-mint-dark"
       >
         <DiamondPremium class="h-[19px] w-[21px] text-mint" />
         Go Premium

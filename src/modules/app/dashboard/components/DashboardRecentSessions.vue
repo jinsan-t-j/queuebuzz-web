@@ -82,7 +82,7 @@ const emit = defineEmits(['select-session', 'view-history', 'create-first-queue'
           <p class="font-display text-sm font-semibold text-plum truncate">
             {{ session.name }}
           </p>
-          <p class="font-body text-xs text-ash">{{ session.date }} • {{ session.duration }}</p>
+          <p class="font-body text-sm text-ash">{{ session.date }} • {{ session.duration }}</p>
         </div>
         <span class="font-body text-sm font-bold text-plum">
           {{ session.served }}

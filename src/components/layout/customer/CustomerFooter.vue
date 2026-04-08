@@ -28,15 +28,15 @@ const currentYear = computed(() => new Date().getFullYear())
       <!-- Free notice (shown on join screen) -->
       <div v-if="showFreeNotice" class="flex items-center gap-2">
         <ShieldVerifiedIcon class="h-3 w-3 text-plum-muted" />
-        <span class="font-body text-xs font-medium text-plum-muted">Free · No signup required</span>
+        <span class="font-body text-sm font-medium text-plum-muted">Free · No signup required</span>
       </div>
 
       <!-- Copyright -->
-      <p class="text-center font-body text-[10px] capitalize tracking-tight text-plum-muted">
+      <p class="text-center font-body text-sm capitalize tracking-tight text-plum-muted">
         © {{ currentYear }} queuebuzz. All rights reserved
       </p>
       <p
-        class="text-center font-body text-[10px] capitalize tracking-tight text-plum-muted flex flex-wrap items-center justify-center gap-1"
+        class="text-center font-body text-sm capitalize tracking-tight text-plum-muted flex flex-wrap items-center justify-center gap-1"
       >
         <router-link
           to="/terms"

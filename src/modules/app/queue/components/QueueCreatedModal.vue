@@ -79,7 +79,7 @@ const handleOpenQueue = () => router.push(props.queueUrl)
         <div
           class="mx-auto mt-6 rounded-card border-2 border-dashed border-plum/10 bg-sand px-10 py-6"
         >
-          <p class="mb-2 font-body text-[10px] font-bold uppercase tracking-[2px] text-plum/30">
+          <p class="mb-2 font-body text-sm font-bold uppercase tracking-[2px] text-plum/30">
             Join Code
           </p>
           <p class="font-mono text-5xl font-bold uppercase tracking-[4.8px] text-plum">

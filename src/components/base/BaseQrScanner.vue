@@ -50,7 +50,7 @@ onUnmounted(async () => {
     <header class="flex items-center justify-between p-6">
       <div class="flex flex-col gap-1">
         <h2 class="font-display text-xl font-bold text-white">{{ title }}</h2>
-        <p class="font-body text-xs text-plum-muted">{{ subtitle }}</p>
+        <p class="font-body text-sm text-plum-muted">{{ subtitle }}</p>
       </div>
       <button
         class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"

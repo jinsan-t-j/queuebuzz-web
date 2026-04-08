@@ -54,7 +54,7 @@ onMounted(async () => {
       </h2>
 
       <div class="inline-flex flex-col items-center gap-1">
-        <span class="font-body text-xs text-plum-muted font-medium uppercase tracking-widest">
+        <span class="font-body text-sm text-plum-muted font-medium uppercase tracking-widest">
           Join Code
         </span>
         <span class="font-mono font-bold text-4xl text-plum tracking-[0.2em] -mr-[0.2em]">
@@ -65,7 +65,7 @@ onMounted(async () => {
       <!-- Footer -->
       <div class="mt-12 flex items-center gap-2">
         <div class="w-1.5 h-1.5 rounded-full bg-mint animate-pulse" />
-        <span class="font-body text-[10px] text-plum-muted font-bold tracking-widest uppercase">
+        <span class="font-body text-sm text-plum-muted font-bold tracking-widest uppercase">
           queuebuzz.app
         </span>
       </div>

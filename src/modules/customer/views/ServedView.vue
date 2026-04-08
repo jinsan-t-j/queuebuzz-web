@@ -23,7 +23,9 @@ const router = useRouter()
 const TALLY_FORM_URL = import.meta.env.VITE_TALLY_URL
 
 const queueName = computed(() => queueStore.activeQueue?.name || 'Your Queue')
-const ticketNumber = computed(() => router.currentRoute.value.query.t as string || entry.value?.ticketNo || '...')
+const ticketNumber = computed(
+  () => (router.currentRoute.value.query.t as string) || entry.value?.ticketNo || '...',
+)
 
 onBeforeMount(async () => {
   const queueId = router.currentRoute.value.params.queueId as string
@@ -57,14 +59,18 @@ function handleDone() {
     />
 
     <!-- Queue name header -->
-    <h1 class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum transition-all duration-300">
+    <h1
+      class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum transition-all duration-300"
+    >
       {{ queueName }}
     </h1>
 
     <div class="flex flex-col items-center px-5 py-4 animate-in zoom-in-95 duration-500">
       <!-- Ticket summary card -->
-      <div class="w-full rounded-[32px] border-2 border-mint bg-mint-light/10 p-7 text-center shadow-[0_8px_30px_rgba(0,229,160,0.08)]">
-        <p class="font-body text-xs font-semibold uppercase tracking-[2.4px] text-plum-muted/70">
+      <div
+        class="w-full rounded-[32px] border-2 border-mint bg-mint-light/10 p-7 text-center shadow-[0_8px_30px_rgba(0,229,160,0.08)]"
+      >
+        <p class="font-body text-sm font-semibold uppercase tracking-[2.4px] text-plum-muted/70">
           Your Ticket
         </p>
         <p class="mt-2 font-mono text-4xl font-bold text-plum tracking-tight">{{ ticketNumber }}</p>
@@ -80,7 +86,9 @@ function handleDone() {
 
       <!-- Success message -->
       <div class="text-center mt-5">
-        <h2 class="font-display text-[28px] font-extrabold text-plum leading-tight">You're all done!</h2>
+        <h2 class="font-display text-[28px] font-extrabold text-plum leading-tight">
+          You're all done!
+        </h2>
         <p class="mt-2 font-body text-base font-medium text-plum/50">Thanks for using QueueBuzz</p>
       </div>
 
@@ -92,7 +100,7 @@ function handleDone() {
         >
           Share Feedback
         </button>
-        <p class="font-mono text-[10px] font-bold uppercase tracking-[3px] text-plum/30">
+        <p class="font-mono text-sm font-bold uppercase tracking-[3px] text-plum/30">
           How was your experience?
         </p>
       </div>

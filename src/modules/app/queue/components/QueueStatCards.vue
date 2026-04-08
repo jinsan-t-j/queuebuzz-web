@@ -49,9 +49,11 @@ defineProps({
 <template>
   <div class="flex gap-4">
     <!-- Waiting Now -->
-    <div class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+    <div
+      class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+    >
       <div class="flex items-center justify-between">
-        <p class="font-body text-[11px] font-bold uppercase tracking-[1.1px] text-plum/40">
+        <p class="font-body text-sm font-bold uppercase tracking-[1.1px] text-plum/40">
           Waiting Now
         </p>
         <HourglassIcon class="h-5 w-4 text-plum/20" />
@@ -61,11 +63,11 @@ defineProps({
       </p>
     </div>
     <!-- Avg. Wait -->
-    <div class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+    <div
+      class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+    >
       <div class="flex items-center justify-between">
-        <p class="font-body text-[11px] font-bold uppercase tracking-[1.1px] text-plum/40">
-          Avg. Wait
-        </p>
+        <p class="font-body text-sm font-bold uppercase tracking-[1.1px] text-plum/40">Avg. Wait</p>
         <ClockWaitIcon class="h-[21px] w-[18px] text-plum/20" />
       </div>
       <div class="mt-2 flex items-baseline">

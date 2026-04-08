@@ -62,7 +62,7 @@ watch(isOpen, (val, _, onCleanup) => {
       <Bell class="h-5 w-5" />
       <span
         v-if="store.unreadCount > 0"
-        class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-plum font-mono text-[10px] font-bold text-sand shadow-sm animate-in zoom-in"
+        class="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-plum font-mono text-sm font-bold text-sand shadow-sm animate-in zoom-in"
       >
         {{ store.unreadCount > 9 ? '9+' : store.unreadCount }}
       </span>
@@ -85,7 +85,7 @@ watch(isOpen, (val, _, onCleanup) => {
           <div class="flex items-center justify-between border-b border-plum-faint px-6 py-5">
             <div>
               <h2 class="font-display text-lg font-bold text-plum">Activity Logs</h2>
-              <p class="font-body text-xs text-plum-muted">Track queue events in real-time</p>
+              <p class="font-body text-sm text-plum-muted">Track queue events in real-time</p>
             </div>
             <button
               class="cursor-pointer flex h-8 w-8 items-center justify-center rounded-xl bg-plum-faint text-plum-muted transition-colors hover:bg-plum hover:text-sand"
@@ -100,11 +100,11 @@ watch(isOpen, (val, _, onCleanup) => {
             v-if="store.history.length > 0"
             class="flex items-center justify-between px-6 py-3 bg-sand/30"
           >
-            <span class="font-body text-xs text-plum-muted font-medium">
+            <span class="font-body text-sm text-plum-muted font-medium">
               {{ store.history.length }} notification{{ store.history.length > 1 ? 's' : '' }}
             </span>
             <button
-              class="flex items-center gap-1.5 font-body text-xs font-bold text-danger hover:underline"
+              class="flex items-center gap-1.5 font-body text-sm font-bold text-danger hover:underline"
               @click="store.clearHistory"
             >
               <Trash2 class="h-3 w-3" />
@@ -149,11 +149,11 @@ watch(isOpen, (val, _, onCleanup) => {
                     <h4 class="font-display text-sm font-bold text-plum">
                       {{ n.title }}
                     </h4>
-                    <p class="mt-0.5 font-body text-xs text-plum-muted leading-relaxed">
+                    <p class="mt-0.5 font-body text-sm text-plum-muted leading-relaxed">
                       {{ n.message }}
                     </p>
                     <div
-                      class="mt-2 flex items-center gap-1.5 font-body text-[10px] font-bold uppercase tracking-wider text-plum/30"
+                      class="mt-2 flex items-center gap-1.5 font-body text-sm font-bold uppercase tracking-wider text-plum/30"
                     >
                       <Clock class="h-2.5 w-2.5" />
                       {{ formatDistanceToNow(n.createdAt, { addSuffix: true }) }}
@@ -166,7 +166,7 @@ watch(isOpen, (val, _, onCleanup) => {
 
           <!-- Bottom Summary (Optional) -->
           <div class="border-t border-plum-faint p-6">
-            <p class="text-center font-body text-[11px] text-plum-muted leading-relaxed">
+            <p class="text-center font-body text-sm text-plum-muted leading-relaxed">
               We preserve up to 50 recent events for your session. Recalculations might cause slight
               delays.
             </p>

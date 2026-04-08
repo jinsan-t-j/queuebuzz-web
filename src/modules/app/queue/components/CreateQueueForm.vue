@@ -166,7 +166,7 @@ function copyCustomLink() {
         class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
       >
         <label
-          class="mb-3 block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]"
+          class="mb-3 block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267]"
         >
           Queue Name
         </label>
@@ -179,7 +179,7 @@ function copyCustomLink() {
             'text-plum': !errors.queueName,
           }"
         />
-        <div v-if="errors.queueName" class="mb-3 font-body text-xs text-red-500">
+        <div v-if="errors.queueName" class="mb-3 font-body text-sm text-red-500">
           {{ errors.queueName }}
         </div>
 
@@ -200,9 +200,7 @@ function copyCustomLink() {
       <div
         class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)] relative"
       >
-        <label
-          class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]"
-        >
+        <label class="block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267]">
           Avg. Service Time Per Person
         </label>
 
@@ -230,13 +228,13 @@ function copyCustomLink() {
               <span>1 min</span>
               <span>30 min</span>
             </div>
-            <div v-if="errors.serviceTime" class="mt-1 font-body text-xs text-red-500">
+            <div v-if="errors.serviceTime" class="mt-1 font-body text-sm text-red-500">
               {{ errors.serviceTime }}
             </div>
           </div>
         </div>
 
-        <p class="mt-6 font-body text-xs text-[#5c5267]">Used to calculate wait time estimates.</p>
+        <p class="mt-6 font-body text-sm text-[#5c5267]">Used to calculate wait time estimates.</p>
       </div>
 
       <!-- ═══ Card 3: Party Settings ═══ -->
@@ -246,11 +244,11 @@ function copyCustomLink() {
         <div class="flex items-center justify-between">
           <div>
             <label
-              class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]"
+              class="block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267]"
             >
               Party Settings
             </label>
-            <p class="mt-1 font-body text-xs text-[#5c5267]">
+            <p class="mt-1 font-body text-sm text-[#5c5267]">
               Allow guests to join with companions.
             </p>
           </div>
@@ -262,7 +260,7 @@ function copyCustomLink() {
           class="mt-8 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
         >
           <label
-            class="block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267] mb-6"
+            class="block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267] mb-6"
           >
             Max Party Size
           </label>
@@ -283,7 +281,7 @@ function copyCustomLink() {
               {{ size }}
             </button>
             <div class="flex items-center gap-2 ml-2">
-              <span class="text-xs text-plum-muted font-body">Custom:</span>
+              <span class="text-sm text-plum-muted font-body">Custom:</span>
               <input
                 v-model="maxPartySize"
                 type="number"
@@ -293,7 +291,7 @@ function copyCustomLink() {
               />
             </div>
           </div>
-          <div v-if="errors.maxPartySize" class="mt-2 font-body text-xs text-red-500">
+          <div v-if="errors.maxPartySize" class="mt-2 font-body text-sm text-red-500">
             {{ errors.maxPartySize }}
           </div>
         </div>
@@ -305,7 +303,7 @@ function copyCustomLink() {
           class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
         >
           <label
-            class="mb-3 block font-body text-[11px] font-bold uppercase tracking-[1.65px] text-[#5c5267]"
+            class="mb-3 block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267]"
           >
             Queue Link
           </label>
@@ -331,10 +329,10 @@ function copyCustomLink() {
               {{ isSlugCopied ? 'Copied!' : 'Copy' }}
             </button>
           </div>
-          <div v-if="errors.slug" class="mt-2 font-body text-xs text-red-500">
+          <div v-if="errors.slug" class="mt-2 font-body text-sm text-red-500">
             {{ errors.slug }}
           </div>
-          <p class="mt-4 font-body text-xs text-[#5c5267]">
+          <p class="mt-4 font-body text-sm text-[#5c5267]">
             This is the address people use to find your queue. If empty, we’ll use a random version.
           </p>
         </div>
@@ -372,10 +370,10 @@ function copyCustomLink() {
               class="w-full border-none bg-transparent font-body text-base text-plum placeholder:text-[#5c5267]/40 outline-none"
               :class="{ 'text-red-500 placeholder:text-red-500/40': errors.recoveryEmail }"
             />
-            <div v-if="errors.recoveryEmail" class="mt-2 font-body text-xs text-red-500">
+            <div v-if="errors.recoveryEmail" class="mt-2 font-body text-sm text-red-500">
               {{ errors.recoveryEmail }}
             </div>
-            <p class="mt-4 font-body text-xs text-[#5c5267]">
+            <p class="mt-4 font-body text-sm text-[#5c5267]">
               Email yourself a magic link to resume management from any device, anywhere.
             </p>
           </div>

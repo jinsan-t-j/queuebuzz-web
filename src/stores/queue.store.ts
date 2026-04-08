@@ -158,8 +158,16 @@ export const useQueueStore = defineStore('queue', {
     },
 
     async initializeQueueById(id: string) {
-      this.connectToPublicEvents(id)
-      return !!this.activeQueue
+      this.isLoading = true
+      try {
+        // First, get the metadata via REST for faster FCP/LCP
+        await this.fetchQueueById(id)
+        // Then connect to live events
+        this.connectToPublicEvents(id)
+        return !!this.activeQueue
+      } finally {
+        this.isLoading = false
+      }
     },
 
     async revalidate(id: string) {

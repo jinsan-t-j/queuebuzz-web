@@ -26,11 +26,11 @@ const emit = defineEmits(['retry-geofence'])
     <div class="rounded-3xl border border-warning bg-white p-6 text-center">
       <LocationPinBrokenIcon class="mx-auto h-6 w-6 text-plum-muted" />
       <h2 class="mt-3 font-body text-[22px] font-semibold text-plum-soft">You're too far away</h2>
-      <p class="mt-2 font-body text-xs text-[#5d4c66]">
+      <p class="mt-2 font-body text-sm text-[#5d4c66]">
         Move closer to the queue location &amp; try again
       </p>
       <div class="mx-auto mt-4 w-fit rounded-full bg-plum-faint px-4 py-1.5">
-        <span class="font-body text-[11px] text-[#5d4c66]">
+        <span class="font-body text-sm text-[#5d4c66]">
           ~{{ distanceMeters }}m away · Need to be within 200m
         </span>
       </div>

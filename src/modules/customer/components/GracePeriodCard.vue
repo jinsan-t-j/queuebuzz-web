@@ -52,7 +52,9 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="rounded-3xl border border-warning/45 bg-white/80 p-6 text-center shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+  <div
+    class="rounded-3xl border border-warning/45 bg-white/80 p-6 text-center shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+  >
     <!-- Clock icon -->
     <ClockWarningOrangeIcon class="mx-auto h-7 w-7" />
 
@@ -65,14 +67,12 @@ onUnmounted(() => {
     </p>
 
     <!-- Sub text -->
-    <p class="mt-2.5 font-body text-xs font-normal uppercase tracking-[0.6px] text-plum/60">
+    <p class="mt-2.5 font-body text-sm font-normal uppercase tracking-[0.6px] text-plum/60">
       before your spot is given away
     </p>
 
     <!-- Info message -->
-    <p class="mt-4 font-body text-[10px] font-medium text-[#64748b]">
-      You're up — please head in now.
-    </p>
+    <p class="mt-4 font-body text-sm font-medium text-[#64748b]">You're up — please head in now.</p>
 
     <!-- Confirm button -->
     <button
@@ -87,10 +87,7 @@ onUnmounted(() => {
     </button>
 
     <!-- Leave link -->
-    <button
-      class="mt-3 font-body text-sm font-semibold text-danger"
-      @click="emit('leave-queue')"
-    >
+    <button class="mt-3 font-body text-sm font-semibold text-danger" @click="emit('leave-queue')">
       Leave Queue
     </button>
   </div>

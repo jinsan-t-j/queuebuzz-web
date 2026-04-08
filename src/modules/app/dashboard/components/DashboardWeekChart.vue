@@ -57,7 +57,7 @@ const processedData = computed(() => {
           v-for="tab in tabs"
           :key="tab.key"
           :class="[
-            'rounded-md px-4 py-2 font-body text-xs font-medium transition-colors min-h-[40px] md:min-h-[36px]',
+            'rounded-md px-4 py-2 font-body text-sm font-medium transition-colors min-h-[40px] md:min-h-[36px]',
             activeTab === tab.key
               ? 'bg-white text-plum shadow-xs'
               : 'text-plum-muted hover:text-plum',
@@ -111,7 +111,7 @@ const processedData = computed(() => {
         <span
           v-for="item in processedData"
           :key="item.day"
-          class="flex-1 text-center font-mono text-[10px] uppercase text-plum-muted"
+          class="flex-1 text-center font-mono text-sm uppercase text-plum-muted"
         >
           {{ item.day }}
         </span>

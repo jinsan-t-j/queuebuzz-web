@@ -121,7 +121,7 @@ const handleJoin = handleSubmit(async (values) => {
   <div class="flex flex-col px-5 py-4">
     <!-- Stats card -->
     <div class="rounded-3xl border border-plum-faint bg-white p-5 text-center">
-      <p class="font-body text-xs font-semibold uppercase tracking-[2.4px] text-plum-muted">
+      <p class="font-body text-sm font-semibold uppercase tracking-[2.4px] text-plum-muted">
         People in queue
       </p>
       <p class="mt-2.5 font-display text-[84px] font-normal leading-[84px] text-plum">
@@ -137,7 +137,7 @@ const handleJoin = handleSubmit(async (values) => {
         <span v-else class="font-mono text-lg font-bold text-plum">~{{ estWaitMin }} min</span>
         <span class="font-body text-lg text-plum-muted">Wait</span>
       </div>
-      <p class="mt-2.5 font-body text-[9px] leading-snug text-plum-muted">
+      <p class="mt-2.5 font-body text-sm leading-snug text-plum-muted">
         Your wait time is estimated,<br />
         it may slightly shift as the queue moves.
       </p>
@@ -168,8 +168,8 @@ const handleJoin = handleSubmit(async (values) => {
           placeholder="What should we call you?"
           class="w-full border-none bg-transparent font-body text-[17px] text-plum placeholder:text-plum-muted/40 focus:outline-none"
         />
-        <p v-if="nameError" class="mt-1 font-body text-[11px] text-danger">{{ nameError }}</p>
-        <p v-else class="mt-1 font-body text-[11px] text-plum-muted">Appears as Guest if skipped</p>
+        <p v-if="nameError" class="mt-1 font-body text-sm text-danger">{{ nameError }}</p>
+        <p v-else class="mt-1 font-body text-sm text-plum-muted">Appears as Guest if skipped</p>
       </div>
     </div>
 
@@ -197,7 +197,7 @@ const handleJoin = handleSubmit(async (values) => {
         </div>
         <div class="flex-1 text-left">
           <p class="font-body text-[15px] font-semibold text-plum">Joining with others?</p>
-          <p class="font-body text-xs text-plum-muted">Add companions to your spot</p>
+          <p class="font-body text-sm text-plum-muted">Add companions to your spot</p>
         </div>
         <ChevronDown
           :class="[
@@ -261,7 +261,7 @@ const handleJoin = handleSubmit(async (values) => {
         </div>
         <div>
           <p class="font-body text-[15px] font-semibold text-plum">Buzz me when ready</p>
-          <p class="font-body text-xs text-plum-muted">Get a push notification</p>
+          <p class="font-body text-sm text-plum-muted">Get a push notification</p>
         </div>
       </div>
       <div class="flex items-center min-h-[44px]">
@@ -304,10 +304,10 @@ const handleJoin = handleSubmit(async (values) => {
             class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none min-h-[48px]"
           />
         </div>
-        <p v-if="emailError" class="mt-1 font-body text-[10px] text-danger">{{ emailError }}</p>
+        <p v-if="emailError" class="mt-1 font-body text-sm text-danger">{{ emailError }}</p>
         <div class="mt-3 flex items-start gap-2">
           <Info class="mt-0.5 h-3 w-3 shrink-0 text-plum-muted/80" />
-          <p class="font-body text-xs leading-relaxed text-plum-muted/80">
+          <p class="font-body text-sm leading-relaxed text-plum-muted/80">
             Receive updates &amp; recover your spot if you close the browser.
           </p>
         </div>
