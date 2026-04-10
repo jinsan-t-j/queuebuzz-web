@@ -49,17 +49,15 @@ export default defineConfig(({ mode }) => {
   }
 
   function getFirebaseRuntimeConfig() {
-    const freshEnv = loadFreshEnvFromFiles()
-
     return {
-      apiBaseUrl: freshEnv.VITE_API_BASE_URL || '',
-      firebaseApiKey: freshEnv.VITE_FIREBASE_API_KEY || '',
-      firebaseAuthDomain: freshEnv.VITE_FIREBASE_AUTH_DOMAIN || '',
-      firebaseProjectId: freshEnv.VITE_FIREBASE_PROJECT_ID || '',
-      firebaseStorageBucket: freshEnv.VITE_FIREBASE_STORAGE_BUCKET || '',
-      firebaseMessagingSenderId: freshEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-      firebaseAppId: freshEnv.VITE_FIREBASE_APP_ID || '',
-      firebaseVapidKey: freshEnv.VITE_FIREBASE_VAPID_KEY || '',
+      apiBaseUrl: env.VITE_API_BASE_URL || '',
+      firebaseApiKey: env.VITE_FIREBASE_API_KEY || '',
+      firebaseAuthDomain: env.VITE_FIREBASE_AUTH_DOMAIN || '',
+      firebaseProjectId: env.VITE_FIREBASE_PROJECT_ID || '',
+      firebaseStorageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || '',
+      firebaseMessagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+      firebaseAppId: env.VITE_FIREBASE_APP_ID || '',
+      firebaseVapidKey: env.VITE_FIREBASE_VAPID_KEY || '',
     }
   }
 
