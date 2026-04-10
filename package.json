@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "typecheck": "vue-tsc --noEmit",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --max-warnings=0 --fix",
     "preview": "vite preview",
     "lighthouse": "npm run build && lhci autorun",
     "prepare": "husky"

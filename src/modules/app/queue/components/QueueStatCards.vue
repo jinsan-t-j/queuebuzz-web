@@ -53,10 +53,8 @@ defineProps({
       class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
     >
       <div class="flex items-center justify-between">
-        <p class="font-body text-sm font-bold uppercase tracking-[1.1px] text-plum/40">
-          Waiting Now
-        </p>
-        <HourglassIcon class="h-5 w-4 text-plum/20" />
+        <p class="font-display text-sm font-bold text-plum/40">Waiting Now</p>
+        <HourglassIcon class="h-4 w-3 text-plum" />
       </div>
       <p class="mt-2 font-mono text-5xl font-bold leading-none text-plum">
         {{ String(waitingCount).padStart(2, '0') }}
@@ -67,8 +65,8 @@ defineProps({
       class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
     >
       <div class="flex items-center justify-between">
-        <p class="font-body text-sm font-bold uppercase tracking-[1.1px] text-plum/40">Avg. Wait</p>
-        <ClockWaitIcon class="h-[21px] w-[18px] text-plum/20" />
+        <p class="font-display text-sm font-bold text-plum/40">Avg. Wait</p>
+        <ClockWaitIcon class="h-4 w-3 text-plum" />
       </div>
       <div class="mt-2 flex items-baseline">
         <span class="font-mono text-5xl font-bold leading-none text-plum">{{ avgWait }}</span>

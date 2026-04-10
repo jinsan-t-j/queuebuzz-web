@@ -45,7 +45,7 @@ async function handleCopyLink() {
     <div class="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-mint/10" />
 
     <div class="relative flex flex-col justify-center h-full">
-      <p class="font-body text-sm font-bold uppercase tracking-[2px] text-plum/40">Queue code</p>
+      <p class="font-display text-sm font-bold text-plum/40">Queue code</p>
       <p class="mt-2 font-mono text-5xl font-bold leading-none tracking-tight text-plum">
         <span class="text-mint">{{ joinCode.slice(0, 2) }}</span
         >{{ joinCode.slice(2) }}

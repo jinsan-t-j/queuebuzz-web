@@ -3,11 +3,65 @@ import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import svgLoader from 'vite-svg-loader'
 import { fileURLToPath, URL } from 'node:url'
+import fs from 'node:fs'
 import path from 'node:path'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
+  const swId = fileURLToPath(new URL('./src/firebase-messaging-sw.js', import.meta.url))
+  const envRoot = process.cwd()
+
+  function parseEnvFile(filePath) {
+    if (!fs.existsSync(filePath)) return {}
+
+    return fs
+      .readFileSync(filePath, 'utf8')
+      .split(/\r?\n/)
+      .reduce((acc, line) => {
+        const trimmed = line.trim()
+        if (!trimmed || trimmed.startsWith('#')) return acc
+
+        const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/)
+        if (!match) return acc
+
+        let [, key, value] = match
+        value = value.trim()
+
+        if (
+          (value.startsWith('"') && value.endsWith('"')) ||
+          (value.startsWith("'") && value.endsWith("'"))
+        ) {
+          value = value.slice(1, -1)
+        }
+
+        acc[key] = value
+        return acc
+      }, {})
+  }
+
+  function loadFreshEnvFromFiles() {
+    const envFiles = ['.env', '.env.local', `.env.${mode}`, `.env.${mode}.local`]
+
+    return envFiles.reduce((acc, file) => {
+      return { ...acc, ...parseEnvFile(path.join(envRoot, file)) }
+    }, {})
+  }
+
+  function getFirebaseRuntimeConfig() {
+    const freshEnv = loadFreshEnvFromFiles()
+
+    return {
+      apiBaseUrl: freshEnv.VITE_API_BASE_URL || '',
+      firebaseApiKey: freshEnv.VITE_FIREBASE_API_KEY || '',
+      firebaseAuthDomain: freshEnv.VITE_FIREBASE_AUTH_DOMAIN || '',
+      firebaseProjectId: freshEnv.VITE_FIREBASE_PROJECT_ID || '',
+      firebaseStorageBucket: freshEnv.VITE_FIREBASE_STORAGE_BUCKET || '',
+      firebaseMessagingSenderId: freshEnv.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+      firebaseAppId: freshEnv.VITE_FIREBASE_APP_ID || '',
+      firebaseVapidKey: freshEnv.VITE_FIREBASE_VAPID_KEY || '',
+    }
+  }
 
   return {
     plugins: [
@@ -33,11 +87,31 @@ export default defineConfig(({ mode }) => {
         name: 'fcm-service-worker',
         configureServer(server) {
           server.middlewares.use(async (req, res, next) => {
+            if (req.url?.startsWith('/firebase-config.json')) {
+              res.setHeader('Content-Type', 'application/json')
+              res.setHeader(
+                'Cache-Control',
+                'no-store, no-cache, must-revalidate, proxy-revalidate',
+              )
+              res.end(JSON.stringify(getFirebaseRuntimeConfig()))
+              return
+            }
+
             if (req.url === '/firebase-messaging-sw.js') {
-              const swCode = await server.transformRequest('src/firebase-messaging-sw.js')
+              const swCode = await server.transformRequest(swId, { ssr: false })
+
               if (swCode) {
+                const config = getFirebaseRuntimeConfig()
+                const injectedCode = swCode.code.replace(
+                  /const\s+FIREBASE_CONFIG_PLACEHOLDER\s*=\s*null;?/g,
+                  `const FIREBASE_CONFIG_PLACEHOLDER = ${JSON.stringify(config)}`,
+                )
                 res.setHeader('Content-Type', 'application/javascript')
-                res.end(swCode.code)
+                res.setHeader(
+                  'Cache-Control',
+                  'no-store, no-cache, must-revalidate, proxy-revalidate',
+                )
+                res.end(injectedCode)
                 return
               }
             }
@@ -47,6 +121,16 @@ export default defineConfig(({ mode }) => {
       },
       // Inject <link rel="preload"> for critical fonts and CSS post-build.
       // Eliminates waterfalls that delay LCP.
+      {
+        name: 'firebase-runtime-config-build',
+        generateBundle() {
+          this.emitFile({
+            type: 'asset',
+            fileName: 'firebase-config.json',
+            source: JSON.stringify(getFirebaseRuntimeConfig(), null, 2),
+          })
+        },
+      },
       {
         name: 'critical-preload',
         enforce: 'post',
@@ -114,9 +198,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           main: fileURLToPath(new URL('./index.html', import.meta.url)),
-          'firebase-messaging-sw': fileURLToPath(
-            new URL('./src/firebase-messaging-sw.js', import.meta.url),
-          ),
+          'firebase-messaging-sw': swId,
         },
         output: {
           manualChunks(id) {

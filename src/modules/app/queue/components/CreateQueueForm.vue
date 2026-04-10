@@ -121,11 +121,11 @@ const onSubmit = handleSubmit(async (values) => {
   try {
     const payload = {
       name: values.queueName,
-      avgServiceMins: values.serviceTime,
+      avgServiceMins: Number(values.serviceTime),
       slug: values.slug,
       recoveryEmail: values.recoveryEmail,
       allowPartyJoining: values.allowPartyJoining,
-      maxPartySize: values.allowPartyJoining ? values.maxPartySize : 1,
+      maxPartySize: values.allowPartyJoining ? Number(values.maxPartySize) : 1,
     }
     const queue = await createQueue(payload)
     if (queue) {
@@ -165,11 +165,7 @@ function copyCustomLink() {
       <div
         class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
       >
-        <label
-          class="mb-3 block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267]"
-        >
-          Queue Name
-        </label>
+        <label class="mb-3 block font-body text-sm font-medium text-[#5c5267]"> Queue Name </label>
         <input
           v-model="queueName"
           placeholder=" What are people queuing for?"
@@ -200,8 +196,8 @@ function copyCustomLink() {
       <div
         class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)] relative"
       >
-        <label class="block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267]">
-          Avg. Service Time Per Person
+        <label class="block font-body text-sm font-medium text-[#5c5267]">
+          How long does it typically take to serve one guest?
         </label>
 
         <div class="mt-8 flex flex-col gap-4 relative">
@@ -217,7 +213,7 @@ function copyCustomLink() {
             </div>
 
             <input
-              v-model="serviceTime"
+              v-model.number="serviceTime"
               type="range"
               min="1"
               max="30"
@@ -233,8 +229,6 @@ function copyCustomLink() {
             </div>
           </div>
         </div>
-
-        <p class="mt-6 font-body text-sm text-[#5c5267]">Used to calculate wait time estimates.</p>
       </div>
 
       <!-- ═══ Card 3: Party Settings ═══ -->
@@ -243,14 +237,9 @@ function copyCustomLink() {
       >
         <div class="flex items-center justify-between">
           <div>
-            <label
-              class="block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267]"
-            >
-              Party Settings
+            <label class="block font-body text-sm font-medium text-[#5c5267]">
+              Would you like guests to be able to bring others with them?
             </label>
-            <p class="mt-1 font-body text-sm text-[#5c5267]">
-              Allow guests to join with companions.
-            </p>
           </div>
           <BaseToggle v-model="allowPartyJoining" />
         </div>
@@ -259,10 +248,8 @@ function copyCustomLink() {
           v-if="allowPartyJoining"
           class="mt-8 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
         >
-          <label
-            class="block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267] mb-6"
-          >
-            Max Party Size
+          <label class="block font-body text-sm font-medium text-[#5c5267] mb-6">
+            How many people are allowed including guest?
           </label>
 
           <div class="flex flex-wrap gap-2">
@@ -283,7 +270,7 @@ function copyCustomLink() {
             <div class="flex items-center gap-2 ml-2">
               <span class="text-sm text-plum-muted font-body">Custom:</span>
               <input
-                v-model="maxPartySize"
+                v-model.number="maxPartySize"
                 type="number"
                 min="1"
                 max="50"
@@ -302,9 +289,7 @@ function copyCustomLink() {
         <div
           class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
         >
-          <label
-            class="mb-3 block font-body text-sm font-bold uppercase tracking-[1.65px] text-[#5c5267]"
-          >
+          <label class="mb-3 block font-body text-sm font-medium text-[#5c5267]">
             Queue Link
           </label>
           <div
@@ -322,7 +307,7 @@ function copyCustomLink() {
             </div>
             <button
               type="button"
-              class="inline-flex items-center text-center gap-2 rounded-xl bg-mint px-4 py-2 font-body text-base font-bold text-plum cursor-pointer transition-colors hover:bg-mint-dark min-w-[100px] justify-center"
+              class="inline-flex items-center text-center gap-2 rounded-xl bg-mint px-4 py-2 font-body text-base font-medium text-plum cursor-pointer transition-colors hover:bg-mint-dark min-w-[100px] justify-center"
               @click="copyCustomLink"
             >
               <CopyCodeIcon v-if="!isSlugCopied" class="h-[17px] w-[14px] text-plum" />
@@ -349,8 +334,8 @@ function copyCustomLink() {
           >
             <div class="flex items-center gap-3">
               <LockIcon class="h-[14px] w-[11px] text-[#5c5267]" />
-              <span class="font-body text-[15px] font-medium text-[#5c5267]">
-                Sync across devices & save link →
+              <span class="font-body text-sm font-medium text-[#5c5267]">
+                Save this link now to ensure you can access it later →
               </span>
             </div>
             <ChevronDownIcon
@@ -373,8 +358,8 @@ function copyCustomLink() {
             <div v-if="errors.recoveryEmail" class="mt-2 font-body text-sm text-red-500">
               {{ errors.recoveryEmail }}
             </div>
-            <p class="mt-4 font-body text-sm text-[#5c5267]">
-              Email yourself a magic link to resume management from any device, anywhere.
+            <p class="mt-4 font-body text-xs text-plum-muted">
+              Email yourself a magic link so you don't lose access later
             </p>
           </div>
         </div>
@@ -392,7 +377,7 @@ function copyCustomLink() {
       </button>
       <button
         type="submit"
-        class="rounded-input bg-mint px-8 py-3 font-body text-lg font-bold text-plum shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95 cursor-pointer"
+        class="rounded-input bg-mint px-8 py-3 font-body text-lg font-medium text-plum shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95 cursor-pointer"
       >
         Open Queue →
       </button>

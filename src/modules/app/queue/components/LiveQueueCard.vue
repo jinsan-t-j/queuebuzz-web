@@ -142,8 +142,8 @@ watch(entryStatusKey, (newKey, oldKey) => {
           <SearchIcon class="h-[10px] w-[10px] text-plum/40" />
           <input
             :value="searchQuery"
-            placeholder="Search guests..."
-            class="ml-2 w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted tracking-[2px]"
+            placeholder="Search by name..."
+            class="ml-2 w-full border-none bg-transparent font-body text-sm font-medium text-plum placeholder:text-plum-muted tracking-wider focus:outline-none"
             @input="emit('search', ($event.target as HTMLInputElement).value)"
           />
         </div>
@@ -371,7 +371,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
       </button>
       <p
         v-if="activeEntries.length === 0 || isPaused || (strictQueueMode && hasActiveCalledEntry)"
-        class="mt-3 text-center font-body text-sm font-bold uppercase tracking-wider text-plum/30"
+        class="mt-3 text-center font-body text-xs font-medium uppercase tracking-wider text-plum/30"
       >
         <template v-if="isPaused">Resume queue to call guests</template>
         <template v-else-if="strictQueueMode && hasActiveCalledEntry">

@@ -20,6 +20,8 @@ import {
   callEntry as apiCallEntry,
   updateQueue as apiUpdateQueue,
   serveGuest as apiServeGuest,
+  registerHostFCM as apiRegisterHostFCM,
+  unregisterHostFCM as apiUnregisterHostFCM,
 } from '@/modules/app/queue/actions/queue.action'
 import { normalizeLiveQueueEntries, normalizeQueueEntry } from '@/modules/app/queue/transforms'
 import {
@@ -30,9 +32,11 @@ import {
   type QueueEntryStatus,
 } from '@/modules/app/queue/constants'
 import { useNotificationStore } from './notification.store'
+import { getFCMToken, onForegroundMessage } from '@/lib/firebase'
 import { ApiError, getErrorMessage } from '@/utils/api-response'
 
 let visibilityHandler: (() => void) | null = null
+let foregroundMessageUnsubscribe: (() => void) | null = null
 
 export const useQueueStore = defineStore('queue', {
   state: () => ({
@@ -45,6 +49,8 @@ export const useQueueStore = defineStore('queue', {
     connectedQueueId: null as string | null,
     publicWaitingCount: null as number | null,
     publicSseClient: null as SseClient | null,
+    hostFcmToken: null as string | null,
+    isFcmRegistering: false,
   }),
 
   getters: {
@@ -86,6 +92,7 @@ export const useQueueStore = defineStore('queue', {
     canJoinWithParty: (state) => state.activeQueue?.allowPartyJoining ?? false,
     maxAllowedPartySize: (state) => state.activeQueue?.maxPartySize ?? 1,
     isStreamConnected: (state) => state.streamState === 'open',
+    notifyStore: () => useNotificationStore(),
   },
 
   actions: {
@@ -153,6 +160,9 @@ export const useQueueStore = defineStore('queue', {
       const queue = await this.fetchActiveQueue()
       if (queue?.id) {
         this.connectToEvents(queue.id)
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          await this.registerHostFCM(queue.id)
+        }
       }
       return queue
     },
@@ -301,7 +311,6 @@ export const useQueueStore = defineStore('queue', {
       }
 
       this.connectedQueueId = queueId
-      const notifyStore = useNotificationStore()
 
       // Single Visibility Listener setup for the duration of this queue's monitoring
       if (!visibilityHandler) {
@@ -310,7 +319,7 @@ export const useQueueStore = defineStore('queue', {
           if (!id) return
 
           if (document.visibilityState === 'visible') {
-            this.revalidate(id)
+            void this.revalidate(id)
           } else if (document.visibilityState === 'hidden') {
             this.sseClient?.disconnect()
             this.publicSseClient?.disconnect()
@@ -353,15 +362,6 @@ export const useQueueStore = defineStore('queue', {
             if (payload.data) {
               const entry = normalizeQueueEntry(payload.data)
               this.upsertEntry(entry)
-
-              // Only toast for guests who didn't join via host (public joins)
-              if (!entry.createdBy) {
-                notifyStore.addNotification({
-                  title: 'New Guest!',
-                  message: `${entry.name} joined the queue (Ticket #${entry.ticketNo})`,
-                  type: 'success',
-                })
-              }
             }
           },
           called: (payload: QueueSseEnvelopeMap['called']) => {
@@ -369,26 +369,11 @@ export const useQueueStore = defineStore('queue', {
           },
           user_status_changed: (payload: QueueSseEnvelopeMap['user_status_changed']) => {
             const data = payload.data
-            const entry = this.entries.find((e) => e.id === data.id)
-
             this.applyEntryStatus(data)
-
-            if (data.status == ENTRY_STATUS.LEFT && entry) {
-              notifyStore.addNotification({
-                title: 'Guest Left',
-                message: `${entry.name} (Ticket ${entry.ticketNo}) has left the queue.`,
-                type: 'info',
-              })
-            }
           },
           user_arrived: (payload: QueueSseEnvelopeMap['user_arrived']) => {
             const data = payload.data
             this.applyEntryStatus({ id: data.id, status: ENTRY_STATUS.ARRIVED })
-            notifyStore.addNotification({
-              title: 'Guest at door!',
-              message: `${data.name} (Ticket ${data.ticketNumber}) has arrived.`,
-              type: 'info',
-            })
           },
           queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
             const status = payload.data.status.toUpperCase() as QueueStatus
@@ -397,18 +382,25 @@ export const useQueueStore = defineStore('queue', {
             if (status === QUEUE_STATUS.CLOSED || status === QUEUE_STATUS.EXPIRED) {
               this.clearQueue()
               this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
-              notifyStore.addNotification({
-                title: status === QUEUE_STATUS.EXPIRED ? 'Queue Expired' : 'Queue Ended',
-                message:
-                  status === QUEUE_STATUS.EXPIRED
-                    ? 'This session has ended.'
-                    : 'The host has ended this session.',
-                type: status === QUEUE_STATUS.EXPIRED ? 'warning' : 'info',
-              })
             }
           },
         },
       })
+
+      if (!foregroundMessageUnsubscribe) {
+        // Foreground message listener (Bridge FCM -> UI Toasts)
+        void onForegroundMessage((payload) => {
+          if (payload.notification) {
+            this.notifyStore.addNotification({
+              title: payload.notification.title || 'Notification',
+              message: payload.notification.body || '',
+              type: 'info',
+            })
+          }
+        }).then((unsubscribe) => {
+          foregroundMessageUnsubscribe = unsubscribe
+        })
+      }
 
       if (this.sseClient && typeof this.sseClient.connect === 'function') {
         this.streamState = 'connecting'
@@ -452,7 +444,7 @@ export const useQueueStore = defineStore('queue', {
       try {
         await pauseQueue(this.activeQueue.id)
         if (this.activeQueue) {
-          this.activeQueue.status = 'paused'
+          this.activeQueue.status = QUEUE_STATUS.PAUSED
         }
         return true
       } catch (e: unknown) {
@@ -555,9 +547,43 @@ export const useQueueStore = defineStore('queue', {
       }
     },
 
+    async registerHostFCM(queueId?: string) {
+      const qid = queueId || this.activeQueue?.id
+      if (!qid) {
+        return false
+      }
+      this.isFcmRegistering = true
+
+      try {
+        const token = await getFCMToken()
+        if (token) {
+          await apiRegisterHostFCM(qid, token)
+          this.hostFcmToken = token
+          return true
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn('FCM registration skipped: No token obtained')
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to register host FCM:', e)
+      } finally {
+        this.isFcmRegistering = false
+      }
+      return false
+    },
+
+    async unregisterHostFCM() {
+      if (!this.activeQueue) return
+      await apiUnregisterHostFCM(this.activeQueue.id)
+      this.hostFcmToken = null
+    },
+
     clearQueue() {
       this.disconnectLiveUpdates()
+      this.notifyStore.clearNotifications()
       this.activeQueue = null
+      this.hostFcmToken = null
       this.entries = []
       this.publicWaitingCount = null
       this.error = null
@@ -568,6 +594,6 @@ export const useQueueStore = defineStore('queue', {
     },
   },
   persist: {
-    pick: ['activeQueue'],
+    pick: ['activeQueue', 'hostFcmToken'],
   },
 })

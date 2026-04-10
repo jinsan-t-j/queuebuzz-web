@@ -38,10 +38,12 @@ const EmailNoticePopup = defineAsyncComponent(
   () => import('@/modules/app/queue/components/EmailNoticePopup.vue'),
 )
 const HostTips = defineAsyncComponent(() => import('../components/HostTips.vue'))
+import EnableNotificationsBanner from '@/components/base/EnableNotificationsBanner.vue'
 
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
 import HostNotifications from '@/components/layout/HostNotifications.vue'
 import HostNotificationCenter from '@/components/layout/HostNotificationCenter.vue'
+import { formatWaitTime } from '@/utils/format'
 
 const router = useRouter()
 const route = useRoute()
@@ -88,6 +90,7 @@ const {
 
 const queueId = route.params.id as string
 const hasInitialized = ref(false)
+const isTerminating = ref(false)
 
 /**
  * Handles initial access check and subsequent session/queue state changes.
@@ -108,6 +111,8 @@ watch(error, (newError) => {
 
 // Also watch activeQueue for terminal disappearance
 watch(activeQueue, (newQueue, oldQueue) => {
+  if (isTerminating.value) return
+
   if (!newQueue && oldQueue && !isApiLoading.value) {
     handleRedirection(QUEUE_ERROR_REASONS.QUEUE_ENDED)
   }
@@ -163,9 +168,39 @@ async function handleNoticeSubmit(email: string) {
 
 async function onStatusUpdateConfirmed() {
   const isTerminate = statusUpdateMode.value === 'terminate'
+
+  // Capture stats before terminal state clears the queue from store
+  const servedCount = servedTodayCount.value
+  const recoveryEmail = activeQueue.value?.recoveryEmail || ''
+  const avgMins = activeQueue.value?.avgServiceMins || 2
+
+  let durationFormatted = '0m'
+  if (activeQueue.value?.createdAt) {
+    const startTime = new Date(activeQueue.value.createdAt).getTime()
+    const now = Date.now()
+    const diffMins = Math.max(0, Math.round((now - startTime) / (1000 * 60)))
+    durationFormatted = formatWaitTime(diffMins)
+  }
+
+  if (isTerminate) {
+    isTerminating.value = true
+  }
+
   const success = await handleStatusUpdateConfirm()
+
   if (success && isTerminate) {
-    router.push({ name: 'guest-host-complete' })
+    router.push({
+      name: 'guest-host-complete',
+      params: { id: queueId },
+      query: {
+        served: servedCount.toString(),
+        total: durationFormatted,
+        avg: formatWaitTime(avgMins),
+        email: recoveryEmail,
+      },
+    })
+  } else if (!success) {
+    isTerminating.value = false
   }
 }
 
@@ -236,7 +271,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
                       : 'bg-danger',
                 ]"
               />
-              <span class="font-body text-sm font-bold text-plum uppercase tracking-wider">
+              <span class="font-body text-xs font-semibold text-plum uppercase tracking-wider">
                 {{
                   isStreamConnected
                     ? 'Live Connection'
@@ -389,5 +424,6 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
     </Transition>
 
     <HostTips />
+    <EnableNotificationsBanner />
   </div>
 </template>

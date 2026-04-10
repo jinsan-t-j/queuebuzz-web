@@ -29,6 +29,7 @@ const LiveQueueSettingsModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/LiveQueueSettingsModal.vue'),
 )
 const HostTips = defineAsyncComponent(() => import('@/modules/app/queue/components/HostTips.vue'))
+import EnableNotificationsBanner from '@/components/base/EnableNotificationsBanner.vue'
 
 const router = useRouter()
 const {
@@ -212,5 +213,6 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
     />
 
     <HostTips />
+    <EnableNotificationsBanner />
   </div>
 </template>

@@ -108,7 +108,7 @@ onUnmounted(() => {
           <p class="font-body text-sm leading-snug text-plum" v-html="TIPS[currentTipIndex]" />
 
           <button
-            class="mt-2 font-body text-sm font-bold uppercase tracking-wider text-plum/30 transition-colors hover:text-danger cursor-pointer"
+            class="mt-2 font-body text-xs font-bold uppercase tracking-wider text-plum/30 transition-colors hover:text-danger cursor-pointer"
             @click="hidePermanently"
           >
             Do not show again

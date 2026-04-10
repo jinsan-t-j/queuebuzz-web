@@ -21,6 +21,7 @@ import { useDashboardApi } from '../composables/useDashboardApi'
 import BaseButton from '@/components/base/BaseButton.vue'
 import QueueStatusBar from '../components/QueueStatusBar.vue'
 import DashboardStatCard from '../components/DashboardStatCard.vue'
+import EnableNotificationsBanner from '@/components/base/EnableNotificationsBanner.vue'
 
 // 6. Macros
 const emit = defineEmits([
@@ -313,5 +314,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </template>
+
+    <EnableNotificationsBanner :queue-id="activeQueue.id" />
   </div>
 </template>
