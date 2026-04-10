@@ -45,6 +45,7 @@ async function initializeMessaging() {
 }
 
 initializeMessaging().catch((error) => {
+  // eslint-disable-next-line no-console
   console.error('FCM Service Worker initialization failed:', error)
 })
 
