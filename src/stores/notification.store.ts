@@ -55,6 +55,11 @@ export const useNotificationStore = defineStore('notification', {
     clearHistory() {
       this.history = []
     },
+
+    clearNotifications() {
+      this.notifications = []
+      this.history = []
+    },
   },
-  persist: true
+  persist: true,
 })

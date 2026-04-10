@@ -96,7 +96,7 @@ function handleSubmit() {
 
           <p
             v-if="error"
-            class="font-body text-sm font-bold text-danger uppercase tracking-wider animate-in fade-in slide-in-from-top-1"
+            class="font-body text-xs font-medium text-danger animate-in fade-in slide-in-from-top-1"
           >
             {{ error }}
           </p>

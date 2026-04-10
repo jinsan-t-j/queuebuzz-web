@@ -153,7 +153,7 @@ watch(isOpen, (val, _, onCleanup) => {
                       {{ n.message }}
                     </p>
                     <div
-                      class="mt-2 flex items-center gap-1.5 font-body text-sm font-bold uppercase tracking-wider text-plum/30"
+                      class="mt-2 flex items-center gap-1.5 font-body text-xs font-medium uppercase tracking-wider text-plum/30"
                     >
                       <Clock class="h-2.5 w-2.5" />
                       {{ formatDistanceToNow(n.createdAt, { addSuffix: true }) }}

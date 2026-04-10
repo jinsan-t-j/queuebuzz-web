@@ -196,6 +196,30 @@ export function useLiveQueue() {
     return await store.revalidate(queueId)
   }
 
+  async function handleEnableNotifications(queueId?: string) {
+    if (!('Notification' in window)) return false
+
+    try {
+      const granted = await Notification.requestPermission()
+      if (granted !== 'granted') return false
+
+      const qid = queueId || store.activeQueue?.id
+      if (!qid) return false
+
+      const success = await store.registerHostFCM(qid)
+      return success
+    } catch (e: any) {
+      console.error('Failed to enable notifications:', e)
+      // Surface the specific DOMException to the UI (e.g. "Push service unreachable")
+      if (e.name === 'DOMException') {
+        store.error = `Notification service error: ${e.message}`
+      } else {
+        store.error = 'Failed to set up notifications. Please try again.'
+      }
+      return false
+    }
+  }
+
   function disposeLiveQueue() {
     store.disconnectLiveUpdates()
   }
@@ -209,9 +233,11 @@ export function useLiveQueue() {
     waitingCount: computed(() => store.waitingCount),
     avgWaitTime: computed(() => store.avgWaitTime),
     isLoading: computed(() => store.isLoading),
+    isFcmRegistering: computed(() => store.isFcmRegistering),
     error: computed(() => store.error),
     streamState: computed(() => store.streamState),
     isStreamConnected: computed(() => store.isStreamConnected),
+    hasHostFcmToken: computed(() => !!store.hostFcmToken),
     queueUrl,
 
     // Party Constraints
@@ -245,5 +271,6 @@ export function useLiveQueue() {
     initializeQueueById,
     revalidateQueue,
     disposeLiveQueue,
+    handleEnableNotifications,
   }
 }

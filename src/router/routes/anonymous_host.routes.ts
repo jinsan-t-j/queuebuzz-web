@@ -28,6 +28,12 @@ export const anoymousHostRoutes: RouteRecordRaw[] = [
         path: 'queue/:id/complete',
         name: 'guest-host-complete',
         component: () => import('@/modules/app/queue/views/GuestHostQueueCompleteView.vue'),
+        props: (route) => ({
+          servedCount: Number(route.query.served) || 0,
+          totalTime: route.query.total?.toString() || '0m',
+          avgTime: route.query.avg?.toString() || '0m',
+          email: route.query.email?.toString() || '',
+        }),
         meta: { title: 'Queue Complete — QueueBuzz' },
       },
       {

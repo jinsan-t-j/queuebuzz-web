@@ -3,9 +3,10 @@
  * Define all API endpoints here to avoid hardcoded strings across the app.
  */
 
+import { ENV } from './env.config'
+
 // Base URL mapped from Vite env variables
-export const API_BASE_URL: string =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
+export const API_BASE_URL: string = ENV.VITE_API_BASE_URL
 export const API_ORIGIN_URL: string = new URL(API_BASE_URL, window.location.origin).origin
 export const API_BASE_PATH: string = new URL(API_BASE_URL, window.location.origin).pathname.replace(
   /\/$/,
@@ -45,6 +46,8 @@ export const API_ROUTES = {
     SERVE: (id: string, entryId: string): string => `/queue/${id}/serve/${entryId}`,
     ADD_ENTRY: (id: string): string => `/queue/${id}/add-entry`,
     UPDATE: (id: string): string => `/queue/${id}`,
+    REGISTER_HOST_FCM: (id: string): string => `/queue/${id}/register-host-fcm`,
+    UNREGISTER_HOST_FCM: (id: string): string => `/queue/${id}/register-host-fcm`,
   },
   CUSTOMER: {
     JOIN_QUEUE_BY_ID: (id: string): string => `/customer/entry/join/${id}`,
