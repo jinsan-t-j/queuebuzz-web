@@ -2,7 +2,8 @@
  * @lib firebase
  * @description Lazy Firebase initialization for FCM push notifications.
  */
-import type { FirebaseApp } from 'firebase/app'
+import type { FirebaseApp, FirebaseOptions } from 'firebase/app'
+import type { MessagePayload } from 'firebase/messaging'
 
 import { loadFirebaseRuntimeConfig } from '@/lib/firebase-runtime-config'
 
@@ -18,14 +19,10 @@ async function getApp(): Promise<FirebaseApp> {
   const existingApp = apps.find((a) => a.name === '[DEFAULT]')
 
   if (existingApp) {
-    const currentProjectId = (existingApp.options as any).projectId
+    const currentProjectId = (existingApp.options as FirebaseOptions).projectId
     if (currentProjectId === config.firebaseProjectId) {
       return existingApp
     }
-
-    console.warn(
-      `FCM: Project mismatch (Existing: ${currentProjectId}, Target: ${config.firebaseProjectId}). Resetting...`,
-    )
     await deleteApp(existingApp)
   }
 
@@ -127,8 +124,10 @@ export async function getFCMToken(): Promise<string | null> {
     }
 
     return token
-  } catch (error: any) {
-    const errorCode = error?.code || error?.message || ''
+  } catch (error) {
+    const errorCode =
+      (error as { code?: string; message?: string })?.code || (error as Error)?.message || ''
+    // eslint-disable-next-line no-console
     console.error('FCM: Token acquisition failed:', errorCode)
 
     // If the error suggests the service worker or project context is broken,
@@ -138,6 +137,7 @@ export async function getFCMToken(): Promise<string | null> {
       errorCode.includes('permission-denied') ||
       errorCode.includes('unregistered')
     ) {
+      // eslint-disable-next-line no-console
       console.warn('FCM: Critical registration error, resetting service worker...')
       await invalidateServiceWorkers()
     }
@@ -149,12 +149,13 @@ export async function getFCMToken(): Promise<string | null> {
 /**
  * Listen for foreground messages.
  */
-export async function onForegroundMessage(callback: (payload: any) => void) {
+export async function onForegroundMessage(callback: (payload: MessagePayload) => void) {
   try {
     const { getMessaging, onMessage } = await import('firebase/messaging')
     const messaging = getMessaging(await getApp())
     return onMessage(messaging, callback)
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to setup foreground message listener:', error)
     return () => {}
   }

@@ -25,6 +25,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
     .map(([k]) => k)
 
   if (missing.length) {
+    // eslint-disable-next-line no-console
     console.error(`⚠️ Missing environment variables: ${missing.join(', ')}`)
   }
 }

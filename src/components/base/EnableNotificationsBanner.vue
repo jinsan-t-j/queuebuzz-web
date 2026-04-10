@@ -31,22 +31,18 @@ onMounted(() => {
 })
 
 async function handleEnable() {
-  try {
-    const ok = await handleEnableNotifications(props.queueId)
+  const ok = await handleEnableNotifications(props.queueId)
 
-    if (ok) {
-      isSuccess.value = true
-      setTimeout(() => {
-        isVisible.value = false
-      }, 3000)
-    } else {
-      // Check permission status if registration failed
-      if (Notification.permission === 'denied') {
-        isPermissionDenied.value = true
-      }
+  if (ok) {
+    isSuccess.value = true
+    setTimeout(() => {
+      isVisible.value = false
+    }, 3000)
+  } else {
+    // Check permission status if registration failed
+    if (Notification.permission === 'denied') {
+      isPermissionDenied.value = true
     }
-  } catch (error) {
-    console.error('Error in handleEnable:', error)
   }
 }
 

@@ -12,6 +12,7 @@ const FIREBASE_CONFIG_PLACEHOLDER = null
 async function initializeMessaging() {
   const config = FIREBASE_CONFIG_PLACEHOLDER
   if (!config) {
+    // eslint-disable-next-line no-console
     console.error('FCM: Runtime config not found. Service Worker cannot initialize.')
     return
   }

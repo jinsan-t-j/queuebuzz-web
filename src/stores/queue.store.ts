@@ -561,9 +561,11 @@ export const useQueueStore = defineStore('queue', {
           this.hostFcmToken = token
           return true
         } else {
+          // eslint-disable-next-line no-console
           console.warn('FCM registration skipped: No token obtained')
         }
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.error('Failed to register host FCM:', e)
       } finally {
         this.isFcmRegistering = false
@@ -573,13 +575,8 @@ export const useQueueStore = defineStore('queue', {
 
     async unregisterHostFCM() {
       if (!this.activeQueue) return
-
-      try {
-        await apiUnregisterHostFCM(this.activeQueue.id)
-        this.hostFcmToken = null
-      } catch (e) {
-        console.error('Failed to unregister host FCM:', e)
-      }
+      await apiUnregisterHostFCM(this.activeQueue.id)
+      this.hostFcmToken = null
     },
 
     clearQueue() {

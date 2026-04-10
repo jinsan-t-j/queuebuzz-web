@@ -208,10 +208,11 @@ export function useLiveQueue() {
 
       const success = await store.registerHostFCM(qid)
       return success
-    } catch (e: any) {
+    } catch (e: unknown) {
+      // eslint-disable-next-line no-console
       console.error('Failed to enable notifications:', e)
       // Surface the specific DOMException to the UI (e.g. "Push service unreachable")
-      if (e.name === 'DOMException') {
+      if (e instanceof DOMException) {
         store.error = `Notification service error: ${e.message}`
       } else {
         store.error = 'Failed to set up notifications. Please try again.'

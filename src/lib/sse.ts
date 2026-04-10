@@ -84,6 +84,7 @@ export function createSseClient(options: SseClientOptions): SseClient {
           if (eventData) {
             try {
               const payload = keysToCamelCase(JSON.parse(eventData))
+              // eslint-disable-next-line no-console
               console.log('SSE message', eventType, payload)
 
               if (options.events?.[eventType]) {
