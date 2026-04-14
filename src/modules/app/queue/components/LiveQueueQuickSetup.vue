@@ -13,6 +13,11 @@ import {
 } from 'lucide-vue-next'
 import BaseButton from '@/components/base/BaseButton.vue'
 
+/**
+ * @component LiveQueueQuickSetup
+ * @description Centralized onboarding and optimization assistant for host dashboard.
+ */
+
 const {
   activeQueue,
   hasHostFcmToken,
@@ -20,111 +25,169 @@ const {
   handleEnableNotifications,
   isFcmRegistering,
   isLoading,
+  error,
 } = useLiveQueue()
 
-const HIDE_EMAIL_KEY = 'queuebuzz_hide_email_notice'
-const HIDE_NOTIF_KEY = 'queuebuzz_hide_notif_nudge'
-const HIDE_TIPS_KEY = 'queuebuzz_hide_strict_tip'
+const LOCALSTORAGE_KEYS = {
+  EMAIL: 'queuebuzz_hide_email_notice',
+  NOTIF: 'queuebuzz_hide_notif_nudge',
+  STRICT: 'queuebuzz_hide_strict_tip',
+}
 
-const isEmailNudgeDismissed = ref(false)
-const isNotifNudgeDismissed = ref(false)
-const isStrictTipDismissed = ref(false)
-const isExpanded = ref(true)
-const activeStepId = ref<string | null>(null)
+const states = ref({
+  isEmailDismissed: false,
+  isNotifDismissed: false,
+  isStrictDismissed: false,
+  isExpanded: true,
+  activeStepId: null as string | null,
+  isNotifDenied: false,
+})
 
-const emailValue = ref('')
-const emailError = ref<string | null>(null)
-const isNotifPermissionDenied = ref(false)
+const email = ref({ value: '', error: null as string | null })
+const browserPermission = ref(
+  typeof Notification !== 'undefined' ? Notification.permission : 'default',
+)
 
+// Logic Flags
 const isRecoveryEmailMissing = computed(() => activeQueue.value && !activeQueue.value.recoveryEmail)
 const isStrictModeOff = computed(() => activeQueue.value && !activeQueue.value.strictQueueMode)
 
-const pendingSteps = computed(() => {
-  const list = []
-  if (isRecoveryEmailMissing.value && !isEmailNudgeDismissed.value) list.push('email')
-  if (!hasHostFcmToken.value && !isNotifNudgeDismissed.value) list.push('notification')
-  if (isStrictModeOff.value && !isStrictTipDismissed.value) list.push('strict')
-  return list
-})
+/**
+ * Step Configuration
+ */
+const STEPS_CONFIG = [
+  {
+    id: 'email',
+    num: 1,
+    label: 'Recovery Email',
+    icon: MailIcon,
+    check: () => !isRecoveryEmailMissing.value,
+    dismissed: () => states.value.isEmailDismissed,
+  },
+  {
+    id: 'notification',
+    num: 2,
+    label: 'Push Notifications',
+    icon: BellRingIcon,
+    check: () => hasHostFcmToken.value && browserPermission.value === 'granted',
+    dismissed: () => states.value.isNotifDismissed,
+  },
+  {
+    id: 'strict',
+    num: 3,
+    label: 'Consistent Calling',
+    icon: ShieldCheckIcon,
+    check: () => !isStrictModeOff.value,
+    dismissed: () => states.value.isStrictDismissed,
+  },
+]
+
+const steps = computed(() =>
+  STEPS_CONFIG.map((s) => ({
+    ...s,
+    isCompleted: s.check(),
+    isDismissed: s.dismissed() && !s.check(),
+    isActive: states.value.activeStepId === s.id,
+  })),
+)
+
+const pendingSteps = computed(() => steps.value.filter((s) => !s.isCompleted && !s.isDismissed))
+
+const visibleSteps = computed(() => steps.value.filter((s) => !s.isDismissed))
 
 const progressPercent = computed(() => {
-  const total = 3
-  const completed =
-    (!isRecoveryEmailMissing.value || isEmailNudgeDismissed.value ? 1 : 0) +
-    (hasHostFcmToken.value || isNotifNudgeDismissed.value ? 1 : 0) +
-    (!isStrictModeOff.value || isStrictTipDismissed.value ? 1 : 0)
-  return (completed / total) * 100
+  const completed = steps.value.filter((s) => s.isCompleted || s.isDismissed).length
+  return (completed / STEPS_CONFIG.length) * 100
 })
 
+function loadPreferences() {
+  states.value.isEmailDismissed = localStorage.getItem(LOCALSTORAGE_KEYS.EMAIL) === 'true'
+  states.value.isNotifDismissed = localStorage.getItem(LOCALSTORAGE_KEYS.NOTIF) === 'true'
+  states.value.isStrictDismissed = localStorage.getItem(LOCALSTORAGE_KEYS.STRICT) === 'true'
+}
+
+function updateBrowserPermission() {
+  if (typeof Notification !== 'undefined') {
+    browserPermission.value = Notification.permission
+    states.value.isNotifDenied = Notification.permission === 'denied'
+  }
+}
+
 onMounted(() => {
-  isEmailNudgeDismissed.value = localStorage.getItem(HIDE_EMAIL_KEY) === 'true'
-  isNotifNudgeDismissed.value = localStorage.getItem(HIDE_NOTIF_KEY) === 'true'
-  isStrictTipDismissed.value = localStorage.getItem(HIDE_TIPS_KEY) === 'true'
+  loadPreferences()
+  updateBrowserPermission()
+
+  window.addEventListener('storage', loadPreferences)
+  // Re-check permission if user switches back to this tab
+  window.addEventListener('focus', updateBrowserPermission)
 
   if (pendingSteps.value.length > 0) {
-    activeStepId.value = pendingSteps.value[0]
+    states.value.activeStepId = pendingSteps.value[0].id
   }
 
   if (pendingSteps.value.length === 0) {
     setTimeout(() => {
-      isExpanded.value = false
+      states.value.isExpanded = false
     }, 3000)
   }
 
-  // Check if browser has already blocked notifications
   if (window.Notification && Notification.permission === 'denied') {
-    isNotifPermissionDenied.value = true
+    states.value.isNotifDenied = true
   }
 })
 
 watch(
   pendingSteps,
   (newList, oldList) => {
+    // If a task was just finished, jump to next pending one
     if (newList.length < oldList.length && newList.length > 0) {
-      activeStepId.value = newList[0]
+      states.value.activeStepId = newList[0].id
     }
   },
   { deep: true },
 )
 
-function toggleExpand() {
-  isExpanded.value = !isExpanded.value
-}
-
 function selectStep(id: string) {
-  if (!isExpanded.value) isExpanded.value = true
-  activeStepId.value = id
+  if (!states.value.isExpanded) states.value.isExpanded = true
+  states.value.activeStepId = id
 }
 
 async function handleEmailSubmit() {
-  if (!emailValue.value) {
-    emailError.value = 'Email is required'
-    return
-  }
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(emailValue.value)) {
-    emailError.value = 'Invalid email format'
-    return
-  }
-  emailError.value = null
-  await handleUpdateSettings({ recoveryEmail: emailValue.value })
+  if (!email.value.value) return (email.value.error = 'Email is required')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.value))
+    return (email.value.error = 'Invalid email format')
+
+  email.value.error = null
+  await handleUpdateSettings({ recoveryEmail: email.value.value })
 }
 
 async function handleEnableNotifs() {
-  isNotifPermissionDenied.value = false
-  const ok = await handleEnableNotifications(activeQueue.value?.id)
-  if (!ok && Notification.permission === 'denied') {
-    isNotifPermissionDenied.value = true
-  }
-}
+  const queueId = activeQueue.value?.id
+  if (!queueId) return
 
+  states.value.isNotifDenied = false
+  await handleEnableNotifications(queueId)
+
+  updateBrowserPermission()
+}
 async function handleToggleStrict() {
   await handleUpdateSettings({ strictQueueMode: true })
+  states.value.isStrictDismissed = false
+  localStorage.removeItem(LOCALSTORAGE_KEYS.STRICT)
 }
 
 function dismissStrictTip() {
-  isStrictTipDismissed.value = true
-  localStorage.setItem(HIDE_TIPS_KEY, 'true')
+  states.value.isStrictDismissed = true
+  localStorage.setItem(LOCALSTORAGE_KEYS.STRICT, 'true')
+}
+
+watch(activeQueue, () => {
+  updateBrowserPermission()
+})
+
+function skipTask() {
+  const next = pendingSteps.value.find((s) => s.id !== states.value.activeStepId)
+  if (next) selectStep(next.id)
 }
 </script>
 
@@ -135,11 +198,12 @@ function dismissStrictTip() {
   >
     <div
       class="w-full flex flex-col bg-white border border-plum/10 rounded-[32px] shadow-[0_24px_64px_rgba(26,10,46,0.16)] overflow-hidden transition-all duration-500"
-      :class="isExpanded ? 'max-h-[600px]' : 'max-h-[56px]'"
+      :class="states.isExpanded ? 'max-h-[600px]' : 'max-h-[56px]'"
     >
+      <!-- Header / Accordion Trigger -->
       <button
         class="w-full flex items-center gap-3 px-5 py-3.5 bg-plum text-sand transition-all hover:bg-plum-soft active:scale-[0.99] group text-left"
-        @click="toggleExpand"
+        @click="states.isExpanded = !states.isExpanded"
       >
         <div class="relative flex items-center justify-center w-6 h-6 shrink-0">
           <svg class="absolute inset-0 w-full h-full -rotate-90">
@@ -173,142 +237,67 @@ function dismissStrictTip() {
         </span>
 
         <component
-          :is="isExpanded ? ChevronDownIcon : ChevronUpIcon"
+          :is="states.isExpanded ? ChevronDownIcon : ChevronUpIcon"
           class="w-4 h-4 text-sand/40 group-hover:text-sand transition-transform duration-300"
-          :class="{ 'rotate-180': isExpanded }"
+          :class="{ 'rotate-180': states.isExpanded }"
         />
       </button>
 
-      <div v-show="isExpanded" class="flex flex-col gap-4 p-4">
+      <!-- Content Area -->
+      <div v-show="states.isExpanded" class="flex flex-col gap-4 p-4">
+        <!-- Navigation Tabs -->
         <div class="flex flex-col gap-1.5">
-          <!-- Step 1: Email -->
           <button
-            v-if="isRecoveryEmailMissing"
+            v-for="step in visibleSteps"
+            :key="step.id"
             :class="[
               'group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 text-left w-full cursor-pointer overflow-hidden',
-              activeStepId === 'email'
-                ? 'bg-white border-plum/10 shadow-sm'
-                : 'bg-sand/30 hover:bg-sand/60',
+              step.isActive ? 'bg-white border-plum/10 shadow-sm' : 'bg-sand/30 hover:bg-sand/60',
             ]"
-            @click="selectStep('email')"
+            @click="selectStep(step.id)"
           >
             <div
-              v-if="activeStepId === 'email'"
+              v-if="step.isActive"
               class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-mint rounded-r"
             />
 
             <div
               :class="[
-                'w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-500',
-                activeStepId === 'email' ? 'bg-plum text-sand' : 'bg-plum/5 text-plum/30',
+                'w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-500 font-bold text-[9px]',
+                step.isCompleted || step.isDismissed
+                  ? 'bg-mint text-white'
+                  : step.isActive
+                    ? 'bg-plum text-sand'
+                    : 'bg-plum/5 text-plum/30',
               ]"
             >
-              <span class="text-[9px] font-bold">1</span>
+              <CheckCircleIcon v-if="step.isCompleted || step.isDismissed" class="w-3 h-3" />
+              <span v-else>{{ step.num }}</span>
             </div>
 
             <div class="flex-1">
               <p
                 :class="[
                   'font-body text-[10px] font-bold uppercase tracking-wider transition-colors',
-                  activeStepId === 'email' ? 'text-plum' : 'text-plum-muted',
+                  step.isCompleted || step.isDismissed
+                    ? 'text-plum/20 line-through'
+                    : step.isActive
+                      ? 'text-plum'
+                      : 'text-plum-muted',
                 ]"
               >
-                Recovery Email
+                {{ step.label }}
               </p>
             </div>
 
-            <MailIcon v-if="activeStepId === 'email'" class="w-3.5 h-3.5 text-plum/20" />
-            <ChevronUpIcon
-              v-else
-              class="w-3 h-3 text-plum/10 rotate-90 group-hover:text-plum/30 transition-all font-bold"
-            />
-          </button>
-
-          <!-- Step 2: Notifications -->
-          <button
-            v-if="!hasHostFcmToken"
-            :class="[
-              'group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 text-left w-full cursor-pointer overflow-hidden',
-              activeStepId === 'notification'
-                ? 'bg-white border-plum/10 shadow-sm'
-                : 'bg-sand/30 hover:bg-sand/60',
-            ]"
-            @click="selectStep('notification')"
-          >
-            <div
-              v-if="activeStepId === 'notification'"
-              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-mint rounded-r"
-            />
-
-            <div
-              :class="[
-                'w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-500',
-                activeStepId === 'notification' ? 'bg-plum text-sand' : 'bg-plum/5 text-plum/30',
-              ]"
-            >
-              <span class="text-[9px] font-bold">2</span>
-            </div>
-
-            <div class="flex-1">
-              <p
-                :class="[
-                  'font-body text-[10px] font-bold uppercase tracking-wider transition-colors',
-                  activeStepId === 'notification' ? 'text-plum' : 'text-plum-muted',
-                ]"
-              >
-                Push Notifications
-              </p>
-            </div>
-
-            <BellRingIcon
-              v-if="activeStepId === 'notification'"
-              class="w-3.5 h-3.5 text-plum/20 animate-pulse"
+            <component
+              :is="step.icon"
+              v-if="step.isActive"
+              class="w-3.5 h-3.5 text-plum/20"
+              :class="step.id === 'notification' && 'animate-pulse'"
             />
             <ChevronUpIcon
-              v-else
-              class="w-3 h-3 text-plum/10 rotate-90 group-hover:text-plum/30 transition-all font-bold"
-            />
-          </button>
-
-          <!-- Step 3: Strict Mode (Discovery) -->
-          <button
-            v-if="isStrictModeOff"
-            :class="[
-              'group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 text-left w-full cursor-pointer overflow-hidden',
-              activeStepId === 'strict'
-                ? 'bg-white border-plum/10 shadow-sm'
-                : 'bg-sand/30 hover:bg-sand/60',
-            ]"
-            @click="selectStep('strict')"
-          >
-            <div
-              v-if="activeStepId === 'strict'"
-              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-mint rounded-r"
-            />
-
-            <div
-              :class="[
-                'w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-500',
-                activeStepId === 'strict' ? 'bg-plum text-sand' : 'bg-plum/5 text-plum/30',
-              ]"
-            >
-              <span class="text-[9px] font-bold">3</span>
-            </div>
-
-            <div class="flex-1">
-              <p
-                :class="[
-                  'font-body text-[10px] font-bold uppercase tracking-wider transition-colors',
-                  activeStepId === 'strict' ? 'text-plum' : 'text-plum-muted',
-                ]"
-              >
-                Consistent Calling
-              </p>
-            </div>
-
-            <ShieldCheckIcon v-if="activeStepId === 'strict'" class="w-3.5 h-3.5 text-plum/20" />
-            <ChevronUpIcon
-              v-else
+              v-else-if="!step.isCompleted && !step.isDismissed"
               class="w-3 h-3 text-plum/10 rotate-90 group-hover:text-plum/30 transition-all font-bold"
             />
           </button>
@@ -316,7 +305,8 @@ function dismissStrictTip() {
 
         <div class="h-px bg-plum-faint mx-1" />
 
-        <div class="min-h-[120px] px-1">
+        <!-- Detail Wizard -->
+        <div class="min-h-[120px] px-1 overflow-hidden">
           <Transition
             mode="out-in"
             enter-active-class="transition duration-300 ease-out"
@@ -326,21 +316,36 @@ function dismissStrictTip() {
             leave-from-class="translate-x-0 opacity-100"
             leave-to-class="-translate-x-4 opacity-0"
           >
-            <!-- Email Wizard -->
-            <div v-if="activeStepId === 'email' && isRecoveryEmailMissing" class="space-y-3">
+            <!-- Step Completed View -->
+            <div
+              v-if="steps.find((s) => s.id === states.activeStepId)?.isCompleted"
+              key="completed"
+              class="flex flex-col items-center justify-center py-4 text-center gap-2"
+            >
+              <div class="w-10 h-10 rounded-full bg-mint/10 flex items-center justify-center">
+                <CheckCircleIcon class="w-5 h-5 text-mint" />
+              </div>
+              <p class="font-bold text-plum text-sm">Priority Completed</p>
+              <p class="text-[11px] text-plum-muted max-w-[200px]">
+                This optimization is already active for your queue.
+              </p>
+            </div>
+
+            <!-- Email Tool -->
+            <div v-else-if="states.activeStepId === 'email'" key="email" class="space-y-3">
               <p class="font-body text-xs text-plum-muted leading-relaxed">
                 Add an email to recover your queue session if you accidentally close the browser.
               </p>
               <div class="space-y-2">
                 <input
-                  v-model="emailValue"
+                  v-model="email.value"
                   type="email"
                   placeholder="Enter recovery email"
                   class="w-full rounded-xl border border-plum/10 bg-sand px-4 py-2.5 font-body text-sm text-plum placeholder:text-plum/30 outline-none transition-all focus:border-mint focus:ring-4 focus:ring-mint/5"
-                  :class="{ 'border-danger/50 focus:border-danger': emailError }"
+                  :class="{ 'border-danger/50 focus:border-danger': email.error }"
                 />
-                <p v-if="emailError" class="font-body text-[10px] font-bold text-danger px-1">
-                  {{ emailError }}
+                <p v-if="email.error" class="font-body text-[10px] font-bold text-danger px-1">
+                  {{ email.error }}
                 </p>
                 <BaseButton
                   variant="primary"
@@ -358,23 +363,24 @@ function dismissStrictTip() {
               </div>
             </div>
 
-            <!-- Notifications Wizard -->
-            <div v-else-if="activeStepId === 'notification' && !hasHostFcmToken" class="space-y-4">
-              <div v-if="isNotifPermissionDenied" class="space-y-3">
+            <!-- Notification Tool -->
+            <div v-else-if="states.activeStepId === 'notification'" key="notif" class="space-y-4">
+              <div v-if="browserPermission === 'denied'" class="space-y-3">
                 <p class="font-body text-xs text-plum-muted leading-relaxed">
                   <span class="font-bold text-danger">Action Required:</span> Your browser has
                   blocked notifications. To fix this:
                 </p>
-                <div class="bg-sand rounded-2xl p-3 border border-plum/5 space-y-2">
-                  <p class="font-body text-[11px] text-plum/60 flex items-center gap-2">
+                <div
+                  class="bg-sand rounded-2xl p-3 border border-plum/5 space-y-2 text-[11px] text-plum/60"
+                >
+                  <p class="flex items-center gap-2">
                     <span
                       class="flex-shrink-0 w-4 h-4 rounded-full bg-plum/5 flex items-center justify-center font-bold text-[9px]"
                       >1</span
                     >
-                    Click the <span class="font-bold text-plum">Lock Icon</span> (🔒) next to the
-                    URL
+                    Click the <span class="font-bold text-plum">Lock Icon</span> (🔒) next to URL
                   </p>
-                  <p class="font-body text-[11px] text-plum/60 flex items-center gap-2">
+                  <p class="flex items-center gap-2">
                     <span
                       class="flex-shrink-0 w-4 h-4 rounded-full bg-plum/5 flex items-center justify-center font-bold text-[9px]"
                       >2</span
@@ -413,14 +419,17 @@ function dismissStrictTip() {
                     >
                   </div>
                 </BaseButton>
+                <p v-if="error" class="font-body text-[10px] font-bold text-danger px-1">
+                  {{ error }}
+                </p>
               </div>
             </div>
 
-            <!-- Strict Mode (Tip Step) -->
-            <div v-else-if="activeStepId === 'strict' && isStrictModeOff" class="space-y-4">
+            <!-- Strict Mode Tool -->
+            <div v-else-if="states.activeStepId === 'strict'" key="strict" class="space-y-4">
               <p class="font-body text-xs text-plum-muted leading-relaxed">
-                <span class="font-bold text-plum">Recommended:</span> Strict Mode prevents
-                out-of-order guest calling, keeping your intake consistent and fair.
+                Strict Mode prevents out-of-order guest calling, keeping your intake consistent and
+                fair.
               </p>
               <div class="flex gap-2">
                 <BaseButton
@@ -429,9 +438,11 @@ function dismissStrictTip() {
                   :disabled="isLoading"
                   @click="handleToggleStrict"
                 >
-                  <div class="flex items-center justify-center gap-2">
+                  <div
+                    class="flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-[11px]"
+                  >
                     <ShieldCheckIcon class="w-3.5 h-3.5" />
-                    <span class="text-[11px] font-bold uppercase tracking-wider">Turn it On</span>
+                    <span>Turn it On</span>
                   </div>
                 </BaseButton>
                 <BaseButton
@@ -446,11 +457,11 @@ function dismissStrictTip() {
           </Transition>
         </div>
 
-        <!-- Footer skip navigation -->
+        <!-- Skip Action -->
         <div v-if="pendingSteps.length > 1" class="px-1 pb-1">
           <button
-            class="w-full py-2.5 rounded-xl border border-dashed border-plum/10 hover:border-plum/20 hover:bg-sand/30 transition-all group flex items-center justify-center gap-2"
-            @click="selectStep(pendingSteps.find((id) => id !== activeStepId)!)"
+            class="w-full py-2.5 rounded-xl border border-dashed border-plum/10 hover:border-plum/20 hover:bg-sand/30 transition-all group flex items-center justify-center"
+            @click="skipTask"
           >
             <span
               class="font-body text-[10px] font-bold uppercase tracking-widest text-plum/40 group-hover:text-plum/60"

@@ -197,26 +197,46 @@ export function useLiveQueue() {
   }
 
   async function handleEnableNotifications(queueId?: string) {
-    if (!('Notification' in window)) return false
+    const qid = queueId || store.activeQueue?.id
+    if (!qid) {
+      showToast('Failed to enable notifications. No active queue found.', { type: 'error' })
+      return false
+    }
+
+    if (!('Notification' in window)) {
+      showToast('Notifications are not supported by this browser.', { type: 'warning' })
+      return false
+    }
 
     try {
-      const granted = await Notification.requestPermission()
-      if (granted !== 'granted') return false
-
-      const qid = queueId || store.activeQueue?.id
-      if (!qid) return false
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        if (permission === 'denied') {
+          showToast('Notification permission denied. Please enable in browser settings.', {
+            type: 'warning',
+          })
+        }
+        return false
+      }
 
       const success = await store.registerHostFCM(qid)
-      return success
-    } catch (e: unknown) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to enable notifications:', e)
-      // Surface the specific DOMException to the UI (e.g. "Push service unreachable")
-      if (e instanceof DOMException) {
-        store.error = `Notification service error: ${e.message}`
-      } else {
-        store.error = 'Failed to set up notifications. Please try again.'
+      if (!success) {
+        showToast(store.error || 'Failed to enable notifications. Please try again.', {
+          type: 'error',
+        })
+        return false
       }
+
+      showToast('Notifications enabled successfully.')
+      return true
+    } catch (e: unknown) {
+      const errorMessage =
+        e instanceof DOMException
+          ? `Notification service error: ${e.message}`
+          : 'Failed to set up notifications. Please try again.'
+
+      store.error = errorMessage
+      showToast(errorMessage, { type: 'error' })
       return false
     }
   }

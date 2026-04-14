@@ -367,7 +367,6 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       @submit="handleUpdateSettings"
     />
 
-    <!-- Setup Assistant (Quick Setup) -->
     <LiveQueueQuickSetup />
   </div>
 </template>
