@@ -6,12 +6,14 @@
 import { ENV } from './env.config'
 
 // Base URL mapped from Vite env variables
-export const API_BASE_URL: string = ENV.VITE_API_BASE_URL
-export const API_ORIGIN_URL: string = new URL(API_BASE_URL, window.location.origin).origin
-export const API_BASE_PATH: string = new URL(API_BASE_URL, window.location.origin).pathname.replace(
-  /\/$/,
-  '',
+const url = new URL(
+  ENV.VITE_API_BASE_URL,
+  typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
 )
+
+export const API_BASE_URL: string = ENV.VITE_API_BASE_URL
+export const API_ORIGIN_URL: string = url.origin
+export const API_BASE_PATH: string = url.pathname.replace(/\/$/, '')
 
 export function buildApiUrl(path: string): string {
   return new URL(`${API_BASE_PATH}${path}`, API_ORIGIN_URL).toString()

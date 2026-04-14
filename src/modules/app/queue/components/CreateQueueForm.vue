@@ -30,6 +30,7 @@ const queueStore = useQueueStore()
 const authStore = useAuthStore()
 
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
+const isSubmitting = ref(false)
 
 const schema = computed(() => {
   const baseSchema = {
@@ -116,8 +117,9 @@ watch(slug, (newSlug) => {
 })
 
 const onSubmit = handleSubmit(async (values) => {
-  if (errors.value.slug || isCheckingSlug.value) return
+  if (errors.value.slug || isCheckingSlug.value || isSubmitting.value) return
 
+  isSubmitting.value = true
   try {
     const payload = {
       name: values.queueName,
@@ -139,6 +141,8 @@ const onSubmit = handleSubmit(async (values) => {
     }
   } catch {
     // Error handling logic
+  } finally {
+    isSubmitting.value = false
   }
 })
 
@@ -377,9 +381,11 @@ function copyCustomLink() {
       </button>
       <button
         type="submit"
-        class="rounded-input bg-mint px-8 py-3 font-body text-lg font-medium text-plum shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95 cursor-pointer"
+        :disabled="isSubmitting || isCheckingSlug"
+        class="rounded-input bg-mint px-8 py-3 font-body text-lg font-medium text-plum shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[160px]"
       >
-        Open Queue →
+        <SpinnerLoadingIcon v-if="isSubmitting" class="mr-2 h-5 w-5 animate-spin text-plum" />
+        {{ isSubmitting ? 'Opening...' : 'Open Queue →' }}
       </button>
     </div>
 
