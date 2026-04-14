@@ -3,15 +3,7 @@
  * @component GuestHostLiveQueueView
  * @description Anonymous (guest) host active queue dashboard.
  */
-import {
-  onBeforeMount,
-  watch,
-  computed,
-  ref,
-  onMounted,
-  onUnmounted,
-  defineAsyncComponent,
-} from 'vue'
+import { onBeforeMount, watch, ref, onUnmounted, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
@@ -34,11 +26,9 @@ const AddGuestModal = defineAsyncComponent(
 const LiveQueueSettingsModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/LiveQueueSettingsModal.vue'),
 )
-const EmailNoticePopup = defineAsyncComponent(
-  () => import('@/modules/app/queue/components/EmailNoticePopup.vue'),
+const LiveQueueQuickSetup = defineAsyncComponent(
+  () => import('../components/LiveQueueQuickSetup.vue'),
 )
-const HostTips = defineAsyncComponent(() => import('../components/HostTips.vue'))
-import EnableNotificationsBanner from '@/components/base/EnableNotificationsBanner.vue'
 
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
 import HostNotifications from '@/components/layout/HostNotifications.vue'
@@ -133,38 +123,9 @@ onBeforeMount(async () => {
   }
 })
 
-const isRecoveryEmailMissing = computed(() => activeQueue.value && !activeQueue.value.recoveryEmail)
-const isNoticeVisible = ref(false)
-const storageKey = 'queuebuzz_hide_email_notice'
-let noticeInterval: ReturnType<typeof setInterval> | null = null
-
-function checkAndShowNotice() {
-  if (!activeQueue.value) return
-  const isHiddenPermanently = localStorage.getItem(storageKey) === 'true'
-  isNoticeVisible.value = !!(isRecoveryEmailMissing.value && !isHiddenPermanently)
-}
-
-onMounted(() => {
-  setTimeout(checkAndShowNotice, 2000)
-  noticeInterval = setInterval(checkAndShowNotice, 15 * 60 * 1000)
-})
-
 onUnmounted(() => {
-  if (noticeInterval) clearInterval(noticeInterval)
   disposeLiveQueue()
 })
-
-function handleNoticeClose(doNotShowAgain: boolean) {
-  isNoticeVisible.value = false
-  if (doNotShowAgain) {
-    localStorage.setItem(storageKey, 'true')
-  }
-}
-
-async function handleNoticeSubmit(email: string) {
-  await handleUpdateSettings({ recoveryEmail: email })
-  isNoticeVisible.value = false
-}
 
 async function onStatusUpdateConfirmed() {
   const isTerminate = statusUpdateMode.value === 'terminate'
@@ -406,24 +367,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       @submit="handleUpdateSettings"
     />
 
-    <!-- Floating recovery email notice -->
-    <Transition
-      enter-active-class="transition duration-500 ease-out"
-      enter-from-class="translate-y-4 opacity-0 scale-95"
-      enter-to-class="translate-y-0 opacity-100 scale-100"
-      leave-active-class="transition duration-300 ease-in"
-      leave-from-class="translate-y-0 opacity-100 scale-100"
-      leave-to-class="translate-y-4 opacity-0 scale-95"
-    >
-      <EmailNoticePopup
-        v-if="isNoticeVisible"
-        :is-loading="isApiLoading"
-        @submit="handleNoticeSubmit"
-        @close="handleNoticeClose"
-      />
-    </Transition>
-
-    <HostTips />
-    <EnableNotificationsBanner />
+    <!-- Setup Assistant (Quick Setup) -->
+    <LiveQueueQuickSetup />
   </div>
 </template>

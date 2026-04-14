@@ -10,43 +10,6 @@ import path from 'node:path'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const swId = fileURLToPath(new URL('./src/firebase-messaging-sw.js', import.meta.url))
-  const envRoot = process.cwd()
-
-  function parseEnvFile(filePath) {
-    if (!fs.existsSync(filePath)) return {}
-
-    return fs
-      .readFileSync(filePath, 'utf8')
-      .split(/\r?\n/)
-      .reduce((acc, line) => {
-        const trimmed = line.trim()
-        if (!trimmed || trimmed.startsWith('#')) return acc
-
-        const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/)
-        if (!match) return acc
-
-        let [, key, value] = match
-        value = value.trim()
-
-        if (
-          (value.startsWith('"') && value.endsWith('"')) ||
-          (value.startsWith("'") && value.endsWith("'"))
-        ) {
-          value = value.slice(1, -1)
-        }
-
-        acc[key] = value
-        return acc
-      }, {})
-  }
-
-  function loadFreshEnvFromFiles() {
-    const envFiles = ['.env', '.env.local', `.env.${mode}`, `.env.${mode}.local`]
-
-    return envFiles.reduce((acc, file) => {
-      return { ...acc, ...parseEnvFile(path.join(envRoot, file)) }
-    }, {})
-  }
 
   function getFirebaseRuntimeConfig() {
     return {
@@ -187,7 +150,8 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      port: parseInt(env.VITE_PORT) || 5173,
+      host: '127.0.0.1',
+      port: parseInt(env.VITE_PORT) || 3000,
     },
     build: {
       sourcemap: false,
