@@ -76,6 +76,34 @@ export default defineConfig(({ mode }) => {
             next()
           })
         },
+        // Build phase: generate a self-contained IIFE for production
+        async closeBundle() {
+          const distSwPath = path.resolve(process.cwd(), 'dist/firebase-messaging-sw.js')
+          await esbuild.build({
+            entryPoints: [swId],
+            bundle: true,
+            outfile: distSwPath,
+            format: 'iife',
+            platform: 'browser',
+            minify: true,
+            define: {
+              'import.meta.env.VITE_FIREBASE_API_KEY': JSON.stringify(env.VITE_FIREBASE_API_KEY),
+              'import.meta.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(
+                env.VITE_FIREBASE_AUTH_DOMAIN,
+              ),
+              'import.meta.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(
+                env.VITE_FIREBASE_PROJECT_ID,
+              ),
+              'import.meta.env.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(
+                env.VITE_FIREBASE_STORAGE_BUCKET,
+              ),
+              'import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(
+                env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+              ),
+              'import.meta.env.VITE_FIREBASE_APP_ID': JSON.stringify(env.VITE_FIREBASE_APP_ID),
+            },
+          })
+        },
       },
       // Inject <link rel="preload"> for critical fonts and CSS post-build.
       // Eliminates waterfalls that delay LCP.
@@ -147,7 +175,6 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           main: fileURLToPath(new URL('./index.html', import.meta.url)),
-          'firebase-messaging-sw': swId,
         },
         output: {
           manualChunks(id) {
@@ -165,11 +192,7 @@ export default defineConfig(({ mode }) => {
               if (id.includes('vue') || id.includes('pinia')) return 'vendor'
             }
           },
-          entryFileNames: (chunkInfo) => {
-            return chunkInfo.name === 'firebase-messaging-sw'
-              ? '[name].js'
-              : 'assets/[name]-[hash].js'
-          },
+          entryFileNames: 'assets/[name]-[hash].js',
         },
       },
     },
