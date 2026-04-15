@@ -82,7 +82,7 @@ onUnmounted(() => {
           Support
         </router-link>
         <router-link
-          to="/login"
+          to="/login-or-signup"
           class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
         >
           Sign In

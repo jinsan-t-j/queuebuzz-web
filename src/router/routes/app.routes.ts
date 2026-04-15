@@ -10,7 +10,7 @@ import type { RouteRecordRaw } from 'vue-router'
 
 export const appRoutes: RouteRecordRaw[] = [
   {
-    path: '/login',
+    path: '/login-or-signup',
     component: () => import('@/layouts/BlankLayout.vue'),
     beforeEnter: [guestGuard, restrictCustomerGuard],
     children: [
