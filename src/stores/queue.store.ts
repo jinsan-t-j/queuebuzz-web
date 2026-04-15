@@ -128,7 +128,6 @@ export const useQueueStore = defineStore('queue', {
         const error = e as ApiError
         if (error.response?.status === 404) {
           this.clearQueue()
-          this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
         } else if (error.response?.status === 401) {
           this.clearQueue()
           this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
