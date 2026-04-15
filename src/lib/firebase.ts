@@ -11,7 +11,8 @@ import type { FirebaseRuntimeConfig } from '@/lib/firebase-runtime-config'
 const CONFIG_HASH_KEY = 'fcm_config_hash'
 const TOKEN_CACHE_KEY = 'fcm_registration_token'
 const SW_PATH = '/firebase-messaging-sw.js'
-const SW_READY_TIMEOUT_MS = 10000
+const SW_READY_TIMEOUT_MS = 10_000
+
 let foregroundUnsubscribe: (() => void) | null = null
 let foregroundListenerPromise: Promise<() => void> | null = null
 
@@ -30,6 +31,9 @@ export interface FcmTokenResult {
   detail?: string
 }
 
+interface ExtendedNotificationOptions extends NotificationOptions {
+  vibrate?: number[]
+}
 function getNotificationContent(payload: MessagePayload) {
   const extendedPayload = payload as MessagePayload & {
     fcmOptions?: { link?: string }
@@ -49,12 +53,10 @@ async function getApp(): Promise<FirebaseApp> {
   const { getApps, initializeApp, deleteApp } = await import('firebase/app')
   const config = await loadFirebaseRuntimeConfig()
 
-  const apps = getApps()
-  const existingApp = apps.find((a) => a.name === '[DEFAULT]')
+  const existingApp = getApps().find((a) => a.name === '[DEFAULT]')
 
   if (existingApp) {
-    const currentProjectId = (existingApp.options as FirebaseOptions).projectId
-    if (currentProjectId === config.firebaseProjectId) {
+    if ((existingApp.options as FirebaseOptions).projectId === config.firebaseProjectId) {
       return existingApp
     }
     await deleteApp(existingApp)
@@ -71,19 +73,12 @@ async function getApp(): Promise<FirebaseApp> {
 }
 
 async function getConfigFingerprint(): Promise<string> {
-  const config = await loadFirebaseRuntimeConfig(true)
-  return btoa(
-    JSON.stringify({
-      v: config.firebaseVapidKey,
-      s: config.firebaseMessagingSenderId,
-      a: config.firebaseApiKey,
-      p: config.firebaseProjectId,
-    }),
-  )
+  const c = await loadFirebaseRuntimeConfig(true)
+  return `${c.firebaseProjectId}:${c.firebaseMessagingSenderId}:${c.firebaseVapidKey}`
 }
 
 function getMissingConfigFields(config: FirebaseRuntimeConfig) {
-  const requiredFields: Array<keyof FirebaseRuntimeConfig> = [
+  const required: Array<keyof FirebaseRuntimeConfig> = [
     'firebaseApiKey',
     'firebaseAuthDomain',
     'firebaseProjectId',
@@ -92,19 +87,14 @@ function getMissingConfigFields(config: FirebaseRuntimeConfig) {
     'firebaseAppId',
     'firebaseVapidKey',
   ]
-
-  return requiredFields.filter((field) => !config[field])
+  return required.filter((f) => !config[f])
 }
 
+const RETRIABLE_PATTERNS = ['abort', 'timeout', 'network', 'service worker', 'messaging/unknown']
+
 function isRetriableTokenError(message: string) {
-  const normalized = message.toLowerCase()
-  return (
-    normalized.includes('abort') ||
-    normalized.includes('timeout') ||
-    normalized.includes('network') ||
-    normalized.includes('service worker') ||
-    normalized.includes('messaging/unknown')
-  )
+  const lower = message.toLowerCase()
+  return RETRIABLE_PATTERNS.some((p) => lower.includes(p))
 }
 
 function wait(ms: number) {
@@ -114,13 +104,12 @@ function wait(ms: number) {
 async function waitForServiceWorkerActivation(
   registration: ServiceWorkerRegistration,
 ): Promise<ServiceWorkerRegistration> {
-  const startedAt = Date.now()
+  const deadline = Date.now() + SW_READY_TIMEOUT_MS
 
-  while (Date.now() - startedAt < SW_READY_TIMEOUT_MS) {
+  while (Date.now() < deadline) {
     if (registration.active?.scriptURL?.includes('firebase-messaging-sw.js')) {
       return registration
     }
-
     await wait(150)
   }
 
@@ -130,14 +119,12 @@ async function waitForServiceWorkerActivation(
 async function invalidateServiceWorkers(): Promise<void> {
   if (!('serviceWorker' in navigator)) return
 
-  const registration = await navigator.serviceWorker.getRegistration(SW_PATH)
-  if (registration) {
-    await registration.unregister()
-  }
+  const swReg = await navigator.serviceWorker.getRegistration(SW_PATH)
+  if (swReg) await swReg.unregister()
 
-  const rootRegistration = await navigator.serviceWorker.getRegistration('/')
-  if (rootRegistration?.active?.scriptURL?.includes('firebase-messaging-sw.js')) {
-    await rootRegistration.unregister()
+  const rootReg = await navigator.serviceWorker.getRegistration('/')
+  if (rootReg?.active?.scriptURL?.includes('firebase-messaging-sw.js')) {
+    await rootReg.unregister()
   }
 
   localStorage.removeItem(CONFIG_HASH_KEY)
@@ -169,7 +156,6 @@ async function ensureServiceWorker(): Promise<ServiceWorkerRegistration | undefi
   }
 
   const registration = await navigator.serviceWorker.register(SW_PATH, {
-    type: 'module',
     scope: '/',
   })
   await navigator.serviceWorker.ready
@@ -197,14 +183,8 @@ async function isMessagingSupported(): Promise<boolean> {
 }
 
 /**
- * Obtain an FCM registration token.
- * Uses the SDK's internal caching; only hits the network if the token is stale or missing.
+ * Obtain an FCM registration token with diagnostic info on failure.
  */
-export async function getFCMToken(): Promise<string | null> {
-  const result = await getFCMTokenDetails()
-  return result.token
-}
-
 export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
   if (typeof window === 'undefined' || !('Notification' in window)) {
     return { token: null, reason: 'unsupported', detail: 'Notifications API is unavailable' }
@@ -218,9 +198,9 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
 
   try {
     const config = await loadFirebaseRuntimeConfig()
-    const missingConfigFields = getMissingConfigFields(config)
-    if (missingConfigFields.length > 0) {
-      const detail = `Missing Firebase config: ${missingConfigFields.join(', ')}`
+    const missing = getMissingConfigFields(config)
+    if (missing.length > 0) {
+      const detail = `Missing Firebase config: ${missing.join(', ')}`
       // eslint-disable-next-line no-console
       console.error(`FCM: ${detail}`)
       return { token: null, reason: 'config-missing', detail }
@@ -238,7 +218,6 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
     const { getMessaging, getToken } = await import('firebase/messaging')
     const messaging = getMessaging(await getApp())
 
-    // getToken handles the 'should I refresh' logic internally based on the VAPID key.
     let lastErrorMessage = ''
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -317,26 +296,9 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
 }
 
 /**
- * Listen for foreground messages.
+ * Show a browser notification from an FCM payload.
+ * Prefers service worker notification; falls back to Notification API.
  */
-export async function onForegroundMessage(callback: (payload: MessagePayload) => void) {
-  try {
-    if (!(await isMessagingSupported())) {
-      return () => {}
-    }
-
-    await ensureServiceWorker()
-
-    const { getMessaging, onMessage } = await import('firebase/messaging')
-    const messaging = getMessaging(await getApp())
-    return onMessage(messaging, callback)
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to setup foreground message listener:', error)
-    return () => {}
-  }
-}
-
 export async function showBrowserNotification(payload: MessagePayload): Promise<boolean> {
   if (typeof window === 'undefined' || !('Notification' in window)) return false
   if (Notification.permission !== 'granted') return false
@@ -344,15 +306,13 @@ export async function showBrowserNotification(payload: MessagePayload): Promise<
   const { title, body, icon, badge, tag, link } = getNotificationContent(payload)
   if (!title) return false
 
-  const options: NotificationOptions = {
+  const options: ExtendedNotificationOptions = {
     body,
     icon,
     badge,
     tag,
-    data: {
-      ...(payload.data || {}),
-      link,
-    },
+    vibrate: [200, 100, 200],
+    data: { ...(payload.data || {}), link },
   }
 
   try {
@@ -374,21 +334,37 @@ export async function showBrowserNotification(payload: MessagePayload): Promise<
   }
 }
 
+/**
+ * Start listening for foreground FCM messages. Idempotent — subsequent
+ * calls return the same promise until `disposeForegroundNotifications` is called.
+ */
 export function initializeForegroundNotifications(
   callback: (payload: MessagePayload) => void,
 ): Promise<() => void> {
   if (!foregroundListenerPromise) {
-    foregroundListenerPromise = onForegroundMessage((payload) => {
-      callback(payload)
-    }).then((unsubscribe) => {
+    foregroundListenerPromise = (async () => {
+      if (!(await isMessagingSupported())) return () => {}
+
+      await ensureServiceWorker()
+      const { getMessaging, onMessage } = await import('firebase/messaging')
+      const messaging = getMessaging(await getApp())
+
+      const unsubscribe = onMessage(messaging, callback)
       foregroundUnsubscribe = unsubscribe
       return unsubscribe
+    })().catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('Failed to setup foreground message listener:', error)
+      return () => {}
     })
   }
 
   return foregroundListenerPromise
 }
 
+/**
+ * Tear down the foreground message listener.
+ */
 export function disposeForegroundNotifications() {
   foregroundUnsubscribe?.()
   foregroundUnsubscribe = null

@@ -62,17 +62,12 @@ export default defineConfig(({ mode }) => {
               const swCode = await server.transformRequest(swId, { ssr: false })
 
               if (swCode) {
-                const config = getFirebaseRuntimeConfig()
-                const injectedCode = swCode.code.replace(
-                  /const\s+FIREBASE_CONFIG_PLACEHOLDER\s*=\s*null;?/g,
-                  `const FIREBASE_CONFIG_PLACEHOLDER = ${JSON.stringify(config)}`,
-                )
                 res.setHeader('Content-Type', 'application/javascript')
                 res.setHeader(
                   'Cache-Control',
                   'no-store, no-cache, must-revalidate, proxy-revalidate',
                 )
-                res.end(injectedCode)
+                res.end(swCode.code)
                 return
               }
             }

@@ -1,20 +1,15 @@
 /**
  * @file firebase-messaging-sw.js
- * @description Mandatory service worker for Firebase Cloud Messaging (FCM).
- * This uses the modern Firebase v11 modular SDK and is bundled by Vite.
+ * @description Service worker for Firebase Cloud Messaging (FCM) background notifications.
+ * Uses Firebase v11 modular SDK, bundled by Vite.
  */
 
 import { initializeApp } from 'firebase/app'
 import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw'
 
-const FIREBASE_CONFIG_PLACEHOLDER = null
 const RUNTIME_CONFIG_PATH = '/firebase-config.json'
 
 async function loadRuntimeConfig() {
-  if (FIREBASE_CONFIG_PLACEHOLDER) {
-    return FIREBASE_CONFIG_PLACEHOLDER
-  }
-
   const response = await fetch(`${RUNTIME_CONFIG_PATH}?t=${Date.now()}`, {
     cache: 'no-store',
   })
@@ -26,6 +21,7 @@ async function loadRuntimeConfig() {
   return response.json()
 }
 
+/** @param {import('firebase/messaging/sw').MessagePayload} payload */
 function getNotificationDetails(payload) {
   const link = payload?.fcmOptions?.link || payload?.data?.link || '/'
 
@@ -34,12 +30,10 @@ function getNotificationDetails(payload) {
     options: {
       body: payload?.notification?.body || payload?.data?.body,
       icon: payload?.notification?.image || '/icons/notification-icon.png',
-      tag: payload?.data?.event || 'queue-buzz',
-      data: {
-        ...payload?.data,
-        link,
-      },
       badge: '/icons/badge-icon.png',
+      tag: payload?.data?.event || 'queue-buzz',
+      vibrate: [200, 100, 200],
+      data: { ...payload?.data, link },
     },
   }
 }
@@ -55,12 +49,8 @@ async function initializeMessaging() {
     messagingSenderId: config.firebaseMessagingSenderId,
     appId: config.firebaseAppId,
   })
-  const messaging = getMessaging(app)
 
-  /**
-   * Handle background messages
-   */
-  onBackgroundMessage(messaging, (payload) => {
+  onBackgroundMessage(getMessaging(app), (payload) => {
     const { title, options } = getNotificationDetails(payload)
     void self.registration.showNotification(title, options)
   })
@@ -71,35 +61,12 @@ initializeMessaging().catch((error) => {
   console.error('FCM Service Worker initialization failed:', error)
 })
 
-/**
- * FETCH INTERCEPTION BYPASS
- *
- * Critical: Service Workers and SSE (Server-Sent Events) can encounter issues
- * when the SW intercepts long-running streams it doesn't know how to handle.
- * We explicitly tell the Service Worker to skip interception for API and SSE requests.
- * By not calling event.respondWith(), the browser handles the fetch directly via network.
- */
-self.addEventListener('fetch', (event) => {
-  const url = event.request.url
-
-  // 1. Never intercept SSE streams
-  if (event.request.headers.get('Accept') === 'text/event-stream' || url.includes('/events')) {
-    return
-  }
-
-  // 2. Never intercept API calls or anything on the api subdomain
-  if (url.includes('/api/')) {
-    return
-  }
-})
-
-// Ensure the SW activates immediately without waiting for open tabs to close
+// Activate immediately without waiting for open tabs to close
 self.addEventListener('install', () => {
   self.skipWaiting()
 })
 
 self.addEventListener('activate', (event) => {
-  // Take control of all pages immediately
   event.waitUntil(self.clients.claim())
 })
 
@@ -110,26 +77,21 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      const targetUrl = new URL(link, self.location.origin)
+
       for (const client of clients) {
-        if ('focus' in client) {
-          const clientUrl = new URL(client.url)
-          const targetUrl = new URL(link, self.location.origin)
+        if (!('focus' in client)) continue
 
-          if (clientUrl.origin === targetUrl.origin) {
-            if ('navigate' in client) {
-              return client.navigate(targetUrl.toString()).then(() => client.focus())
-            }
+        const clientUrl = new URL(client.url)
+        if (clientUrl.origin !== targetUrl.origin) continue
 
-            return client.focus()
-          }
+        if ('navigate' in client) {
+          return client.navigate(targetUrl.toString()).then(() => client.focus())
         }
+        return client.focus()
       }
 
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(link)
-      }
-
-      return Promise.resolve()
+      return self.clients.openWindow?.(link) ?? Promise.resolve()
     }),
   )
 })
