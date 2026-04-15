@@ -7,6 +7,7 @@ import type { Entry, JoinQueuePayload } from '@/modules/customer/types'
 import * as CustomerActions from '@/modules/customer/actions/customer.action'
 import { CUSTOMER_EVENTS } from '../events'
 import { ApiError } from '@/utils/api-response'
+import { formatTicketNumber } from '@/utils/format'
 
 const CUSTOMER_FCM_TOKEN_KEY = 'queuebuzz_customer_fcm_token'
 
@@ -79,6 +80,31 @@ export const useCustomerStore = defineStore('customer', {
       window.localStorage.setItem(key, token)
     },
 
+    clearRememberedPushToken(entryId?: string | null) {
+      if (typeof window === 'undefined') {
+        return
+      }
+
+      const key = this.getPushTokenStorageKey(entryId || this.entry?.id)
+      if (!key) {
+        return
+      }
+
+      window.localStorage.removeItem(key)
+    },
+
+    getDisplayTicketNumber(entry?: Entry | null) {
+      if (!entry) {
+        return ''
+      }
+
+      if (typeof entry.ticketNo === 'number' && Number.isFinite(entry.ticketNo)) {
+        return formatTicketNumber(entry.ticketNo)
+      }
+
+      return entry.id?.substring(0, 4).toUpperCase() || ''
+    },
+
     async syncPushToken(): Promise<boolean> {
       if (!this.entry?.id || typeof window === 'undefined' || !('Notification' in window)) {
         return false
@@ -141,8 +167,6 @@ export const useCustomerStore = defineStore('customer', {
     },
 
     async fetchEntry(): Promise<void> {
-      if (!this.entry?.id) return
-
       this.isLoading = true
       this.error = null
       try {
@@ -349,7 +373,7 @@ export const useCustomerStore = defineStore('customer', {
       try {
         const result = await CustomerActions.finishService()
         if (result.success) {
-          this.clearEntry()
+          this.resetCustomerSession()
         }
         return result.success
       } catch {
@@ -380,7 +404,9 @@ export const useCustomerStore = defineStore('customer', {
       this.error = null
       try {
         const result = await CustomerActions.leaveQueue()
-        this.clearEntry()
+        if (result.success) {
+          this.resetCustomerSession()
+        }
         return result.success
       } catch (e: unknown) {
         const err = e as ApiError
@@ -457,11 +483,19 @@ export const useCustomerStore = defineStore('customer', {
       }
     },
 
-    clearEntry() {
+    resetCustomerSession() {
+      const entryId = this.entry?.id
       this.disconnectLiveUpdates()
+      this.clearRememberedPushToken(entryId)
+      useQueueStore().clearQueue()
+      useNotificationStore().clearNotifications()
       this.entry = null
       this.position = null
       this.error = null
+    },
+
+    clearEntry() {
+      this.resetCustomerSession()
     },
   },
   persist: {

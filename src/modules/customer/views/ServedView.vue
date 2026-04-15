@@ -5,7 +5,7 @@
  * Shows ticket summary, celebration confetti, and rating prompt.
  */
 
-import { computed, onBeforeMount } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
@@ -15,26 +15,31 @@ import { useQueueStore } from '@/stores/queue.store'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import ConfettiPartyIcon from '@/assets/icons/confetti-party.svg?component'
 
-const { clearEntry } = useCustomerStore()
-const { entry, disconnectEvents } = useCustomer()
+const { resetCustomerSession } = useCustomerStore()
+const { entry, disconnectEvents, getDisplayTicketNumber } = useCustomer()
 const queueStore = useQueueStore()
 const router = useRouter()
 
 const TALLY_FORM_URL = import.meta.env.VITE_TALLY_URL
 
 const queueName = computed(() => queueStore.activeQueue?.name || 'Your Queue')
-const ticketNumber = computed(
-  () => (router.currentRoute.value.query.t as string) || entry.value?.ticketNo || '...',
-)
+const ticketNumber = ref('....')
 
 onBeforeMount(async () => {
+  const queryTicket = router.currentRoute.value.query.t
+  if (typeof queryTicket === 'string' && queryTicket) {
+    ticketNumber.value = queryTicket
+  } else {
+    ticketNumber.value = getDisplayTicketNumber(entry.value) || ticketNumber.value
+  }
+
   const queueId = router.currentRoute.value.params.queueId as string
   if (queueId) {
     await queueStore.initializeQueueById(queueId)
   }
 
   disconnectEvents()
-  clearEntry()
+  resetCustomerSession()
 })
 
 const handleFeedback = () => {

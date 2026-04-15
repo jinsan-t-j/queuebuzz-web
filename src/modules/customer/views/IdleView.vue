@@ -30,6 +30,7 @@ const {
   isJoined,
   leaveQueue,
   fetchEntry,
+  getDisplayTicketNumber,
   connectEvents,
   disconnectEvents,
   saveTicketAsImage,
@@ -54,42 +55,46 @@ watch(
     } else if (s === 'LEFT' || s === 'SKIPPED') {
       router.push({ name: 'customer-ended', params, query: { reason: s.toLowerCase() } })
     } else if (s === 'SERVED') {
-       router.push({ name: 'customer-served', params })
+      router.push({
+        name: 'customer-served',
+        params,
+        query: { t: getDisplayTicketNumber() },
+      })
     }
-  }
+  },
 )
 
 onBeforeMount(async () => {
-    if (!isJoined.value) await fetchEntry()
-    if (!isJoined.value) {
-        showToast('Session expired', { type: 'error' })
-        router.push('/')
-        return
-    }
+  if (!isJoined.value) await fetchEntry()
+  if (!isJoined.value) {
+    showToast('Session expired', { type: 'error' })
+    router.push('/')
+    return
+  }
 
-    const queueId = router.currentRoute.value.params.queueId as string
-    if (queueId) {
-        await queueStore.initializeQueueById(queueId)
-    }
+  const queueId = router.currentRoute.value.params.queueId as string
+  if (queueId) {
+    await queueStore.initializeQueueById(queueId)
+  }
 
-    connectEvents(entry.value!.id)
+  connectEvents(entry.value!.id)
 })
 
 onUnmounted(() => {
-    disconnectEvents()
+  disconnectEvents()
 })
 
 const handleLeave = () => {
-    isLeaveModalOpen.value = true
+  isLeaveModalOpen.value = true
 }
 
 const handleGraceExpired = () => {
-    showToast('Your session has timed out', { type: 'warning' })
-    router.push({ 
-        name: 'customer-ended', 
-        params: router.currentRoute.value.params, 
-        query: { reason: 'skipped' } 
-    })
+  showToast('Your session has timed out', { type: 'warning' })
+  router.push({
+    name: 'customer-ended',
+    params: router.currentRoute.value.params,
+    query: { reason: 'skipped' },
+  })
 }
 </script>
 
@@ -97,10 +102,10 @@ const handleGraceExpired = () => {
   <div class="relative flex flex-col">
     <!-- Blob decorations — Idle screen specific (teal top-right, orange bottom-left) -->
     <div
-      class="pointer-events-none absolute -right-16 -top-24   h-[300px] w-[300px] rounded-[150px] bg-[rgba(45,212,191,0.40)] blur-[40px]"
+      class="pointer-events-none absolute -right-16 -top-24 h-[300px] w-[300px] rounded-[150px] bg-[rgba(45,212,191,0.40)] blur-[40px]"
     />
     <div
-      class="pointer-events-none absolute -bottom-16 -left-12   h-[250px] w-[250px] rounded-[100px_200px_213px_163px] bg-warning/40 blur-[40px]"
+      class="pointer-events-none absolute -bottom-16 -left-12 h-[250px] w-[250px] rounded-[100px_200px_213px_163px] bg-warning/40 blur-[40px]"
     />
 
     <!-- Queue name header -->
@@ -141,10 +146,10 @@ const handleGraceExpired = () => {
     />
 
     <!-- Premium Ticket Template for Capture (Off-screen) -->
-      <TicketCaptureTemplate
-        :ticket-number="String(entry.ticketNo)"
-        :queue-name="queueName"
-        join-date="Mar 31, 2026"
-      />
+    <TicketCaptureTemplate
+      :ticket-number="String(entry.ticketNo)"
+      :queue-name="queueName"
+      join-date="Mar 31, 2026"
+    />
   </div>
 </template>
