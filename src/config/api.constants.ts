@@ -26,7 +26,7 @@ export const AUTH_ROUTES = {
 export const API_ROUTES = {
   HOST: {
     // Auth routes
-    REGISTER: '/auth/register',
+    LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
     ME: '/host/me',
     // Queue routes

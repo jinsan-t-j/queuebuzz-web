@@ -14,7 +14,7 @@ import { ref, computed } from 'vue'
 
 // 4. Local composables
 import { useMutation } from '@tanstack/vue-query'
-import { registerHost } from '@/modules/app/auth/actions/auth.actions'
+import { authenticate } from '@/modules/app/auth/actions/auth.actions'
 import { useToast } from '@/composables/useToast'
 import { getErrorMessage } from '@/utils/api-response'
 // 5. Component imports
@@ -50,15 +50,20 @@ const { showToast } = useToast()
 // 9. Reactive state
 const localEmail = ref(props.email)
 
-const { mutate: mutateRegisterHost, isPending } = useMutation({
+const { mutate: mutateAuth, isPending } = useMutation({
   mutationFn: async (userEmail: string) => {
-    return await registerHost({ email: userEmail })
+    return await authenticate(userEmail)
   },
-  onSuccess: (data: { message: string }) => {
-    showToast(data?.message || 'Magic link sent. Check your email.')
+  onSuccess: (data) => {
+    if (data.redirectUrl) {
+      showToast(`Account found. Redirecting to ${data.provider} login...`)
+      window.location.assign(data.redirectUrl)
+    } else {
+      showToast(data?.message || 'Check your email for the magic link.')
+    }
   },
   onError: (error: unknown) => {
-    showToast(getErrorMessage(error, 'Failed to send magic link'), { type: 'error' })
+    showToast(getErrorMessage(error, 'Authentication failed'), { type: 'error' })
   },
 })
 
@@ -142,7 +147,7 @@ function handleSendLink() {
     return
   }
 
-  mutateRegisterHost(localEmail.value)
+  mutateAuth(localEmail.value)
 }
 
 // 12. Lifecycle hooks
