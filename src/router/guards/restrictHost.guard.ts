@@ -5,23 +5,37 @@
  * host management views.
  */
 import { useAuthStore } from '@/stores/auth.store'
+import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
 import type { NavigationGuardWithThis } from 'vue-router'
 
-export const restrictHostGuard: NavigationGuardWithThis<undefined> = () => {
+export const restrictHostGuard: NavigationGuardWithThis<undefined> = async () => {
   const auth = useAuthStore()
+  const queueStore = useQueueStore()
   const { showToast } = useToast()
 
   if (auth.isAuthenticated) {
-    showToast('Access Denied. You are managing a live queue.', { type: 'info', duration: 3500 })
-    return { name: 'dashboard' }
+    const activeQueue = await queueStore.fetchActiveQueue()
+    if (activeQueue && ['active', 'paused'].includes(activeQueue.status.toLowerCase())) {
+      showToast('You must finish managing your active queue first.', {
+        type: 'info',
+        duration: 3500,
+      })
+      return { name: 'dashboard' }
+    }
   }
 
   if (auth.activeGuestQueueId) {
-    showToast('Access Denied. You are managing a live queue.', { type: 'info', duration: 3500 })
-    return {
-      name: 'guest-host-live-queue',
-      params: { id: auth.activeGuestQueueId }
+    const activeQueue = await queueStore.fetchActiveQueue()
+    if (activeQueue && ['active', 'paused'].includes(activeQueue.status.toLowerCase())) {
+      showToast('You must finish managing your active queue first.', {
+        type: 'info',
+        duration: 3500,
+      })
+      return {
+        name: 'guest-host-live-queue',
+        params: { id: auth.activeGuestQueueId },
+      }
     }
   }
 }

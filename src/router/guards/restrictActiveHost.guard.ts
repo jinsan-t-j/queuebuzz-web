@@ -1,6 +1,6 @@
 /**
  * @guard restrictActiveHostGuard
- * @description Prevents hosts from accessing the "Create Queue" page 
+ * @description Prevents hosts from accessing the "Create Queue" page
  * if they already have an active queue session.
  */
 import { useQueueStore } from '@/stores/queue.store'
@@ -11,26 +11,23 @@ export const restrictActiveHostGuard: NavigationGuardWithThis<undefined> = async
   const queueStore = useQueueStore()
   const { showToast } = useToast()
 
-  let activeQueue = queueStore.activeQueue
-
-  if (!activeQueue) {
-    activeQueue = await queueStore.fetchActiveQueue()
-  }
+  const activeQueue = await queueStore.fetchActiveQueue()
 
   if (activeQueue?.id) {
-    showToast('You already have an active queue. Redirecting...', { type: 'info', duration: 2500 })
+    const isManageable = ['active', 'paused'].includes(activeQueue.status.toLowerCase())
 
-    // Anonymous flow redirect
-    if (to.name?.toString().startsWith('guest-host')) {
-      return {
-        name: 'guest-host-live-queue',
-        params: { id: activeQueue.id }
+    if (isManageable) {
+      showToast('Redirecting to your active queue...', { type: 'info', duration: 2500 })
+
+      if (to.name?.toString().startsWith('guest-host')) {
+        return {
+          name: 'guest-host-live-queue',
+          params: { id: activeQueue.id },
+        }
       }
+      return { name: 'dashboard' }
     }
 
-    // Authenticated flow redirect
-    return { name: 'dashboard' }
+    queueStore.clearQueue()
   }
-
-  // 3. No active queue found, proceed to creation form
 }

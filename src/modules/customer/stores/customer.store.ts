@@ -177,9 +177,10 @@ export const useCustomerStore = defineStore('customer', {
         }
       } catch (e: unknown) {
         const err = e as ApiError
-        this.error = err?.response?.data?.message || 'Failed to fetch status'
         if (err?.response?.status === 410 || err?.response?.status === 404) {
           this.clearEntry()
+        } else {
+          this.error = err?.response?.data?.message || 'Failed to fetch status'
         }
       } finally {
         this.isLoading = false
@@ -189,18 +190,16 @@ export const useCustomerStore = defineStore('customer', {
     async revalidate(entryId: string) {
       if (!entryId) return
 
-      // If already connected correctly, do nothing
       if (
         this.entry &&
         this.entry.id === entryId &&
         (this.streamState === 'open' || this.streamState === 'connecting')
       ) {
-        this.connectToEvents(entryId) // This will handle idempotent connection logic
+        this.connectToEvents(entryId)
         return
       }
 
       try {
-        // Initial data sync + connection setup
         await this.fetchEntry()
         if (this.entry?.id) {
           this.connectToEvents(this.entry.id)

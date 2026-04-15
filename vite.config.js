@@ -1,4 +1,5 @@
 import { defineConfig, loadEnv } from 'vite'
+import esbuild from 'esbuild'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import svgLoader from 'vite-svg-loader'
@@ -36,15 +37,39 @@ export default defineConfig(({ mode }) => {
         configureServer(server) {
           server.middlewares.use(async (req, res, next) => {
             if (req.url === '/firebase-messaging-sw.js') {
-              const swCode = await server.transformRequest(swId, { ssr: false })
+              const result = await esbuild.build({
+                entryPoints: [swId],
+                bundle: true,
+                write: false,
+                format: 'iife',
+                platform: 'browser',
+                define: {
+                  'import.meta.env.VITE_FIREBASE_API_KEY': JSON.stringify(
+                    env.VITE_FIREBASE_API_KEY,
+                  ),
+                  'import.meta.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(
+                    env.VITE_FIREBASE_AUTH_DOMAIN,
+                  ),
+                  'import.meta.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(
+                    env.VITE_FIREBASE_PROJECT_ID,
+                  ),
+                  'import.meta.env.VITE_FIREBASE_STORAGE_BUCKET': JSON.stringify(
+                    env.VITE_FIREBASE_STORAGE_BUCKET,
+                  ),
+                  'import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(
+                    env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+                  ),
+                  'import.meta.env.VITE_FIREBASE_APP_ID': JSON.stringify(env.VITE_FIREBASE_APP_ID),
+                },
+              })
 
-              if (swCode) {
+              if (result.outputFiles?.[0]) {
                 res.setHeader('Content-Type', 'application/javascript')
                 res.setHeader(
                   'Cache-Control',
                   'no-store, no-cache, must-revalidate, proxy-revalidate',
                 )
-                res.end(swCode.code)
+                res.end(result.outputFiles[0].text)
                 return
               }
             }

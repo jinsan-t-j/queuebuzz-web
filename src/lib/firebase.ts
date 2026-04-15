@@ -235,8 +235,9 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
           detail: 'Firebase returned an empty registration token',
         }
       } catch (error) {
-        lastErrorMessage =
-          (error as { code?: string; message?: string })?.code || (error as Error)?.message || ''
+        lastErrorMessage = String(
+          (error as { code?: string; message?: string })?.code || (error as Error)?.message || '',
+        )
 
         if (
           lastErrorMessage.includes('registration-token-not-registered') ||
@@ -263,8 +264,9 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
       detail: lastErrorMessage || 'Unknown error while fetching FCM token',
     }
   } catch (error) {
-    const errorCode =
-      (error as { code?: string; message?: string })?.code || (error as Error)?.message || ''
+    const errorCode = String(
+      (error as { code?: string; message?: string })?.code || (error as Error)?.message || '',
+    )
     // eslint-disable-next-line no-console
     console.error('FCM: Token acquisition failed:', errorCode)
 
