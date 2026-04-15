@@ -8,14 +8,44 @@ import { initializeApp } from 'firebase/app'
 import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw'
 
 const FIREBASE_CONFIG_PLACEHOLDER = null
+const RUNTIME_CONFIG_PATH = '/firebase-config.json'
+
+async function loadRuntimeConfig() {
+  if (FIREBASE_CONFIG_PLACEHOLDER) {
+    return FIREBASE_CONFIG_PLACEHOLDER
+  }
+
+  const response = await fetch(`${RUNTIME_CONFIG_PATH}?t=${Date.now()}`, {
+    cache: 'no-store',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to load Firebase runtime config: ${response.status}`)
+  }
+
+  return response.json()
+}
+
+function getNotificationDetails(payload) {
+  const link = payload?.fcmOptions?.link || payload?.data?.link || '/'
+
+  return {
+    title: payload?.notification?.title || payload?.data?.title || 'Wait list update',
+    options: {
+      body: payload?.notification?.body || payload?.data?.body,
+      icon: payload?.notification?.image || '/icons/notification-icon.png',
+      tag: payload?.data?.event || 'queue-buzz',
+      data: {
+        ...payload?.data,
+        link,
+      },
+      badge: '/icons/badge-icon.png',
+    },
+  }
+}
 
 async function initializeMessaging() {
-  const config = FIREBASE_CONFIG_PLACEHOLDER
-  if (!config) {
-    // eslint-disable-next-line no-console
-    console.error('FCM: Runtime config not found. Service Worker cannot initialize.')
-    return
-  }
+  const config = await loadRuntimeConfig()
 
   const app = initializeApp({
     apiKey: config.firebaseApiKey,
@@ -31,16 +61,8 @@ async function initializeMessaging() {
    * Handle background messages
    */
   onBackgroundMessage(messaging, (payload) => {
-    const notificationTitle = payload.notification?.title || 'Wait list update'
-    const notificationOptions = {
-      body: payload.notification?.body,
-      icon: '/icons/notification-icon.png',
-      tag: 'queue-buzz',
-      data: payload.data,
-      badge: '/icons/badge-icon.png',
-    }
-
-    self.registration.showNotification(notificationTitle, notificationOptions)
+    const { title, options } = getNotificationDetails(payload)
+    void self.registration.showNotification(title, options)
   })
 }
 
@@ -79,4 +101,35 @@ self.addEventListener('install', () => {
 self.addEventListener('activate', (event) => {
   // Take control of all pages immediately
   event.waitUntil(self.clients.claim())
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+
+  const link = event.notification.data?.link || '/'
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ('focus' in client) {
+          const clientUrl = new URL(client.url)
+          const targetUrl = new URL(link, self.location.origin)
+
+          if (clientUrl.origin === targetUrl.origin) {
+            if ('navigate' in client) {
+              return client.navigate(targetUrl.toString()).then(() => client.focus())
+            }
+
+            return client.focus()
+          }
+        }
+      }
+
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(link)
+      }
+
+      return Promise.resolve()
+    }),
+  )
 })

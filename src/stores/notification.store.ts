@@ -7,6 +7,7 @@ export type AppNotification = {
   type: 'info' | 'success' | 'warning' | 'error'
   createdAt: number
   isRead: boolean
+  dedupeKey?: string
 }
 
 export const useNotificationStore = defineStore('notification', {
@@ -21,6 +22,18 @@ export const useNotificationStore = defineStore('notification', {
 
   actions: {
     addNotification(payload: Omit<AppNotification, 'id' | 'createdAt' | 'isRead'>) {
+      const dedupeKey = payload.dedupeKey
+      if (dedupeKey) {
+        const recentMatch = this.history.find(
+          (notification) =>
+            notification.dedupeKey === dedupeKey && Date.now() - notification.createdAt < 4000,
+        )
+
+        if (recentMatch) {
+          return recentMatch.id
+        }
+      }
+
       const id = Math.random().toString(36).substring(2, 9)
       const newNotif: AppNotification = {
         id,

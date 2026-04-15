@@ -17,7 +17,6 @@ import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
 
 import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import EntryQrModal from '../components/EntryQrModal.vue'
-import { fetchEntry } from '../actions/customer.action'
 
 defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'service-finished'])
 const router = useRouter()
@@ -32,6 +31,8 @@ const {
   confirmArrival,
   finishService,
   leaveQueue,
+  fetchEntry,
+  getDisplayTicketNumber,
   connectEvents,
   disconnectEvents,
 } = useCustomer()
@@ -42,6 +43,7 @@ const isFinishModalOpen = ref(false)
 const isQrModalOpen = ref(false)
 const isConfirming = ref(false)
 const isFinishing = ref(false)
+const ticketDisplay = ref('')
 
 // Watch for status changes to redirect if served or skipped
 watch(
@@ -54,7 +56,7 @@ watch(
       router.push({
         name: 'customer-served',
         params,
-        query: { t: ticketNumber.value },
+        query: { t: ticketDisplay.value || ticketNumber.value },
       })
     } else if (s === 'ARRIVED') {
       // Stay on this page but shows "Arrived" state
@@ -65,7 +67,34 @@ watch(
   { immediate: true },
 )
 
-const ticketNumber = computed(() => entry.value?.ticketNumber || '...')
+watch(
+  () => entry.value,
+  (nextEntry) => {
+    const nextTicket = getDisplayTicketNumber(nextEntry)
+    if (nextTicket) {
+      ticketDisplay.value = nextTicket
+    }
+  },
+  { immediate: true },
+)
+
+const ticketNumber = computed(() => ticketDisplay.value || '....')
+const ticketNumberParts = computed(() => {
+  const [prefix, suffix] = ticketNumber.value.split('-')
+
+  if (suffix) {
+    return { prefix, suffix }
+  }
+
+  if (prefix.length > 4) {
+    return {
+      prefix: prefix.slice(0, Math.max(1, prefix.length - 4)),
+      suffix: prefix.slice(-4),
+    }
+  }
+
+  return { prefix, suffix: '' }
+})
 const queueName = computed(() => queueStore.activeQueue?.name || 'Your Queue')
 
 onBeforeMount(async () => {
@@ -87,7 +116,9 @@ onBeforeMount(async () => {
     await queueStore.initializeQueueById(queueId)
   }
 
-  connectEvents(entry.value.id)
+  if (entry.value?.id) {
+    connectEvents(entry.value.id)
+  }
 })
 
 onUnmounted(() => {
@@ -105,7 +136,7 @@ const handleMainCta = async () => {
 }
 
 const handleFinishService = async () => {
-  const tNumber = ticketNumber.value
+  const tNumber = ticketDisplay.value || ticketNumber.value
   isFinishing.value = true
   const success = await finishService()
   isFinishing.value = false
@@ -158,7 +189,10 @@ const handleFinishService = async () => {
           Your Ticket
         </p>
         <p class="mt-4 font-mono text-[92px] font-black leading-[92px] text-plum">
-          {{ ticketNumber.split('-')[0] }}-<br />{{ ticketNumber.split('-')[1] || '0042' }}
+          {{ ticketNumberParts.prefix
+          }}<template v-if="ticketNumberParts.suffix"
+            >-<br />{{ ticketNumberParts.suffix }}</template
+          >
         </p>
 
         <!-- Show QR button -->

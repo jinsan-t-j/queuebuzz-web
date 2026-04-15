@@ -110,7 +110,7 @@ export async function serveGuest(id: string, entryId: string): Promise<void> {
 
 export async function registerHostFCM(id: string, fcmToken: string): Promise<void> {
   const config = createApiRequestConfig({}, { withCredentials: true })
-  await apiClient.post(API_ROUTES.QUEUE.REGISTER_HOST_FCM(id), { fcmToken }, config)
+  await apiClient.post(API_ROUTES.QUEUE.REGISTER_HOST_FCM(id), { fcm_token: fcmToken }, config)
 }
 
 export async function unregisterHostFCM(id: string): Promise<void> {

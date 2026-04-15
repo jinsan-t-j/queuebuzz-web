@@ -32,11 +32,10 @@ import {
   type QueueEntryStatus,
 } from '@/modules/app/queue/constants'
 import { useNotificationStore } from './notification.store'
-import { getFCMToken, onForegroundMessage } from '@/lib/firebase'
+import { getFCMTokenDetails } from '@/lib/firebase'
 import { ApiError, getErrorMessage } from '@/utils/api-response'
 
 let visibilityHandler: (() => void) | null = null
-let foregroundMessageUnsubscribe: (() => void) | null = null
 
 export const useQueueStore = defineStore('queue', {
   state: () => ({
@@ -96,6 +95,20 @@ export const useQueueStore = defineStore('queue', {
   },
 
   actions: {
+    addLiveNotification(
+      title: string,
+      message: string,
+      type: 'info' | 'success' | 'warning' | 'error' = 'info',
+      dedupeKey?: string,
+    ) {
+      this.notifyStore.addNotification({
+        title,
+        message,
+        type,
+        dedupeKey,
+      })
+    },
+
     setActiveQueue(queue: QueueRecord) {
       this.activeQueue = queue
       if (queue.entries) {
@@ -362,6 +375,12 @@ export const useQueueStore = defineStore('queue', {
             if (payload.data) {
               const entry = normalizeQueueEntry(payload.data)
               this.upsertEntry(entry)
+              this.addLiveNotification(
+                'New Guest Joined',
+                `${entry.name} is now waiting with ticket ${entry.ticketNo}.`,
+                'info',
+                `host-joined-${entry.id}`,
+              )
             }
           },
           called: (payload: QueueSseEnvelopeMap['called']) => {
@@ -370,10 +389,25 @@ export const useQueueStore = defineStore('queue', {
           user_status_changed: (payload: QueueSseEnvelopeMap['user_status_changed']) => {
             const data = payload.data
             this.applyEntryStatus(data)
+
+            if (data?.status?.toUpperCase() === ENTRY_STATUS.LEFT) {
+              this.addLiveNotification(
+                'Guest Left Queue',
+                'A guest has removed themselves from the queue.',
+                'warning',
+                `host-left-${data.id}`,
+              )
+            }
           },
           user_arrived: (payload: QueueSseEnvelopeMap['user_arrived']) => {
             const data = payload.data
             this.applyEntryStatus({ id: data.id, status: ENTRY_STATUS.ARRIVED })
+            this.addLiveNotification(
+              'Guest Arrived!',
+              `${data.name} (${data.ticketNumber}) has arrived.`,
+              'success',
+              `host-arrived-${data.id}`,
+            )
           },
           queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
             const status = payload.data.status.toUpperCase() as QueueStatus
@@ -386,21 +420,6 @@ export const useQueueStore = defineStore('queue', {
           },
         },
       })
-
-      if (!foregroundMessageUnsubscribe) {
-        // Foreground message listener (Bridge FCM -> UI Toasts)
-        void onForegroundMessage((payload) => {
-          if (payload.notification) {
-            this.notifyStore.addNotification({
-              title: payload.notification.title || 'Notification',
-              message: payload.notification.body || '',
-              type: 'info',
-            })
-          }
-        }).then((unsubscribe) => {
-          foregroundMessageUnsubscribe = unsubscribe
-        })
-      }
 
       if (this.sseClient && typeof this.sseClient.connect === 'function') {
         this.streamState = 'connecting'
@@ -555,18 +574,29 @@ export const useQueueStore = defineStore('queue', {
       this.isFcmRegistering = true
 
       try {
-        const token = await getFCMToken()
+        const { token, reason, detail } = await getFCMTokenDetails()
         if (token) {
+          if (this.hostFcmToken === token) {
+            this.error = null
+            return true
+          }
+
           await apiRegisterHostFCM(qid, token)
           this.hostFcmToken = token
+          this.error = null
           return true
         } else {
           // eslint-disable-next-line no-console
-          console.warn('FCM registration skipped: No token obtained')
+          console.warn('FCM registration skipped:', reason, detail)
+          this.error =
+            reason === 'permission-not-granted'
+              ? 'Notification permission is not granted.'
+              : detail || 'Failed to get a notification token.'
         }
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('Failed to register host FCM:', e)
+        this.error = 'Failed to register notifications.'
       } finally {
         this.isFcmRegistering = false
       }

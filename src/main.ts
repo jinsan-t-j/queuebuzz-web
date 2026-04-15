@@ -15,6 +15,7 @@ import '@fontsource/geist-mono/600.css'
 
 import router from '@/router'
 import App from '@/App.vue'
+import { initializeForegroundNotifications, showBrowserNotification } from '@/lib/firebase'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -32,5 +33,11 @@ app.use(VueQueryPlugin, {
   },
 })
 app.use(router)
+
+void initializeForegroundNotifications((payload) => {
+  if (document.visibilityState !== 'visible') {
+    void showBrowserNotification(payload)
+  }
+})
 
 app.mount('#app')

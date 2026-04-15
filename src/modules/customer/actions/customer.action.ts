@@ -113,6 +113,7 @@ export async function updateEntry(payload: {
   name?: string
   email?: string
   partySize?: number
+  fcmToken?: string
 }): Promise<MutationResult> {
   const config = createApiRequestConfig({}, { withCredentials: true })
   try {
@@ -120,6 +121,7 @@ export async function updateEntry(payload: {
       name: payload.name,
       email: payload.email,
       party_size: payload.partySize,
+      fcm_token: payload.fcmToken,
     }
     await apiClient.post(API_ROUTES.CUSTOMER.UPDATE_ENTRY, body, config)
     return { success: true }
