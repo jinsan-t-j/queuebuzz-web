@@ -11,19 +11,6 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const swId = fileURLToPath(new URL('./src/firebase-messaging-sw.js', import.meta.url))
 
-  function getFirebaseRuntimeConfig() {
-    return {
-      apiBaseUrl: env.VITE_API_BASE_URL || '',
-      firebaseApiKey: env.VITE_FIREBASE_API_KEY || '',
-      firebaseAuthDomain: env.VITE_FIREBASE_AUTH_DOMAIN || '',
-      firebaseProjectId: env.VITE_FIREBASE_PROJECT_ID || '',
-      firebaseStorageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || '',
-      firebaseMessagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-      firebaseAppId: env.VITE_FIREBASE_APP_ID || '',
-      firebaseVapidKey: env.VITE_FIREBASE_VAPID_KEY || '',
-    }
-  }
-
   return {
     plugins: [
       vue(),
@@ -48,31 +35,16 @@ export default defineConfig(({ mode }) => {
         name: 'fcm-service-worker',
         configureServer(server) {
           server.middlewares.use(async (req, res, next) => {
-            if (req.url?.startsWith('/firebase-config.json')) {
-              res.setHeader('Content-Type', 'application/json')
-              res.setHeader(
-                'Cache-Control',
-                'no-store, no-cache, must-revalidate, proxy-revalidate',
-              )
-              res.end(JSON.stringify(getFirebaseRuntimeConfig()))
-              return
-            }
-
             if (req.url === '/firebase-messaging-sw.js') {
               const swCode = await server.transformRequest(swId, { ssr: false })
 
               if (swCode) {
-                const config = getFirebaseRuntimeConfig()
-                const injectedCode = swCode.code.replace(
-                  /const\s+FIREBASE_CONFIG_PLACEHOLDER\s*=\s*null;?/g,
-                  `const FIREBASE_CONFIG_PLACEHOLDER = ${JSON.stringify(config)}`,
-                )
                 res.setHeader('Content-Type', 'application/javascript')
                 res.setHeader(
                   'Cache-Control',
                   'no-store, no-cache, must-revalidate, proxy-revalidate',
                 )
-                res.end(injectedCode)
+                res.end(swCode.code)
                 return
               }
             }
@@ -82,16 +54,6 @@ export default defineConfig(({ mode }) => {
       },
       // Inject <link rel="preload"> for critical fonts and CSS post-build.
       // Eliminates waterfalls that delay LCP.
-      {
-        name: 'firebase-runtime-config-build',
-        generateBundle() {
-          this.emitFile({
-            type: 'asset',
-            fileName: 'firebase-config.json',
-            source: JSON.stringify(getFirebaseRuntimeConfig(), null, 2),
-          })
-        },
-      },
       {
         name: 'critical-preload',
         enforce: 'post',

@@ -35,7 +35,7 @@ app.use(VueQueryPlugin, {
 app.use(router)
 
 void initializeForegroundNotifications((payload) => {
-  if (document.visibilityState !== 'visible') {
+  if (document.visibilityState !== 'visible' || !document.hasFocus()) {
     void showBrowserNotification(payload)
   }
 })
