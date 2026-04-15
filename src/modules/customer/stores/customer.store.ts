@@ -2,10 +2,13 @@ import { defineStore } from 'pinia'
 import { useQueueStore } from '@/stores/queue.store'
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
+import { useNotificationStore } from '@/stores/notification.store'
 import type { Entry, JoinQueuePayload } from '@/modules/customer/types'
 import * as CustomerActions from '@/modules/customer/actions/customer.action'
 import { CUSTOMER_EVENTS } from '../events'
 import { ApiError } from '@/utils/api-response'
+
+const CUSTOMER_FCM_TOKEN_KEY = 'queuebuzz_customer_fcm_token'
 
 export const useCustomerStore = defineStore('customer', {
   state: () => ({
@@ -34,6 +37,20 @@ export const useCustomerStore = defineStore('customer', {
   },
 
   actions: {
+    addCustomerNotification(
+      title: string,
+      message: string,
+      type: 'info' | 'success' | 'warning' | 'error' = 'info',
+      dedupeKey?: string,
+    ) {
+      useNotificationStore().addNotification({
+        title,
+        message,
+        type,
+        dedupeKey,
+      })
+    },
+
     setEntry(e: Entry) {
       this.entry = {
         ...e,
@@ -45,12 +62,74 @@ export const useCustomerStore = defineStore('customer', {
       }
     },
 
+    getPushTokenStorageKey(entryId?: string | null) {
+      return entryId ? `${CUSTOMER_FCM_TOKEN_KEY}:${entryId}` : null
+    },
+
+    rememberPushToken(token: string, entryId?: string | null) {
+      if (typeof window === 'undefined') {
+        return
+      }
+
+      const key = this.getPushTokenStorageKey(entryId || this.entry?.id)
+      if (!key) {
+        return
+      }
+
+      window.localStorage.setItem(key, token)
+    },
+
+    async syncPushToken(): Promise<boolean> {
+      if (!this.entry?.id || typeof window === 'undefined' || !('Notification' in window)) {
+        return false
+      }
+
+      if (Notification.permission !== 'granted') {
+        return false
+      }
+
+      try {
+        const { getFCMTokenDetails } = await import('@/lib/firebase')
+        const { token, reason, detail } = await getFCMTokenDetails()
+        if (!token) {
+          // eslint-disable-next-line no-console
+          console.warn('Customer FCM sync skipped:', reason, detail)
+          return false
+        }
+
+        const tokenKey = this.getPushTokenStorageKey(this.entry.id)
+        if (!tokenKey) {
+          return false
+        }
+
+        if (window.localStorage.getItem(tokenKey) === token) {
+          return true
+        }
+
+        const result = await CustomerActions.updateEntry({ fcmToken: token })
+        if (result.success) {
+          this.rememberPushToken(token, this.entry.id)
+        }
+
+        return result.success
+      } catch {
+        return false
+      }
+    },
+
     async joinQueue(queueId: string, payload: JoinQueuePayload): Promise<Entry | null> {
       this.isLoading = true
       this.error = null
       try {
         const result = await CustomerActions.joinQueue(queueId, payload)
         this.setEntry(result)
+
+        if (payload.fcmToken) {
+          this.rememberPushToken(payload.fcmToken, result.id)
+        } else {
+          await this.syncPushToken()
+        }
+
         return result
       } catch (e: unknown) {
         const err = e as ApiError
@@ -70,6 +149,7 @@ export const useCustomerStore = defineStore('customer', {
         const result = await CustomerActions.fetchEntry()
         if (result) {
           this.setEntry(result)
+          await this.syncPushToken()
         }
       } catch (e: unknown) {
         const err = e as ApiError
@@ -173,15 +253,57 @@ export const useCustomerStore = defineStore('customer', {
           },
           [CUSTOMER_EVENTS.POSITION_UPDATE]: (payload: { position?: number }) => {
             if (payload?.position != null) {
+              const previousPosition = this.position
               this.position = payload.position
               if (this.entry) {
                 this.entry.position = payload.position
+              }
+
+              if (
+                previousPosition != null &&
+                payload.position < previousPosition &&
+                document.visibilityState === 'visible'
+              ) {
+                this.addCustomerNotification(
+                  'Queue Update',
+                  `You are now number ${payload.position} in the queue.`,
+                  'info',
+                  `customer-position-${entryId}-${payload.position}`,
+                )
               }
             }
           },
           [CUSTOMER_EVENTS.ENTRY_STATUS_CHANGED]: (payload: { data?: { status?: string } }) => {
             if (this.entry && payload?.data?.status) {
+              const nextStatus = payload.data.status.toUpperCase()
               this.entry = { ...this.entry, status: payload.data.status }
+
+              if (nextStatus === 'CALLED') {
+                this.addCustomerNotification(
+                  "It's your turn!",
+                  'Please head to the counter now.',
+                  'success',
+                  `customer-called-${entryId}`,
+                )
+              } else if (nextStatus === 'IDLE') {
+                this.addCustomerNotification(
+                  'Still with us?',
+                  'Please confirm you are still here to keep your place.',
+                  'warning',
+                  `customer-idle-${entryId}`,
+                )
+              }
+            }
+          },
+          [CUSTOMER_EVENTS.PUSH_TOKEN_REFRESH_REQUIRED]: async () => {
+            const refreshed = await this.syncPushToken()
+            if (refreshed) {
+              this.addCustomerNotification(
+                'Notifications Restored',
+                'Your device notification token was refreshed automatically.',
+                'success',
+                `customer-token-refresh-${entryId}`,
+              )
             }
           },
         },
@@ -276,6 +398,7 @@ export const useCustomerStore = defineStore('customer', {
         const result = await CustomerActions.recoverGuestSession()
         if (result) {
           this.setEntry(result)
+          await this.syncPushToken()
           this.connectToEvents(result.id)
           return true
         }
@@ -291,6 +414,7 @@ export const useCustomerStore = defineStore('customer', {
       name?: string
       email?: string
       partySize?: number
+      fcmToken?: string
     }): Promise<boolean> {
       this.isLoading = true
       this.error = null
@@ -301,6 +425,10 @@ export const useCustomerStore = defineStore('customer', {
             if (payload.name) this.entry.name = payload.name
             if (payload.email) this.entry.email = payload.email
             if (payload.partySize) this.entry.partySize = payload.partySize
+          }
+
+          if (payload.fcmToken && this.entry?.id && typeof window !== 'undefined') {
+            this.rememberPushToken(payload.fcmToken, this.entry.id)
           }
         }
         return result.success

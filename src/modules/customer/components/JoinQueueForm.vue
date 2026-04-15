@@ -95,8 +95,15 @@ const handleJoin = handleSubmit(async (values) => {
     const hasPermission = await ensureNotificationPermission()
     if (hasPermission) {
       // Lazy import Firebase only when needed to optimize bundle and unused JS
-      const { getFCMToken } = await import('@/lib/firebase')
-      fcmToken = await getFCMToken()
+      const { getFCMTokenDetails } = await import('@/lib/firebase')
+      const tokenResult = await getFCMTokenDetails()
+      fcmToken = tokenResult.token
+
+      if (!fcmToken) {
+        notificationEnabled = false
+        // eslint-disable-next-line no-console
+        console.warn('Guest FCM token unavailable:', tokenResult.reason, tokenResult.detail)
+      }
     } else {
       notificationEnabled = false
     }
