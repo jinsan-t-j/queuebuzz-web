@@ -18,7 +18,7 @@
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/geist-mono": "^5.2.7",
     "@tailwindcss/vite": "^4.2.2",
-    "@tanstack/vue-query": "^5.96.2",
+    "@tanstack/vue-query": "^5.99.0",
     "@vee-validate/yup": "^4.15.1",
     "@vueuse/core": "^14.2.1",
     "axios": "^1.14.0",
