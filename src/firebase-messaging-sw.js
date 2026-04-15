@@ -7,19 +7,22 @@
 import { initializeApp } from 'firebase/app'
 import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw'
 
-const RUNTIME_CONFIG_PATH = '/firebase-config.json'
-
-async function loadRuntimeConfig() {
-  const response = await fetch(`${RUNTIME_CONFIG_PATH}?t=${Date.now()}`, {
-    cache: 'no-store',
-  })
-
-  if (!response.ok) {
-    throw new Error(`Failed to load Firebase runtime config: ${response.status}`)
-  }
-
-  return response.json()
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
+
+const app = initializeApp(firebaseConfig)
+const messaging = getMessaging(app)
+
+onBackgroundMessage(messaging, (payload) => {
+  const { title, options } = getNotificationDetails(payload)
+  void self.registration.showNotification(title, options)
+})
 
 /** @param {import('firebase/messaging/sw').MessagePayload} payload */
 function getNotificationDetails(payload) {
@@ -37,29 +40,6 @@ function getNotificationDetails(payload) {
     },
   }
 }
-
-async function initializeMessaging() {
-  const config = await loadRuntimeConfig()
-
-  const app = initializeApp({
-    apiKey: config.firebaseApiKey,
-    authDomain: config.firebaseAuthDomain,
-    projectId: config.firebaseProjectId,
-    storageBucket: config.firebaseStorageBucket,
-    messagingSenderId: config.firebaseMessagingSenderId,
-    appId: config.firebaseAppId,
-  })
-
-  onBackgroundMessage(getMessaging(app), (payload) => {
-    const { title, options } = getNotificationDetails(payload)
-    void self.registration.showNotification(title, options)
-  })
-}
-
-initializeMessaging().catch((error) => {
-  // eslint-disable-next-line no-console
-  console.error('FCM Service Worker initialization failed:', error)
-})
 
 // Activate immediately without waiting for open tabs to close
 self.addEventListener('install', () => {

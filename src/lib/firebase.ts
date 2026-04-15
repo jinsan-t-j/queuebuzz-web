@@ -5,9 +5,6 @@
 import type { FirebaseApp, FirebaseOptions } from 'firebase/app'
 import type { MessagePayload } from 'firebase/messaging'
 
-import { loadFirebaseRuntimeConfig } from '@/lib/firebase-runtime-config'
-import type { FirebaseRuntimeConfig } from '@/lib/firebase-runtime-config'
-
 const CONFIG_HASH_KEY = 'fcm_config_hash'
 const TOKEN_CACHE_KEY = 'fcm_registration_token'
 const SW_PATH = '/firebase-messaging-sw.js'
@@ -34,60 +31,47 @@ export interface FcmTokenResult {
 interface ExtendedNotificationOptions extends NotificationOptions {
   vibrate?: number[]
 }
-function getNotificationContent(payload: MessagePayload) {
-  const extendedPayload = payload as MessagePayload & {
-    fcmOptions?: { link?: string }
-  }
-
-  return {
-    title: payload.notification?.title || payload.data?.title || 'Wait list update',
-    body: payload.notification?.body || payload.data?.body || '',
-    icon: payload.notification?.image || payload.data?.icon || '/icons/notification-icon.png',
-    badge: payload.data?.badge || '/icons/badge-icon.png',
-    tag: payload.data?.event || 'queue-buzz',
-    link: extendedPayload.fcmOptions?.link || payload.data?.link || '/',
-  }
-}
 
 async function getApp(): Promise<FirebaseApp> {
   const { getApps, initializeApp, deleteApp } = await import('firebase/app')
-  const config = await loadFirebaseRuntimeConfig()
 
   const existingApp = getApps().find((a) => a.name === '[DEFAULT]')
 
   if (existingApp) {
-    if ((existingApp.options as FirebaseOptions).projectId === config.firebaseProjectId) {
+    if (
+      (existingApp.options as FirebaseOptions).projectId ===
+      import.meta.env.VITE_FIREBASE_PROJECT_ID
+    ) {
       return existingApp
     }
     await deleteApp(existingApp)
   }
 
   return initializeApp({
-    apiKey: config.firebaseApiKey,
-    authDomain: config.firebaseAuthDomain,
-    projectId: config.firebaseProjectId,
-    storageBucket: config.firebaseStorageBucket,
-    messagingSenderId: config.firebaseMessagingSenderId,
-    appId: config.firebaseAppId,
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
   })
 }
 
 async function getConfigFingerprint(): Promise<string> {
-  const c = await loadFirebaseRuntimeConfig(true)
-  return `${c.firebaseProjectId}:${c.firebaseMessagingSenderId}:${c.firebaseVapidKey}`
+  return `${import.meta.env.VITE_FIREBASE_PROJECT_ID}:${import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID}:${import.meta.env.VITE_FIREBASE_VAPID_KEY}`
 }
 
-function getMissingConfigFields(config: FirebaseRuntimeConfig) {
-  const required: Array<keyof FirebaseRuntimeConfig> = [
-    'firebaseApiKey',
-    'firebaseAuthDomain',
-    'firebaseProjectId',
-    'firebaseStorageBucket',
-    'firebaseMessagingSenderId',
-    'firebaseAppId',
-    'firebaseVapidKey',
+function getMissingConfigFields() {
+  const required = [
+    'VITE_FIREBASE_API_KEY',
+    'VITE_FIREBASE_AUTH_DOMAIN',
+    'VITE_FIREBASE_PROJECT_ID',
+    'VITE_FIREBASE_STORAGE_BUCKET',
+    'VITE_FIREBASE_MESSAGING_SENDER_ID',
+    'VITE_FIREBASE_APP_ID',
+    'VITE_FIREBASE_VAPID_KEY',
   ]
-  return required.filter((f) => !config[f])
+  return required.filter((f) => !import.meta.env[f])
 }
 
 const RETRIABLE_PATTERNS = ['abort', 'timeout', 'network', 'service worker', 'messaging/unknown']
@@ -197,10 +181,9 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
   }
 
   try {
-    const config = await loadFirebaseRuntimeConfig()
-    const missing = getMissingConfigFields(config)
+    const missing = getMissingConfigFields()
     if (missing.length > 0) {
-      const detail = `Missing Firebase config: ${missing.join(', ')}`
+      const detail = `Missing Firebase environment variables: ${missing.join(', ')}`
       // eslint-disable-next-line no-console
       console.error(`FCM: ${detail}`)
       return { token: null, reason: 'config-missing', detail }
@@ -223,7 +206,7 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
     for (let attempt = 0; attempt < 2; attempt += 1) {
       try {
         const token = await getToken(messaging, {
-          vapidKey: config.firebaseVapidKey,
+          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
           serviceWorkerRegistration: registration,
         })
 
@@ -297,39 +280,34 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
 
 /**
  * Show a browser notification from an FCM payload.
- * Prefers service worker notification; falls back to Notification API.
+ * Prefers service worker registration to ensure consistency with background alerts.
  */
 export async function showBrowserNotification(payload: MessagePayload): Promise<boolean> {
   if (typeof window === 'undefined' || !('Notification' in window)) return false
   if (Notification.permission !== 'granted') return false
 
-  const { title, body, icon, badge, tag, link } = getNotificationContent(payload)
-  if (!title) return false
-
+  const title = payload.notification?.title || payload.data?.title || 'Queue update'
   const options: ExtendedNotificationOptions = {
-    body,
-    icon,
-    badge,
-    tag,
+    body: payload.notification?.body || payload.data?.body,
+    icon: payload.notification?.image || payload.data?.icon || '/icons/notification-icon.png',
+    badge: '/icons/badge-icon.png',
+    tag: payload.data?.event || 'queue-buzz',
     vibrate: [200, 100, 200],
-    data: { ...(payload.data || {}), link },
+    data: { ...(payload.data || {}), link: payload.data?.link || '/' },
   }
 
   try {
-    const registration =
-      (await navigator.serviceWorker.getRegistration(SW_PATH)) ||
-      (await navigator.serviceWorker.getRegistration('/'))
-
+    const registration = await navigator.serviceWorker.getRegistration('/')
     if (registration) {
       await registration.showNotification(title, options)
       return true
     }
-
+    // Fallback if SW is somehow missing but permission is granted
     new Notification(title, options)
     return true
   } catch (error) {
     // eslint-disable-next-line no-console
-    console.error('Failed to show browser notification:', error)
+    console.error('Failed to show foreground notification:', error)
     return false
   }
 }

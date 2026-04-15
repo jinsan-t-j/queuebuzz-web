@@ -3,15 +3,14 @@
  * Define all API endpoints here to avoid hardcoded strings across the app.
  */
 
-import { ENV } from './env.config'
-
 // Base URL mapped from Vite env variables
+const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
 const url = new URL(
-  ENV.VITE_API_BASE_URL,
+  baseUrl,
   typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
 )
 
-export const API_BASE_URL: string = ENV.VITE_API_BASE_URL
+export const API_BASE_URL: string = baseUrl
 export const API_ORIGIN_URL: string = url.origin
 export const API_BASE_PATH: string = url.pathname.replace(/\/$/, '')
 
