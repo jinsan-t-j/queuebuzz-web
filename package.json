@@ -55,7 +55,7 @@
     "prettier": "^3.8.1",
     "puppeteer": "^24.40.0",
     "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.1",
+    "typescript-eslint": "^8.58.2",
     "vite": "^8.0.7",
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^3.2.6"
