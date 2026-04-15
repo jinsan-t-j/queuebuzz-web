@@ -43,7 +43,7 @@
     "@emnapi/runtime": "1.9.2",
     "@eslint/js": "^10.0.1",
     "@lhci/cli": "^0.15.1",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/eslint-config-typescript": "^14.7.0",
     "eslint": "^10.2.0",
