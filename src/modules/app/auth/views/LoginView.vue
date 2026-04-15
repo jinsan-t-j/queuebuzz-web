@@ -11,10 +11,10 @@ import QueueBuzzLogoBg from '@/assets/icons/queuebuzz-logo-bg.svg?component'
 <template>
   <div class="min-h-screen flex flex-col items-center justify-center px-6 py-12">
     <!-- Logo -->
-    <div class="mb-12 flex flex-col items-center gap-4">
+    <router-link to="/" class="mb-12 flex flex-col items-center gap-4">
       <QueueBuzzLogoBg class="h-12 w-12" />
       <span class="font-display text-xl font-bold text-plum tracking-tight"> QueueBuzz </span>
-    </div>
+    </router-link>
 
     <!-- Centered Card -->
     <div

@@ -35,23 +35,6 @@ export interface Queue {
 }
 
 /**
- * registerHost
- * Calls the API to send a magic link or OTP to a host.
- * @param payload - RegisterHostPayload
- * @returns API response data
- */
-export async function registerHost({
-  email,
-  phone,
-}: RegisterHostPayload): Promise<{ message: string }> {
-  const payload: RegisterHostPayload = {}
-  if (email) payload.email = email
-  if (phone) payload.phone = phone
-
-  return await apiClient.post(API_ROUTES.HOST.REGISTER, payload)
-}
-
-/**
  * claimQueue
  * Calls API to claim an anonymous queue as a registered host.
  * @returns API response data
@@ -107,14 +90,18 @@ export async function getHostQueues(publicId: string): Promise<Queue[]> {
 }
 
 /**
- * checkAuthMethod
- * Determines if an email is associated with a social provider or needs a magic link.
+ * authenticate
+ * Handles authentication entry point. If the email is social-linked, the backend redirects (302).
+ * If not, it sends a magic link.
  * @param email - User's email address
- * @returns Preferred auth method and provider
+ * @returns Success message for magic link or handle redirection
  */
-export async function checkAuthMethod(email: string): Promise<{
-  method: 'social' | 'magic-link'
+export async function authenticate(email: string): Promise<{
+  message?: string
+  method?: 'social' | 'magic-link'
   provider?: 'google' | 'apple'
+  redirectUrl?: string
 }> {
-  return await apiClient.post(API_ROUTES.HOST.CHECK_METHOD, { email })
+  const { data } = await apiClient.post(API_ROUTES.HOST.LOGIN, { email })
+  return data
 }

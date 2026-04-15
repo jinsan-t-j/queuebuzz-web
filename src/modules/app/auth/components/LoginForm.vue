@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import { useMutation } from '@tanstack/vue-query'
-import { registerHost, checkAuthMethod } from '@/modules/app/auth/actions/auth.actions'
+import { authenticate } from '@/modules/app/auth/actions/auth.actions'
 import { useToast } from '@/composables/useToast'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -27,41 +27,28 @@ const { handleSubmit } = useForm({
 
 const { value: email, errorMessage: emailError } = useField<string>('email')
 
-const { mutate: mutateRegisterHost, isPending: isRegistering } = useMutation({
+const { mutate: mutateAuth, isPending } = useMutation({
   mutationFn: async (userEmail: string) => {
-    return await registerHost({ email: userEmail })
+    return await authenticate(userEmail)
   },
-  onSuccess: (data: { message?: string }) => {
-    showToast(data?.message || 'Magic link sent. Check your email.')
-    emit('submit-success')
+  onSuccess: (data) => {
+    if (data?.redirectUrl) {
+      window.location.assign(data.redirectUrl)
+    } else {
+      showToast(data?.message || 'Check your email for the magic link.')
+      emit('submit-success')
+    }
   },
   onError: (error: ApiError) => {
     const data = error.response?.data as { message?: string; error?: string } | undefined
     const errorMsg =
-      data?.message || data?.error || (error as Error).message || 'Failed to send magic link'
+      data?.message || data?.error || (error as Error).message || 'Authentication failed'
     showToast(errorMsg, { type: 'error' })
   },
 })
 
-const { mutate: mutateCheckMethod, isPending: isChecking } = useMutation({
-  mutationFn: async (userEmail: string) => await checkAuthMethod(userEmail),
-  onSuccess: (data) => {
-    if (data.method === 'social' && data.provider) {
-      showToast(`Account found. Redirecting to ${data.provider} login...`)
-      handleSocialLogin(data.provider as SocialProvider)
-    } else {
-      mutateRegisterHost(email.value)
-    }
-  },
-  onError: () => {
-    mutateRegisterHost(email.value)
-  },
-})
-
-const isPending = computed(() => isRegistering.value || isChecking.value)
-
 const onSubmit = handleSubmit((values) => {
-  mutateCheckMethod(values.email)
+  mutateAuth(values.email)
 })
 
 function handleSocialLogin(provider: SocialProvider) {
