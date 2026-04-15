@@ -3,16 +3,54 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"          # Pin to a specific day
+      time: "04:00"          # Off-hours to avoid noise
+      timezone: "Asia/Kolkata"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "javascript"
+    reviewers:               # Auto-assign reviewers
+      - "jinsan-t-j"
+    commit-message:
+      prefix: "chore"        # Conventional commits: chore(deps): ...
+      include: "scope"
+    groups:                   # Group related updates into single PRs
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      production-minor-patch:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      vue-ecosystem:
+        patterns:
+          - "vue*"
+          - "@vue/*"
+      linters:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+    ignore:                   # Optional: skip noisy majors you want to handle manually
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
+    labels:
+      - "dependencies"
+      - "ci"
+    reviewers:
+      - "jinsan-t-j"
+    commit-message:
+      prefix: "ci"
+
