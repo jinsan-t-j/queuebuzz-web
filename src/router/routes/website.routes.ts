@@ -47,4 +47,10 @@ export const websiteRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/launch',
+    name: 'launch',
+    component: () => import('@/modules/website/views/LaunchView.vue'),
+    meta: { title: 'Launch — QueueBuzz' },
+  },
 ]

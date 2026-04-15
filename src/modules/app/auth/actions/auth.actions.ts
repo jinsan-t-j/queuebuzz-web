@@ -105,3 +105,16 @@ export async function getHostProfile(publicId: string): Promise<HostProfile> {
 export async function getHostQueues(publicId: string): Promise<Queue[]> {
   return await apiClient.get(API_ROUTES.HOST.GET_QUEUES(publicId))
 }
+
+/**
+ * checkAuthMethod
+ * Determines if an email is associated with a social provider or needs a magic link.
+ * @param email - User's email address
+ * @returns Preferred auth method and provider
+ */
+export async function checkAuthMethod(email: string): Promise<{
+  method: 'social' | 'magic-link'
+  provider?: 'google' | 'apple'
+}> {
+  return await apiClient.post(API_ROUTES.HOST.CHECK_METHOD, { email })
+}

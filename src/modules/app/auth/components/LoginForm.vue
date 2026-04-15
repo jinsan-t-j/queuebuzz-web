@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import { useMutation } from '@tanstack/vue-query'
-import { registerHost } from '@/modules/app/auth/actions/auth.actions'
+import { registerHost, checkAuthMethod } from '@/modules/app/auth/actions/auth.actions'
 import { useToast } from '@/composables/useToast'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -27,7 +27,7 @@ const { handleSubmit } = useForm({
 
 const { value: email, errorMessage: emailError } = useField<string>('email')
 
-const { mutate: mutateRegisterHost, isPending } = useMutation({
+const { mutate: mutateRegisterHost, isPending: isRegistering } = useMutation({
   mutationFn: async (userEmail: string) => {
     return await registerHost({ email: userEmail })
   },
@@ -43,8 +43,25 @@ const { mutate: mutateRegisterHost, isPending } = useMutation({
   },
 })
 
+const { mutate: mutateCheckMethod, isPending: isChecking } = useMutation({
+  mutationFn: async (userEmail: string) => await checkAuthMethod(userEmail),
+  onSuccess: (data) => {
+    if (data.method === 'social' && data.provider) {
+      showToast(`Account found. Redirecting to ${data.provider} login...`)
+      handleSocialLogin(data.provider as SocialProvider)
+    } else {
+      mutateRegisterHost(email.value)
+    }
+  },
+  onError: () => {
+    mutateRegisterHost(email.value)
+  },
+})
+
+const isPending = computed(() => isRegistering.value || isChecking.value)
+
 const onSubmit = handleSubmit((values) => {
-  mutateRegisterHost(values.email)
+  mutateCheckMethod(values.email)
 })
 
 function handleSocialLogin(provider: SocialProvider) {

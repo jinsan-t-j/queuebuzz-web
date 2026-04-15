@@ -1,15 +1,26 @@
 <script setup>
 /**
  * @component HomeView
- * @description Public landing page for QueueBuzz. Shows the hero section,
- * features overview, and call-to-action for new hosts.
+ * @description Public landing page for QueueBuzz.
+ * If running in PWA mode, shows a simplified App Launcher.
+ * Otherwise shows the full marketing hero and features.
  */
-
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import BaseButton from '@/components/base/BaseButton.vue'
+
+const PwaLauncher = defineAsyncComponent(() => import('../components/PwaLauncher.vue'))
+
+const isPwa = ref(false)
+
+onMounted(() => {
+  isPwa.value = window.matchMedia('(display-mode: standalone)').matches
+})
 </script>
 
 <template>
-  <div class="">
+  <PwaLauncher v-if="isPwa" />
+
+  <div v-else>
     <!-- Hero Section -->
     <section class="mx-auto max-w-7xl px-6 py-24 text-center">
       <h1 class="font-display text-5xl font-black leading-tight text-plum md:text-7xl">
@@ -126,7 +137,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
         QueueBuzz is free for single queues. Go Premium when you need more.
       </p>
       <div class="mt-8">
-        <router-link to="/login">
+        <router-link to="/login-or-signup">
           <BaseButton variant="primary" size="lg"> Get Started Free </BaseButton>
         </router-link>
       </div>

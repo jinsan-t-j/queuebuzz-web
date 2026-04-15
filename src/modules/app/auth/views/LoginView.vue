@@ -6,13 +6,6 @@
  */
 import LoginForm from '@/modules/app/auth/components/LoginForm.vue'
 import QueueBuzzLogoBg from '@/assets/icons/queuebuzz-logo-bg.svg?component'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-function handleMagicLinkSuccess() {
-  void router.push({ name: 'magic-link' })
-}
 </script>
 
 <template>
@@ -34,11 +27,7 @@ function handleMagicLinkSuccess() {
         </p>
       </div>
 
-      <!-- Combined Form + Socials -->
-      <LoginForm @submit-success="handleMagicLinkSuccess" />
-
-      <!-- Social Buttons & Divider are now inside LoginForm or moved here -->
-      <!-- I'll put them in LoginForm to keep the "Form" self-contained for the auth logic -->
+      <LoginForm />
     </div>
 
     <!-- Legal footer -->

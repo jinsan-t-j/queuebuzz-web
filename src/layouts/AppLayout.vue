@@ -34,7 +34,7 @@ import HostNotifications from '@/components/layout/HostNotifications.vue'
 </script>
 
 <template>
-  <div class="flex h-screen overflow-hidden bg-sand">
+  <div class="flex h-screen overflow-hidden">
     <HostNotifications />
     <DashboardSidebar />
     <div class="flex flex-1 flex-col overflow-hidden">

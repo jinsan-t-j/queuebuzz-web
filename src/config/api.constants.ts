@@ -27,6 +27,7 @@ export const API_ROUTES = {
   HOST: {
     // Auth routes
     REGISTER: '/auth/register',
+    CHECK_METHOD: '/host/check-method',
     LOGOUT: '/auth/logout',
     ME: '/host/me',
     // Queue routes
