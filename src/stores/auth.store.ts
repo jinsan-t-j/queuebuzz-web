@@ -6,7 +6,8 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as AuthUser | null,
     isHydrated: false,
-    activeGuestQueueId: null as string | null, // Lightweight flag for anonymous hosts
+    activeGuestQueueId: null as string | null,
+    error: null as Error | null,
   }),
 
   getters: {
@@ -17,7 +18,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     setUser(userData: AuthUser) {
       this.user = userData
-      this.activeGuestQueueId = null // Clear guest status if they become a registered host
+      this.activeGuestQueueId = null
     },
 
     setGuestSession(queueId: string | null) {
@@ -28,20 +29,27 @@ export const useAuthStore = defineStore('auth', {
       try {
         await logoutHost()
       } finally {
-        this.user = null
-        this.activeGuestQueueId = null
+        this.clearSession()
       }
     },
 
     async initializeSession() {
       try {
         this.user = await fetchCurrentHost()
-      } catch {
-        this.user = null
-      } finally {
         this.isHydrated = true
+      } catch (error) {
+        this.user = null
+        this.error = error as Error
       }
     },
+
+    clearSession() {
+      this.user = null
+      this.activeGuestQueueId = null
+      this.isHydrated = false
+    },
   },
-  persist: true,
+  persist: {
+    pick: ['user', 'activeGuestQueueId'],
+  },
 })

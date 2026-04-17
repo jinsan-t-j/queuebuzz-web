@@ -4,7 +4,6 @@ import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
 import svgLoader from 'vite-svg-loader'
 import { fileURLToPath, URL } from 'node:url'
-import fs from 'node:fs'
 import path from 'node:path'
 
 // https://vite.dev/config/
@@ -171,7 +170,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
-      host: '127.0.0.1',
+      host: 'localhost',
       port: parseInt(env.VITE_PORT) || 3000,
     },
     build: {

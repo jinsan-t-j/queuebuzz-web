@@ -6,7 +6,9 @@
  * Uses v-if to fully unmount the form once the queue is live.
  */
 
-import { ref, defineAsyncComponent } from 'vue'
+import { ref, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
+
 const CreateQueueForm = defineAsyncComponent(
   () => import('@/modules/app/queue/components/CreateQueueForm.vue'),
 )
@@ -15,13 +17,21 @@ const InfoQueueModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/InfoQueueModal.vue'),
 )
 
-const activeQueueData = ref(null)
+const { activeQueue: activeQueueData, initializeHostQueue, disposeLiveQueue } = useLiveQueue()
+
 const showSuccessModal = ref(false)
 
-function handleQueueCreated(queueData) {
-  activeQueueData.value = queueData
+function handleQueueCreated() {
   showSuccessModal.value = true
 }
+
+onMounted(async () => {
+  await initializeHostQueue()
+})
+
+onUnmounted(() => {
+  disposeLiveQueue()
+})
 </script>
 
 <template>
@@ -41,10 +51,12 @@ function handleQueueCreated(queueData) {
 
   <!-- ═══ Success modal (shown once after creation) ═══ -->
   <InfoQueueModal
+    v-if="activeQueueData"
     :is-open="showSuccessModal"
     variant="success"
-    :join-code="activeQueueData?.joinCode ?? ''"
-    :queue-url="`https://queuebuzz.app/q/${activeQueueData?.joinCode ?? ''}`"
+    :queue-name="activeQueueData.name"
+    :join-code="activeQueueData.joinCode"
+    :queue-url="`https://queuebuzz.app/q/${activeQueueData.joinCode}`"
     @close="showSuccessModal = false"
   />
 </template>

@@ -31,8 +31,6 @@ export const API_ROUTES = {
     ME: '/host/me',
     // Queue routes
     CLAIM: '/host/claim',
-    GET_PROFILE: (publicId: string): string => `/host/${publicId}`,
-    GET_QUEUES: (publicId: string): string => `/host/${publicId}/queues`,
   },
   QUEUE: {
     CHECK_SLUG: '/queue/slug-check',

@@ -13,9 +13,9 @@
  * @emits {terminate-queue} - User clicked "Terminate".
  */
 
-import { computed, ref } from 'vue'
-
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 import SidebarLogo from '@/assets/icons/sidebar-logo.svg?component'
 import NavDashboard from '@/assets/icons/nav-dashboard.svg?component'
@@ -29,31 +29,23 @@ import DiamondPremium from '@/assets/icons/diamond-premium.svg?component'
 import QueueStatusUpdateModal from '@/modules/app/queue/components/QueueStatusUpdateModal.vue'
 import { useNow } from '@vueuse/core'
 
-const props = defineProps({
-  isQueueRunning: {
-    type: Boolean,
-    default: true,
-  },
-  isQueuePaused: {
-    type: Boolean,
-    default: false,
-  },
-  pausedAt: {
-    type: [String, Date],
-    default: null,
-  },
-})
+const {
+  activeQueue: activeQueueData,
+  isPaused: isQueuePaused,
+  showStatusUpdateModal,
+  statusUpdateMode,
+  handleStatusUpdateConfirm,
+} = useLiveQueue()
 
-const emit = defineEmits(['pause-queue', 'resume-queue', 'terminate-queue'])
+const isQueueRunning = computed(() => !!activeQueueData.value)
+const pausedAt = computed(() => activeQueueData.value?.updatedAt || null)
 
 const route = useRoute()
-const showStatusModal = ref(false)
-const modalMode = ref('terminate')
 const now = useNow()
 
 const pausedTimeFormatted = computed(() => {
-  if (!props.isQueuePaused || !props.pausedAt) return '00m 00s'
-  const start = new Date(props.pausedAt).getTime()
+  if (!isQueuePaused.value || !pausedAt.value) return '00m 00s'
+  const start = new Date(pausedAt.value).getTime()
   if (isNaN(start)) return '00m 00s'
 
   const diffMs = now.value.getTime() - start
@@ -67,22 +59,22 @@ const pausedTimeFormatted = computed(() => {
 })
 
 function openTerminateModal() {
-  modalMode.value = 'terminate'
-  showStatusModal.value = true
+  statusUpdateMode.value = 'terminate'
+  showStatusUpdateModal.value = true
 }
 
 function openPauseModal() {
-  modalMode.value = 'pause'
-  showStatusModal.value = true
+  statusUpdateMode.value = 'pause'
+  showStatusUpdateModal.value = true
 }
 
-function handleStatusConfirm() {
-  if (modalMode.value === 'terminate') {
-    emit('terminate-queue')
-  } else if (modalMode.value === 'pause') {
-    emit('pause-queue')
-  }
-  showStatusModal.value = false
+async function handleStatusConfirm() {
+  await handleStatusUpdateConfirm()
+}
+
+async function handleResume() {
+  statusUpdateMode.value = 'resume'
+  await handleStatusUpdateConfirm()
 }
 
 const navItems = computed(() => [
@@ -179,7 +171,7 @@ function isActive(item) {
         <button
           v-else
           class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-warning transition-colors hover:bg-warning/10"
-          @click="emit('resume-queue')"
+          @click="handleResume"
         >
           <PlayCircleIcon class="h-[14px] w-[14px] text-warning" />
           Resume Queue
@@ -205,10 +197,10 @@ function isActive(item) {
       </router-link>
     </div>
     <QueueStatusUpdateModal
-      :is-open="showStatusModal"
-      :mode="modalMode"
+      :is-open="showStatusUpdateModal"
+      :mode="statusUpdateMode"
       @confirm="handleStatusConfirm"
-      @close="showStatusModal = false"
+      @close="showStatusUpdateModal = false"
     />
   </aside>
 </template>
