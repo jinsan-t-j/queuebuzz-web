@@ -610,12 +610,18 @@ export const useQueueStore = defineStore('queue', {
 
     clearQueue() {
       this.disconnectLiveUpdates()
-      this.notifyStore.clearNotifications()
       this.activeQueue = null
-      this.hostFcmToken = null
       this.entries = []
-      this.publicWaitingCount = null
+      this.isLoading = false
       this.error = null
+      this.streamState = 'idle'
+      this.sseClient = null
+      this.connectedQueueId = null
+      this.publicWaitingCount = null
+      this.publicSseClient = null
+      this.hostFcmToken = null
+      this.isFcmRegistering = false
+      this.notifyStore.clearNotifications()
     },
 
     clearError() {
