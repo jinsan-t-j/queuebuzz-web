@@ -115,7 +115,6 @@ export function useCustomer() {
       return aheadVal * avgServiceMins
     }),
 
-    // Party Constraints (from queue store)
     canJoinWithParty: computed(() => useQueueStore().canJoinWithParty),
     maxAllowedPartySize: computed(() => useQueueStore().maxAllowedPartySize),
 
@@ -142,7 +141,6 @@ export function useCustomer() {
     connectEvents: (id: string) => store.connectToEvents(id),
     disconnectEvents: () => store.disconnectLiveUpdates(),
 
-    // Capture logic
     isSaving: isCapturing,
     isSaved: hasCaptured,
     saveTicketAsImage,

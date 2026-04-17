@@ -182,9 +182,7 @@ export const useQueueStore = defineStore('queue', {
     async initializeQueueById(id: string) {
       this.isLoading = true
       try {
-        // First, get the metadata via REST for faster FCP/LCP
         await this.fetchQueueById(id)
-        // Then connect to live events
         this.connectToPublicEvents(id)
         return !!this.activeQueue
       } finally {
@@ -287,12 +285,6 @@ export const useQueueStore = defineStore('queue', {
           }
         },
         events: {
-          queue_init: (payload: QueueSseEnvelopeMap['queue_init']) => {
-            if (payload.data) {
-              this.activeQueue = payload.data
-              this.publicWaitingCount = payload.data.entries?.length || this.publicWaitingCount
-            }
-          },
           waiting_count_updated: (payload: QueueSseEnvelopeMap['waiting_count_updated']) => {
             // The backend sends { event: '...', data: { count: N } }
             const count = payload.data?.count

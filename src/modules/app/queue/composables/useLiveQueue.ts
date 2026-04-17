@@ -184,14 +184,6 @@ export function useLiveQueue() {
     }
   }
 
-  async function initializeHostQueue() {
-    return await store.initializeActiveQueue()
-  }
-
-  async function initializeQueueById(queueId: string) {
-    return await store.initializeQueueById(queueId)
-  }
-
   async function revalidateQueue(queueId: string) {
     return await store.revalidate(queueId)
   }
@@ -288,8 +280,7 @@ export function useLiveQueue() {
     handleServeGuest,
     handleStatusUpdateConfirm,
     handleUpdateSettings,
-    initializeHostQueue,
-    initializeQueueById,
+    initializeHostQueue: store.initializeActiveQueue,
     revalidateQueue,
     disposeLiveQueue,
     handleEnableNotifications,

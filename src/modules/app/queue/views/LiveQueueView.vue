@@ -5,7 +5,7 @@
  * Managed via useLiveQueue and useQueueStore.
  */
 import { useRouter } from 'vue-router'
-import { onBeforeMount, defineAsyncComponent } from 'vue'
+import { defineAsyncComponent } from 'vue'
 
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
@@ -15,7 +15,6 @@ import QueueAnalysisCard from '@/modules/app/queue/components/QueueAnalysisCard.
 import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 
-// Modals: only loaded on user action
 const QueueStatusUpdateModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/QueueStatusUpdateModal.vue'),
 )
@@ -64,17 +63,7 @@ const {
   handleServeGuest,
   handleStatusUpdateConfirm,
   handleUpdateSettings,
-  initializeHostQueue,
 } = useLiveQueue()
-
-onBeforeMount(async () => {
-  if (!activeQueue.value) {
-    const queue = await initializeHostQueue()
-    if (!queue) {
-      router.push({ name: 'dashboard' })
-    }
-  }
-})
 
 async function onStatusUpdateConfirmed() {
   const isTerminate = statusUpdateMode.value === 'terminate'
@@ -108,17 +97,6 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
               STRICT MODE ACTIVE
             </BaseBadge>
           </div>
-          <p class="mt-1 font-body text-plum/60">
-            Running since
-            {{
-              activeQueue?.createdAt
-                ? new Date(activeQueue.createdAt).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
-                : '--:--'
-            }}
-          </p>
         </div>
 
         <div class="flex items-center gap-3">

@@ -41,7 +41,7 @@ const queueStore = useQueueStore()
 
 const isSettingsModalOpen = ref(false)
 const showEmailHighlight = ref(false)
-const queueName = computed(() => queueStore.activeQueue?.name ?? 'Your Queue')
+const queueName = computed(() => queueStore.activeQueue?.name || '')
 
 onMounted(() => {
   setTimeout(() => {
@@ -54,8 +54,6 @@ onMounted(() => {
 watch(isSettingsModalOpen, (isOpen) => {
   if (isOpen) showEmailHighlight.value = false
 })
-
-// logic moved to useCustomer.ts
 
 function handleShareCode() {
   if (!entry.value) return
@@ -72,7 +70,6 @@ function handleShareCode() {
   }
 }
 
-// Redirect on status change from SSE
 watch(
   () => status.value,
   (s) => {
@@ -93,12 +90,10 @@ watch(
 )
 
 onBeforeMount(async () => {
-  // 1. If not in store, attempt to re-hydrate from cookie session
   if (!isJoined.value) {
     await fetchEntry()
   }
 
-  // 2. If still not joined after hydration attempt, redirect to home
   if (!isJoined.value) {
     showToast('You are not joined to any queue', { type: 'error' })
     router.push('/')

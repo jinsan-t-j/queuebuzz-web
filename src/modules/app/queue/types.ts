@@ -96,9 +96,6 @@ export interface QueueSseEnvelopeMap {
   queue_status_changed: {
     data: QueueStatusData
   }
-  queue_init: {
-    data: QueueRecord
-  }
   waiting_count_updated: {
     data: {
       count: number
