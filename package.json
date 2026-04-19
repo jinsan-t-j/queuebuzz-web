@@ -39,27 +39,27 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
-    "@emnapi/core": "1.9.2",
-    "@emnapi/runtime": "1.9.2",
+    "@emnapi/core": "1.10.0",
+    "@emnapi/runtime": "1.10.0",
     "@eslint/js": "^10.0.1",
     "@lhci/cli": "^0.15.1",
     "@types/node": "^25.6.0",
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/eslint-config-typescript": "^14.7.0",
     "esbuild": "^0.28.0",
-    "eslint": "^10.2.0",
+    "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^10.8.0",
     "globals": "^17.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.3",
-    "puppeteer": "^24.40.0",
-    "typescript": "^6.0.2",
+    "puppeteer": "^24.41.0",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.8",
     "vue-eslint-parser": "^10.4.0",
-    "vue-tsc": "^3.2.6"
+    "vue-tsc": "^3.2.7"
   },
   "lint-staged": {
     "*.{js,ts,vue}": [
