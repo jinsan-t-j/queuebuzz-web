@@ -10,6 +10,12 @@ import type {
   AddQueueEntryPayload,
   UpdateQueuePayload,
 } from '@/modules/app/queue/types'
+import type {
+  HistoryDetail,
+  HistoryQueryParams,
+  HistoryQueryResult,
+} from '@/modules/app/history/types'
+import { fetchHistory, fetchHistoryDetail } from '@/modules/app/history/actions/history.action'
 import {
   getLiveQueue,
   getLiveQueueById,
@@ -618,6 +624,32 @@ export const useQueueStore = defineStore('queue', {
 
     clearError() {
       this.error = null
+    },
+
+    async fetchHistoryQueues(params: HistoryQueryParams): Promise<HistoryQueryResult> {
+      this.isLoading = true
+      this.error = null
+      try {
+        return await fetchHistory(params)
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to fetch queue history')
+        throw e
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async fetchHistoryDetail(id: string): Promise<HistoryDetail> {
+      this.isLoading = true
+      this.error = null
+      try {
+        return await fetchHistoryDetail(id)
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to fetch queue detail')
+        throw e
+      } finally {
+        this.isLoading = false
+      }
     },
   },
   persist: {

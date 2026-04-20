@@ -34,7 +34,7 @@ export async function joinQueue(queueId: string, payload: JoinQueuePayload): Pro
 }
 
 export async function fetchEntry(): Promise<Entry | null> {
-  const config = createApiRequestConfig({}, { withCredentials: true })
+  const config = createApiRequestConfig({}, { withCredentials: true, skipLogout: true })
   try {
     const response = (await apiClient.get<ApiSuccessResponse<Entry>>(
       API_ROUTES.CUSTOMER.GET_ENTRY(),
@@ -87,7 +87,7 @@ export async function leaveQueue(): Promise<MutationResult> {
 }
 
 export async function recoverGuestSession(): Promise<Entry | null> {
-  const config = createApiRequestConfig({}, { withCredentials: true })
+  const config = createApiRequestConfig({}, { withCredentials: true, skipLogout: true })
   try {
     const response = (await apiClient.get<ApiSuccessResponse<Entry>>(
       API_ROUTES.CUSTOMER.RECOVER_SESSION,

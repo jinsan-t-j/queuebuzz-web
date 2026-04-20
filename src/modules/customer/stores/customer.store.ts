@@ -177,7 +177,11 @@ export const useCustomerStore = defineStore('customer', {
         }
       } catch (e: unknown) {
         const err = e as ApiError
-        if (err?.response?.status === 410 || err?.response?.status === 404) {
+        if (
+          err?.response?.status === 401 ||
+          err?.response?.status === 410 ||
+          err?.response?.status === 404
+        ) {
           this.clearEntry()
         } else {
           this.error = err?.response?.data?.message || 'Failed to fetch status'

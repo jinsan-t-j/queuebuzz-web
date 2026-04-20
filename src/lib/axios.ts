@@ -9,12 +9,13 @@ import { keysToCamelCase, keysToSnakeCase } from '@/utils/caseConvert'
 
 export function createApiRequestConfig(
   config: AxiosRequestConfig = {},
-  options: { withCredentials?: boolean } = {},
+  options: { withCredentials?: boolean; skipLogout?: boolean } = {},
 ) {
   return {
     ...config,
     withCredentials: options.withCredentials ?? false,
-  }
+    _skipLogout: options.skipLogout ?? false,
+  } as AxiosRequestConfig & { _skipLogout?: boolean }
 }
 
 /**
@@ -62,13 +63,18 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = []
 }
 
+interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean
+  _skipLogout?: boolean
+}
+
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     response.data = keysToCamelCase(response.data)
     return response.data
   },
-  async (error: { config: InternalAxiosRequestConfig; response?: { status: number } }) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+  async (error: { config: CustomInternalAxiosRequestConfig; response?: { status: number } }) => {
+    const originalRequest = error.config
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       if (originalRequest.url?.includes('/auth/refresh/token')) {
@@ -99,8 +105,12 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest)
       } catch (err: unknown) {
         processQueue(err)
-        sessionStorage.setItem('qb_toast', 'Session expired.')
-        window.location.href = '/'
+
+        if (!originalRequest._skipLogout) {
+          sessionStorage.setItem('qb_toast', 'Session expired.')
+          window.location.href = '/'
+        }
+
         return Promise.reject(err)
       } finally {
         isRefreshing = false
