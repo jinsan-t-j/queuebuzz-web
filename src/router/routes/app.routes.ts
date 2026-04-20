@@ -19,6 +19,20 @@ export const appRoutes: RouteRecordRaw[] = [
     ],
   },
   {
+    path: '/error',
+    name: 'system-error',
+    component: () => import('@/modules/app/shared/views/ErrorView.vue'),
+    props: (route) => ({
+      title: route.query.title,
+      errorCode: route.query.error,
+      message: route.query.description,
+      requestId: route.query.request_id,
+      actionText: route.query.action_text,
+      actionPath: route.query.action_path,
+    }),
+    meta: { title: 'Error — QueueBuzz' },
+  },
+  {
     path: '/dashboard',
     component: () => import('@/layouts/AppLayout.vue'),
     beforeEnter: authGuard,

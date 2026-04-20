@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import { useMutation } from '@tanstack/vue-query'
-import { useRoute } from 'vue-router'
 import { authenticate } from '@/modules/app/auth/actions/auth.actions'
 import { useToast } from '@/composables/useToast'
 import BaseInput from '@/components/base/BaseInput.vue'
@@ -16,15 +15,7 @@ import type { ApiError } from '@/utils/api-response'
 
 const emit = defineEmits(['submit-success'])
 const { showToast } = useToast()
-const route = useRoute()
 const isSocialLoading = ref(false)
-
-onMounted(() => {
-  const errorMsg = route.query.error as string
-  if (errorMsg) {
-    showToast(errorMsg, { type: 'error' })
-  }
-})
 
 const schema = yup.object({
   email: yup.string().email('Invalid email address').required('Email is required'),
