@@ -3,7 +3,7 @@
  * @view HistoryListView
  * @description List of past queues with searching, filtering, and pagination.
  */
-import { ref, onMounted, watch } from 'vue'
+import { onMounted, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHistoryApi } from '../composables/useHistoryApi'
 import { onClickOutside } from '@vueuse/core'
@@ -21,18 +21,25 @@ import {
   X as XIcon,
   Inbox as InboxIcon,
   ArrowRight as ArrowRightIcon,
+  Sparkles as SparklesIcon,
 } from 'lucide-vue-next'
 
 const router = useRouter()
-const { isLoading, fetchQueues } = useHistoryApi()
+const {
+  isLoading,
+  queues,
+  totalCount,
+  totalPages,
+  summary,
+  currentPage,
+  searchQuery,
+  activeFilter,
+  fetchHistory,
+  handleFilterChange,
+  goToPage,
+} = useHistoryApi()
 
-// State
-const queues = ref([])
-const totalPages = ref(1)
-const totalCount = ref(0)
-const currentPage = ref(1)
-const searchQuery = ref('')
-const activeFilter = ref('all')
+// Local UI State
 const isExporting = ref(false)
 const isFilterOpen = ref(false)
 const filterDropdownRef = ref(null)
@@ -50,22 +57,9 @@ onClickOutside(filterDropdownRef, () => {
 })
 
 // Data Fetching
-async function loadData() {
-  const result = await fetchQueues({
-    page: currentPage.value,
-    limit: 10,
-    search: searchQuery.value,
-    filter: activeFilter.value === 'all' ? undefined : activeFilter.value,
-  })
-
-  if (result) {
-    queues.value = result.data
-    totalPages.value = result.totalPages
-    totalCount.value = result.totalCount
-  }
-}
-
-onMounted(loadData)
+onMounted(() => {
+  fetchHistory()
+})
 
 // Search Debounce
 let debounceTimer
@@ -73,25 +67,9 @@ watch(searchQuery, () => {
   clearTimeout(debounceTimer)
   debounceTimer = setTimeout(() => {
     currentPage.value = 1
-    loadData()
+    fetchHistory()
   }, 300)
 })
-
-// Filter Change
-function handleFilterChange(val) {
-  activeFilter.value = val
-  currentPage.value = 1
-  isFilterOpen.value = false
-  loadData()
-}
-
-// Pagination
-function goToPage(page) {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-    loadData()
-  }
-}
 
 // Navigation
 function viewDetail(id) {
@@ -121,7 +99,7 @@ function downloadCsv() {
 }
 
 function getStatusVariant(status) {
-  switch (status.toLowerCase()) {
+  switch (status?.toLowerCase()) {
     case 'completed':
       return 'success'
     case 'active':
@@ -137,15 +115,39 @@ function getStatusVariant(status) {
 </script>
 
 <template>
-  <div class="p-6 md:p-8 space-y-8 bg-sand min-h-screen">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-      <div>
-        <h1 class="font-display font-bold text-3xl text-plum">Queue History</h1>
-        <p class="font-body text-plum-muted mt-1">
-          Review performance and data from your past sessions.
-        </p>
+  <div class="px-6 md:px-8 space-y-6">
+    <!-- Pro Nudge Banner -->
+    <div class="relative overflow-hidden rounded-3xl bg-plum p-1 border border-plum-soft group">
+      <div
+        class="absolute top-0 right-0 w-32 h-32 bg-mint/5 blur-[40px] rounded-full -mr-16 -mt-16"
+      />
+      <div class="relative flex flex-col md:flex-row items-center justify-between gap-4 px-6 py-4">
+        <div class="flex items-center gap-4">
+          <div class="hidden sm:flex w-10 h-10 rounded-2xl bg-mint/10 items-center justify-center">
+            <SparklesIcon class="w-5 h-5 text-mint" />
+          </div>
+          <div>
+            <h3 class="font-body font-bold text-white text-sm md:text-base">
+              Unlock 12-Month Analytics
+            </h3>
+            <p class="font-body text-plum-muted text-xs md:text-sm">
+              Upgrade to Pro to access your full session history and custom reports.
+            </p>
+          </div>
+        </div>
+        <BaseButton
+          variant="primary"
+          size="sm"
+          class="bg-mint text-plum hover:bg-mint/90 font-bold px-6 shadow-lg shadow-mint/10"
+        >
+          Upgrade to Pro
+        </BaseButton>
       </div>
+    </div>
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <h1 class="font-display font-bold text-3xl text-plum">Queue History</h1>
 
       <div class="flex items-center gap-3">
         <BaseButton variant="ghost" :loading="isExporting" @click="downloadCsv">
@@ -155,128 +157,137 @@ function getStatusVariant(status) {
       </div>
     </div>
 
-    <!-- Stats Overview (Mocks) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Stats Overview -->
+    <div v-if="summary" class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <BaseCard class="p-6">
-        <p class="font-body text-sm font-semibold uppercase tracking-wider text-plum-muted">
-          Total Queues
+        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">
+          Total Sessions
         </p>
-        <p class="font-mono text-3xl font-bold text-plum mt-2">42</p>
+        <p class="font-mono text-3xl font-bold text-plum mt-2">
+          {{ summary.totalSessions ?? 0 }}
+        </p>
       </BaseCard>
       <BaseCard class="p-6">
-        <p class="font-body text-sm font-semibold uppercase tracking-wider text-plum-muted">
-          Total Customers Served
+        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">
+          Guests Served
         </p>
-        <p class="font-mono text-3xl font-bold text-plum mt-2">1,204</p>
+        <p class="font-mono text-3xl font-bold text-plum mt-2">
+          {{ summary.totalServed?.toLocaleString() ?? 0 }}
+        </p>
       </BaseCard>
       <BaseCard class="p-6">
-        <p class="font-body text-sm font-semibold uppercase tracking-wider text-plum-muted">
-          Average Wait Time
+        <p class="font-body text-xs font-semibold uppercase tracking-wider text-plum-muted">
+          Avg. Session Duration
         </p>
-        <p class="font-mono text-3xl font-bold text-mint mt-2">14m</p>
+        <p class="font-mono text-3xl font-bold text-mint mt-2">
+          {{ summary.avgSessionLength ?? '0m' }}
+        </p>
       </BaseCard>
     </div>
 
-    <!-- Toolbar -->
-    <div
-      class="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-plum-faint shadow-sm"
-    >
-      <div class="relative w-full md:w-96">
-        <SearchIcon
-          class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-plum-muted pointer-events-none"
-        />
-        <input
-          v-model="searchQuery"
-          type="search"
-          placeholder="Search by queue name..."
-          class="w-full h-[48px] bg-sand/30 border border-plum-faint rounded-2xl pl-11 pr-4 font-body text-sm text-plum placeholder:text-plum-muted focus:border-plum focus:outline-none focus:ring-0 transition-all"
-        />
-        <button
-          v-if="searchQuery"
-          class="absolute right-4 top-1/2 -translate-y-1/2 text-plum-muted hover:text-plum"
-          @click="searchQuery = ''"
-        >
-          <XIcon class="w-4 h-4" />
-        </button>
-      </div>
-
-      <div ref="filterDropdownRef" class="flex items-center gap-2 w-full md:w-auto relative">
-        <button
-          class="flex items-center gap-2 h-[48px] px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum transition-colors bg-white w-full md:w-auto justify-between"
-          @click="isFilterOpen = !isFilterOpen"
-        >
-          <span class="flex items-center gap-2">
-            <FilterIcon class="w-4 h-4 text-plum-muted" />
-            {{ filters.find((f) => f.value === activeFilter)?.label }}
-          </span>
-          <ChevronDownIcon
-            class="w-3 h-3 text-plum-muted transition-transform duration-200"
-            :class="{ 'rotate-180': isFilterOpen }"
+    <!-- Main Content: Combined Toolbar and Table -->
+    <BaseCard class="overflow-hidden border border-plum-faint">
+      <!-- Toolbar -->
+      <div
+        class="flex flex-col md:flex-row items-center justify-between gap-4 p-4 border-b border-plum-faint bg-sand/10"
+      >
+        <div class="relative w-full md:w-96">
+          <SearchIcon
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-plum-muted pointer-events-none"
           />
-        </button>
-
-        <!-- Custom Dropdown Content -->
-        <transition
-          enter-active-class="transition duration-100 ease-out"
-          enter-from-class="transform scale-95 opacity-0"
-          enter-to-class="transform scale-100 opacity-100"
-          leave-active-class="transition duration-75 ease-in"
-          leave-from-class="transform scale-100 opacity-100"
-          leave-to-class="transform scale-95 opacity-0"
-        >
-          <div
-            v-if="isFilterOpen"
-            class="absolute top-full right-0 mt-2 z-50 bg-white rounded-2xl border border-plum-faint shadow-[0_8px_40px_rgba(26,10,46,0.12)] p-1 min-w-[200px]"
+          <input
+            v-model="searchQuery"
+            type="search"
+            placeholder="Search by queue name..."
+            class="w-full h-[44px] bg-white border border-plum-faint rounded-2xl pl-11 pr-4 font-body text-sm text-plum placeholder:text-plum-muted focus:border-plum focus:outline-none focus:ring-0 transition-all"
+          />
+          <button
+            v-if="searchQuery"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-plum-muted hover:text-plum"
+            @click="searchQuery = ''"
           >
-            <button
-              v-for="filter in filters"
-              :key="filter.value"
-              :class="[
-                'w-full flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer text-left',
-                'font-body text-sm transition-colors',
-                activeFilter === filter.value
-                  ? 'bg-mint-light text-plum font-semibold'
-                  : 'text-plum-muted hover:bg-sand hover:text-plum',
-              ]"
-              @click="handleFilterChange(filter.value)"
-            >
-              {{ filter.label }}
-              <CheckIcon v-if="activeFilter === filter.value" class="w-4 h-4 text-mint" />
-            </button>
-          </div>
-        </transition>
-      </div>
-    </div>
+            <XIcon class="w-4 h-4" />
+          </button>
+        </div>
 
-    <!-- Content Table -->
-    <BaseCard class="overflow-hidden">
+        <div ref="filterDropdownRef" class="flex items-center gap-2 w-full md:w-auto relative">
+          <button
+            class="flex items-center gap-2 h-[44px] px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum transition-colors bg-white w-full md:w-auto justify-between"
+            @click="isFilterOpen = !isFilterOpen"
+          >
+            <span class="flex items-center gap-2">
+              <FilterIcon class="w-4 h-4 text-plum-muted" />
+              {{ filters.find((f) => f.value === activeFilter)?.label }}
+            </span>
+            <ChevronDownIcon
+              class="w-3 h-3 text-plum-muted transition-transform duration-200"
+              :class="{ 'rotate-180': isFilterOpen }"
+            />
+          </button>
+
+          <!-- Custom Dropdown Content -->
+          <transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-75 ease-in"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
+          >
+            <div
+              v-if="isFilterOpen"
+              class="absolute top-full right-0 mt-2 z-50 bg-white rounded-2xl border border-plum-faint shadow-[0_8px_40px_rgba(26,10,46,0.12)] p-1 min-w-[200px]"
+            >
+              <button
+                v-for="filter in filters"
+                :key="filter.value"
+                :class="[
+                  'w-full flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer text-left',
+                  'font-body text-sm transition-colors',
+                  activeFilter === filter.value
+                    ? 'bg-mint-light text-plum font-semibold'
+                    : 'text-plum-muted hover:bg-sand hover:text-plum',
+                ]"
+                @click="
+                  handleFilterChange(filter.value)
+                  isFilterOpen = false
+                "
+              >
+                {{ filter.label }}
+                <CheckIcon v-if="activeFilter === filter.value" class="w-4 h-4 text-mint" />
+              </button>
+            </div>
+          </transition>
+        </div>
+      </div>
+
       <!-- Desktop Table -->
       <div class="hidden md:block">
         <table class="w-full text-left">
           <thead>
             <tr class="border-b border-plum-faint bg-sand/20">
               <th
-                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
+                class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted"
               >
                 Date
               </th>
               <th
-                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
+                class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted"
               >
                 Queue Name
               </th>
               <th
-                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
+                class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted"
               >
                 Status
               </th>
               <th
-                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
+                class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted"
               >
                 Served
               </th>
               <th
-                class="px-6 py-4 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted text-right"
+                class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted text-right"
               >
                 Avg. Wait
               </th>
@@ -286,25 +297,33 @@ function getStatusVariant(status) {
           <tbody class="divide-y divide-plum-faint">
             <template v-if="isLoading">
               <tr v-for="i in 5" :key="i" class="animate-pulse">
-                <td class="px-6 py-5"><div class="h-4 w-24 bg-plum-faint rounded" /></td>
-                <td class="px-6 py-5"><div class="h-4 w-40 bg-plum-faint rounded" /></td>
-                <td class="px-6 py-5"><div class="h-6 w-20 bg-plum-faint rounded-full" /></td>
-                <td class="px-6 py-5"><div class="h-4 w-12 bg-plum-faint rounded" /></td>
+                <td class="px-6 py-5">
+                  <div class="h-4 w-24 bg-plum-faint rounded" />
+                </td>
+                <td class="px-6 py-5">
+                  <div class="h-4 w-40 bg-plum-faint rounded" />
+                </td>
+                <td class="px-6 py-5">
+                  <div class="h-6 w-20 bg-plum-faint rounded-full" />
+                </td>
+                <td class="px-6 py-5">
+                  <div class="h-4 w-12 bg-plum-faint rounded" />
+                </td>
                 <td class="px-6 py-5 text-right">
                   <div class="h-4 w-12 bg-plum-faint rounded ml-auto" />
                 </td>
                 <td class="px-6 py-5" />
               </tr>
             </template>
-            <template v-else-if="queues.length === 0">
+            <template v-else-if="queues?.length === 0">
               <tr>
-                <td colspan="6" class="px-6 py-20 text-center">
+                <td colspan="6" class="px-6 py-20 text-center text-plum-muted">
                   <div class="flex flex-col items-center gap-3">
-                    <div class="w-16 h-16 rounded-2xl bg-sand flex items-center justify-center">
-                      <InboxIcon class="w-8 h-8 text-plum-muted" />
+                    <div class="w-16 h-16 rounded-3xl bg-sand flex items-center justify-center">
+                      <InboxIcon class="w-8 h-8 text-plum-muted/40" />
                     </div>
                     <p class="font-display font-bold text-xl text-plum">No history found</p>
-                    <p class="font-body text-plum-muted max-w-xs">
+                    <p class="font-body text-sm max-w-xs">
                       We couldn't find any queues matching your current search or filters.
                     </p>
                   </div>
@@ -318,12 +337,12 @@ function getStatusVariant(status) {
               class="group hover:bg-sand/30 transition-colors cursor-pointer"
               @click="viewDetail(queue.id)"
             >
-              <td class="px-6 py-5">
+              <td class="px-6 py-5 whitespace-nowrap">
                 <span class="font-body text-sm text-plum">{{ queue.dateFormatted }}</span>
               </td>
               <td class="px-6 py-5">
                 <span
-                  class="font-body font-semibold text-sm text-plum group-hover:text-mint transition-colors"
+                  class="font-body font-semibold text-sm text-plum group-hover:text-plum transition-colors"
                   >{{ queue.name }}</span
                 >
               </td>
@@ -338,7 +357,7 @@ function getStatusVariant(status) {
               </td>
               <td class="px-6 py-5 text-right">
                 <ArrowRightIcon
-                  class="w-4 h-4 text-plum-muted opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
+                  class="w-4 h-4 text-plum-muted opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 ml-auto"
                 />
               </td>
             </tr>
@@ -361,7 +380,7 @@ function getStatusVariant(status) {
             </div>
           </div>
         </template>
-        <template v-else-if="queues.length === 0">
+        <template v-else-if="queues?.length === 0">
           <div class="p-12 text-center flex flex-col items-center gap-3">
             <div class="w-16 h-16 rounded-2xl bg-sand flex items-center justify-center">
               <InboxIcon class="w-8 h-8 text-plum-muted" />
@@ -377,18 +396,24 @@ function getStatusVariant(status) {
           @click="viewDetail(queue.id)"
         >
           <div class="flex justify-between items-start mb-2">
-            <span class="font-body text-sm text-plum-muted">{{ queue.dateFormatted }}</span>
-            <BaseBadge :variant="getStatusVariant(queue.status)">{{ queue.status }}</BaseBadge>
+            <span class="font-body text-xs text-plum-muted">{{ queue.dateFormatted }}</span>
+            <BaseBadge :variant="getStatusVariant(queue.status)" size="sm">{{
+              queue.status
+            }}</BaseBadge>
           </div>
           <h4 class="font-body font-semibold text-plum mb-3">{{ queue.name }}</h4>
           <div class="flex gap-6">
             <div>
-              <p class="font-body text-sm uppercase tracking-wider text-plum-muted">Served</p>
-              <p class="font-mono text-sm text-plum font-semibold">{{ queue.totalServed }}</p>
+              <p class="font-body text-[10px] font-bold uppercase tracking-wider text-plum-muted">
+                Served
+              </p>
+              <p class="font-mono text-xs text-plum font-semibold">{{ queue.totalServed }}</p>
             </div>
             <div>
-              <p class="font-body text-sm uppercase tracking-wider text-plum-muted">Avg. Wait</p>
-              <p class="font-mono text-sm text-plum font-semibold">{{ queue.avgWait }}</p>
+              <p class="font-body text-[10px] font-bold uppercase tracking-wider text-plum-muted">
+                Avg. Wait
+              </p>
+              <p class="font-mono text-xs text-plum font-semibold">{{ queue.avgWait }}</p>
             </div>
           </div>
         </div>
@@ -396,16 +421,16 @@ function getStatusVariant(status) {
 
       <!-- Pagination Footer -->
       <div
-        class="p-4 bg-sand/10 border-t border-plum-faint flex flex-col sm:flex-row items-center justify-between gap-4"
+        class="p-4 bg-white border-t border-plum-faint flex flex-col sm:flex-row items-center justify-between gap-4"
       >
         <p class="font-body text-sm text-plum-muted">
           Showing
-          <span class="text-plum font-medium">{{
+          <span class="text-plum font-semibold">{{
             totalCount > 0 ? (currentPage - 1) * 10 + 1 : 0
           }}</span>
           to
-          <span class="text-plum font-medium">{{ Math.min(currentPage * 10, totalCount) }}</span> of
-          <span class="text-plum font-medium">{{ totalCount }}</span> queues
+          <span class="text-plum font-semibold">{{ Math.min(currentPage * 10, totalCount) }}</span>
+          of <span class="text-plum font-semibold">{{ totalCount }}</span> queues
         </p>
 
         <div class="flex items-center gap-1">
@@ -422,23 +447,23 @@ function getStatusVariant(status) {
               v-for="page in totalPages"
               :key="page"
               :class="[
-                'w-10 h-10 rounded-xl font-body text-sm font-semibold transition-all',
+                'w-10 h-10 rounded-xl font-body text-sm font-bold transition-all',
                 page === currentPage
-                  ? 'bg-plum text-sand'
-                  : 'text-plum-muted hover:bg-white hover:border-plum hover:text-plum border border-transparent',
+                  ? 'bg-plum text-sand shadow-lg shadow-plum/10'
+                  : 'text-plum-muted hover:bg-sand border border-transparent',
               ]"
               @click="goToPage(page)"
             >
               {{ page }}
             </button>
           </div>
-          <div class="sm:hidden px-4 font-body text-sm text-plum-muted">
-            Page {{ currentPage }} of {{ totalPages }}
+          <div class="sm:hidden px-4 font-body text-sm text-plum-muted font-bold">
+            {{ currentPage }} / {{ totalPages }}
           </div>
 
           <button
-            :disabled="currentPage === totalPages"
             class="w-10 h-10 rounded-xl flex items-center justify-center border border-plum-faint text-plum-muted disabled:opacity-30 hover:border-plum hover:text-plum transition-all bg-white"
+            :disabled="currentPage === totalPages"
             @click="goToPage(currentPage + 1)"
           >
             <ChevronRightIcon class="w-4 h-4" />
@@ -446,38 +471,5 @@ function getStatusVariant(status) {
         </div>
       </div>
     </BaseCard>
-
-    <!-- Pro Nudge -->
-    <div
-      class="relative overflow-hidden rounded-[32px] bg-plum p-8 md:p-12 text-white border border-plum-soft"
-    >
-      <div
-        class="absolute top-0 right-0 w-64 h-64 bg-mint/10 blur-[100px] rounded-full -mr-32 -mt-32"
-      />
-      <div
-        class="absolute bottom-0 left-0 w-64 h-64 bg-plum-soft blur-[100px] rounded-full -ml-32 -mb-32 opacity-50"
-      />
-
-      <div
-        class="relative flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left"
-      >
-        <div class="max-w-xl">
-          <h3 class="font-display font-bold text-2xl md:text-3xl mb-4">
-            Unlock 12-Month Analytics
-          </h3>
-          <p class="font-body text-plum-muted text-sm md:text-md leading-relaxed">
-            On the free plan, you can only see the last 30 days of history. Upgrade to Pro to access
-            your full session history and generate custom monthly reports.
-          </p>
-        </div>
-        <BaseButton
-          variant="primary"
-          size="lg"
-          class="bg-mint text-plum hover:bg-mint/90 whitespace-nowrap px-10"
-        >
-          Upgrade to Pro
-        </BaseButton>
-      </div>
-    </div>
   </div>
 </template>

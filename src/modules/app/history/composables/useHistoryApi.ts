@@ -1,164 +1,68 @@
-/**
- * @composable useHistoryApi
- * @description API stub for queue history detail operations.
- * Phase 2: replace each stub function body with real fetch/axios call.
- */
-import { ref } from 'vue'
-import type { HistoryDetail, HistoryQueryParams, HistoryQueryResult, QueueHistoryItem } from '@/modules/app/history/types'
+import { ref, watch } from 'vue'
+import type { QueueHistoryItem } from '@/modules/app/history/types'
+import { fetchHistory, fetchHistoryDetail } from '../actions/history.action'
 
 export function useHistoryApi() {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
-  async function fetchHistory(params: HistoryQueryParams): Promise<HistoryQueryResult> {
+  const queues = ref<QueueHistoryItem[]>([])
+  const totalCount = ref(0)
+  const totalPages = ref(1)
+  const summary = ref({
+    totalSessions: 0,
+    totalServed: 0,
+    avgSessionLength: '0m',
+  })
+  const currentPage = ref(1)
+  const searchQuery = ref('')
+  const activeFilter = ref('all')
+
+  async function fetchHistoryData() {
     isLoading.value = true
     error.value = null
     try {
-      // STUB — replace with: return await $fetch('/api/history', { params })
-      await new Promise((r) => setTimeout(r, 600))
-      
-      const totalCount = 42
-      const items: QueueHistoryItem[] = [
-        {
-          id: 1,
-          date: '2025-06-10',
-          dateFormatted: '10 Jun, 2025',
-          name: 'Morning Consultation',
-          status: 'Completed',
-          totalServed: 47,
-          avgWait: '6m 14s'
-        },
-        {
-          id: 2,
-          date: '2025-06-09',
-          dateFormatted: '9 Jun, 2025',
-          name: 'Afternoon Walk-ins',
-          status: 'Terminated',
-          totalServed: 12,
-          avgWait: '14m 20s'
-        },
-        {
-          id: 3,
-          date: '2025-06-08',
-          dateFormatted: '8 Jun, 2025',
-          name: 'Special Event Queue',
-          status: 'Completed',
-          totalServed: 89,
-          avgWait: '4m 30s'
-        }
-      ]
+      const result = await fetchHistory({
+        page: currentPage.value,
+        limit: 10,
+        search: searchQuery.value,
+        filter: activeFilter.value === 'all' ? undefined : activeFilter.value,
+      })
 
-      return {
-        data: items,
-        totalCount,
-        totalPages: Math.ceil(totalCount / (params.limit || 10))
+      if (result) {
+        queues.value = result.data || []
+        totalCount.value = result.totalCount || 0
+        totalPages.value = result.totalPages || 1
+        summary.value = result.summary || {
+          totalSessions: 0,
+          totalServed: 0,
+          avgSessionLength: '0m',
+        }
       }
+
+      return result
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to load history'
-      return { data: [], totalCount: 0, totalPages: 0 }
+      return null
     } finally {
       isLoading.value = false
     }
   }
 
-  async function fetchHistoryDetail(_id: string): Promise<HistoryDetail | null> {
+  let debounceTimeout: ReturnType<typeof setTimeout>
+  watch(searchQuery, () => {
+    clearTimeout(debounceTimeout)
+    debounceTimeout = setTimeout(() => {
+      currentPage.value = 1
+      fetchHistoryData()
+    }, 2000)
+  })
+
+  async function fetchHistoryDetailData(id: string) {
     isLoading.value = true
     error.value = null
     try {
-      // STUB — replace with: return await $fetch(`/api/history/${id}`)
-      await new Promise((r) => setTimeout(r, 700))
-      return {
-        queueName: 'Morning Consultation',
-        date: 'Tuesday, 10 June 2025',
-        timeRange: '9:14 AM – 12:38 PM',
-        status: 'Closed',
-        stats: {
-          served: 47,
-          avgWait: '6m 14s',
-          peakConcurrent: 23,
-          droppedNoShow: 4,
-        },
-        entries: [
-          {
-            id: '1',
-            ticket: '#A101',
-            name: 'Sarah Jenkins',
-            joined: '09:15 AM',
-            waited: '04:12',
-            status: 'served',
-            servedAt: '09:19 AM',
-          },
-          {
-            id: '2',
-            ticket: '#A102',
-            name: 'Michael Chen',
-            joined: '09:18 AM',
-            waited: '08:00',
-            status: 'skipped',
-            servedAt: null,
-          },
-          {
-            id: '3',
-            ticket: '#A103',
-            name: 'Eleanor Rigby',
-            joined: '09:22 AM',
-            waited: '10:00',
-            status: 'skipped',
-            servedAt: null,
-          },
-          {
-            id: '4',
-            ticket: '#A109',
-            name: 'Angela Martin',
-            joined: '09:50 AM',
-            waited: '04:45',
-            status: 'served',
-            servedAt: '09:55 AM',
-          },
-          {
-            id: '5',
-            ticket: '#A109',
-            name: 'Angela Martin',
-            joined: '09:50 AM',
-            waited: '04:45',
-            status: 'served',
-            servedAt: '09:55 AM',
-          },
-        ],
-        totalCount: 47,
-        timeline: [
-          {
-            time: '09:14 AM',
-            label: 'Queue Opened',
-            sub: null,
-            type: 'success',
-          },
-          {
-            time: '09:19 AM',
-            label: 'First person served',
-            sub: null,
-            type: 'success',
-          },
-          {
-            time: '10:45 AM',
-            label: 'Peak reached (23 people)',
-            sub: null,
-            type: 'warning',
-          },
-          {
-            time: '11:12 AM',
-            label: 'Manual skip triggered (A115)',
-            sub: null,
-            type: 'warning',
-          },
-          {
-            time: '12:38 PM',
-            label: 'Queue closed manually',
-            sub: null,
-            type: 'danger',
-          },
-        ],
-      }
+      return await fetchHistoryDetail(id)
     } catch (e) {
       error.value = e instanceof Error ? e.message : 'Failed to load queue history'
       return null
@@ -167,17 +71,32 @@ export function useHistoryApi() {
     }
   }
 
-  async function exportCsv(_id: string): Promise<boolean> {
-    // STUB — replace with real download endpoint
-    await new Promise((r) => setTimeout(r, 400))
-    return true
+  function handleFilterChange(val: string) {
+    activeFilter.value = val
+    currentPage.value = 1
+    fetchHistoryData()
   }
 
-  async function exportPdf(_id: string): Promise<boolean> {
-    // STUB — replace with real PDF generation endpoint
-    await new Promise((r) => setTimeout(r, 400))
-    return true
+  function goToPage(page: number) {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page
+      fetchHistoryData()
+    }
   }
 
-  return { isLoading, error, fetchHistory, fetchHistoryDetail, exportCsv, exportPdf }
+  return {
+    isLoading,
+    error,
+    queues,
+    totalCount,
+    totalPages,
+    summary,
+    currentPage,
+    searchQuery,
+    activeFilter,
+    fetchHistory: fetchHistoryData,
+    fetchHistoryDetail: fetchHistoryDetailData,
+    handleFilterChange,
+    goToPage,
+  }
 }

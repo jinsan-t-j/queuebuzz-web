@@ -64,6 +64,9 @@ export const API_ROUTES = {
   SHARED: {
     CREATE_QUEUE: '/queue/create',
   },
-
-  // Add more modules (e.g. QUEUE, GUEST) here as they grow
+  HISTORY: {
+    LIST: '/queue/history',
+    DETAIL: (id: string): string => `/queue/${id}/history`,
+    EXPORT_CSV: (id: string): string => `/queue/${id}/history/export/csv`,
+  },
 } as const
