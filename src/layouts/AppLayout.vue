@@ -5,32 +5,14 @@
  * Only rendered after the auth guard confirms a valid session.
  */
 
-// 1. Vue core imports
+import { defineAsyncComponent } from 'vue'
 
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
 import DashboardSidebar from '@/components/layout/app/DashboardSidebar.vue'
 import DashboardTopbar from '@/components/layout/app/DashboardTopbar.vue'
-import HostNotifications from '@/components/layout/HostNotifications.vue'
 
-// 6. Props
-
-// 7. Emits
-
-// 8. Composable destructuring
-
-// 9. Reactive state
-
-// 10. Computed properties
-
-// 11. Methods
-
-// 12. Lifecycle hooks
+const HostNotifications = defineAsyncComponent(
+  () => import('@/components/layout/HostNotifications.vue'),
+)
 </script>
 
 <template>

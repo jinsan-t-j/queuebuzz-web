@@ -109,7 +109,7 @@ watch(
 
       <!-- Close button -->
       <button
-        class="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center rounded-2xl text-plum/20 transition-all hover:bg-plum/5 hover:text-plum active:scale-95 cursor-pointer"
+        class="absolute right-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-2xl text-plum/20 transition-all hover:bg-plum/5 hover:text-plum active:scale-95 cursor-pointer"
         @click="emit('close')"
       >
         <CloseXIcon class="h-4 w-4" />

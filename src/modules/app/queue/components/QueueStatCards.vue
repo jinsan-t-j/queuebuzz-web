@@ -27,7 +27,7 @@ defineProps({
     type: Number,
     default: 0,
   },
-  avgWait: {
+  avgWaitTime: {
     type: Number,
     default: 0,
   },
@@ -69,7 +69,7 @@ defineProps({
         <ClockWaitIcon class="h-4 w-3 text-plum" />
       </div>
       <div class="mt-2 flex items-baseline">
-        <span class="font-mono text-5xl font-bold leading-none text-plum">{{ avgWait }}</span>
+        <span class="font-mono text-5xl font-bold leading-none text-plum">{{ avgWaitTime }}</span>
         <span class="ml-1 font-mono text-xl font-bold text-plum/40">m</span>
       </div>
     </div>

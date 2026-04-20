@@ -14,10 +14,8 @@ import QueueCreatedModal from '../components/QueueCreatedModal.vue'
 
 const router = useRouter()
 
-
 const activeQueueData = ref(null)
 const showSuccessModal = ref(false)
-
 
 function handleQueueCreated(queueData) {
   activeQueueData.value = queueData
@@ -27,35 +25,44 @@ function handleQueueCreated(queueData) {
 const queueUrl = computed(() => {
   if (!activeQueueData.value) return ''
 
-  return router.resolve({ name: 'guest-host-live-queue', params: { id: activeQueueData.value?.id } }).href
+  return router.resolve({
+    name: 'guest-host-live-queue',
+    params: { id: activeQueueData.value?.id },
+  }).href
 })
 
 function goToSignup() {
   router.push('/login')
 }
-
 </script>
 
 <template>
   <div class="relative min-h-screen overflow-hidden">
     <!-- Blob decorations -->
-    <div class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-mint-light opacity-50 blur-[80px]" />
-    <div class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]" />
+    <div
+      class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-mint-light opacity-50 blur-[80px]"
+    />
+    <div
+      class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]"
+    />
 
     <!-- Content -->
     <div class="relative z-10 mx-auto max-w-[680px] px-6 py-6">
-      <h1 class="font-display text-[40px] font-extrabold text-plum">
-        Let's get started.
-      </h1>
+      <h1 class="font-display text-[40px] font-extrabold text-plum">Let's get started.</h1>
 
-      <CreateQueueForm role="guest" @create-account="goToSignup" @queue-created="handleQueueCreated" />
+      <CreateQueueForm
+        role="guest"
+        @create-account="goToSignup"
+        @queue-created="handleQueueCreated"
+      />
     </div>
   </div>
 
   <!-- ═══ Success modal (shown once after creation) ═══ -->
   <QueueCreatedModal
+    v-if="activeQueueData"
     :is-open="showSuccessModal"
-    :join-code="activeQueueData?.joinCode ?? ''"
+    :join-code="activeQueueData.joinCode"
     :queue-url="queueUrl"
     @close="showSuccessModal = false"
   />

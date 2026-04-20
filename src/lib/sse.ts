@@ -5,6 +5,7 @@ export type SseConnectionState = 'idle' | 'connecting' | 'open' | 'error'
 export interface SseClientOptions {
   url: string
   withCredentials?: boolean
+  maxReconnectAttempts?: number
   onOpen?: () => void
   onError?: (error: { status?: number; message: string }) => void
   onMessage?: (payload: unknown, event: { event: string; data: string }) => void
@@ -135,6 +136,15 @@ export function createSseClient(options: SseClientOptions): SseClient {
 
   function scheduleReconnect() {
     if (isManuallyDisconnected || reconnectTimer) {
+      return
+    }
+
+    const maxAttempts = options.maxReconnectAttempts ?? 10
+    if (reconnectAttempt >= maxAttempts) {
+      options.onError?.({
+        message: `Max reconnect attempts (${maxAttempts}) reached.`,
+      })
+      markClosed()
       return
     }
 

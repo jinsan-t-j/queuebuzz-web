@@ -3,15 +3,12 @@
  * @description Authenticated host app routes. Uses AppLayout with auth guard.
  */
 import { authGuard } from '@/router/guards/auth.guard'
-import { guestGuard } from '@/router/guards/guest.guard'
-import { restrictCustomerGuard } from '@/router/guards/restrictCustomer.guard'
 import type { RouteRecordRaw } from 'vue-router'
 
 export const appRoutes: RouteRecordRaw[] = [
   {
     path: '/login-or-signup',
     component: () => import('@/layouts/BlankLayout.vue'),
-    beforeEnter: [guestGuard, restrictCustomerGuard],
     children: [
       {
         path: '',
@@ -20,6 +17,20 @@ export const appRoutes: RouteRecordRaw[] = [
         meta: { title: 'Sign In — QueueBuzz' },
       },
     ],
+  },
+  {
+    path: '/error',
+    name: 'system-error',
+    component: () => import('@/modules/app/shared/views/ErrorView.vue'),
+    props: (route) => ({
+      title: route.query.title,
+      errorCode: route.query.error,
+      message: route.query.description,
+      requestId: route.query.request_id,
+      actionText: route.query.action_text,
+      actionPath: route.query.action_path,
+    }),
+    meta: { title: 'Error — QueueBuzz' },
   },
   {
     path: '/dashboard',

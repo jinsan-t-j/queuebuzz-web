@@ -9,7 +9,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { refDebounced, onClickOutside } from '@vueuse/core'
-import { useQueueStore } from '@/modules/app/queue/stores/queue.store'
+import { useQueueStore } from '@/stores/queue.store'
 
 import ChevronRightIcon from '@/assets/icons/chevron-right.svg?component'
 import { Search, ArrowUpDown, Filter, Download, X } from 'lucide-vue-next'

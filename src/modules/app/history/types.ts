@@ -20,6 +20,11 @@ export interface HistoryQueryResult {
   data: QueueHistoryItem[]
   totalCount: number
   totalPages: number
+  summary: {
+    totalSessions: number
+    totalServed: number
+    avgSessionLength: string
+  }
 }
 
 export interface HistoryDetail {
