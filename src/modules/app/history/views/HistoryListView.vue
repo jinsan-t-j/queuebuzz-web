@@ -71,6 +71,11 @@ watch(searchQuery, () => {
   }, 300)
 })
 
+function selectFilter(value) {
+  handleFilterChange(value)
+  isFilterOpen.value = false
+}
+
 // Navigation
 function viewDetail(id) {
   router.push({ name: 'queue-history-detail', params: { id } })
@@ -248,10 +253,7 @@ function getStatusVariant(status) {
                     ? 'bg-mint-light text-plum font-semibold'
                     : 'text-plum-muted hover:bg-sand hover:text-plum',
                 ]"
-                @click="
-                  handleFilterChange(filter.value)
-                  isFilterOpen = false
-                "
+                @click="selectFilter(filter.value)"
               >
                 {{ filter.label }}
                 <CheckIcon v-if="activeFilter === filter.value" class="w-4 h-4 text-mint" />
