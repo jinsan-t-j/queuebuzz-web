@@ -60,7 +60,7 @@ function goToSignup() {
 
   <!-- ═══ Success modal (shown once after creation) ═══ -->
   <QueueCreatedModal
-    v-if="activeQueue"
+    v-if="activeQueueData"
     :is-open="showSuccessModal"
     :join-code="activeQueueData.joinCode"
     :queue-url="queueUrl"

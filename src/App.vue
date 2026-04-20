@@ -5,30 +5,19 @@
  * Layout is determined by the route definition, not by this component.
  */
 
-// 1. Vue core imports
+import { onMounted, defineAsyncComponent } from 'vue'
 
-// 2. Router / Pinia imports
+const GlobalToast = defineAsyncComponent(() => import('@/components/common/GlobalToast.vue'))
 
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
-import GlobalToast from '@/components/common/GlobalToast.vue'
-
-// 6. Props
-
-// 7. Emits
-
-// 8. Composable destructuring
-
-// 9. Reactive state
-
-// 10. Computed properties
-
-// 11. Methods
-
-// 12. Lifecycle hooks
+onMounted(async () => {
+  const persistentMessage = sessionStorage.getItem('qb_toast')
+  if (persistentMessage) {
+    const { useToast } = await import('@/composables/useToast')
+    const { showToast } = useToast()
+    showToast(persistentMessage, { type: 'error' })
+    sessionStorage.removeItem('qb_toast')
+  }
+})
 </script>
 
 <template>

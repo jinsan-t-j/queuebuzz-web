@@ -296,7 +296,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
         class="flex w-full items-center justify-between px-6 py-3 text-plum-muted transition-colors hover:text-plum/60 cursor-pointer"
         @click="isHistoryExpanded = !isHistoryExpanded"
       >
-        <span class="font-body text-sm font-bold uppercase tracking-widest">
+        <span class="font-body text-xs font-bold uppercase tracking-widest">
           Served Today ({{ servedEntries.length }})
         </span>
         <svg

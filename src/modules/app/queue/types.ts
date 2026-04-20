@@ -16,6 +16,7 @@ export interface QueueRecord {
   recoveryEmail?: string
   createdAt?: string
   expiresAt?: string
+  updatedAt?: string
   entries?: QueueEntry[] // Added for hydration
 }
 

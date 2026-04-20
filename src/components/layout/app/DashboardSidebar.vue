@@ -13,7 +13,7 @@
  * @emits {terminate-queue} - User clicked "Terminate".
  */
 
-import { computed } from 'vue'
+import { defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
@@ -22,62 +22,22 @@ import NavDashboard from '@/assets/icons/nav-dashboard.svg?component'
 import Queue from '@/assets/icons/queue.svg?component'
 import NavHistory from '@/assets/icons/nav-history.svg?component'
 import NavSettings from '@/assets/icons/nav-settings.svg?component'
-import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
-import { PlayCircle as PlayCircleIcon } from 'lucide-vue-next'
-import TerminateIcon from '@/assets/icons/terminate.svg?component'
 import DiamondPremium from '@/assets/icons/diamond-premium.svg?component'
-import QueueStatusUpdateModal from '@/modules/app/queue/components/QueueStatusUpdateModal.vue'
-import { useNow } from '@vueuse/core'
 
-const {
-  activeQueue: activeQueueData,
-  isPaused: isQueuePaused,
-  showStatusUpdateModal,
-  statusUpdateMode,
-  handleStatusUpdateConfirm,
-} = useLiveQueue()
+const SidebarQueueControl = defineAsyncComponent(() => import('./SidebarQueueControl.vue'))
+const QueueStatusUpdateModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/QueueStatusUpdateModal.vue'),
+)
 
-const isQueueRunning = computed(() => !!activeQueueData.value)
-const pausedAt = computed(() => activeQueueData.value?.updatedAt || null)
+const { showStatusUpdateModal, statusUpdateMode, handleStatusUpdateConfirm } = useLiveQueue()
 
 const route = useRoute()
-const now = useNow()
-
-const pausedTimeFormatted = computed(() => {
-  if (!isQueuePaused.value || !pausedAt.value) return '00m 00s'
-  const start = new Date(pausedAt.value).getTime()
-  if (isNaN(start)) return '00m 00s'
-
-  const diffMs = now.value.getTime() - start
-  if (diffMs < 0) return '00m 00s'
-
-  const totalSeconds = Math.floor(diffMs / 1000)
-  const minutes = Math.floor(totalSeconds / 60)
-  const seconds = totalSeconds % 60
-
-  return `${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`
-})
-
-function openTerminateModal() {
-  statusUpdateMode.value = 'terminate'
-  showStatusUpdateModal.value = true
-}
-
-function openPauseModal() {
-  statusUpdateMode.value = 'pause'
-  showStatusUpdateModal.value = true
-}
 
 async function handleStatusConfirm() {
   await handleStatusUpdateConfirm()
 }
 
-async function handleResume() {
-  statusUpdateMode.value = 'resume'
-  await handleStatusUpdateConfirm()
-}
-
-const navItems = computed(() => [
+const navItems = [
   {
     name: 'Dashboard',
     to: '/dashboard',
@@ -100,7 +60,7 @@ const navItems = computed(() => [
     to: '/dashboard/settings',
     icon: NavSettings,
   },
-])
+]
 
 function isActive(item) {
   if (item.exact) return route.path === item.to
@@ -142,49 +102,7 @@ function isActive(item) {
     </nav>
 
     <!-- Queue Running Status -->
-    <div
-      v-if="isQueueRunning"
-      class="mx-4 mb-2 rounded-2xl border bg-white/5 p-4 transition-colors"
-      :class="isQueuePaused ? 'border-warning/30' : 'border-white/10'"
-    >
-      <div class="flex items-center justify-between mb-4">
-        <p
-          class="font-body text-sm font-bold uppercase tracking-[1px]"
-          :class="isQueuePaused ? 'text-warning' : 'text-white/40'"
-        >
-          Queue {{ isQueuePaused ? 'PAUSED' : 'RUNNING' }}
-        </p>
-        <span v-if="isQueuePaused" class="font-mono text-sm font-bold text-warning">
-          {{ pausedTimeFormatted }}
-        </span>
-      </div>
-
-      <div class="flex flex-col gap-2">
-        <button
-          v-if="!isQueuePaused"
-          class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-white/80 transition-colors hover:bg-white/10"
-          @click="openPauseModal"
-        >
-          <PauseCircleIcon class="h-3 w-3 text-white/80" />
-          Pause Queue
-        </button>
-        <button
-          v-else
-          class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-warning transition-colors hover:bg-warning/10"
-          @click="handleResume"
-        >
-          <PlayCircleIcon class="h-[14px] w-[14px] text-warning" />
-          Resume Queue
-        </button>
-        <button
-          class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-[#f87171] transition-colors hover:bg-white/10"
-          @click="openTerminateModal"
-        >
-          <TerminateIcon class="h-[10px] w-[9px] text-[#f87171]" />
-          Terminate
-        </button>
-      </div>
-    </div>
+    <SidebarQueueControl />
 
     <!-- Go Premium -->
     <div class="border-t border-white/10 p-4">

@@ -11,7 +11,6 @@ export const customerRoutes: RouteRecordRaw[] = [
   {
     path: '/q/:queueId',
     component: () => import('@/layouts/CustomerLayout.vue'),
-    beforeEnter: restrictActiveHostGuard,
     children: [
       {
         path: 'join/:code?',

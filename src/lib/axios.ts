@@ -99,7 +99,8 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest)
       } catch (err: unknown) {
         processQueue(err)
-
+        sessionStorage.setItem('qb_toast', 'Session expired.')
+        window.location.href = '/'
         return Promise.reject(err)
       } finally {
         isRefreshing = false

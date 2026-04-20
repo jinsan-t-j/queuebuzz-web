@@ -52,7 +52,7 @@ onUnmounted(() => {
   </div>
 
   <!-- ═══ Live queue dashboard ═══ -->
-  <LiveQueueView v-if="activeQueue" :queue-data="activeQueue" :join-code="activeQueue.joinCode" />
+  <LiveQueueView v-if="activeQueue" />
 
   <!-- ═══ Success modal (shown once after creation) ═══ -->
   <InfoQueueModal
