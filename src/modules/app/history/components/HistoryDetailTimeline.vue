@@ -1,0 +1,147 @@
+<script setup lang="ts">
+/**
+ * @component HistoryDetailTimeline
+ * @description Renders an interleaved session timeline with collapsible groups for arrivals.
+ */
+import { ref } from 'vue'
+import {
+  PlusCircleIcon,
+  BellIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  PowerIcon,
+  ChevronDownIcon,
+  ActivityIcon,
+  FileTextIcon,
+} from 'lucide-vue-next'
+
+interface SubEvent {
+  ticketNo: string
+  name: string
+  action: string
+  time: string
+}
+
+interface TimelineEvent {
+  type: string
+  timestamp: string
+  message: string
+  color: string
+  subEvents?: SubEvent[]
+}
+
+defineProps<{
+  events: TimelineEvent[]
+}>()
+
+const openGroupIndices = ref<Set<number>>(new Set())
+
+function toggleGroup(index: number) {
+  if (openGroupIndices.value.has(index)) {
+    openGroupIndices.value.delete(index)
+  } else {
+    openGroupIndices.value.add(index)
+  }
+}
+
+function getIcon(type: string) {
+  switch (type) {
+    case 'JOINED':
+      return PlusCircleIcon
+    case 'CALLED':
+      return BellIcon
+    case 'SERVED':
+      return CheckCircleIcon
+    case 'SKIPPED':
+      return XCircleIcon
+    case 'STATUS_CHANGE':
+      return ActivityIcon
+    default:
+      return PowerIcon
+  }
+}
+
+function getColorClass(color: string) {
+  switch (color) {
+    case 'mint':
+      return 'text-mint bg-mint-light/20'
+    case 'warning':
+      return 'text-warning bg-orange-100'
+    case 'danger':
+      return 'text-danger bg-red-100'
+    case 'plum-soft':
+      return 'text-plum-soft bg-plum-faint/30'
+    default:
+      return 'text-plum-muted bg-plum-faint/20'
+  }
+}
+</script>
+
+<template>
+  <div
+    v-if="events.length > 0"
+    class="relative pl-8 space-y-6 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-plum-faint"
+  >
+    <div v-for="(event, index) in events" :key="index" class="relative">
+      <!-- Timeline Dot/Icon -->
+      <div
+        class="absolute -left-[25px] w-5 h-5 rounded-full border-4 border-sand flex items-center justify-center z-10"
+        :class="getColorClass(event.color)"
+      >
+        <component :is="getIcon(event.type)" class="w-3 h-3" />
+      </div>
+
+      <!-- Event Card -->
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="font-body font-semibold text-plum text-sm">{{ event.message }}</span>
+            <button
+              v-if="event.subEvents?.length"
+              class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-plum-faint hover:bg-plum-faint/60 transition-colors text-[10px] font-body text-plum-muted"
+              @click="toggleGroup(index)"
+            >
+              {{ event.subEvents.length }} details
+              <ChevronDownIcon
+                class="w-3 h-3 transition-transform duration-200"
+                :class="{ 'rotate-180': openGroupIndices.has(index) }"
+              />
+            </button>
+          </div>
+          <span class="font-mono text-xs text-plum-muted/60 bg-sand px-2 py-1 rounded-md">{{
+            event.timestamp
+          }}</span>
+        </div>
+
+        <!-- Collapsible Details -->
+        <div
+          v-if="event.subEvents?.length && openGroupIndices.has(index)"
+          class="ml-2 pl-4 py-2 border-l-2 border-plum-faint space-y-2 animate-in slide-in-from-top-2 duration-200"
+        >
+          <div
+            v-for="(sub, sIdx) in event.subEvents"
+            :key="sIdx"
+            class="flex items-center justify-between text-xs font-body text-plum-muted/80"
+          >
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-plum-soft font-bold">{{ sub.ticketNo }}</span>
+              <span>{{ sub.name }}</span>
+            </div>
+            <span>{{ sub.time }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div v-else class="flex flex-col items-center justify-center py-12 text-center">
+    <div class="w-12 h-12 rounded-2xl bg-sand flex items-center justify-center mb-4">
+      <FileTextIcon class="w-6 h-6 text-plum-muted" />
+    </div>
+    <p class="font-display font-bold text-plum mb-1">No activity logged</p>
+    <p class="font-body text-xs text-plum-muted max-w-[200px]">
+      This queue ended without any recorded customer interactions or status changes.
+    </p>
+  </div>
+</template>

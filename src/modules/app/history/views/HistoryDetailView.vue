@@ -1,14 +1,15 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @view HistoryDetailView
- * @description Detailed view of a past queue session with the full list of served customers.
+ * @description Detailed audit of a past queue session featuring rich timelines and performance insights.
  */
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onBeforeMount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useHistory } from '../composables/useHistory'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
+import HistoryDetailTimeline from '../components/HistoryDetailTimeline.vue'
 import {
   ArrowLeft as ArrowLeftIcon,
   Download as DownloadIcon,
@@ -17,41 +18,50 @@ import {
   CheckCircle2 as CheckCircleIcon,
   XCircle as XCircleIcon,
   Search as SearchIcon,
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
-  MoreVertical as MoreVerticalIcon,
+  BookOpenIcon,
+  SparklesIcon,
+  QuoteIcon,
 } from 'lucide-vue-next'
+import type { HistoryDetail } from '../types'
 
-const props = defineProps({
-  historyId: { type: String, required: true },
-})
-
+const route = useRoute()
 const router = useRouter()
 const { isLoading, fetchHistoryDetail } = useHistory()
 
 // State
-const queueDetail = ref(null)
+const queueDetail = ref<HistoryDetail | null>(null)
 const searchQuery = ref('')
 const isExporting = ref(false)
 
 async function loadDetail() {
-  queueDetail.value = await fetchHistoryDetail(props.historyId)
+  queueDetail.value = (await fetchHistoryDetail(route.params.id as string)) as HistoryDetail
 }
 
-onMounted(loadDetail)
+const filteredEntries = computed(() => {
+  if (!queueDetail.value?.entries) return []
+  if (!searchQuery.value) return queueDetail.value.entries
+  const q = searchQuery.value.toLowerCase()
+  return queueDetail.value.entries.filter(
+    (e) => e.displayName.toLowerCase().includes(q) || e.ticketNo.toLowerCase().includes(q),
+  )
+})
+
+onBeforeMount(loadDetail)
 
 function goBack() {
   router.push({ name: 'queue-history' })
 }
 
 function downloadCsv() {
-  if (!queueDetail.value) return
+  if (!queueDetail.value?.entries) return
   isExporting.value = true
-  const headers = ['Ticket', 'Name', 'Status', 'Wait Time', 'Joined', 'Served']
+  const headers = ['Ticket', 'Name', 'Status', 'Wait (min)', 'Served At']
   const csvRows = [
     headers.join(','),
     ...queueDetail.value.entries.map((c) =>
-      [c.ticket, c.name, c.status, c.waited, c.joined, c.servedAt].map((v) => `"${v}"`).join(','),
+      [c.ticketNo, c.displayName, c.status, c.waitTimeMin, c.servedAt]
+        .map((v) => `"${v || '---'}"`)
+        .join(','),
     ),
   ]
   const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
@@ -66,46 +76,42 @@ function downloadCsv() {
   }, 500)
 }
 
-function getStatusVariant(status) {
+function getStatusVariant(status: string) {
   if (!status) return 'warning'
   switch (status.toLowerCase()) {
     case 'served':
-      return 'success'
+      return 'mint'
     case 'skipped':
     case 'left':
       return 'danger'
-    case 'removed':
-      return 'secondary'
     default:
       return 'warning'
   }
 }
 
-function getQueueStatusVariant(status) {
+function getQueueStatusVariant(status: string) {
   switch (status?.toLowerCase()) {
     case 'closed':
     case 'completed':
-      return 'success'
+      return 'mint'
     case 'expired':
-    case 'terminated':
       return 'danger'
     default:
-      return 'primary'
+      return 'plum-muted'
   }
 }
 
-function formatStatus(status) {
+function formatStatus(status: string) {
   if (!status) return ''
   const s = status.toLowerCase()
   if (s === 'closed') return 'Completed'
-  if (s === 'expired') return 'Expired'
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 </script>
 
 <template>
-  <div class="p-6 md:p-8 space-y-8 bg-sand min-h-screen">
-    <!-- Breadcrumb / Back -->
+  <div class="px-6 md:px-8 space-y-8 min-h-screen">
+    <!-- Navigation -->
     <div class="flex items-center gap-4">
       <BaseButton variant="ghost" size="sm" class="rounded-xl" @click="goBack">
         <ArrowLeftIcon class="w-4 h-4 mr-2" />
@@ -124,7 +130,16 @@ function formatStatus(status) {
         </div>
         <p class="font-body text-plum-muted flex items-center gap-2">
           <ClockIcon class="w-4 h-4" />
-          {{ queueDetail.date }} • {{ queueDetail.timeRange }}
+          {{ queueDetail.date }}
+          <template v-if="queueDetail?.closedAt">
+            • Closed at
+            {{
+              new Date(queueDetail.closedAt).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })
+            }}
+          </template>
         </p>
       </div>
 
@@ -136,216 +151,216 @@ function formatStatus(status) {
       </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div v-if="queueDetail" class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-      <BaseCard class="p-5 border-l-4 border-l-plum">
-        <p class="font-body text-sm uppercase font-bold tracking-widest text-plum-muted mb-1">
-          Total Bookings
-        </p>
-        <div class="flex items-end gap-2">
-          <span class="font-mono text-3xl font-bold text-plum">{{ queueDetail.totalCount }}</span>
-          <UsersIcon class="w-5 h-5 text-plum-faint mb-1.5" />
-        </div>
-      </BaseCard>
+    <!-- Layout Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <!-- Left Column: Stats & Entries (8 cols) -->
+      <div class="lg:col-span-8 space-y-8">
+        <!-- Session Stats Grid -->
+        <div v-if="queueDetail?.stats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <BaseCard class="p-5 border-l-4 border-l-plum">
+            <p
+              class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1"
+            >
+              Bookings
+            </p>
+            <div class="flex items-end gap-2">
+              <span class="font-mono text-2xl font-bold text-plum">{{
+                queueDetail.stats.totalBookings || 0
+              }}</span>
+              <UsersIcon class="w-4 h-4 text-plum-faint mb-1" />
+            </div>
+          </BaseCard>
 
-      <BaseCard class="p-5 border-l-4 border-l-mint">
-        <p class="font-body text-sm uppercase font-bold tracking-widest text-plum-muted mb-1">
-          Served
-        </p>
-        <div class="flex items-end gap-2">
-          <span class="font-mono text-3xl font-bold text-plum">{{ queueDetail.stats.served }}</span>
-          <CheckCircleIcon class="w-5 h-5 text-mint mb-1.5" />
-        </div>
-      </BaseCard>
+          <BaseCard class="p-5 border-l-4 border-l-mint">
+            <p
+              class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1"
+            >
+              Served
+            </p>
+            <div class="flex items-end gap-2">
+              <span class="font-mono text-2xl font-bold text-plum">{{
+                queueDetail.stats.totalServed || 0
+              }}</span>
+              <CheckCircleIcon class="w-4 h-4 text-mint mb-1" />
+            </div>
+          </BaseCard>
 
-      <BaseCard class="p-5 border-l-4 border-l-danger">
-        <p class="font-body text-sm uppercase font-bold tracking-widest text-plum-muted mb-1">
-          Skipped / Drops
-        </p>
-        <div class="flex items-end gap-2">
-          <span class="font-mono text-3xl font-bold text-plum">{{
-            queueDetail.stats.droppedNoShow
-          }}</span>
-          <XCircleIcon class="w-5 h-5 text-danger mb-1.5" />
-        </div>
-      </BaseCard>
+          <BaseCard class="p-5 border-l-4 border-l-danger">
+            <p
+              class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1"
+            >
+              Drops
+            </p>
+            <div class="flex items-end gap-2">
+              <span class="font-mono text-2xl font-bold text-plum">{{
+                queueDetail.stats.totalSkipped || 0
+              }}</span>
+              <XCircleIcon class="w-4 h-4 text-danger mb-1" />
+            </div>
+          </BaseCard>
 
-      <BaseCard class="p-5 border-l-4 border-l-plum-soft">
-        <p class="font-body text-sm uppercase font-bold tracking-widest text-plum-muted mb-1">
-          Avg. Wait Time
-        </p>
-        <div class="flex items-end gap-2">
-          <span class="font-mono text-3xl font-bold text-plum">{{
-            queueDetail.stats.avgWait
-          }}</span>
-          <ClockIcon class="w-5 h-5 text-plum-muted mb-1.5" />
+          <BaseCard class="p-5 border-l-4 border-l-plum-soft">
+            <p
+              class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1"
+            >
+              Avg Wait
+            </p>
+            <div class="flex items-end gap-2">
+              <span class="font-mono text-2xl font-bold text-plum">{{
+                queueDetail.stats.avgWaitTime || '0m'
+              }}</span>
+              <ClockIcon class="w-4 h-4 text-plum-muted mb-1" />
+            </div>
+          </BaseCard>
         </div>
-      </BaseCard>
-    </div>
 
-    <!-- Served List Table -->
-    <div class="space-y-4">
-      <div class="flex items-center justify-between">
-        <h2 class="font-display font-bold text-xl text-plum">Customer List</h2>
-        <div class="flex items-center gap-3">
-          <div class="relative hidden md:block">
-            <SearchIcon
-              class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-plum-muted pointer-events-none"
-            />
-            <input
-              v-model="searchQuery"
-              placeholder="Search customers..."
-              class="h-10 w-64 bg-white border border-plum-faint rounded-xl pl-9 pr-4 font-body text-sm text-plum focus:border-plum focus:outline-none transition-all"
-            />
+        <!-- Loading Stats -->
+        <div v-else-if="isLoading" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div v-for="i in 4" :key="i" class="h-20 bg-plum-faint animate-pulse rounded-2xl" />
+        </div>
+
+        <!-- Customer List -->
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="font-display font-bold text-xl text-plum">Customer Entries</h2>
+            <div class="relative">
+              <SearchIcon
+                class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-plum-muted pointer-events-none"
+              />
+              <input
+                v-model="searchQuery"
+                placeholder="Search..."
+                class="h-9 w-48 bg-white border border-plum-faint rounded-xl pl-9 pr-4 font-body text-xs text-plum focus:border-plum focus:outline-none transition-all"
+              />
+            </div>
           </div>
+
+          <BaseCard class="overflow-hidden border-plum-faint shadow-sm">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left">
+                <thead>
+                  <tr class="bg-sand/30 border-b border-plum-faint">
+                    <th
+                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                    >
+                      Ticket
+                    </th>
+                    <th
+                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                    >
+                      Name
+                    </th>
+                    <th
+                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                    >
+                      Status
+                    </th>
+                    <th
+                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                    >
+                      Wait Time
+                    </th>
+                    <th
+                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                    >
+                      Served At
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-plum-faint">
+                  <template v-if="isLoading">
+                    <tr v-for="i in 5" :key="i" class="animate-pulse">
+                      <td v-for="j in 5" :key="j" class="px-6 py-4">
+                        <div class="h-4 bg-plum-faint rounded w-full" />
+                      </td>
+                    </tr>
+                  </template>
+                  <template v-else-if="filteredEntries.length > 0">
+                    <tr
+                      v-for="entry in filteredEntries"
+                      :key="entry.ticketNo"
+                      class="hover:bg-sand/20 transition-colors"
+                    >
+                      <td class="px-6 py-4 font-mono text-sm text-plum font-semibold">
+                        {{ entry.ticketNo }}
+                      </td>
+                      <td class="px-6 py-4 font-body text-sm text-plum">{{ entry.displayName }}</td>
+                      <td class="px-6 py-4">
+                        <BaseBadge :variant="getStatusVariant(entry.status)"
+                          >{{ formatStatus(entry.status) }}
+                        </BaseBadge>
+                      </td>
+                      <td class="px-6 py-4 font-mono text-xs text-plum-muted">
+                        {{ entry.waitTimeMin ? `${entry.waitTimeMin}m` : '---' }}
+                      </td>
+                      <td class="px-6 py-4 font-body text-xs text-plum-muted">
+                        {{
+                          entry.servedAt
+                            ? new Date(entry.servedAt).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })
+                            : '---'
+                        }}
+                      </td>
+                    </tr>
+                  </template>
+                  <tr v-else>
+                    <td
+                      colspan="5"
+                      class="px-6 py-12 text-center text-plum-muted font-body text-sm italic"
+                    >
+                      No entries match your search.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </BaseCard>
         </div>
       </div>
 
-      <BaseCard class="overflow-hidden border-plum-faint shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left">
-            <thead>
-              <tr class="bg-sand/30 border-b border-plum-faint">
-                <th
-                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
-                >
-                  Ticket
-                </th>
-                <th
-                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
-                >
-                  Customer Name
-                </th>
-                <th
-                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
-                >
-                  Status
-                </th>
-                <th
-                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
-                >
-                  Joined At
-                </th>
-                <th
-                  class="px-6 py-4 font-body text-sm font-bold uppercase tracking-wider text-plum-muted"
-                >
-                  Wait Time
-                </th>
-                <th class="px-6 py-4" />
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-plum-faint">
-              <template v-if="isLoading">
-                <tr v-for="i in 8" :key="i" class="animate-pulse">
-                  <td class="px-6 py-5">
-                    <div class="h-4 w-12 bg-plum-faint rounded" />
-                  </td>
-                  <td class="px-6 py-5">
-                    <div class="h-4 w-40 bg-plum-faint rounded" />
-                  </td>
-                  <td class="px-6 py-5">
-                    <div class="h-6 w-20 bg-plum-faint rounded-full" />
-                  </td>
-                  <td class="px-6 py-5">
-                    <div class="h-4 w-20 bg-plum-faint rounded" />
-                  </td>
-                  <td class="px-6 py-5">
-                    <div class="h-4 w-16 bg-plum-faint rounded" />
-                  </td>
-                  <td class="px-6 py-5" />
-                </tr>
-              </template>
-              <tr
-                v-for="customer in queueDetail.entries"
-                v-else
-                :key="customer.id"
-                class="hover:bg-sand/20 transition-colors"
-              >
-                <td class="px-6 py-5 font-mono text-sm text-plum font-semibold">
-                  {{ customer.ticket }}
-                </td>
-                <td class="px-6 py-5 font-body text-sm text-plum">{{ customer.name }}</td>
-                <td class="px-6 py-5">
-                  <BaseBadge :variant="getStatusVariant(customer.status)">{{
-                    formatStatus(customer.status)
-                  }}</BaseBadge>
-                </td>
-                <td class="px-6 py-5 font-body text-sm text-plum-muted">{{ customer.joined }}</td>
-                <td class="px-6 py-5 font-mono text-sm text-plum">{{ customer.waited }}</td>
-                <td class="px-6 py-5 text-right">
-                  <button
-                    class="p-2 text-plum-muted hover:text-plum transition-colors rounded-lg hover:bg-sand"
-                  >
-                    <MoreVerticalIcon class="w-4 h-4" />
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Local Pagination Footer (Mock) -->
-        <div
-          class="px-6 py-4 border-t border-plum-faint bg-sand/5 flex items-center justify-between"
-        >
-          <p class="font-body text-sm text-plum-muted">
-            Showing {{ queueDetail?.entries.length || 0 }} customers from this session
-          </p>
-          <div class="flex items-center gap-2">
-            <button
-              disabled
-              class="w-9 h-9 flex items-center justify-center rounded-xl border border-plum-faint text-plum-muted opacity-30"
-            >
-              <ChevronLeftIcon class="w-4 h-4" />
-            </button>
-            <button
-              disabled
-              class="w-9 h-9 flex items-center justify-center rounded-xl border border-plum-faint text-plum-muted opacity-30"
-            >
-              <ChevronRightIcon class="w-4 h-4" />
-            </button>
+      <!-- Right Column: Timeline & Insights (4 cols) -->
+      <div class="lg:col-span-4 space-y-8">
+        <!-- Private Notes (If any) -->
+        <BaseCard v-if="queueDetail?.notes" class="p-6 bg-white relative overflow-hidden">
+          <QuoteIcon class="absolute top-4 right-4 w-12 h-12 text-plum-faint/40 rotate-180" />
+          <div class="flex items-center gap-2 mb-4">
+            <BookOpenIcon class="w-4 h-4 text-plum" />
+            <h3 class="font-display font-bold text-plum select-none">Session Notes</h3>
           </div>
+          <p class="font-body text-sm text-plum-soft italic leading-relaxed relative z-10">
+            "{{ queueDetail.notes }}"
+          </p>
+        </BaseCard>
+
+        <!-- Insights -->
+        <BaseCard class="p-6 bg-mint-light/10 border-mint/20">
+          <div class="flex items-center gap-2 mb-4">
+            <SparklesIcon class="w-4 h-4 text-mint" />
+            <h3 class="font-display font-bold text-plum">Session Insights</h3>
+          </div>
+          <ul v-if="queueDetail?.insights?.length" class="space-y-3">
+            <li v-for="(insight, i) in queueDetail.insights" :key="i" class="flex gap-3">
+              <span class="w-1.5 h-1.5 rounded-full bg-mint mt-1.5 flex-shrink-0" />
+              <span class="font-body text-sm text-plum-soft">{{ insight }}</span>
+            </li>
+          </ul>
+          <div v-else class="py-2">
+            <p class="font-body text-xs text-plum-muted italic">
+              No specific insights generated for this session.
+            </p>
+          </div>
+        </BaseCard>
+
+        <!-- Timeline -->
+        <div class="space-y-4">
+          <h3 class="font-display font-bold text-xl text-plum px-1">Session Timeline</h3>
+          <BaseCard class="p-6 bg-white min-h-[200px] flex flex-col justify-center">
+            <HistoryDetailTimeline :events="queueDetail?.timeline || []" />
+          </BaseCard>
         </div>
-      </BaseCard>
-    </div>
-
-    <!-- Feedback / Notes Card -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      <BaseCard class="p-6">
-        <h3 class="font-display font-bold text-lg text-plum mb-4">Session Notes</h3>
-        <p class="font-body text-sm text-plum-muted leading-relaxed">
-          {{
-            queueDetail?.notes ||
-            'No notes were added for this session. You can add notes during the live queue to help with future reporting.'
-          }}
-        </p>
-      </BaseCard>
-
-      <BaseCard class="p-6 bg-mint-light/30 border-dashed border-2 border-mint/50">
-        <h3 class="font-display font-bold text-lg text-plum mb-4">Performance Insights</h3>
-        <ul class="space-y-3">
-          <li class="flex items-start gap-3">
-            <div
-              class="w-5 h-5 rounded-full bg-mint flex items-center justify-center mt-0.5 shrink-0"
-            >
-              <CheckCircleIcon class="w-3 h-3 text-plum" />
-            </div>
-            <p class="font-body text-sm text-plum">
-              Your served rate was 15% higher than previous Monday session.
-            </p>
-          </li>
-          <li class="flex items-start gap-3">
-            <div
-              class="w-5 h-5 rounded-full bg-mint flex items-center justify-center mt-0.5 shrink-0"
-            >
-              <CheckCircleIcon class="w-3 h-3 text-plum" />
-            </div>
-            <p class="font-body text-sm text-plum">
-              Peak rush occurred between 11:30 AM and 12:15 PM.
-            </p>
-          </li>
-        </ul>
-      </BaseCard>
+      </div>
     </div>
   </div>
 </template>

@@ -27,31 +27,45 @@ export interface HistoryQueryResult {
   }
 }
 
+export interface SessionStats {
+  totalBookings: number
+  totalServed: number
+  totalSkipped: number
+  avgWaitTime: string
+  peakVolume: string
+}
+
+export interface TimelineSubEvent {
+  ticketNo: string
+  name: string
+  action: string
+  time: string
+}
+
+export interface TimelineEvent {
+  type: string
+  timestamp: string
+  message: string
+  color: string
+  subEvents?: TimelineSubEvent[]
+}
+
+export interface HistoryEntry {
+  ticketNo: string
+  displayName: string
+  status: string
+  waitTimeMin: number
+  servedAt?: string
+}
+
 export interface HistoryDetail {
   queueName: string
   date: string
-  timeRange: string
   status: string
-  stats: {
-    served: number
-    avgWait: string
-    peakConcurrent: number
-    droppedNoShow: number
-  }
-  entries: Array<{
-    id: string
-    ticket: string
-    name: string
-    joined: string
-    waited: string
-    status: 'served' | 'skipped'
-    servedAt: string | null
-  }>
-  totalCount: number
-  timeline: Array<{
-    time: string
-    label: string
-    sub: string | null
-    type: 'success' | 'warning' | 'danger'
-  }>
+  notes: string
+  closedAt?: string
+  stats: SessionStats
+  insights: string[]
+  timeline: TimelineEvent[]
+  entries: HistoryEntry[]
 }
