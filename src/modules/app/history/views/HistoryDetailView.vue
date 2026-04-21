@@ -5,7 +5,7 @@
  */
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useHistoryApi } from '../composables/useHistoryApi'
+import { useHistory } from '../composables/useHistory'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -27,7 +27,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const { isLoading, fetchHistoryDetail } = useHistoryApi()
+const { isLoading, fetchHistoryDetail } = useHistory()
 
 // State
 const queueDetail = ref(null)
@@ -67,16 +67,39 @@ function downloadCsv() {
 }
 
 function getStatusVariant(status) {
+  if (!status) return 'warning'
   switch (status.toLowerCase()) {
     case 'served':
       return 'success'
     case 'skipped':
+    case 'left':
       return 'danger'
     case 'removed':
       return 'secondary'
     default:
       return 'warning'
   }
+}
+
+function getQueueStatusVariant(status) {
+  switch (status?.toLowerCase()) {
+    case 'closed':
+    case 'completed':
+      return 'success'
+    case 'expired':
+    case 'terminated':
+      return 'danger'
+    default:
+      return 'primary'
+  }
+}
+
+function formatStatus(status) {
+  if (!status) return ''
+  const s = status.toLowerCase()
+  if (s === 'closed') return 'Completed'
+  if (s === 'expired') return 'Expired'
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 </script>
 
@@ -95,7 +118,9 @@ function getStatusVariant(status) {
       <div class="space-y-2">
         <div class="flex items-center gap-3">
           <h1 class="font-display font-bold text-3xl text-plum">{{ queueDetail.queueName }}</h1>
-          <BaseBadge variant="success">{{ queueDetail.status }}</BaseBadge>
+          <BaseBadge :variant="getQueueStatusVariant(queueDetail.status)">{{
+            formatStatus(queueDetail.status)
+          }}</BaseBadge>
         </div>
         <p class="font-body text-plum-muted flex items-center gap-2">
           <ClockIcon class="w-4 h-4" />
@@ -212,11 +237,21 @@ function getStatusVariant(status) {
             <tbody class="divide-y divide-plum-faint">
               <template v-if="isLoading">
                 <tr v-for="i in 8" :key="i" class="animate-pulse">
-                  <td class="px-6 py-5"><div class="h-4 w-12 bg-plum-faint rounded" /></td>
-                  <td class="px-6 py-5"><div class="h-4 w-40 bg-plum-faint rounded" /></td>
-                  <td class="px-6 py-5"><div class="h-6 w-20 bg-plum-faint rounded-full" /></td>
-                  <td class="px-6 py-5"><div class="h-4 w-20 bg-plum-faint rounded" /></td>
-                  <td class="px-6 py-5"><div class="h-4 w-16 bg-plum-faint rounded" /></td>
+                  <td class="px-6 py-5">
+                    <div class="h-4 w-12 bg-plum-faint rounded" />
+                  </td>
+                  <td class="px-6 py-5">
+                    <div class="h-4 w-40 bg-plum-faint rounded" />
+                  </td>
+                  <td class="px-6 py-5">
+                    <div class="h-6 w-20 bg-plum-faint rounded-full" />
+                  </td>
+                  <td class="px-6 py-5">
+                    <div class="h-4 w-20 bg-plum-faint rounded" />
+                  </td>
+                  <td class="px-6 py-5">
+                    <div class="h-4 w-16 bg-plum-faint rounded" />
+                  </td>
                   <td class="px-6 py-5" />
                 </tr>
               </template>
@@ -232,7 +267,7 @@ function getStatusVariant(status) {
                 <td class="px-6 py-5 font-body text-sm text-plum">{{ customer.name }}</td>
                 <td class="px-6 py-5">
                   <BaseBadge :variant="getStatusVariant(customer.status)">{{
-                    customer.status
+                    formatStatus(customer.status)
                   }}</BaseBadge>
                 </td>
                 <td class="px-6 py-5 font-body text-sm text-plum-muted">{{ customer.joined }}</td>

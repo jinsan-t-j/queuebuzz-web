@@ -5,7 +5,7 @@
  */
 import { onMounted, watch, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useHistoryApi } from '../composables/useHistoryApi'
+import { useHistory } from '../composables/useHistory'
 import { onClickOutside } from '@vueuse/core'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
@@ -37,7 +37,7 @@ const {
   fetchHistory,
   handleFilterChange,
   goToPage,
-} = useHistoryApi()
+} = useHistory()
 
 // Local UI State
 const isExporting = ref(false)
@@ -106,16 +106,26 @@ function downloadCsv() {
 function getStatusVariant(status) {
   switch (status?.toLowerCase()) {
     case 'completed':
+    case 'closed':
       return 'success'
     case 'active':
       return 'primary'
     case 'paused':
       return 'warning'
     case 'terminated':
+    case 'expired':
       return 'danger'
     default:
       return 'secondary'
   }
+}
+
+function formatStatus(status) {
+  if (!status) return ''
+  const s = status.toLowerCase()
+  if (s === 'closed') return 'Completed'
+  if (s === 'expired') return 'Expired'
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 </script>
 
@@ -349,7 +359,9 @@ function getStatusVariant(status) {
                 >
               </td>
               <td class="px-6 py-5">
-                <BaseBadge :variant="getStatusVariant(queue.status)">{{ queue.status }}</BaseBadge>
+                <BaseBadge :variant="getStatusVariant(queue.status)">{{
+                  formatStatus(queue.status)
+                }}</BaseBadge>
               </td>
               <td class="px-6 py-5">
                 <span class="font-mono text-sm text-plum">{{ queue.totalServed }}</span>
@@ -400,7 +412,7 @@ function getStatusVariant(status) {
           <div class="flex justify-between items-start mb-2">
             <span class="font-body text-xs text-plum-muted">{{ queue.dateFormatted }}</span>
             <BaseBadge :variant="getStatusVariant(queue.status)" size="sm">{{
-              queue.status
+              formatStatus(queue.status)
             }}</BaseBadge>
           </div>
           <h4 class="font-body font-semibold text-plum mb-3">{{ queue.name }}</h4>

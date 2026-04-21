@@ -1,8 +1,8 @@
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import type { QueueHistoryItem } from '@/modules/app/history/types'
 import { fetchHistory, fetchHistoryDetail } from '../actions/history.action'
 
-export function useHistoryApi() {
+export function useHistory() {
   const isLoading = ref(false)
   const error = ref<string | null>(null)
 
@@ -48,15 +48,6 @@ export function useHistoryApi() {
       isLoading.value = false
     }
   }
-
-  let debounceTimeout: ReturnType<typeof setTimeout>
-  watch(searchQuery, () => {
-    clearTimeout(debounceTimeout)
-    debounceTimeout = setTimeout(() => {
-      currentPage.value = 1
-      fetchHistoryData()
-    }, 2000)
-  })
 
   async function fetchHistoryDetailData(id: string) {
     isLoading.value = true
