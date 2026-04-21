@@ -9,7 +9,6 @@ import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import type { QueueRecord } from '@/modules/app/queue/types'
 
-import BaseModal from '@/components/base/BaseModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseSlider from '@/components/base/BaseSlider.vue'
 import BaseToggle from '@/components/base/BaseToggle.vue'
@@ -19,6 +18,7 @@ import TimeIcon from '@/assets/icons/clock-time.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
 import LockIcon from '@/assets/icons/lock.svg?component'
+import BaseModal from '@/components/base/BaseModal.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -29,6 +29,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void
   (e: 'submit', values: SubmitValues): void
+  (e: 'update:is-open', value: boolean): void
 }>()
 
 interface SubmitValues {
@@ -109,7 +110,11 @@ function selectSuggestion(suggestion: string) {
 </script>
 
 <template>
-  <BaseModal :is-open="isOpen" @close="emit('close')">
+  <BaseModal
+    :is-open="isOpen"
+    @update:is-open="$emit('update:is-open', $event)"
+    @close="emit('close')"
+  >
     <div class="relative w-full rounded-[32px] bg-white p-6 shadow-2xl">
       <!-- Header -->
       <div class="mb-4 flex items-center justify-between">

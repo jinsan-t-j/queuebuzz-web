@@ -17,7 +17,8 @@ export interface QueueRecord {
   createdAt?: string
   expiresAt?: string
   updatedAt?: string
-  entries?: QueueEntry[] // Added for hydration
+  notes?: string
+  entries?: QueueEntry[]
 }
 
 export interface QueueEntry {
@@ -56,6 +57,7 @@ export interface UpdateQueuePayload {
   slug?: string
   recoveryEmail?: string
   strictQueueMode?: boolean
+  notes?: string
 }
 
 export type TrendDirection = 'up' | 'down' | 'flat'

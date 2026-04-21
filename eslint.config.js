@@ -47,6 +47,7 @@ export default tseslint.config(
       ],
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
       'vue/no-multiple-template-root': 'off',
+      'vue/max-attributes-per-line': 'off',
       'no-console': 'warn',
       'no-debugger': 'error',
       'prefer-const': 'error',

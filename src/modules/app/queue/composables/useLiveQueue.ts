@@ -20,6 +20,7 @@ export function useLiveQueue() {
   const statusUpdateMode = ref<'pause' | 'resume' | 'terminate'>('terminate')
   const showInfoModal = ref(false)
   const showSettingsModal = ref(false)
+  const isNotesSaving = ref(false)
 
   // Search
   const rawSearchQuery = ref('')
@@ -43,7 +44,6 @@ export function useLiveQueue() {
   })
 
   const filteredServedEntries = computed(() => {
-    // Show everything that isn't active in the history (Served, Left)
     const historicalOnly = store.entries.filter(
       (e) =>
         !(
@@ -233,6 +233,19 @@ export function useLiveQueue() {
     }
   }
 
+  async function handleUpdateNotes(notes: string) {
+    if (!store.activeQueue) return
+
+    isNotesSaving.value = true
+    try {
+      await store.updateQueue({ notes })
+    } finally {
+      setTimeout(() => {
+        isNotesSaving.value = false
+      }, 800)
+    }
+  }
+
   function disposeLiveQueue() {
     store.disconnectLiveUpdates()
   }
@@ -284,5 +297,7 @@ export function useLiveQueue() {
     revalidateQueue,
     disposeLiveQueue,
     handleEnableNotifications,
+    handleUpdateNotes,
+    isNotesSaving,
   }
 }

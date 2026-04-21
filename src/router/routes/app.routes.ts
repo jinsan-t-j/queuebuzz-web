@@ -60,7 +60,6 @@ export const appRoutes: RouteRecordRaw[] = [
         name: 'queue-history-detail',
         component: () => import('@/modules/app/history/views/HistoryDetailView.vue'),
         meta: { title: 'Queue History' },
-        props: (route) => ({ historyId: String(route.params.id ?? '') }),
       },
       {
         path: 'settings',

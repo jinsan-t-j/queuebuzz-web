@@ -4,13 +4,14 @@
  * @description Shared layout for the live queue dashboard.
  * Uses useLiveQueue composable directly for state and actions.
  */
-import { defineAsyncComponent } from 'vue'
+import { ref, defineAsyncComponent } from 'vue'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
 import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
+import SessionNotesCard from '@/modules/app/queue/components/SessionNotesCard.vue'
 import LiveSyncLoader from '@/modules/app/queue/components/LiveSyncLoader.vue'
 import LiveSyncStatus from '@/modules/app/queue/components/LiveSyncStatus.vue'
 
@@ -62,6 +63,8 @@ const {
   handleServeGuest,
   handleStatusUpdateConfirm,
   handleUpdateSettings,
+  handleUpdateNotes,
+  isNotesSaving,
 } = useLiveQueue()
 
 // Async Modals
@@ -86,6 +89,7 @@ const QueueAnalysisCard = defineAsyncComponent(
 const HostNotifications = defineAsyncComponent(
   () => import('@/components/layout/HostNotifications.vue'),
 )
+const showNotes = ref(false)
 
 async function onStatusConfirm() {
   const mode = statusUpdateMode.value
@@ -146,12 +150,24 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
               @show-qr="showInfoModal = true"
             />
 
-            <QueueActionCard
-              :is-paused="isPaused"
-              @add-guest="showAddGuestModal = true"
-              @update-status="openStatusModal"
-              @open-settings="showSettingsModal = true"
-            />
+            <div class="relative">
+              <QueueActionCard
+                :is-paused="isPaused"
+                @add-guest="showAddGuestModal = true"
+                @update-status="openStatusModal"
+                @open-settings="showSettingsModal = true"
+                @toggle-notes="showNotes = !showNotes"
+              />
+
+              <SessionNotesCard
+                v-if="showNotes"
+                class="z-50"
+                :initial-notes="activeQueue?.notes"
+                :is-saving="isNotesSaving"
+                @update="handleUpdateNotes"
+                @close="showNotes = false"
+              />
+            </div>
           </div>
 
           <QueueAnalysisCard
