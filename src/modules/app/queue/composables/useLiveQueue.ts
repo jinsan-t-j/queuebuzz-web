@@ -21,6 +21,7 @@ export function useLiveQueue() {
   const showInfoModal = ref(false)
   const showSettingsModal = ref(false)
   const isNotesSaving = ref(false)
+  const isTerminating = ref(false)
 
   // Search
   const rawSearchQuery = ref('')
@@ -143,11 +144,13 @@ export function useLiveQueue() {
         return true
       }
     } else if (statusUpdateMode.value === 'terminate') {
+      isTerminating.value = true
       const success = await store.terminate()
       if (success) {
         showToast('Queue terminated successfully.')
         return true
       }
+      isTerminating.value = false
     }
 
     if (store.error) {
@@ -299,5 +302,8 @@ export function useLiveQueue() {
     handleEnableNotifications,
     handleUpdateNotes,
     isNotesSaving,
+    isTerminating,
+    claimAnonymousQueue: store.claimAnonymousQueue,
+    terminate: store.terminate,
   }
 }

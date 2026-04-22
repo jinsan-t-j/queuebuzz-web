@@ -6,14 +6,16 @@
  */
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
+
 import LiveQueueDashboardLayout from '../components/LiveQueueDashboardLayout.vue'
 
 const router = useRouter()
 const { initializeHostQueue } = useLiveQueue()
 
-onMounted(() => {
-  initializeHostQueue()
+onMounted(async () => {
+  await initializeHostQueue()
 })
 
 async function onStatusUpdateConfirmed({ mode, success }: { mode: string; success: boolean }) {

@@ -111,7 +111,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
       <!-- Content Header (Slot for custom titles/slugs) -->
       <header v-if="activeQueue" class="py-2">
         <LiveSyncStatus
-          :queue-name="activeQueue.name"
+          :queue-name="activeQueue?.name"
           :is-stream-connected="isStreamConnected"
           :stream-state="streamState"
           :strict-mode="activeQueue?.strictQueueMode"
@@ -143,7 +143,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
 
         <!-- Right Column: Share & Insights -->
         <div class="lg:col-span-8 flex flex-col gap-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div v-if="activeQueue" class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <ShareCodeCard
               :join-code="activeQueue?.joinCode"
               :share-url="queueUrl"
@@ -197,10 +197,10 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
     <InfoQueueModal
       v-if="activeQueue"
       :is-open="showInfoModal"
-      :join-code="activeQueue.joinCode"
+      :join-code="activeQueue?.joinCode"
       :queue-url="queueUrl"
-      :queue-name="activeQueue.name"
-      :slug="activeQueue.slug"
+      :queue-name="activeQueue?.name"
+      :slug="activeQueue?.slug"
       @close="showInfoModal = false"
     />
 

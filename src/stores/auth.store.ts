@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { fetchCurrentHost, logoutHost } from '@/modules/app/auth/actions/auth.actions'
 import type { AuthUser } from '@/modules/app/auth/types'
+import { useDashboardStore } from './dashboard.store'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -29,13 +30,14 @@ export const useAuthStore = defineStore('auth', {
       try {
         await logoutHost()
       } finally {
+        useDashboardStore().reset()
         this.clearSession()
       }
     },
 
-    async initializeSession() {
+    async initializeSession(options?: { skipLogout?: boolean }) {
       try {
-        this.user = await fetchCurrentHost()
+        this.user = await fetchCurrentHost(options)
         this.isHydrated = true
       } catch (error) {
         this.user = null

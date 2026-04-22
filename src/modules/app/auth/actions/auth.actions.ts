@@ -35,19 +35,6 @@ export interface Queue {
   [key: string]: unknown
 }
 
-/**
- * claimQueue
- * Calls API to claim an anonymous queue as a registered host.
- * @returns API response data
- */
-export async function claimQueue(): Promise<{ message: string }> {
-  return await apiClient.post(
-    API_ROUTES.HOST.CLAIM,
-    undefined,
-    createApiRequestConfig({}, { withCredentials: true }),
-  )
-}
-
 export async function logoutHost(): Promise<{ message: string }> {
   return await apiClient.post(
     API_ROUTES.HOST.LOGOUT,
@@ -61,10 +48,10 @@ export async function logoutHost(): Promise<{ message: string }> {
  * Fetches the authenticated host profile using cookie-backed auth.
  * @returns Host profile for bootstrapping app auth state
  */
-export async function fetchCurrentHost(): Promise<AuthUser> {
+export async function fetchCurrentHost(options?: { skipLogout?: boolean }): Promise<AuthUser> {
   const response = (await apiClient.get<ApiSuccessResponse<AuthUser>>(
     API_ROUTES.HOST.ME,
-    createApiRequestConfig({}, { withCredentials: true }),
+    createApiRequestConfig({}, { withCredentials: true, skipLogout: options?.skipLogout }),
   )) as unknown as ApiSuccessResponse<AuthUser>
   return response.data
 }
@@ -76,7 +63,10 @@ export async function fetchCurrentHost(): Promise<AuthUser> {
  * @param email - User's email address
  * @returns Success message for magic link or handle redirection
  */
-export async function authenticate(email: string): Promise<{
+export async function authenticate(
+  email: string,
+  claimQueueId?: string,
+): Promise<{
   message?: string
   method?: 'social' | 'magic-link'
   provider?: 'google' | 'apple'
@@ -89,7 +79,7 @@ export async function authenticate(email: string): Promise<{
       provider?: 'google' | 'apple'
       redirectUrl?: string
     }>
-  >(API_ROUTES.HOST.LOGIN, { email })
+  >(API_ROUTES.HOST.LOGIN, { email, claim_queue_id: claimQueueId })
 
   return response.data
 }

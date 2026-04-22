@@ -15,11 +15,49 @@ import LiveQueueDashboardLayout from '../components/LiveQueueDashboardLayout.vue
 
 const router = useRouter()
 const route = useRoute()
-const { activeQueue, isLoading, error, servedTodayCount, revalidateQueue, disposeLiveQueue } =
-  useLiveQueue()
+const {
+  activeQueue,
+  isLoading,
+  error,
+  servedTodayCount,
+  revalidateQueue,
+  disposeLiveQueue,
+  isTerminating,
+} = useLiveQueue()
 
 const queueId = route.params.id as string
-const isTerminating = ref(false)
+
+// Keep track of last known data for the summary screen after termination
+const lastSessionData = ref({
+  servedCount: 0,
+  recoveryEmail: null,
+  avgMins: 0,
+  createdAt: null,
+  notes: '',
+})
+
+watch(
+  activeQueue,
+  (val) => {
+    if (val) {
+      lastSessionData.value = {
+        servedCount: servedTodayCount.value,
+        recoveryEmail: val.recoveryEmail || '',
+        avgMins: val.avgServiceMins || 2,
+        createdAt: val.createdAt,
+        notes: val.notes || '',
+      }
+    }
+  },
+  { immediate: true },
+)
+
+// Also watch servedTodayCount because it updates independently of activeQueue
+watch(servedTodayCount, (val) => {
+  if (activeQueue.value) {
+    lastSessionData.value.servedCount = val
+  }
+})
 
 onBeforeMount(async () => {
   try {
@@ -65,20 +103,16 @@ async function onStatusUpdateConfirmed({
 }) {
   const isTerminate = mode === 'terminate'
 
-  if (success && isTerminate && activeQueue.value) {
-    const servedCount = servedTodayCount.value
-    const recoveryEmail = activeQueue.value?.recoveryEmail || ''
-    const avgMins = activeQueue.value?.avgServiceMins || 2
+  if (success && isTerminate) {
+    const { servedCount, recoveryEmail, avgMins, createdAt } = lastSessionData.value
     let durationFormatted = '0m'
 
-    if (activeQueue.value?.createdAt) {
-      const startTime = new Date(activeQueue.value.createdAt).getTime()
+    if (createdAt) {
+      const startTime = new Date(createdAt).getTime()
       const now = Date.now()
       const diffMins = Math.max(0, Math.round((now - startTime) / (1000 * 60)))
       durationFormatted = formatWaitTime(diffMins)
     }
-
-    isTerminating.value = true
 
     router.push({
       name: 'guest-host-complete',
@@ -88,6 +122,7 @@ async function onStatusUpdateConfirmed({
         total: durationFormatted,
         avg: formatWaitTime(avgMins),
         email: recoveryEmail,
+        notes: lastSessionData.value.notes,
       },
     })
   }
@@ -105,13 +140,17 @@ async function onStatusUpdateConfirmed({
     />
 
     <div class="relative z-10 mx-auto max-w-[1280px] px-6 pt-4 pb-2">
-      <LiveQueueDashboardLayout show-toast-layer @status-confirmed="onStatusUpdateConfirmed">
+      <LiveQueueDashboardLayout
+        show-toast-layer
+        show-notifications
+        @status-confirmed="onStatusUpdateConfirmed"
+      >
         <template #footer>
           <footer class="py-6 text-center">
             <p class="font-body text-sm text-plum-muted">
               Want to manage with a dashboard?
               <router-link
-                to="/login"
+                :to="{ name: 'login', query: { claim_queue_id: queueId } }"
                 class="font-semibold text-plum underline transition-colors hover:text-plum-soft"
               >
                 Create a free account

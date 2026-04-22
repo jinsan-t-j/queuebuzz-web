@@ -25,6 +25,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['timeframe-change'])
@@ -41,7 +45,7 @@ function setTimeframe(key) {
 }
 
 const chartPlot = computed(() => {
-  if (!props.chartData.length) return { path: '', dots: [] }
+  if (!props.chartData.length || props.isLoading) return { path: '', dots: [] }
   const width = 440
   const height = 120
   const padding = 10
@@ -69,15 +73,42 @@ const chartPlot = computed(() => {
 })
 
 const dayLabels = computed(() => {
-  if (!props.chartData.length) return []
+  if (!props.chartData.length || props.isLoading) return []
   return ['Mon', 'Wed', 'Fri', 'Sun']
 })
 </script>
 
 <template>
   <div class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+    <!-- Loading skeleton -->
+    <template v-if="isLoading">
+      <div class="flex items-center justify-between mb-4">
+        <div class="h-4 w-32 bg-plum-faint rounded animate-pulse" />
+        <div class="h-8 w-24 bg-plum-faint/50 rounded-lg animate-pulse" />
+      </div>
+      <div class="relative h-[120px] w-full mt-4">
+        <svg viewBox="0 0 440 120" class="w-full h-full opacity-20">
+          <path
+            d="M 10 80 C 60 80, 100 40, 150 40 C 200 40, 250 90, 300 90 C 350 90, 400 30, 440 30"
+            fill="none"
+            stroke="#CBD5E1"
+            stroke-width="3"
+            class="animate-pulse"
+          />
+        </svg>
+      </div>
+      <div class="mt-4 border-t border-plum-faint pt-6">
+        <div class="h-4 w-40 bg-plum-faint rounded animate-pulse mb-4" />
+        <div v-for="i in 3" :key="i" class="flex items-center gap-3 mb-3">
+          <div class="h-3 w-10 bg-plum-faint rounded animate-pulse" />
+          <div class="flex-1 h-4 bg-plum-faint/50 rounded-full animate-pulse" />
+          <div class="h-3 w-8 bg-plum-faint rounded animate-pulse" />
+        </div>
+      </div>
+    </template>
+
     <!-- Empty state -->
-    <div v-if="!hasData" class="flex flex-col items-center justify-center py-16 gap-3">
+    <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-16 gap-3">
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <MountainEmptyIcon class="h-5 w-5 text-plum-muted" />
       </div>

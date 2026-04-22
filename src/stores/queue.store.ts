@@ -28,6 +28,7 @@ import {
   serveGuest as apiServeGuest,
   registerHostFCM as apiRegisterHostFCM,
   unregisterHostFCM as apiUnregisterHostFCM,
+  claimQueue as apiClaimQueue,
 } from '@/modules/app/queue/actions/queue.action'
 import { normalizeLiveQueueEntries, normalizeQueueEntry } from '@/modules/app/queue/transforms'
 import {
@@ -38,6 +39,7 @@ import {
   type QueueEntryStatus,
 } from '@/modules/app/queue/constants'
 import { useNotificationStore } from './notification.store'
+import { useDashboardStore } from './dashboard.store'
 import { getFCMTokenDetails } from '@/lib/firebase'
 import { ApiError, getErrorMessage } from '@/utils/api-response'
 
@@ -123,11 +125,11 @@ export const useQueueStore = defineStore('queue', {
       this.error = null
     },
 
-    async fetchActiveQueue() {
+    async fetchActiveQueue(options?: { skipLogout?: boolean }) {
       this.isLoading = true
       this.error = null
       try {
-        const payload = await getLiveQueue()
+        const payload = await getLiveQueue(options)
         this.setActiveQueue(payload)
         return payload
       } catch (e: unknown) {
@@ -498,6 +500,7 @@ export const useQueueStore = defineStore('queue', {
       try {
         await terminateQueue(this.activeQueue.id)
         this.clearQueue()
+        useDashboardStore().setDirty()
         return true
       } catch (e: unknown) {
         this.error = getErrorMessage(e, 'Failed to terminate queue')
@@ -598,6 +601,30 @@ export const useQueueStore = defineStore('queue', {
         this.isFcmRegistering = false
       }
       return false
+    },
+
+    /**
+     * claimAnonymousQueue
+     * Links an anonymous/guest queue to the current authenticated host.
+     * @param id - The ID of the queue to claim (optional, backend can use session if missing)
+     */
+    async claimAnonymousQueue(id: string): Promise<boolean> {
+      this.isLoading = true
+      this.error = null
+      try {
+        await apiClaimQueue(id)
+        // After claiming, we re-fetch to get the newly claimed active queue
+        await this.fetchActiveQueue()
+        if (this.activeQueue) {
+          this.connectToEvents(this.activeQueue.id)
+        }
+        return true
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to claim guest queue')
+        return false
+      } finally {
+        this.isLoading = false
+      }
     },
 
     async unregisterHostFCM() {

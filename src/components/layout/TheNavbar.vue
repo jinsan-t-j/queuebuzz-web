@@ -4,32 +4,42 @@
  * @description Public website navigation bar. Displays the QueueBuzz logo,
  * nav links, and a CTA button. Used once inside WebsiteLayout.
  */
+import { computed } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useAuthStore } from '@/stores/auth.store'
+import { useQueueStore } from '@/stores/queue.store'
 
-// 1. Vue core imports
-
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
 import { Menu, X } from 'lucide-vue-next'
 
-// 6. Props
-
-// 7. Emits
-
-// 8. Composable destructuring
-
-// 9. Reactive state
 import { ref, onMounted, onUnmounted } from 'vue'
+
+const authStore = useAuthStore()
+const queueStore = useQueueStore()
+
+const { isAuthenticated } = storeToRefs(authStore)
+const { activeQueue } = storeToRefs(queueStore)
+
 const isMobileMenuOpen = ref(false)
 const isScrolled = ref(false)
 
-// 10. Computed properties
+/**
+ * Computed login link to ensure anonymous queues are claimed
+ * regardless of where the user clicks 'Sign In'
+ */
+const loginRoute = computed(() => ({
+  name: 'login',
+  query:
+    !isAuthenticated.value && activeQueue.value?.id ? { claim_queue_id: activeQueue.value.id } : {},
+}))
 
-// 11. Methods
+/**
+ * Directs to guest creation if not logged in, or dashboard if they are.
+ */
+const ctaRoute = computed(() => {
+  if (isAuthenticated.value) return { name: 'dashboard' }
+  return { name: 'guest-host-create' }
+})
+
 function handleToggleMenu() {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
@@ -43,7 +53,6 @@ function handleScroll() {
   })
 }
 
-// 12. Lifecycle hooks
 onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true })
 })
@@ -82,16 +91,24 @@ onUnmounted(() => {
           Support
         </router-link>
         <router-link
-          to="/login-or-signup"
+          v-if="isAuthenticated"
+          to="/dashboard"
+          class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
+        >
+          Dashboard
+        </router-link>
+        <router-link
+          v-else
+          :to="loginRoute"
           class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
         >
           Sign In
         </router-link>
         <router-link
-          to="/login"
+          :to="ctaRoute"
           class="rounded-pill bg-mint px-5 py-3.5 font-body text-sm font-semibold text-plum transition-colors hover:bg-mint-dark min-h-[48px] inline-flex items-center"
         >
-          Get Started Free
+          {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started Free' }}
         </router-link>
       </div>
 
@@ -121,18 +138,27 @@ onUnmounted(() => {
           Support
         </router-link>
         <router-link
-          to="/login"
+          v-if="isAuthenticated"
+          to="/dashboard"
+          class="font-body text-sm font-medium text-plum-soft py-4 px-2"
+          @click="isMobileMenuOpen = false"
+        >
+          Dashboard
+        </router-link>
+        <router-link
+          v-else
+          :to="loginRoute"
           class="font-body text-sm font-medium text-plum-soft py-4 px-2"
           @click="isMobileMenuOpen = false"
         >
           Sign In
         </router-link>
         <router-link
-          to="/login"
+          :to="ctaRoute"
           class="rounded-pill bg-mint px-5 py-3.5 text-center font-body text-sm font-semibold text-plum min-h-[48px] flex items-center justify-center"
           @click="isMobileMenuOpen = false"
         >
-          Get Started Free
+          {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started Free' }}
         </router-link>
       </div>
     </div>
