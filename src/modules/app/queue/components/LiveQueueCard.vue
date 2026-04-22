@@ -28,6 +28,7 @@ const props = defineProps<{
   isPaused?: boolean
   avgServiceMins?: number
   isLoading?: boolean
+  isRefreshing?: boolean
   strictQueueMode?: boolean
   showPartySize?: boolean
 }>()
@@ -55,7 +56,7 @@ const totalCount = computed(
   () => (props.activeEntries?.length || 0) + (props.servedEntries?.length || 0),
 )
 const nextCallDisabled = computed(() => {
-  if (props.isLoading || props.isPaused) return true
+  if (props.isLoading || props.isRefreshing || props.isPaused) return true
   if (props.strictQueueMode && hasActiveCalledEntry.value) return true
   return false
 })
@@ -246,7 +247,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
                   {{ entry.name }}
                 </p>
 
-                <BaseTooltip v-if="entry.createdBy" text="Entry added by host">
+                <BaseTooltip v-if="entry.createdBy" text="Added by you">
                   <ShieldCheckIcon
                     class="h-3.5 w-3.5 flex-shrink-0 text-[#00B87A] opacity-60 transition-opacity hover:opacity-100"
                   />
@@ -411,10 +412,12 @@ watch(entryStatusKey, (newKey, oldKey) => {
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.02);
     opacity: 0.9;
   }
+
   100% {
     transform: scale(1);
     opacity: 1;

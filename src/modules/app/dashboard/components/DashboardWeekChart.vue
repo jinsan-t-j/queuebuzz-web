@@ -9,6 +9,8 @@
  */
 
 import { ref, computed } from 'vue'
+import BasePillSelector from '@/components/base/BasePillSelector.vue'
+import BaseTooltip from '@/components/base/BaseTooltip.vue'
 import BarChartEmptyIcon from '@/assets/icons/bar-chart-empty.svg?component'
 
 const props = defineProps({
@@ -32,19 +34,57 @@ const tabs = [
   { key: 'avgWait', label: 'Avg. Wait' },
 ]
 
-const processedData = computed(() => {
-  if (!props.data || !props.data.length || props.isLoading) return []
+const yAxisTicks = computed(() => {
+  if (!props.data || !props.data.length || props.isLoading) return [10, 5, 0]
   const isServed = activeTab.value === 'served'
-
   const values = props.data.map((d) =>
     isServed ? d.value || 0 : d.avgWait ? parseInt(d.avgWait) : 0,
   )
   const maxValue = Math.max(...values, 1)
 
-  return props.data.map((d, i) => ({
-    ...d,
-    barHeight: d.isFuture ? '20%' : `${(values[i] / maxValue) * 100}%`,
-  }))
+  // Standard "nice" numbers for chart axes
+  const niceNumbers = [5, 10, 20, 25, 50, 100, 200, 500, 1000, 2000, 5000]
+  const rawStep = maxValue / 4 // Aim for ~5 ticks including 0
+
+  const step = niceNumbers.find((n) => n >= rawStep) || Math.ceil(rawStep / 1000) * 1000
+  let roundedMax = Math.ceil(maxValue / step) * step
+
+  // Always ensure at least one step of headroom
+  if (roundedMax <= maxValue) {
+    roundedMax += step
+  }
+
+  const ticks = []
+  for (let i = roundedMax; i >= 0; i -= step) {
+    ticks.push(i)
+  }
+  return ticks
+})
+
+const processedData = computed(() => {
+  if (!props.data || !props.data.length || props.isLoading) return []
+  const isServed = activeTab.value === 'served'
+  const maxScaleValue = yAxisTicks.value[0] || 10
+
+  return props.data.map((d) => {
+    const val = isServed ? d.value || 0 : d.avgWait ? parseInt(d.avgWait) : 0
+    let tooltipText
+    if (d.isFuture) {
+      tooltipText = 'No data yet'
+    } else if (isServed) {
+      tooltipText = `${val} served`
+    } else {
+      const mins = Math.floor(val / 60)
+      const secs = val % 60
+      tooltipText = mins > 0 ? `Avg. Wait: ${mins}m ${secs}s` : `Avg. Wait: ${secs}s`
+    }
+
+    return {
+      ...d,
+      barHeight: d.isFuture ? '20%' : `${(val / maxScaleValue) * 100}%`,
+      tooltipText,
+    }
+  })
 })
 </script>
 
@@ -53,29 +93,10 @@ const processedData = computed(() => {
     class="rounded-[14px] border border-ash-border bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
   >
     <!-- Header -->
-    <div v-once class="flex items-center justify-between">
+    <div class="flex items-center justify-between">
       <h3 class="font-display text-base font-bold text-plum">This Week</h3>
       <!-- Tab switcher -->
-      <div v-if="!isLoading" class="flex gap-1 rounded-lg bg-plum-faint/50 p-0.5">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          :class="[
-            'rounded-md px-4 py-2 font-body text-sm font-medium transition-colors min-h-[40px] md:min-h-[36px]',
-            activeTab === tab.key
-              ? 'bg-white text-plum shadow-xs'
-              : 'text-plum-muted hover:text-plum',
-          ]"
-          @click="activeTab = tab.key"
-        >
-          {{ tab.label }}
-        </button>
-      </div>
-      <!-- Tab Skeleton -->
-      <div v-else class="flex gap-1 rounded-lg bg-plum-faint/50 p-0.5">
-        <div class="h-9 w-20 rounded-md bg-white/50 animate-pulse" />
-        <div class="h-9 w-20 rounded-md bg-transparent animate-pulse" />
-      </div>
+      <BasePillSelector v-model="activeTab" :options="tabs" :is-loading="isLoading" />
     </div>
 
     <!-- Loading Skeleton -->
@@ -96,7 +117,7 @@ const processedData = computed(() => {
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="!hasData" v-once class="flex flex-col items-center justify-center py-12 gap-3">
+    <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-12 gap-3">
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <BarChartEmptyIcon class="h-5 w-5 text-plum-muted" />
       </div>
@@ -107,40 +128,63 @@ const processedData = computed(() => {
     </div>
 
     <!-- Chart -->
-    <div v-else class="mt-6">
-      <!-- Bars -->
-      <div class="flex items-end justify-between gap-3 h-44">
-        <div
-          v-for="item in processedData"
-          :key="item.day"
-          v-memo="[item.day, item.barHeight, item.isToday]"
-          class="flex flex-1 flex-col items-center gap-2 h-full"
-        >
-          <div class="relative w-full flex justify-center h-full items-end">
-            <div
-              :class="[
-                'w-full max-w-[48px] rounded-t-lg transition-all duration-500',
-                item.isFuture
-                  ? 'bg-plum-faint border-t-2 border-dashed border-plum-muted/30'
-                  : item.isToday
-                    ? 'bg-mint shadow-[0_4px_16px_rgba(0,229,160,0.3)]'
-                    : 'bg-mint/40',
-              ]"
-              :style="{ height: item.barHeight }"
-            />
-          </div>
-        </div>
+    <div v-else class="mt-8 flex gap-4">
+      <!-- Y Axis -->
+      <div
+        class="flex flex-col justify-between h-44 text-[10px] font-mono text-plum-muted/50 text-right w-6 pb-2 select-none"
+      >
+        <span v-for="tick in yAxisTicks" :key="tick">{{ tick }}</span>
       </div>
 
-      <!-- Day labels -->
-      <div class="mt-3 flex justify-between gap-3">
-        <span
-          v-for="item in processedData"
-          :key="item.day"
-          class="flex-1 text-center font-mono text-sm uppercase text-plum-muted"
-        >
-          {{ item.day }}
-        </span>
+      <div class="flex-1 relative">
+        <!-- Grid Lines -->
+        <div class="absolute inset-0 flex flex-col justify-between h-44 pb-2 pointer-events-none">
+          <div
+            v-for="tick in yAxisTicks"
+            :key="tick"
+            class="w-full border-t border-plum-faint/30 first:border-t-0 last:border-plum-faint/80"
+          />
+        </div>
+
+        <!-- Bars -->
+        <div class="relative flex items-end justify-between gap-3 h-44 z-10">
+          <div
+            v-for="(item, index) in processedData"
+            :key="`${item.day}-${index}`"
+            v-memo="[item.day, item.barHeight, item.isToday, item.tooltipText]"
+            class="flex flex-1 flex-col items-center gap-2 h-full"
+          >
+            <div class="relative w-full flex justify-center h-full items-end">
+              <BaseTooltip
+                :text="item.tooltipText"
+                class="w-full max-w-[48px] h-full items-end justify-center"
+              >
+                <div
+                  :class="[
+                    'w-full max-w-[48px] rounded-t-lg transition-all duration-500',
+                    item.isFuture
+                      ? 'bg-plum-faint border-t-2 border-dashed border-plum-muted/30'
+                      : item.isToday
+                        ? 'bg-mint shadow-[0_4px_16px_rgba(0,229,160,0.3)]'
+                        : 'bg-mint/40',
+                  ]"
+                  :style="{ height: item.barHeight }"
+                />
+              </BaseTooltip>
+            </div>
+          </div>
+        </div>
+
+        <!-- Day labels -->
+        <div class="mt-3 flex justify-between gap-3">
+          <span
+            v-for="(item, index) in processedData"
+            :key="`${item.day}-${index}`"
+            class="flex-1 text-center font-mono text-[10px] uppercase text-plum-muted"
+          >
+            {{ item.day }}
+          </span>
+        </div>
       </div>
     </div>
   </div>

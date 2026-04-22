@@ -39,18 +39,21 @@ export const API_ROUTES = {
     CHECK_SLUG: '/queue/slug-check',
     DASHBOARD: '/queue/dashboard',
     GET_LIVE_QUEUE: '/queue/live',
-    GET_LIVE_QUEUE_BY_ID: (id: string): string => `/queue/${id}/live`,
-    PUBLIC_EVENTS: (id: string): string => `/queue/${id}/events/public`,
-    CONNECT_EVENTS: (id: string): string => `/queue/${id}/events`,
-    PAUSE: (id: string): string => `/queue/${id}/pause`,
-    RESUME: (id: string): string => `/queue/${id}/resume`,
-    TERMINATE: (id: string): string => `/queue/${id}/terminate`,
-    CALL_ENTRY: (id: string, entryId?: string): string => `/queue/${id}/call/${entryId || ''}`,
-    SERVE: (id: string, entryId: string): string => `/queue/${id}/serve/${entryId}`,
-    ADD_ENTRY: (id: string): string => `/queue/${id}/add-entry`,
-    UPDATE: (id: string): string => `/queue/${id}`,
-    REGISTER_HOST_FCM: (id: string): string => `/queue/${id}/register-host-fcm`,
-    UNREGISTER_HOST_FCM: (id: string): string => `/queue/${id}/register-host-fcm`,
+    // Public / Guest
+    GET_LIVE_QUEUE_BY_ID: (id: string): string => `/queue/p/${id}/live`,
+    PUBLIC_EVENTS: (id: string): string => `/queue/p/${id}/events`,
+    // Host Management
+    CONNECT_EVENTS: (id: string): string => `/queue/manage/${id}/events`,
+    PAUSE: (id: string): string => `/queue/manage/${id}/pause`,
+    RESUME: (id: string): string => `/queue/manage/${id}/resume`,
+    TERMINATE: (id: string): string => `/queue/manage/${id}/terminate`,
+    CALL_ENTRY: (id: string, entryId?: string): string =>
+      `/queue/manage/${id}/call/${entryId || ''}`,
+    SERVE: (id: string, entryId: string): string => `/queue/manage/${id}/serve/${entryId}`,
+    ADD_ENTRY: (id: string): string => `/queue/manage/${id}/add-entry`,
+    UPDATE: (id: string): string => `/queue/manage/${id}`,
+    REGISTER_HOST_FCM: (id: string): string => `/queue/manage/${id}/register-host-fcm`,
+    UNREGISTER_HOST_FCM: (id: string): string => `/queue/manage/${id}/register-host-fcm`,
   },
   CUSTOMER: {
     JOIN_QUEUE_BY_ID: (id: string): string => `/customer/entry/join/${id}`,
@@ -70,7 +73,7 @@ export const API_ROUTES = {
   },
   HISTORY: {
     LIST: '/queue/history',
-    DETAIL: (id: string): string => `/queue/${id}/history`,
-    EXPORT_CSV: (id: string): string => `/queue/${id}/history/export/csv`,
+    DETAIL: (id: string): string => `/queue/manage/${id}/history`,
+    EXPORT_CSV: (id: string): string => `/queue/manage/${id}/history/export/csv`,
   },
 } as const

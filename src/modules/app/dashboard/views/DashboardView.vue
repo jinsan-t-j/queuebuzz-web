@@ -9,7 +9,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
-import { ArrowRight, AlertCircle } from 'lucide-vue-next'
+import { ArrowRight, AlertCircle, RefreshCw } from 'lucide-vue-next'
 
 import { useDashboardStore } from '@/stores/dashboard.store'
 
@@ -49,7 +49,7 @@ const DashboardQuickSetup = defineAsyncComponent(
 const router = useRouter()
 const route = useRoute()
 const dashboardStore = useDashboardStore()
-const { isLoading, error, data: dashboardData } = storeToRefs(dashboardStore)
+const { isLoading, isRefreshing, error, data: dashboardData } = storeToRefs(dashboardStore)
 
 const currentHour = ref(new Date().getHours())
 let greetingTimer = null
@@ -90,6 +90,45 @@ const droppedSkipped = computed(() => dashboardData.value?.droppedSkipped || [])
 const peakHours = computed(() => dashboardData.value?.peakHours || [])
 const quickSetup = computed(() => dashboardData.value?.quickSetup || { show: false, steps: [] })
 
+const returnRateByQueue = computed(() => {
+  const now = new Date()
+  const monday = new Date(now)
+  const day = now.getDay()
+  // Adjust to get Monday (1-6 for Mon-Sat, 0 for Sun)
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1)
+  monday.setDate(diff)
+  monday.setHours(0, 0, 0, 0)
+
+  const existing = returnRate.value?.byQueue || []
+  const existingNames = new Set(existing.map((e) => e.label))
+
+  const names = new Set()
+  // Active queue is always considered "current"
+  if (activeQueue.value?.queueName) {
+    names.add(activeQueue.value.queueName)
+  }
+
+  // Only include names from sessions that happened this week
+  recentSessions.value?.forEach((s) => {
+    if (s.name && s.date) {
+      const sessionDate = new Date(s.date)
+      if (sessionDate >= monday) {
+        names.add(s.name)
+      }
+    }
+  })
+
+  // Merge: Keep existing rates, add others with 0%
+  const merged = [...existing]
+  names.forEach((name) => {
+    if (!existingNames.has(name)) {
+      merged.push({ label: name, rate: 0 })
+    }
+  })
+
+  return merged
+})
+
 const showQuickSetup = computed(() => {
   const setup = quickSetup.value
   if (!setup.steps?.length) return false
@@ -121,11 +160,12 @@ watch(
 
 // 11. Methods
 async function loadDashboard() {
-  await dashboardStore.fetchDashboard()
+  await dashboardStore.fetchDashboard({ force: true })
 }
 
 function retry() {
-  dashboardStore.fetchDashboard(true) // Force fetch
+  if (isLoading.value || isRefreshing.value) return
+  dashboardStore.fetchDashboard({ force: true, silent: true })
 }
 
 function clearGreetingTimer() {
@@ -176,7 +216,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-8">
+  <div class="flex flex-col gap-6">
     <!-- Error state -->
     <div v-if="error && !isLoading" class="flex flex-col items-center justify-center py-12 gap-3">
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF2F2]">
@@ -188,43 +228,56 @@ onBeforeUnmount(() => {
     </div>
 
     <template v-else>
-      <!-- Welcome Banner (new account only) -->
+      <!-- Welcome Hero (Compact) -->
       <div
         v-if="!isLoading && isNewAccount"
-        class="flex flex-col gap-2 rounded-xl border border-mint/10 bg-mint-light/40 px-8 py-8 md:flex-row md:items-center md:justify-between"
+        class="rounded-2xl border border-mint/20 bg-mint-light/30 px-8 py-8"
       >
-        <div class="flex flex-col gap-2">
-          <h1 class="font-display text-lg font-bold text-plum">
-            Welcome to QueueBuzz, {{ dashboardData?.greeting?.name || 'John Doe' }}
-          </h1>
-          <p class="max-w-lg font-body text-base text-plum-muted leading-relaxed">
-            Let's get your first queue set up and manage your customers efficiently. Your dashboard
-            will start showing data as soon as customers join.
-          </p>
+        <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div class="flex flex-col gap-1.5">
+            <h1 class="font-display text-xl font-bold text-plum tracking-tight">
+              Ready to serve, {{ dashboardData?.greeting?.name || 'John' }}?
+            </h1>
+            <p class="max-w-md font-body text-sm text-plum-muted leading-relaxed">
+              Launch your first queue session and start tracking customer wait times in real-time.
+            </p>
+          </div>
+          <button
+            class="group flex items-center justify-center gap-3 rounded-xl bg-plum px-8 py-3.5 font-display text-sm font-bold text-sand transition-all hover:bg-plum-soft shadow-lg shadow-plum/10"
+            @click="emit('start-now')"
+          >
+            Start Session
+            <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </button>
         </div>
-        <button
-          class="inline-flex shrink-0 items-center gap-2 rounded-xl bg-mint/80 px-6 py-3 font-body text-base font-bold text-plum transition-colors hover:bg-mint"
-          @click="emit('start-now')"
-        >
-          Start now
-          <ArrowRight class="h-4 w-4" />
-        </button>
       </div>
 
       <!-- Greeting + Active State Content -->
       <template v-if="!isNewAccount || isLoading">
-        <!-- Greeting -->
-        <div v-if="!isNewAccount">
-          <h2 class="font-display text-[22px] font-bold text-plum">
-            {{ isLoading ? '' : greeting }}
-          </h2>
-          <p v-if="!isLoading" class="mt-1 font-body text-sm text-plum-muted">
-            {{ dateString }}
-          </p>
+        <!-- Header Section -->
+        <div class="flex items-center justify-between">
+          <div v-if="!isNewAccount">
+            <h2 class="font-display text-2xl font-bold text-plum">
+              {{ isLoading ? 'Loading...' : greeting }}
+            </h2>
+            <p v-if="!isLoading" class="font-body text-xs text-plum-muted opacity-80">
+              {{ dateString }}
+            </p>
+          </div>
+
+          <button
+            v-if="!isLoading"
+            :disabled="isRefreshing"
+            class="flex items-center gap-2 rounded-lg border border-plum-faint bg-white px-3 py-1.5 font-body text-[10px] font-bold uppercase tracking-widest text-plum-muted transition-all hover:border-plum hover:text-plum shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="retry"
+          >
+            <RefreshCw class="h-3 w-3 opacity-60" :class="{ 'animate-spin': isRefreshing }" />
+            {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
+          </button>
         </div>
 
         <!-- Stats Row -->
-        <div class="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
           <DashboardStatCard
             :value="isNewAccount ? '—' : String(stats.servedToday ?? '—')"
             label="Served Today"
@@ -249,24 +302,39 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <!-- Two Column Layout -->
-        <div class="flex flex-col gap-8 md:flex-row">
-          <!-- Main Stats Col (Left) -->
-          <div class="flex flex-col gap-8 md:flex-[1.4]">
-            <!-- Active Queue Stat (Primary) -->
+        <!-- Main Dashboard Grid -->
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <!-- Main Content (Left/Center) -->
+          <div class="flex flex-col gap-6 lg:col-span-8">
+            <!-- Active Queue Stat (In-context) -->
             <QueueStatusBar
               :queue-name="activeQueue?.queueName"
               :started-at="activeQueue?.startedAt"
+              :waiting-count="activeQueue?.waiting ?? 0"
               :is-active="activeQueue?.isActive"
               :is-loading="isLoading"
               @go-to-queue="emit('go-to-queue', $event)"
               @start-queue="emit('start-queue')"
             />
 
-            <!-- Week Overview Chart -->
+            <!-- Primary Chart -->
             <DashboardWeekChart :data="weekChart" :has-data="hasWeekData" :is-loading="isLoading" />
 
-            <!-- Quick Setup (visible when steps remain) -->
+            <!-- Analytical Widgets Mini-Grid -->
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <DashboardReturnRate
+                :chart-data="returnRate?.chartData || []"
+                :by-queue="returnRateByQueue"
+                :returning-count="returnRate?.returningCount || 0"
+                :has-data="returnRate?.hasData"
+                :is-loading="isLoading"
+                :is-refreshing="isRefreshing"
+                @timeframe-change="dashboardStore.fetchDashboard({ force: true, silent: true })"
+              />
+              <DashboardDroppedSkipped :data="droppedSkipped" :is-loading="isLoading" />
+            </div>
+
+            <!-- Quick Setup (Onboarding focus) -->
             <DashboardQuickSetup
               v-if="showQuickSetup && !allStepsDone"
               :steps="quickSetup.steps"
@@ -274,18 +342,9 @@ onBeforeUnmount(() => {
             />
           </div>
 
-          <!-- Secondary Charts Col (Right) -->
-          <div class="flex flex-col gap-8 md:flex-1">
-            <!-- Return Rate -->
-            <DashboardReturnRate
-              :chart-data="returnRate?.chartData || []"
-              :returning-count="returnRate?.returningCount || 0"
-              :has-data="returnRate?.hasData"
-              :is-loading="isLoading"
-              @timeframe-change="dashboardStore.fetchDashboard(true)"
-            />
-
-            <!-- Recent Sessions -->
+          <!-- Side Panel (Right) -->
+          <div class="flex flex-col gap-6 lg:col-span-4">
+            <!-- Recent Activity -->
             <DashboardRecentSessions
               :sessions="recentSessions"
               :is-loading="isLoading"
@@ -294,10 +353,7 @@ onBeforeUnmount(() => {
               @create-first-queue="emit('create-first-queue')"
             />
 
-            <!-- Dropped & Skipped -->
-            <DashboardDroppedSkipped :data="droppedSkipped" :is-loading="isLoading" />
-
-            <!-- Peak Hours -->
+            <!-- Operational Insights -->
             <DashboardPeakHours :data="peakHours" :has-data="hasPeakData" :is-loading="isLoading" />
           </div>
         </div>

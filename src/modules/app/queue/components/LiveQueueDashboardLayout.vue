@@ -65,6 +65,7 @@ const {
   handleUpdateSettings,
   handleUpdateNotes,
   isNotesSaving,
+  isRefreshing,
 } = useLiveQueue()
 
 // Async Modals
@@ -107,7 +108,10 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
   <HostNotifications v-if="showToastLayer && showNotifications" />
 
   <LiveSyncLoader :is-loading="isLoading" :has-queue="!!activeQueue" :error="error">
-    <div class="flex flex-col gap-2">
+    <div
+      class="flex flex-col gap-2 transition-opacity duration-300"
+      :class="{ 'opacity-60 pointer-events-none': isRefreshing }"
+    >
       <!-- Content Header (Slot for custom titles/slugs) -->
       <header v-if="activeQueue" class="py-2">
         <LiveSyncStatus
@@ -131,6 +135,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             :search-query="rawSearchQuery"
             :is-paused="isPaused"
             :is-loading="isLoading"
+            :is-refreshing="isRefreshing"
             :strict-queue-mode="activeQueue?.strictQueueMode"
             :avg-service-mins="activeQueue?.avgServiceMins || 2"
             :show-party-size="activeQueue?.allowPartyJoining"

@@ -178,7 +178,7 @@ export function useLiveQueue() {
   }
 
   async function handleUpdateSettings(payload: UpdateQueuePayload) {
-    const updated = await store.updateQueue(payload)
+    const updated = await store.updateQueue(payload, { silent: true })
     if (updated) {
       showToast('Queue settings updated.')
       showSettingsModal.value = false
@@ -241,7 +241,7 @@ export function useLiveQueue() {
 
     isNotesSaving.value = true
     try {
-      await store.updateQueue({ notes })
+      await store.updateQueue({ notes }, { silent: true })
     } finally {
       setTimeout(() => {
         isNotesSaving.value = false
@@ -267,6 +267,7 @@ export function useLiveQueue() {
     streamState: computed(() => store.streamState),
     isStreamConnected: computed(() => store.isStreamConnected),
     hasHostFcmToken: computed(() => !!store.hostFcmToken),
+    isRefreshing: computed(() => store.isRefreshing),
     queueUrl,
 
     // Party Constraints

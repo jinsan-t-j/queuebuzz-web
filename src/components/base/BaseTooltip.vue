@@ -20,7 +20,7 @@ defineProps({
 
     <!-- Tooltip Panel -->
     <div
-      class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-max -translate-x-1/2 scale-95 rounded-lg bg-plum px-3 py-1.5 text-sm font-bold tracking-wide text-white opacity-0 transition-all duration-200 group-hover/tooltip:scale-100 group-hover/tooltip:opacity-100 shadow-[0_8px_24px_-4px_rgba(26,10,46,0.4)]"
+      class="pointer-events-none absolute bottom-full left-1/2 z-50 mb-2 w-max -translate-x-1/2 scale-95 rounded-lg bg-plum px-3 py-1.5 text-xs font-body tracking-wide text-white opacity-0 transition-all duration-200 group-hover/tooltip:scale-100 group-hover/tooltip:opacity-100 shadow-[0_8px_24px_-4px_rgba(26,10,46,0.4)]"
     >
       {{ text }}
       <!-- Arrow -->

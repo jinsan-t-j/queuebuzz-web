@@ -12,6 +12,7 @@ export const useDashboardStore = defineStore('dashboard', {
   state: () => ({
     data: null as DashboardData | null,
     isLoading: false,
+    isRefreshing: false,
     error: null as string | null,
     lastFetched: null as number | null,
     isDirty: true,
@@ -32,15 +33,23 @@ export const useDashboardStore = defineStore('dashboard', {
     },
 
     /**
-     * Fetches dashboard data if cache is dirty or missing.
+     * Fetches dashboard data.
      * @param options.force - Skip cache check and fetch fresh data.
+     * @param options.silent - Update data without triggering the global isLoading state (prevents skeletons).
      */
-    async fetchDashboard(force = false) {
+    async fetchDashboard(options: { force?: boolean; silent?: boolean } = {}) {
+      const { force = false, silent = false } = options
+
       if (!force && !this.isDirty && this.data) {
         return this.data
       }
 
-      this.isLoading = true
+      if (silent) {
+        this.isRefreshing = true
+      } else {
+        this.isLoading = true
+      }
+
       this.error = null
 
       try {
@@ -54,6 +63,7 @@ export const useDashboardStore = defineStore('dashboard', {
         return null
       } finally {
         this.isLoading = false
+        this.isRefreshing = false
       }
     },
 

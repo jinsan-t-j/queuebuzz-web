@@ -13,6 +13,7 @@ import CameraUploadIcon from '@/assets/icons/camera-upload.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
 import BrandingProIcon from '@/assets/icons/branding-pro.svg?component'
 import PlanShieldIcon from '@/assets/icons/plan-shield.svg?component'
+import BaseToggle from '@/components/base/BaseToggle.vue'
 
 import ClearQueueHistoryConfirmModal from './ClearQueueHistoryConfirmModal.vue'
 import DeleteAccountConfirmModal from './DeleteAccountConfirmModal.vue'
@@ -427,17 +428,7 @@ function discardChanges() {
                 Receive alerts when the queue grows rapidly.
               </p>
             </div>
-            <button
-              type="button"
-              class="relative h-6 w-11 rounded-full transition-colors"
-              :class="emailNotifications ? 'bg-mint' : 'bg-ash-light'"
-              @click="emailNotifications = !emailNotifications"
-            >
-              <span
-                class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all"
-                :class="emailNotifications ? 'left-[22px]' : 'left-0.5'"
-              />
-            </button>
+            <BaseToggle v-model="emailNotifications" />
           </div>
 
           <div class="flex items-center justify-between">
@@ -447,17 +438,7 @@ function discardChanges() {
                 Sound alerts for new customer arrivals.
               </p>
             </div>
-            <button
-              type="button"
-              class="relative h-6 w-11 rounded-full transition-colors"
-              :class="browserNotifications ? 'bg-mint' : 'bg-ash-light'"
-              @click="browserNotifications = !browserNotifications"
-            >
-              <span
-                class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all"
-                :class="browserNotifications ? 'left-[22px]' : 'left-0.5'"
-              />
-            </button>
+            <BaseToggle v-model="browserNotifications" />
           </div>
         </div>
       </div>
@@ -529,17 +510,7 @@ function discardChanges() {
                 Ask users for their email when joining the queue.
               </p>
             </div>
-            <button
-              type="button"
-              class="relative h-6 w-11 rounded-full transition-colors"
-              :class="collectEmails ? 'bg-mint' : 'bg-ash-light'"
-              @click="collectEmails = !collectEmails"
-            >
-              <span
-                class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all"
-                :class="collectEmails ? 'left-[22px]' : 'left-0.5'"
-              />
-            </button>
+            <BaseToggle v-model="collectEmails" />
           </div>
         </div>
       </div>
