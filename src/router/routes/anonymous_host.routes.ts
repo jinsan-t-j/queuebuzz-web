@@ -31,6 +31,7 @@ export const anoymousHostRoutes: RouteRecordRaw[] = [
           totalTime: route.query.total?.toString() || '0m',
           avgTime: route.query.avg?.toString() || '0m',
           email: route.query.email?.toString() || '',
+          notes: route.query.notes?.toString() || '',
         }),
         meta: { title: 'Queue Complete — QueueBuzz' },
       },

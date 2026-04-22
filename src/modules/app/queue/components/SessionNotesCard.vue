@@ -103,7 +103,13 @@ function endDrag() {
 }
 
 onBeforeUnmount(() => {
-  if (debounceTimer) clearTimeout(debounceTimer)
+  if (debounceTimer) {
+    clearTimeout(debounceTimer)
+    if (editor.value) {
+      const value = editor.value.isEmpty ? '' : editor.value.getHTML()
+      emit('update', value)
+    }
+  }
   editor.value?.destroy()
 })
 </script>

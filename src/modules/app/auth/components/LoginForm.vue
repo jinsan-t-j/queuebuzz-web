@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import { useMutation } from '@tanstack/vue-query'
@@ -14,8 +15,13 @@ import type { SocialProvider } from '@/modules/app/auth/types'
 import type { ApiError } from '@/utils/api-response'
 
 const emit = defineEmits(['submit-success'])
+
+const route = useRoute()
+
 const { showToast } = useToast()
 const isSocialLoading = ref(false)
+
+const claimQueueId = computed(() => route.query.claim_queue_id as string | undefined)
 
 const schema = yup.object({
   email: yup.string().email('Invalid email address').required('Email is required'),
@@ -29,7 +35,7 @@ const { value: email, errorMessage: emailError } = useField<string>('email')
 
 const { mutate: mutateAuth, isPending } = useMutation({
   mutationFn: async (userEmail: string) => {
-    return await authenticate(userEmail)
+    return await authenticate(userEmail, claimQueueId.value)
   },
   onSuccess: (data) => {
     if (data?.redirectUrl) {
@@ -54,7 +60,7 @@ const onSubmit = handleSubmit((values) => {
 function handleSocialLogin(provider: SocialProvider) {
   if (isSocialLoading.value) return
   isSocialLoading.value = true
-  window.location.assign(AUTH_ROUTES.SOCIAL_START(provider))
+  window.location.assign(AUTH_ROUTES.SOCIAL_START(provider, claimQueueId.value))
 }
 </script>
 

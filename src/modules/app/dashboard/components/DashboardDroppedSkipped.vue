@@ -15,6 +15,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['timeframe-change'])
@@ -97,8 +101,22 @@ function cellColor(value) {
       </div>
     </div>
 
+    <!-- Loading skeleton -->
+    <div v-if="isLoading" class="mt-4 animate-pulse">
+      <div class="flex flex-col gap-1.5">
+        <div v-for="r in 3" :key="r" class="flex gap-1.5">
+          <div v-for="c in 12" :key="c" class="h-6 flex-1 rounded-xs bg-plum-faint" />
+        </div>
+      </div>
+      <div class="mt-4 flex justify-between">
+        <div class="h-3 w-10 bg-plum-faint rounded" />
+        <div class="h-3 w-10 bg-plum-faint rounded" />
+        <div class="h-3 w-10 bg-plum-faint rounded" />
+      </div>
+    </div>
+
     <!-- Empty state -->
-    <div v-if="!hasData" class="flex flex-col items-center justify-center py-10 gap-3">
+    <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-10 gap-3">
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <WavesEmptyIcon class="h-5 w-5 text-plum-muted" />
       </div>

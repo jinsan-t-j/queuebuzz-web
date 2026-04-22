@@ -19,7 +19,10 @@ export function buildApiUrl(path: string): string {
 }
 
 export const AUTH_ROUTES = {
-  SOCIAL_START: (provider: string): string => `${API_ORIGIN_URL}/auth/social/${provider}/start`,
+  SOCIAL_START: (provider: string, claimQueueId?: string): string => {
+    const url = `${API_ORIGIN_URL}/auth/social/${provider}/start`
+    return claimQueueId ? `${url}?claim_queue_id=${claimQueueId}` : url
+  },
 } as const
 
 // Centralized route definitions
@@ -34,6 +37,7 @@ export const API_ROUTES = {
   },
   QUEUE: {
     CHECK_SLUG: '/queue/slug-check',
+    DASHBOARD: '/queue/dashboard',
     GET_LIVE_QUEUE: '/queue/live',
     GET_LIVE_QUEUE_BY_ID: (id: string): string => `/queue/${id}/live`,
     PUBLIC_EVENTS: (id: string): string => `/queue/${id}/events/public`,

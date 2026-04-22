@@ -45,8 +45,11 @@ export async function checkSlugAvailability(slug: string): Promise<boolean> {
   return response.data.isAvailable
 }
 
-export async function getLiveQueue(): Promise<QueueRecord> {
-  const config = createApiRequestConfig({}, { withCredentials: true })
+export async function getLiveQueue(options?: { skipLogout?: boolean }): Promise<QueueRecord> {
+  const config = createApiRequestConfig(
+    {},
+    { withCredentials: true, skipLogout: options?.skipLogout },
+  )
   const response = (await apiClient.get<ApiSuccessResponse<QueueRecord>>(
     API_ROUTES.QUEUE.GET_LIVE_QUEUE,
     config,
@@ -99,7 +102,7 @@ export async function resumeQueue(id: string): Promise<void> {
 }
 
 export async function terminateQueue(id: string): Promise<void> {
-  const config = createApiRequestConfig({}, { withCredentials: true })
+  const config = createApiRequestConfig({}, { withCredentials: true, skipLogout: true })
   await apiClient.post(API_ROUTES.QUEUE.TERMINATE(id), null, config)
 }
 
@@ -116,4 +119,14 @@ export async function registerHostFCM(id: string, fcmToken: string): Promise<voi
 export async function unregisterHostFCM(id: string): Promise<void> {
   const config = createApiRequestConfig({}, { withCredentials: true })
   await apiClient.delete(API_ROUTES.QUEUE.UNREGISTER_HOST_FCM(id), config)
+}
+
+export async function claimQueue(queueId?: string): Promise<{ message: string }> {
+  const config = createApiRequestConfig({}, { withCredentials: true, skipLogout: true })
+  const response = (await apiClient.post<ApiSuccessResponse<{ message: string }>>(
+    API_ROUTES.HOST.CLAIM,
+    queueId ? { queue_id: queueId } : undefined,
+    config,
+  )) as unknown as ApiSuccessResponse<{ message: string }>
+  return response.data
 }

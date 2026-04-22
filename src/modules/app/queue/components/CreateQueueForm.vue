@@ -6,6 +6,7 @@ import * as yup from 'yup'
 import { useClipboard, useDebounceFn } from '@vueuse/core'
 import { useQueueStore } from '@/stores/queue.store'
 import { useAuthStore } from '@/stores/auth.store'
+import { useDashboardStore } from '@/stores/dashboard.store'
 import { createQueue, checkSlugAvailability } from '@/modules/app/queue/actions/queue.action'
 
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
@@ -137,6 +138,7 @@ const onSubmit = handleSubmit(async (values) => {
         authStore.setGuestSession(queue.id)
       }
 
+      useDashboardStore().setDirty()
       emit('queue-created', queue)
     }
   } catch {

@@ -20,6 +20,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['timeframe-change'])
@@ -69,8 +73,20 @@ const processedData = computed(() => {
       </div>
     </div>
 
+    <!-- Loading skeleton -->
+    <div v-if="isLoading" class="mt-4 flex items-end gap-1 px-1 h-[84px]">
+      <div
+        v-for="i in 24"
+        :key="i"
+        class="flex-1 rounded-t-sm bg-plum-faint animate-pulse"
+        :style="{
+          height: `${[40, 20, 10, 10, 10, 20, 50, 80, 70, 40, 30, 25, 45, 60, 90, 100, 80, 60, 50, 40, 60, 75, 40, 20][i - 1]}%`,
+        }"
+      />
+    </div>
+
     <!-- Empty state -->
-    <div v-if="!hasData" class="flex flex-col items-center justify-center py-8 gap-3">
+    <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-8 gap-3">
       <PeakEmptyIcon class="h-7 w-8 text-plum-faint" />
       <p class="font-body text-sm text-ash">Not enough data yet</p>
     </div>

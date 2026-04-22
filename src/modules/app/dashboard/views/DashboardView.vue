@@ -6,23 +6,17 @@
  * Handles both active (populated) and empty (new account) states.
  */
 
-// 1. Vue core imports
-import { ref, shallowRef, computed, onMounted, onBeforeUnmount, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useRouter, useRoute } from 'vue-router'
 import { ArrowRight, AlertCircle } from 'lucide-vue-next'
 
-// 2. Router / Pinia imports
+import { useDashboardStore } from '@/stores/dashboard.store'
 
-// 3. Third-party composables
-
-// 4. Local composables
-import { useDashboardApi } from '../composables/useDashboardApi'
-
-// 5. Component imports
 import BaseButton from '@/components/base/BaseButton.vue'
 import QueueStatusBar from '../components/QueueStatusBar.vue'
 import DashboardStatCard from '../components/DashboardStatCard.vue'
 
-// 6. Macros
 const emit = defineEmits([
   'go-to-queue',
   'start-queue',
@@ -33,7 +27,6 @@ const emit = defineEmits([
   'step-click',
 ])
 
-// 7. Below-fold async components
 const DashboardWeekChart = defineAsyncComponent(
   () => import('../components/DashboardWeekChart.vue'),
 )
@@ -53,16 +46,17 @@ const DashboardQuickSetup = defineAsyncComponent(
   () => import('../components/DashboardQuickSetup.vue'),
 )
 
-// 8. Composable destructuring
-const { isLoading, error, fetchDashboard } = useDashboardApi()
+const router = useRouter()
+const route = useRoute()
+const dashboardStore = useDashboardStore()
+const { isLoading, error, data: dashboardData } = storeToRefs(dashboardStore)
 
-// 9. Reactive state
-const dashboardData = shallowRef(null)
 const currentHour = ref(new Date().getHours())
 let greetingTimer = null
 
-// 10. Computed properties
-const isNewAccount = computed(() => !dashboardData.value?.recentSessions?.length)
+const isNewAccount = computed(
+  () => !dashboardData.value?.recentSessions?.length && !isLoading.value,
+)
 
 const greeting = computed(() => {
   const name = dashboardData.value?.greeting?.name || 'there'
@@ -99,7 +93,6 @@ const quickSetup = computed(() => dashboardData.value?.quickSetup || { show: fal
 const showQuickSetup = computed(() => {
   const setup = quickSetup.value
   if (!setup.steps?.length) return false
-  // Show if explicitly flagged or if new account
   return setup.show || isNewAccount.value || setup.steps.some((s) => !s.isDone)
 })
 
@@ -113,13 +106,26 @@ const hasWeekData = computed(() => {
 
 const hasPeakData = computed(() => peakHours.value.length > 0 && !isNewAccount.value)
 
+watch(
+  () => route.query.claim_queue_id,
+  (id) => {
+    if (id) {
+      router.replace({
+        name: 'queue',
+        query: { claim_queue_id: id },
+      })
+    }
+  },
+  { immediate: true },
+)
+
 // 11. Methods
 async function loadDashboard() {
-  dashboardData.value = await fetchDashboard()
+  await dashboardStore.fetchDashboard()
 }
 
 function retry() {
-  loadDashboard()
+  dashboardStore.fetchDashboard(true) // Force fetch
 }
 
 function clearGreetingTimer() {
@@ -205,10 +211,10 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <!-- Greeting + Queue Status Bar (active account) -->
+      <!-- Greeting + Active State Content -->
       <template v-if="!isNewAccount || isLoading">
         <!-- Greeting -->
-        <div>
+        <div v-if="!isNewAccount">
           <h2 class="font-display text-[22px] font-bold text-plum">
             {{ isLoading ? '' : greeting }}
           </h2>
@@ -217,101 +223,85 @@ onBeforeUnmount(() => {
           </p>
         </div>
 
-        <!-- Queue Status Bar -->
-        <QueueStatusBar
-          v-if="!isLoading"
-          v-memo="[activeQueue.queueName, activeQueue.isActive]"
-          :queue-name="activeQueue.queueName"
-          :started-at="activeQueue.startedAt"
-          :is-active="activeQueue.isActive"
-          @go-to-queue="emit('go-to-queue')"
-          @start-queue="emit('start-queue')"
-        />
+        <!-- Stats Row -->
+        <div class="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+          <DashboardStatCard
+            :value="isNewAccount ? '—' : String(stats.servedToday ?? '—')"
+            label="Served Today"
+            :accent="isNewAccount ? 'none' : 'mint'"
+            :is-loading="isLoading"
+          />
+          <DashboardStatCard
+            :value="isNewAccount ? '—' : (stats.avgWait ?? '—')"
+            label="Avg Wait"
+            :is-loading="isLoading"
+          />
+          <DashboardStatCard
+            :value="isNewAccount ? '—' : String(stats.peakWait ?? '—')"
+            label="Peak Wait"
+            :is-loading="isLoading"
+          />
+          <DashboardStatCard
+            :value="isNewAccount ? '—' : String(stats.skipped ?? '—')"
+            label="Avg Skipped"
+            :accent="isNewAccount ? 'none' : 'danger'"
+            :is-loading="isLoading"
+          />
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="flex flex-col gap-8 md:flex-row">
+          <!-- Main Stats Col (Left) -->
+          <div class="flex flex-col gap-8 md:flex-[1.4]">
+            <!-- Active Queue Stat (Primary) -->
+            <QueueStatusBar
+              :queue-name="activeQueue?.queueName"
+              :started-at="activeQueue?.startedAt"
+              :is-active="activeQueue?.isActive"
+              :is-loading="isLoading"
+              @go-to-queue="emit('go-to-queue', $event)"
+              @start-queue="emit('start-queue')"
+            />
+
+            <!-- Week Overview Chart -->
+            <DashboardWeekChart :data="weekChart" :has-data="hasWeekData" :is-loading="isLoading" />
+
+            <!-- Quick Setup (visible when steps remain) -->
+            <DashboardQuickSetup
+              v-if="showQuickSetup && !allStepsDone"
+              :steps="quickSetup.steps"
+              @step-click="emit('step-click', $event)"
+            />
+          </div>
+
+          <!-- Secondary Charts Col (Right) -->
+          <div class="flex flex-col gap-8 md:flex-1">
+            <!-- Return Rate -->
+            <DashboardReturnRate
+              :chart-data="returnRate?.chartData || []"
+              :returning-count="returnRate?.returningCount || 0"
+              :has-data="returnRate?.hasData"
+              :is-loading="isLoading"
+              @timeframe-change="dashboardStore.fetchDashboard(true)"
+            />
+
+            <!-- Recent Sessions -->
+            <DashboardRecentSessions
+              :sessions="recentSessions"
+              :is-loading="isLoading"
+              @select-session="emit('select-session', $event)"
+              @view-history="emit('view-history')"
+              @create-first-queue="emit('create-first-queue')"
+            />
+
+            <!-- Dropped & Skipped -->
+            <DashboardDroppedSkipped :data="droppedSkipped" :is-loading="isLoading" />
+
+            <!-- Peak Hours -->
+            <DashboardPeakHours :data="peakHours" :has-data="hasPeakData" :is-loading="isLoading" />
+          </div>
+        </div>
       </template>
-
-      <!-- Stats Row -->
-      <div class="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-        <DashboardStatCard
-          :value="isNewAccount ? '—' : String(stats.servedToday ?? '—')"
-          label="Served Today"
-          :accent="isNewAccount ? 'none' : 'mint'"
-          :is-loading="isLoading"
-        />
-        <DashboardStatCard
-          :value="isNewAccount ? '—' : (stats.avgWait ?? '—')"
-          label="Avg Wait"
-          :is-loading="isLoading"
-        />
-        <DashboardStatCard
-          :value="isNewAccount ? '—' : String(stats.peakWait ?? '—')"
-          label="Peak Wait"
-          :is-loading="isLoading"
-        />
-        <DashboardStatCard
-          :value="isNewAccount ? '—' : String(stats.skipped ?? '—')"
-          label="Avg Skipped"
-          :accent="isNewAccount ? 'none' : 'danger'"
-          :is-loading="isLoading"
-        />
-      </div>
-
-      <!-- Two Column Layout -->
-      <div v-if="!isLoading" class="flex flex-col gap-8 md:flex-row">
-        <!-- Left Column (wider) -->
-        <div class="flex flex-col gap-8 md:flex-[1.4] md:min-w-0">
-          <!-- Week Chart -->
-          <DashboardWeekChart :data="weekChart" :has-data="hasWeekData" />
-
-          <!-- Return Rate (hidden entirely when no data / empty state) -->
-          <DashboardReturnRate
-            v-if="returnRate.hasData"
-            :chart-data="returnRate.chartData"
-            :by-queue="returnRate.byQueue"
-            :has-data="returnRate.hasData"
-          />
-
-          <!-- Return Rate empty state for new accounts -->
-          <DashboardReturnRate v-if="isNewAccount" :has-data="false" />
-
-          <!-- Quick Setup (visible when steps remain) -->
-          <DashboardQuickSetup
-            v-if="showQuickSetup && !allStepsDone"
-            :steps="quickSetup.steps"
-            @step-click="emit('step-click', $event)"
-          />
-        </div>
-
-        <!-- Right Column (narrower) -->
-        <div class="flex flex-col gap-8 md:flex-1 md:min-w-0">
-          <!-- Recent Sessions -->
-          <DashboardRecentSessions
-            :sessions="recentSessions"
-            :is-loading="false"
-            @select-session="emit('select-session', $event)"
-            @view-history="emit('view-history')"
-            @create-first-queue="emit('create-first-queue')"
-          />
-
-          <!-- Dropped & Skipped -->
-          <DashboardDroppedSkipped :data="droppedSkipped" />
-
-          <!-- Peak Hours -->
-          <DashboardPeakHours :data="peakHours" :has-data="hasPeakData" />
-        </div>
-      </div>
-
-      <!-- Loading skeleton for two-column area -->
-      <div v-if="isLoading" class="flex flex-col gap-8 md:flex-row">
-        <div class="flex flex-col gap-8 md:flex-[1.4]">
-          <div class="h-72 rounded-[14px] bg-plum-faint animate-pulse" />
-          <div class="h-96 rounded-xl bg-plum-faint animate-pulse" />
-        </div>
-        <div class="flex flex-col gap-8 md:flex-1">
-          <div class="h-80 rounded-2xl bg-plum-faint animate-pulse" />
-          <div class="h-48 rounded-xl bg-plum-faint animate-pulse" />
-          <div class="h-36 rounded-xl bg-plum-faint animate-pulse" />
-        </div>
-      </div>
     </template>
   </div>
 </template>

@@ -36,6 +36,10 @@ defineProps({
     type: Boolean,
     default: true,
   },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 // 7. Emits
@@ -46,7 +50,14 @@ defineEmits(['go-to-queue', 'start-queue'])
   <div
     class="flex items-center justify-between rounded-2xl border border-plum/5 bg-white px-6 py-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
   >
-    <div class="flex items-center gap-4">
+    <div v-if="isLoading" class="flex items-center gap-4 animate-pulse">
+      <div class="h-3 w-3 rounded-full bg-plum-faint" />
+      <div class="flex flex-col gap-2">
+        <div class="h-4 w-32 rounded bg-plum-faint" />
+        <div class="h-3 w-20 rounded bg-plum-faint" />
+      </div>
+    </div>
+    <div v-else class="flex items-center gap-4">
       <!-- Pulsing dot -->
       <span :class="['relative flex h-3 w-3']" style="contain: paint">
         <span
@@ -71,7 +82,9 @@ defineEmits(['go-to-queue', 'start-queue'])
       </div>
     </div>
 
+    <div v-if="isLoading" class="h-12 w-32 rounded-xl bg-plum-faint animate-pulse" />
     <router-link
+      v-else
       :to="isActive ? '/dashboard/queue/live' : '/dashboard/queue'"
       class="inline-flex h-12 items-center gap-2 rounded-xl bg-mint/80 px-6 font-body text-sm font-bold text-plum transition-colors hover:bg-mint cursor-pointer"
     >
