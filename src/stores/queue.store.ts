@@ -50,6 +50,7 @@ export const useQueueStore = defineStore('queue', {
     activeQueue: null as QueueRecord | null,
     entries: [] as QueueEntry[],
     isLoading: false,
+    isRefreshing: false,
     error: null as string | null,
     streamState: 'idle' as SseConnectionState,
     sseClient: null as SseClient | null,
@@ -125,8 +126,12 @@ export const useQueueStore = defineStore('queue', {
       this.error = null
     },
 
-    async fetchActiveQueue(options?: { skipLogout?: boolean }) {
-      this.isLoading = true
+    async fetchActiveQueue(options?: { skipLogout?: boolean; silent?: boolean }) {
+      if (options?.silent) {
+        this.isRefreshing = true
+      } else {
+        this.isLoading = true
+      }
       this.error = null
       try {
         const payload = await getLiveQueue(options)
@@ -147,11 +152,16 @@ export const useQueueStore = defineStore('queue', {
         return null
       } finally {
         this.isLoading = false
+        this.isRefreshing = false
       }
     },
 
-    async fetchQueueById(id: string) {
-      this.isLoading = true
+    async fetchQueueById(id: string, silent = false) {
+      if (silent) {
+        this.isRefreshing = true
+      } else {
+        this.isLoading = true
+      }
       this.error = null
       try {
         const payload = await getLiveQueueById(id)
@@ -173,11 +183,12 @@ export const useQueueStore = defineStore('queue', {
         return null
       } finally {
         this.isLoading = false
+        this.isRefreshing = false
       }
     },
 
-    async initializeActiveQueue() {
-      const queue = await this.fetchActiveQueue()
+    async initializeActiveQueue(silent = false) {
+      const queue = await this.fetchActiveQueue({ silent })
       if (queue?.id) {
         this.connectToEvents(queue.id)
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
@@ -187,10 +198,10 @@ export const useQueueStore = defineStore('queue', {
       return queue
     },
 
-    async initializeQueueById(id: string) {
-      this.isLoading = true
+    async initializeQueueById(id: string, silent = false) {
+      if (!silent) this.isLoading = true
       try {
-        await this.fetchQueueById(id)
+        await this.fetchQueueById(id, silent)
         this.connectToPublicEvents(id)
         return !!this.activeQueue
       } finally {
@@ -457,7 +468,7 @@ export const useQueueStore = defineStore('queue', {
     async pause(): Promise<boolean> {
       if (!this.activeQueue) return false
 
-      this.isLoading = true
+      this.isRefreshing = true
       this.error = null
       try {
         await pauseQueue(this.activeQueue.id)
@@ -469,14 +480,14 @@ export const useQueueStore = defineStore('queue', {
         this.error = getErrorMessage(e, 'Failed to pause queue')
         return false
       } finally {
-        this.isLoading = false
+        this.isRefreshing = false
       }
     },
 
     async resume(): Promise<boolean> {
       if (!this.activeQueue) return false
 
-      this.isLoading = true
+      this.isRefreshing = true
       this.error = null
       try {
         await resumeQueue(this.activeQueue.id)
@@ -488,7 +499,7 @@ export const useQueueStore = defineStore('queue', {
         this.error = getErrorMessage(e, 'Failed to resume queue')
         return false
       } finally {
-        this.isLoading = false
+        this.isRefreshing = false
       }
     },
 
@@ -550,9 +561,18 @@ export const useQueueStore = defineStore('queue', {
       }
     },
 
-    async updateQueue(payload: UpdateQueuePayload): Promise<boolean> {
+    async updateQueue(
+      payload: UpdateQueuePayload,
+      options: { silent?: boolean } = {},
+    ): Promise<boolean> {
       if (!this.activeQueue) return false
-      this.isLoading = true
+
+      if (options.silent) {
+        this.isRefreshing = true
+      } else {
+        this.isLoading = true
+      }
+
       this.error = null
       try {
         const updated = await apiUpdateQueue(this.activeQueue.id, payload)
@@ -563,6 +583,7 @@ export const useQueueStore = defineStore('queue', {
         return false
       } finally {
         this.isLoading = false
+        this.isRefreshing = false
       }
     },
 

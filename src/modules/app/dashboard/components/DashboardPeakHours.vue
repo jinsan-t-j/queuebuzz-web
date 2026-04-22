@@ -9,6 +9,7 @@
  */
 
 import { computed, ref } from 'vue'
+import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import PeakEmptyIcon from '@/assets/icons/peak-empty.svg?component'
 
 const props = defineProps({
@@ -56,21 +57,13 @@ const processedData = computed(() => {
         Peak Hours
       </h4>
 
-      <div class="flex gap-1 rounded-lg bg-plum-faint/50 p-0.5">
-        <button
-          v-for="tab in timeframes"
-          :key="tab.key"
-          :class="[
-            'rounded-md px-4 py-2 font-body text-sm font-medium transition-colors min-h-[48px]',
-            activeTimeframe === tab.key
-              ? 'bg-white text-plum shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
-              : 'text-plum-muted hover:text-plum',
-          ]"
-          @click="setTimeframe(tab.key)"
-        >
-          {{ tab.label }}
-        </button>
-      </div>
+      <BasePillSelector
+        v-model="activeTimeframe"
+        :options="timeframes"
+        :is-loading="isLoading"
+        :skeleton-count="3"
+        @update:model-value="setTimeframe"
+      />
     </div>
 
     <!-- Loading skeleton -->

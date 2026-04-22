@@ -1,16 +1,14 @@
 <script setup>
 /**
  * @component DashboardStatCard
- * @description Single stat card with large number value, caption label,
- * and optional accent colour. Used 4× in the stats row.
+ * @description Concise stat card with refined typography.
  *
  * @prop {String} value - The stat value to display.
- * @prop {String} label - The caption label (uppercase).
+ * @prop {String} label - The caption label.
  * @prop {String} accent - Colour accent: 'mint' | 'warning' | 'danger' | 'none'.
- * @prop {Boolean} isLoading - Show skeleton shimmer instead of content.
+ * @prop {Boolean} isLoading - Show skeleton shimmer.
  */
 
-// 6. Props
 defineProps({
   value: {
     type: String,
@@ -33,25 +31,24 @@ defineProps({
 </script>
 
 <template>
-  <div class="rounded-xl border border-plum-faint bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-    <!-- Loading skeleton -->
+  <div
+    class="group relative flex flex-col justify-between rounded-2xl border border-plum-faint bg-white p-4 transition-all duration-200 hover:border-plum"
+  >
+    <!-- Loading State -->
     <template v-if="isLoading">
-      <div class="h-3 w-20 rounded bg-plum-faint animate-pulse" />
-      <div class="mt-3 h-7 w-16 rounded bg-plum-faint animate-pulse" />
+      <div class="h-2.5 w-12 rounded bg-plum-faint animate-pulse" />
+      <div class="mt-2 h-7 w-16 rounded bg-plum-faint animate-pulse" />
     </template>
 
     <!-- Content -->
     <template v-else>
-      <p class="font-body text-sm font-semibold uppercase tracking-[0.6px] text-plum-muted">
+      <p class="font-body text-[10px] font-bold uppercase tracking-wider text-plum-muted">
         {{ label }}
       </p>
       <p
         :class="[
-          'mt-2 font-display text-[27px] font-normal leading-tight',
-          accent === 'mint' ? 'text-mint' : '',
-          accent === 'warning' ? 'text-warning' : '',
-          accent === 'danger' ? 'text-danger' : '',
-          accent === 'none' ? 'text-plum' : '',
+          'mt-1 font-display text-2xl font-bold tracking-tight',
+          accent === 'mint' ? 'text-mint' : 'text-plum',
         ]"
       >
         {{ value }}

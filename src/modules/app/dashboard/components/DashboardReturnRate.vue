@@ -10,6 +10,7 @@
  */
 
 import { computed, ref } from 'vue'
+import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import MountainEmptyIcon from '@/assets/icons/mountain-empty.svg?component'
 
 const props = defineProps({
@@ -29,6 +30,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isRefreshing: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['timeframe-change'])
@@ -38,6 +43,13 @@ const timeframes = [
   { key: 'today', label: 'Today' },
   { key: 'week', label: 'This Week' },
 ]
+
+const isExpanded = ref(false)
+
+const displayedQueues = computed(() => {
+  if (isExpanded.value || props.byQueue.length <= 3) return props.byQueue
+  return props.byQueue.slice(0, 3)
+})
 
 function setTimeframe(key) {
   activeTimeframe.value = key
@@ -107,8 +119,11 @@ const dayLabels = computed(() => {
       </div>
     </template>
 
-    <!-- Empty state -->
-    <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-16 gap-3">
+    <!-- Empty state (Only if no data at all AND no queues to show) -->
+    <div
+      v-else-if="!hasData && !byQueue.length"
+      class="flex flex-col items-center justify-center py-16 gap-3"
+    >
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <MountainEmptyIcon class="h-5 w-5 text-plum-muted" />
       </div>
@@ -120,84 +135,135 @@ const dayLabels = computed(() => {
 
     <!-- Chart content -->
     <template v-else>
-      <!-- Day vs Return Rate -->
-      <div class="flex items-center justify-between pb-2 mb-2">
+      <div
+        :class="[
+          'transition-opacity duration-300',
+          isRefreshing ? 'opacity-50 pointer-events-none' : 'opacity-100',
+        ]"
+      >
+        <!-- Day vs Return Rate -->
+        <div class="flex items-center justify-between pb-2 mb-2">
+          <h4 class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted">
+            Day vs. Return Rate
+          </h4>
+
+          <BasePillSelector
+            v-model="activeTimeframe"
+            :options="timeframes"
+            :is-loading="isLoading"
+            :skeleton-count="3"
+            @update:model-value="setTimeframe"
+          />
+        </div>
+
+        <div class="mt-4">
+          <div
+            v-if="!hasData"
+            class="flex flex-col items-center justify-center h-[120px] bg-plum-faint/20 rounded-xl border border-dashed border-plum-faint"
+          >
+            <MountainEmptyIcon class="h-5 w-5 text-plum-muted/50 mb-1" />
+            <span class="font-body text-[10px] uppercase tracking-wider text-plum-muted/60"
+              >No activity this period</span
+            >
+          </div>
+          <svg
+            v-else
+            viewBox="0 0 440 120"
+            class="w-full h-auto"
+            preserveAspectRatio="xMidYMid meet"
+          >
+            <defs>
+              <linearGradient
+                id="spikeGradient"
+                gradientUnits="userSpaceOnUse"
+                x1="0"
+                x2="440"
+                y1="0"
+                y2="0"
+              >
+                <stop
+                  v-for="(dot, i) in chartPlot.dots"
+                  :key="i"
+                  :offset="`${(dot.x / 440) * 100}%`"
+                  :stop-color="dot.rate > 0 ? '#00E5A0' : '#E8E2F0'"
+                />
+              </linearGradient>
+            </defs>
+            <path
+              :d="chartPlot.path"
+              fill="none"
+              stroke="url(#spikeGradient)"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <circle
+              v-for="(point, idx) in chartPlot.dots"
+              :key="idx"
+              :cx="point.x"
+              :cy="point.y"
+              :r="point.rate > 0 ? 3 : 2"
+              :fill="point.rate > 0 ? '#00E5A0' : '#E8E2F0'"
+              :stroke="point.rate > 0 ? 'white' : 'none'"
+              stroke-width="2"
+            />
+          </svg>
+
+          <!-- X-axis labels -->
+          <div class="mt-2 flex justify-between px-2">
+            <span
+              v-for="label in dayLabels"
+              :key="label"
+              class="font-mono text-sm uppercase text-plum-muted"
+            >
+              {{ label }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Separator -->
+        <div class="my-6 border-t border-plum-faint" />
+
+        <!-- Queues vs Return Rate -->
         <h4 class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted">
-          Day vs. Return Rate
+          Queues vs. Return Rate
         </h4>
 
-        <div class="flex gap-1 rounded-lg bg-plum-faint/50 p-0.5">
-          <button
-            v-for="tab in timeframes"
-            :key="tab.key"
-            :class="[
-              'rounded-md px-3 py-1 font-body text-sm font-medium transition-colors',
-              activeTimeframe === tab.key
-                ? 'bg-white text-plum shadow-[0_1px_2px_rgba(0,0,0,0.05)]'
-                : 'text-plum-muted hover:text-plum',
-            ]"
-            @click="setTimeframe(tab.key)"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="mt-4">
-        <svg viewBox="0 0 440 120" class="w-full h-auto" preserveAspectRatio="xMidYMid meet">
-          <path
-            :d="chartPlot.path"
-            fill="none"
-            stroke="#00E5A0"
-            stroke-width="2"
-            stroke-linecap="round"
-          />
-          <circle
-            v-for="(point, idx) in chartPlot.dots"
-            :key="idx"
-            :cx="point.x"
-            :cy="point.y"
-            r="3"
-            fill="#00E5A0"
-            stroke="white"
-            stroke-width="2"
-          />
-        </svg>
-
-        <!-- X-axis labels -->
-        <div class="mt-2 flex justify-between px-2">
-          <span
-            v-for="label in dayLabels"
-            :key="label"
-            class="font-mono text-sm uppercase text-plum-muted"
-          >
-            {{ label }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Separator -->
-      <div class="my-6 border-t border-plum-faint" />
-
-      <!-- Queues vs Return Rate -->
-      <h4 class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted">
-        Queues vs. Return Rate
-      </h4>
-
-      <div class="mt-4 flex flex-col gap-3">
-        <div v-for="item in byQueue" :key="item.label" class="flex items-center gap-3">
-          <span class="w-14 shrink-0 font-mono text-sm text-plum-muted">
-            {{ item.label }}
-          </span>
-          <div class="flex-1 h-4 rounded-full bg-plum-faint/50 overflow-hidden">
+        <div class="mt-4 flex flex-col gap-3">
+          <template v-if="displayedQueues.length > 0">
             <div
-              class="h-full rounded-full bg-mint transition-all duration-700"
-              :style="{ width: `${item.rate}%` }"
-            />
+              v-for="(item, idx) in displayedQueues"
+              :key="item.label + idx"
+              class="flex items-center gap-3"
+            >
+              <span
+                class="w-24 shrink-0 font-body text-xs font-semibold text-plum-muted truncate"
+                :title="item.label"
+              >
+                {{ item.label || 'Unnamed Queue' }}
+              </span>
+              <div class="flex-1 h-4 rounded-full bg-plum-faint/50 overflow-hidden">
+                <div
+                  class="h-full rounded-full bg-mint transition-all duration-700"
+                  :style="{ width: `${item.rate}%` }"
+                />
+              </div>
+              <span class="w-8 text-right font-mono text-sm font-bold text-plum">
+                {{ Math.round(item.rate || 0) }}%
+              </span>
+            </div>
+
+            <!-- Show more / less button -->
+            <button
+              v-if="byQueue.length > 3"
+              class="mt-1 self-start font-body text-[10px] font-bold uppercase tracking-wider text-plum-muted hover:text-plum transition-colors"
+              @click="isExpanded = !isExpanded"
+            >
+              {{ isExpanded ? 'Show less' : `+ ${byQueue.length - 3} more queues` }}
+            </button>
+          </template>
+          <div v-else class="py-4 text-center border border-dashed border-plum-faint rounded-xl">
+            <p class="font-body text-xs text-plum-muted">No activity this week</p>
           </div>
-          <span class="w-8 text-right font-mono text-sm font-bold text-plum">
-            {{ item.rate }}%
-          </span>
         </div>
       </div>
     </template>
