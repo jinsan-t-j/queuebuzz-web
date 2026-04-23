@@ -69,7 +69,7 @@ export const API_ROUTES = {
     UPDATE_ENTRY: '/customer/entry/update',
   },
   SHARED: {
-    CREATE_QUEUE: '/queue/create',
+    CREATE_QUEUE: '/queue/p/create',
   },
   HISTORY: {
     LIST: '/queue/history',
