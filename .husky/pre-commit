@@ -1,2 +1,18 @@
+echo "Running pre-commit checks..."
+
+# Run Pre-commit Staged Files Check
+echo "\n>>> Running lint-staged..."
 npx lint-staged
+if [ $? -ne 0 ]; then
+    echo "❌ lint-staged failed. Please fix the issues and try again."
+    exit 1
+fi
+
+# Run Typecheck
+echo "\n>>> Running typecheck..."
 npm run typecheck
+if [ $? -ne 0 ]; then
+    echo "❌ Typecheck failed. Please fix the issues and try again."
+    exit 1
+fi
+
