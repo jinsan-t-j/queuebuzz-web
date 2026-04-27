@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component TheFooter
  * @description Public website footer with links and copyright.

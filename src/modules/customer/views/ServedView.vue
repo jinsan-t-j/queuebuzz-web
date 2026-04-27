@@ -7,6 +7,7 @@
 
 import { computed, onBeforeMount, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
@@ -14,15 +15,17 @@ import { useQueueStore } from '@/stores/queue.store'
 
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import ConfettiPartyIcon from '@/assets/icons/confetti-party.svg?component'
+import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 
 const { resetCustomerSession } = useCustomerStore()
 const { entry, disconnectEvents, getDisplayTicketNumber } = useCustomer()
 const queueStore = useQueueStore()
+const { activeQueue } = storeToRefs(queueStore)
 const router = useRouter()
 
 const TALLY_FORM_URL = import.meta.env.VITE_TALLY_URL
 
-const queueName = computed(() => queueStore.activeQueue?.name || 'Your Queue')
+const queueName = computed(() => activeQueue.value?.name || 'Your Queue')
 const ticketNumber = ref('....')
 
 onBeforeMount(async () => {
@@ -63,8 +66,14 @@ function handleDone() {
       class="pointer-events-none absolute -bottom-20 -left-16 h-[280px] w-[280px] rounded-full bg-mint-light/40 blur-[60px]"
     />
 
-    <!-- Queue name header -->
+    <CustomerHeader
+      v-if="activeQueue"
+      :name="activeQueue.name"
+      :profile-url="activeQueue.hostProfileImageUrl"
+      :banner-url="activeQueue.hostBannerImageUrl"
+    />
     <h1
+      v-else
       class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum transition-all duration-300"
     >
       {{ queueName }}

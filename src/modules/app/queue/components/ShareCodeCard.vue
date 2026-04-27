@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component ShareCodeCard
  * @description A card displaying a large join code with copy link and show QR actions.

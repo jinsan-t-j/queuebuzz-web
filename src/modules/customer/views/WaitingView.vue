@@ -3,6 +3,7 @@ import { ref, computed, onBeforeMount, onMounted, onUnmounted, watch } from 'vue
 import { useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
+import { storeToRefs } from 'pinia'
 
 import TicketHero from '@/modules/customer/components/TicketHero.vue'
 import WaitingStats from '@/modules/customer/components/WaitingStats.vue'
@@ -13,6 +14,7 @@ import CustomerSettingsModal from '@/modules/customer/components/CustomerSetting
 import BaseCard from '@/components/base/BaseCard.vue'
 import PWABanner from '@/modules/customer/components/PWABanner.vue'
 import TicketCaptureTemplate from '@/modules/customer/components/TicketCaptureTemplate.vue'
+import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 
 import { useCustomer } from '../composables/useCustomer'
 import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
@@ -38,10 +40,11 @@ const {
   disconnectEvents,
 } = useCustomer()
 const queueStore = useQueueStore()
+const { activeQueue } = storeToRefs(queueStore)
 
 const isSettingsModalOpen = ref(false)
 const showEmailHighlight = ref(false)
-const queueName = computed(() => queueStore.activeQueue?.name || '')
+const queueName = computed(() => activeQueue.value?.name || '')
 
 onMounted(() => {
   setTimeout(() => {
@@ -119,7 +122,14 @@ onUnmounted(() => {
 
 <template>
   <div class="relative flex flex-col min-h-[80vh]">
+    <CustomerHeader
+      v-if="activeQueue"
+      :name="activeQueue.name"
+      :profile-url="activeQueue.hostProfileImageUrl"
+      :banner-url="activeQueue.hostBannerImageUrl"
+    />
     <h1
+      v-else
       class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum transition-all duration-300"
     >
       {{ queueName }}

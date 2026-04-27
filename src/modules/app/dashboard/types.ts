@@ -3,6 +3,7 @@ export interface DashboardData {
     isActive: boolean
     queueName: string
     startedAt: string
+    waiting: number
   }
   stats: {
     servedToday: number
@@ -25,6 +26,7 @@ export interface DashboardData {
   }>
   returnRate: {
     hasData: boolean
+    returningCount: number
     chartData: Array<{
       day: string
       rate: number

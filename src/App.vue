@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component App
  * @description Root application shell. Renders the active route via router-view.

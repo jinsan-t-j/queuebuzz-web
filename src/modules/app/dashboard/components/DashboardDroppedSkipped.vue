@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardDroppedSkipped
  * @description Heatmap grid showing dropped & skipped volume by hour and day.
@@ -11,16 +11,22 @@ import { computed, ref } from 'vue'
 import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import WavesEmptyIcon from '@/assets/icons/waves-empty.svg?component'
 
-const props = defineProps({
-  data: {
-    type: Array,
-    default: () => [],
+interface HeatmapCell {
+  hour: number
+  day: number
+  value: number
+}
+
+const props = withDefaults(
+  defineProps<{
+    data?: HeatmapCell[]
+    isLoading?: boolean
+  }>(),
+  {
+    data: () => [],
+    isLoading: false,
   },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-})
+)
 
 const emit = defineEmits(['timeframe-change'])
 
@@ -48,7 +54,7 @@ const gridCells = computed(() => {
   if (!props.data.length) return []
 
   const rowsMap = new Map()
-  const hoursSet = new Set()
+  const hoursSet = new Set<number>()
 
   for (let i = 0; i < props.data.length; i++) {
     const item = props.data[i]
@@ -68,7 +74,7 @@ const gridCells = computed(() => {
   })
 })
 
-function cellColor(value) {
+function cellColor(value: number) {
   const intensity = value / maxValue.value
   if (intensity === 0) return 'bg-plum-faint/30'
   if (intensity < 0.3) return 'bg-warning/20'

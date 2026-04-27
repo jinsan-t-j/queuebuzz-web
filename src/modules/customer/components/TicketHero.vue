@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component TicketHero
  * @description Ticket card with QR code, reused across WaitingView, IdleView, CalledView.

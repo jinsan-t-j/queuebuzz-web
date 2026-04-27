@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { CalendarIcon } from 'lucide-vue-next'
 </script>
 

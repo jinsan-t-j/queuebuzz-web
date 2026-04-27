@@ -32,6 +32,8 @@ export const API_ROUTES = {
     LOGIN: '/auth/login',
     LOGOUT: '/auth/logout',
     ME: '/host/me',
+    UPDATE_ME: '/host/me',
+    DELETE_ME: '/host/me',
     // Queue routes
     CLAIM: '/host/claim',
   },
@@ -73,6 +75,7 @@ export const API_ROUTES = {
   },
   HISTORY: {
     LIST: '/queue/history',
+    CLEAR_ALL: '/queue/history',
     DETAIL: (id: string): string => `/queue/manage/${id}/history`,
     EXPORT_CSV: (id: string): string => `/queue/manage/${id}/history/export/csv`,
   },

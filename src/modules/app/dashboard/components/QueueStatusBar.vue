@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component QueueStatusBar
  * @description Concise banner showing active queue status with quick console access.

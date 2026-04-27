@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component QueueAnalysisCard
  * @description A card displaying high-level statistics about the queue,
@@ -13,31 +13,17 @@
 import { computed } from 'vue'
 import TrendUpIcon from '@/assets/icons/trend-up.svg?component'
 
-const props = defineProps({
-  servedToday: {
-    type: Number,
-    required: true,
-  },
-  trendText: {
-    type: String,
-    required: true,
-  },
-  completionRate: {
-    type: Number,
-    required: true,
-  },
-  chartLabels: {
-    type: Array,
-    required: true,
-  },
-  chartBars: {
-    type: Array,
-    required: true,
-  },
-  trendDirection: {
-    type: String,
-    default: 'up',
-  },
+interface Props {
+  servedToday: number
+  trendText: string
+  completionRate: number
+  chartLabels: string[]
+  chartBars: number[]
+  trendDirection?: 'up' | 'down' | 'flat'
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  trendDirection: 'up',
 })
 
 const maxBarValue = computed(() => Math.max(1, ...props.chartBars))

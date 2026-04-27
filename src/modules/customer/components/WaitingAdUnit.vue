@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component WaitingAdUnit
  * @description Sponsored ad placeholder shown when estimated wait is above threshold.

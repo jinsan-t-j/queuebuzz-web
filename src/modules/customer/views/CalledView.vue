@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component CalledView
  * @description Customer-facing "called" screen — "Great news! Your turn has arrived."
@@ -7,6 +7,7 @@
 
 import { ref, watch, computed, onBeforeMount, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useQueueStore } from '@/stores/queue.store'
@@ -14,9 +15,9 @@ import { useToast } from '@/composables/useToast'
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
 
 import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
-
 import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import EntryQrModal from '../components/EntryQrModal.vue'
+import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 
 defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'service-finished'])
 const router = useRouter()
@@ -37,6 +38,7 @@ const {
   disconnectEvents,
 } = useCustomer()
 const queueStore = useQueueStore()
+const { activeQueue } = storeToRefs(queueStore)
 
 const isLeaveModalOpen = ref(false)
 const isFinishModalOpen = ref(false)
@@ -95,7 +97,7 @@ const ticketNumberParts = computed(() => {
 
   return { prefix, suffix: '' }
 })
-const queueName = computed(() => queueStore.activeQueue?.name || 'Your Queue')
+const queueName = computed(() => activeQueue.value?.name || 'Your Queue')
 
 onBeforeMount(async () => {
   // 1. If not in store, attempt to re-hydrate from cookie session
@@ -111,7 +113,7 @@ onBeforeMount(async () => {
   }
 
   // 3. Ensure queue context is available for estWaitMin calculation
-  const queueId = router.currentRoute.value.params.queueId
+  const queueId = router.currentRoute.value.params.queueId as string
   if (queueId) {
     await queueStore.initializeQueueById(queueId)
   }
@@ -161,8 +163,13 @@ const handleFinishService = async () => {
       class="pointer-events-none absolute -bottom-16 -left-10 h-[350px] w-[350px] rounded-full bg-mint/16 blur-[80px]"
     />
 
-    <!-- Queue name header -->
-    <h1 class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum">
+    <CustomerHeader
+      v-if="activeQueue"
+      :name="activeQueue.name"
+      :profile-url="activeQueue.hostProfileImageUrl"
+      :banner-url="activeQueue.hostBannerImageUrl"
+    />
+    <h1 v-else class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum">
       {{ queueName }}
     </h1>
 

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component JoinQueueForm
  * @description Join queue form with name input, buzz toggle, email recovery accordion,
@@ -31,6 +31,7 @@ const props = defineProps({
   canJoinWithParty: { type: Boolean, default: false },
   maxAllowedPartySize: { type: Number, default: 10 },
   isLoading: { type: Boolean, default: false },
+  collectEmails: { type: Boolean, default: false },
 })
 
 // 7. Emits
@@ -60,9 +61,9 @@ const { handleSubmit, isSubmitting } = useForm({
   },
 })
 
-const { value: displayName, errorMessage: nameError } = useField('displayName')
-const { value: email, errorMessage: emailError } = useField('email')
-const { value: accompanying } = useField('accompanying')
+const { value: displayName, errorMessage: nameError } = useField<string>('displayName')
+const { value: email, errorMessage: emailError } = useField<string>('email')
+const { value: accompanying } = useField<number>('accompanying')
 
 // 10. Reactive UI State
 const buzzEnabled = ref(true)
@@ -114,10 +115,7 @@ const handleJoin = handleSubmit(async (values) => {
     partySize: (values.accompanying || 0) + 1,
     notificationEnabled,
     fcmToken,
-  }
-
-  if (values.email?.trim()) {
-    payload.email = values.email.trim()
+    email: values.email?.trim() || undefined,
   }
 
   emit('join-queue', payload)
@@ -268,7 +266,7 @@ const handleJoin = handleSubmit(async (values) => {
         </div>
         <div>
           <p class="font-body text-[15px] font-semibold text-plum">Buzz me when ready</p>
-          <p class="font-body text-sm text-plum-muted">Get a push notification</p>
+          <p class="font-body text-sm text-plum-muted">Get notified when it's your turn</p>
         </div>
       </div>
       <div class="flex items-center min-h-[44px]">
@@ -276,8 +274,39 @@ const handleJoin = handleSubmit(async (values) => {
       </div>
     </div>
 
-    <!-- Email recovery accordion -->
-    <div class="mt-6">
+    <!-- Email input card (Prominent if mandatory, accordion if optional) -->
+    <div v-if="collectEmails" class="mt-6 flex flex-col gap-4">
+      <div
+        :class="[
+          'flex items-start gap-4 rounded-3xl border p-4 transition-colors',
+          emailError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-white',
+        ]"
+      >
+        <div
+          :class="[
+            'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
+            emailError ? 'bg-danger/10' : 'bg-plum-faint',
+          ]"
+        >
+          <AtSign :class="['h-4 w-4', emailError ? 'text-danger' : 'text-plum-muted']" />
+        </div>
+        <div class="flex-1">
+          <input
+            v-model="email"
+            type="email"
+            placeholder="What's your email?"
+            class="w-full border-none bg-transparent font-body text-[17px] text-plum placeholder:text-plum-muted/40 focus:outline-none"
+          />
+          <p v-if="emailError" class="mt-1 font-body text-sm text-danger">{{ emailError }}</p>
+          <p v-else class="mt-1 font-body text-sm text-plum-muted">
+            For updates &amp; spot recovery
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email recovery accordion (Only if optional) -->
+    <div v-else class="mt-6">
       <!-- Header row -->
       <button
         class="flex w-full min-h-[48px] cursor-pointer items-center gap-4 py-3"

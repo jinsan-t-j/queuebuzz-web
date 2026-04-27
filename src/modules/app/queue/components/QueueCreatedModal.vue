@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component QueueCreatedModal
  * @description Success modal displayed after a new queue is created.

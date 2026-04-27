@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component RecoverByEmailAccordion
  * @description Expandable accordion for email recovery on the waiting screen.

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component TheNavbar
  * @description Public website navigation bar. Displays the QueueBuzz logo,

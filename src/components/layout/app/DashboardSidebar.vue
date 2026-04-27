@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardSidebar
  * @description Host dashboard sidebar navigation. Shows the QueueBuzz wordmark,
@@ -37,7 +37,16 @@ async function handleStatusConfirm() {
   await handleStatusUpdateConfirm()
 }
 
-const navItems = [
+interface NavItem {
+  name: string
+  to: string
+  icon: any
+  exact?: boolean
+  indent?: boolean
+  badge?: any
+}
+
+const navItems: NavItem[] = [
   {
     name: 'Dashboard',
     to: '/dashboard',
@@ -62,7 +71,7 @@ const navItems = [
   },
 ]
 
-function isActive(item) {
+function isActive(item: NavItem) {
   if (item.exact) return route.path === item.to
   return route.path === item.to || route.path.startsWith(item.to + '/')
 }

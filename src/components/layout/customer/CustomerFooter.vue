@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component CustomerFooter
  * @description Minimal legal footer shown at the bottom of every customer screen.

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardPeakHours
  * @description Bar chart showing peak hours distribution.
@@ -12,20 +12,23 @@ import { computed, ref } from 'vue'
 import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import PeakEmptyIcon from '@/assets/icons/peak-empty.svg?component'
 
-const props = defineProps({
-  data: {
-    type: Array,
-    default: () => [],
+interface PeakData {
+  hour: string
+  value: number
+}
+
+const props = withDefaults(
+  defineProps<{
+    data?: PeakData[]
+    hasData?: boolean
+    isLoading?: boolean
+  }>(),
+  {
+    data: () => [],
+    hasData: false,
+    isLoading: false,
   },
-  hasData: {
-    type: Boolean,
-    default: false,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-})
+)
 
 const emit = defineEmits(['timeframe-change'])
 
@@ -79,9 +82,14 @@ const processedData = computed(() => {
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-8 gap-3">
-      <PeakEmptyIcon class="h-7 w-8 text-plum-faint" />
-      <p class="font-body text-sm text-ash">Not enough data yet</p>
+    <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-10 gap-3">
+      <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
+        <PeakEmptyIcon class="h-6 w-6 text-plum-muted" />
+      </div>
+      <p class="font-display text-base font-semibold text-plum">Not enough data</p>
+      <p class="max-w-[200px] text-center font-body text-sm text-plum-muted leading-5">
+        Peak hours will appear after your first few sessions.
+      </p>
     </div>
 
     <!-- Chart -->

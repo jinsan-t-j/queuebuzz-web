@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component GuestHostQueueCompleteView
  * @description Queue session complete page for anonymous (guest) hosts.

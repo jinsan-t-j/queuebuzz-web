@@ -7,13 +7,10 @@
 import { ref, defineAsyncComponent } from 'vue'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
-import QueueStatCards from '@/modules/app/queue/components/QueueStatCards.vue'
-import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
-import ShareCodeCard from '@/modules/app/queue/components/ShareCodeCard.vue'
-import QueueActionCard from '@/modules/app/queue/components/QueueActionCard.vue'
-import SessionNotesCard from '@/modules/app/queue/components/SessionNotesCard.vue'
+// Critical path — renders immediately
 import LiveSyncLoader from '@/modules/app/queue/components/LiveSyncLoader.vue'
 import LiveSyncStatus from '@/modules/app/queue/components/LiveSyncStatus.vue'
+import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 
 defineProps<{
   showToastLayer?: boolean
@@ -27,6 +24,22 @@ const emit = defineEmits<{
   ): void
 }>()
 
+const QueueStatCards = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/QueueStatCards.vue'),
+)
+const ShareCodeCard = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/ShareCodeCard.vue'),
+)
+const QueueActionCard = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/QueueActionCard.vue'),
+)
+const SessionNotesCard = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/SessionNotesCard.vue'),
+)
+const FloatingConnectionBadge = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/FloatingConnectionBadge.vue'),
+)
+
 const {
   activeQueue,
   isPaused,
@@ -37,6 +50,7 @@ const {
   error,
   isStreamConnected,
   streamState,
+  pingMs,
 
   // UI state
   showAddGuestModal,
@@ -81,6 +95,9 @@ const AddGuestModal = defineAsyncComponent(
 const LiveQueueSettingsModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/LiveQueueSettingsModal.vue'),
 )
+const DisableStrictModeModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/DisableStrictModeModal.vue'),
+)
 const LiveQueueQuickSetup = defineAsyncComponent(
   () => import('@/modules/app/queue/components/LiveQueueQuickSetup.vue'),
 )
@@ -102,6 +119,21 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
   statusUpdateMode.value = mode
   showStatusUpdateModal.value = true
 }
+
+const showDisableStrictModal = ref(false)
+
+async function confirmDisableStrictMode() {
+  await handleUpdateSettings({ strictQueueMode: false })
+  showDisableStrictModal.value = false
+}
+
+function handleToggleStrictMode() {
+  if (activeQueue.value?.strictQueueMode) {
+    showDisableStrictModal.value = true
+  } else {
+    handleUpdateSettings({ strictQueueMode: true })
+  }
+}
 </script>
 
 <template>
@@ -118,6 +150,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
           :queue-name="activeQueue?.name"
           :is-stream-connected="isStreamConnected"
           :stream-state="streamState"
+          :ping-ms="pingMs"
           :strict-mode="activeQueue?.strictQueueMode"
           :show-notifications="showNotifications"
         />
@@ -143,6 +176,7 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             @search="handleSearchUpdate"
             @call-guest="handleCallGuest"
             @serve-guest="handleServeGuest"
+            @disable-strict-mode="showDisableStrictModal = true"
           />
         </div>
 
@@ -158,10 +192,12 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
             <div class="relative">
               <QueueActionCard
                 :is-paused="isPaused"
+                :strict-mode="activeQueue?.strictQueueMode"
                 @add-guest="showAddGuestModal = true"
                 @update-status="openStatusModal"
                 @open-settings="showSettingsModal = true"
                 @toggle-notes="showNotes = !showNotes"
+                @toggle-strict-mode="handleToggleStrictMode"
               />
 
               <SessionNotesCard
@@ -224,5 +260,14 @@ function openStatusModal(mode: 'pause' | 'resume' | 'terminate') {
     />
 
     <LiveQueueQuickSetup />
+
+    <!-- Disable Strict Mode Confirmation Modal -->
+    <DisableStrictModeModal
+      :is-open="showDisableStrictModal"
+      @close="showDisableStrictModal = false"
+      @confirm="confirmDisableStrictMode"
+    />
+
+    <FloatingConnectionBadge :stream-state="streamState" :ping-ms="pingMs" />
   </LiveSyncLoader>
 </template>

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component BaseBadge
  * @description Small status badge for queue entry states.
@@ -18,13 +18,14 @@ import { computed } from 'vue'
 // 5. Component imports
 
 // 6. Props
-const props = defineProps({
-  variant: {
-    type: String,
-    default: 'muted',
-    validator: (v) => ['mint', 'warning', 'danger', 'muted'].includes(v),
+const props = withDefaults(
+  defineProps<{
+    variant?: 'mint' | 'warning' | 'danger' | 'muted'
+  }>(),
+  {
+    variant: 'muted',
   },
-})
+)
 
 // 7. Emits
 

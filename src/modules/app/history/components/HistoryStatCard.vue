@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component HistoryStatCard
  * @description Single stat card for history detail view — same spec as
@@ -9,21 +9,18 @@
  * @prop {String} accent - Colour accent: 'mint' | 'warning' | 'danger' | 'none'.
  */
 
-defineProps({
-  value: {
-    type: String,
-    default: '—',
+withDefaults(
+  defineProps<{
+    value?: string
+    label?: string
+    accent?: 'mint' | 'warning' | 'danger' | 'none'
+  }>(),
+  {
+    value: '—',
+    label: '',
+    accent: 'none',
   },
-  label: {
-    type: String,
-    default: '',
-  },
-  accent: {
-    type: String,
-    default: 'none',
-    validator: (v) => ['mint', 'warning', 'danger', 'none'].includes(v),
-  },
-})
+)
 </script>
 
 <template>

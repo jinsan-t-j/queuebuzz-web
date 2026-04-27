@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component BasePillSelector
  * @description Segmented control / Pill group selector.
@@ -8,24 +8,25 @@
  * @prop {String|Number} modelValue - Current selected key (v-model).
  */
 
-defineProps({
-  options: {
-    type: Array,
-    default: () => [],
+interface Option {
+  key: string | number
+  label: string
+}
+
+withDefaults(
+  defineProps<{
+    options?: Option[]
+    modelValue?: string | number
+    isLoading?: boolean
+    skeletonCount?: number
+  }>(),
+  {
+    options: () => [],
+    modelValue: '',
+    isLoading: false,
+    skeletonCount: 2,
   },
-  modelValue: {
-    type: [String, Number],
-    default: '',
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  skeletonCount: {
-    type: Number,
-    default: 2,
-  },
-})
+)
 
 const emit = defineEmits(['update:modelValue'])
 </script>

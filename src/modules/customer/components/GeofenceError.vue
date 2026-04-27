@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component GeofenceError
  * @description Shows a geofence error when the customer is too far from the queue location.

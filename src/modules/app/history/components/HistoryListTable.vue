@@ -20,20 +20,20 @@ defineProps({
 
 const emit = defineEmits(['view-detail'])
 
-function getStatusVariant(status?: string) {
+function getStatusVariant(status?: string): 'mint' | 'warning' | 'danger' | 'muted' {
   switch (status?.toLowerCase()) {
     case 'completed':
     case 'closed':
-      return 'success'
+      return 'mint'
     case 'active':
-      return 'primary'
+      return 'mint'
     case 'paused':
       return 'warning'
     case 'terminated':
     case 'expired':
       return 'danger'
     default:
-      return 'secondary'
+      return 'muted'
   }
 }
 

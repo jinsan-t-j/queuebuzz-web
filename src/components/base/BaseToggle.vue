@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component BaseToggle
  * @description On/off toggle switch with v-model support.

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component TheTopbar
  * @description Host app top bar. Shows a page title, and the host's
@@ -10,6 +10,7 @@ import { computed, ref } from 'vue'
 
 // 2. Router / Pinia imports
 import { useRoute } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth.store'
 
 // 3. Third party imports
@@ -26,17 +27,19 @@ import LogoutConfirmationModal from '@/modules/app/auth/components/LogoutConfirm
 
 // 8. Composable destructuring
 const route = useRoute()
-const { user, logout } = useAuthStore()
+const authStore = useAuthStore()
+const { user } = storeToRefs(authStore)
+const { logout } = authStore
 
 // 9. Reactive state
 const isLogoutModalOpen = ref(false)
 
 // 10. Computed properties
 const pageTitle = computed(() => route.meta?.title || 'Dashboard')
-const userName = computed(() => user?.name || formatName(user.email))
+const userName = computed(() => user.value?.name || formatName(user.value?.email))
 
 // 11. Methods
-function formatName(email) {
+function formatName(email?: string) {
   if (!email) return 'Host'
 
   const name = email.split('@')[0]
@@ -66,8 +69,16 @@ function confirmLogout() {
       <HostNotificationCenter />
 
       <div class="flex items-center gap-2">
-        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-plum-faint">
-          <User class="h-4 w-4 text-plum-muted" />
+        <div
+          class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-plum-faint"
+        >
+          <img
+            v-if="user?.avatar || user?.profileImageUrl"
+            :src="user.avatar || user.profileImageUrl"
+            :alt="userName"
+            class="h-full w-full object-cover"
+          />
+          <User v-else class="h-4 w-4 text-plum-muted" />
         </div>
         <span class="font-body text-sm font-medium text-plum">{{ userName }}</span>
       </div>

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component AddGuestModal
  * @description Modal for hosts to manually add guests to the queue.
@@ -49,9 +49,9 @@ const { handleSubmit, errors, resetForm } = useForm({
   },
 })
 
-const { value: name } = useField('name')
-const { value: phone } = useField('phone')
-const { value: accompanying } = useField('accompanying')
+const { value: name } = useField<string>('name')
+const { value: phone } = useField<string | null>('phone')
+const { value: accompanying } = useField<number>('accompanying')
 
 const isGuestsOpen = ref(false)
 

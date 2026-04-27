@@ -32,7 +32,16 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const content = computed(() => {
+interface ModalContent {
+  title: string
+  description: string
+  confirmText: string
+  variant: 'primary' | 'secondary' | 'danger' | 'ghost'
+  icon: any
+  iconBg: string
+}
+
+const content = computed<ModalContent>(() => {
   switch (props.mode) {
     case 'resume':
       return {

@@ -1,4 +1,4 @@
-import { ref, computed, onScopeDispose } from 'vue'
+import { ref, computed, onScopeDispose, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQueueStore } from '@/stores/queue.store'
 import { useToast } from '@/composables/useToast'
@@ -22,6 +22,22 @@ export function useLiveQueue() {
   const showSettingsModal = ref(false)
   const isNotesSaving = ref(false)
   const isTerminating = ref(false)
+
+  // Simulated ping
+  const pingMs = ref(42)
+  let pingInterval: ReturnType<typeof setInterval> | null = null
+
+  onMounted(() => {
+    pingInterval = setInterval(() => {
+      // Fluctuate between 35 and 65 ms
+      const fluctuation = Math.floor(Math.random() * 30) - 15
+      pingMs.value = Math.max(20, Math.min(120, pingMs.value + fluctuation))
+    }, 3000)
+  })
+
+  onScopeDispose(() => {
+    if (pingInterval) clearInterval(pingInterval)
+  })
 
   // Search
   const rawSearchQuery = ref('')
@@ -266,6 +282,7 @@ export function useLiveQueue() {
     error: computed(() => store.error),
     streamState: computed(() => store.streamState),
     isStreamConnected: computed(() => store.isStreamConnected),
+    pingMs: computed(() => pingMs.value),
     hasHostFcmToken: computed(() => !!store.hostFcmToken),
     isRefreshing: computed(() => store.isRefreshing),
     queueUrl,

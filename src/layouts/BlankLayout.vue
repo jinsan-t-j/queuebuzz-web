@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component BlankLayout
  * @description Fullscreen layout with no persistent chrome.

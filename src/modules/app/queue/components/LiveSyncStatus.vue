@@ -6,6 +6,7 @@ defineProps<{
   queueName: string
   isStreamConnected: boolean
   streamState: SseConnectionState
+  pingMs?: number
   showNotifications?: boolean
   strictMode?: boolean
 }>()
@@ -15,31 +16,25 @@ defineProps<{
   <div class="flex items-center justify-between w-full">
     <div class="flex items-center gap-6">
       <div class="flex items-center gap-3">
-        <!-- Connection Status Dot -->
-        <div
-          class="w-3 h-3 rounded-full mt-1 shrink-0"
-          :class="[
-            streamState === 'open'
-              ? 'bg-mint animate-pulse shadow-[0_0_8px_rgba(0,229,160,0.4)]'
-              : streamState === 'connecting'
-                ? 'bg-warning animate-spin'
-                : 'bg-danger',
-          ]"
-        />
-
+        <div class="relative flex h-3 w-3 items-center justify-center">
+          <span
+            v-if="streamState === 'connecting'"
+            class="absolute inline-flex h-full w-full animate-ping rounded-full bg-warning opacity-75"
+          />
+          <span
+            class="relative inline-flex h-3 w-3 rounded-full transition-colors duration-300"
+            :class="
+              streamState === 'open'
+                ? 'bg-mint'
+                : streamState === 'connecting'
+                  ? 'bg-warning'
+                  : 'bg-danger'
+            "
+          />
+        </div>
         <h1 class="font-display text-4xl font-bold text-plum leading-tight">
           {{ queueName }}
         </h1>
-      </div>
-
-      <!-- Strict Mode Badge -->
-      <div
-        v-if="strictMode"
-        class="flex items-center px-4 py-1.5 bg-plum rounded-full border border-plum shadow-sm"
-      >
-        <span class="font-body text-[10px] md:text-sm font-bold text-sand uppercase tracking-wider">
-          Strict Mode
-        </span>
       </div>
     </div>
 

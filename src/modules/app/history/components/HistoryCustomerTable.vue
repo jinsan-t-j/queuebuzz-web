@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component HistoryCustomerTable
  * @description Searchable table with ticket, name, joined, waited, status, served at.
@@ -13,20 +13,28 @@
 import { ref, computed, watch } from 'vue'
 import { Search, X } from 'lucide-vue-next'
 
-const props = defineProps({
-  entries: {
-    type: Array,
-    default: () => [],
+interface Entry {
+  id: string
+  ticket: string
+  name: string
+  joined: string
+  waited: string
+  status: string
+  servedAt?: string
+}
+
+const props = withDefaults(
+  defineProps<{
+    entries?: Entry[]
+    isLoading?: boolean
+    totalCount?: number
+  }>(),
+  {
+    entries: () => [],
+    isLoading: false,
+    totalCount: 0,
   },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  totalCount: {
-    type: Number,
-    default: 0,
-  },
-})
+)
 
 const emit = defineEmits(['page-change'])
 

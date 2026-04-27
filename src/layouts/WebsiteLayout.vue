@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component WebsiteLayout
  * @description Wraps all public website routes. Mounts TheNavbar and TheFooter.
