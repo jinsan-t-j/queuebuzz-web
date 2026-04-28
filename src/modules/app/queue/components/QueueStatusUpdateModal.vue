@@ -15,6 +15,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
 import PlayIcon from '@/assets/icons/play.svg?component'
 import CloseCircleIcon from '@/assets/icons/close-circle.svg?component'
+import type { Component } from 'vue'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -37,7 +38,7 @@ interface ModalContent {
   description: string
   confirmText: string
   variant: 'primary' | 'secondary' | 'danger' | 'ghost'
-  icon: any
+  icon: Component
   iconBg: string
 }
 

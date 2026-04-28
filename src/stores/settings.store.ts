@@ -28,21 +28,21 @@ export const useSettingsStore = defineStore('settings', {
           useAuthStore().user!.name = data.name
           useAuthStore().user!.tier = data.tier
         }
-      } catch (err: any) {
-        this.error = err.message || 'Failed to load settings'
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to load settings'
       } finally {
         this.isLoading = false
       }
     },
 
-    async updateSettings(payload: Record<string, any>) {
+    async updateSettings(payload: Partial<UserSettings>) {
       this.isSaving = true
       this.error = null
       try {
         await updateUserSettings(payload)
         await this.fetchSettings()
-      } catch (err: any) {
-        this.error = err.message || 'Failed to save settings'
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to save settings'
         throw err
       } finally {
         this.isSaving = false
@@ -53,8 +53,8 @@ export const useSettingsStore = defineStore('settings', {
       this.isLoading = true
       try {
         await clearQueueHistory()
-      } catch (err: any) {
-        this.error = err.message || 'Failed to clear history'
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to clear history'
         throw err
       } finally {
         this.isLoading = false
@@ -70,8 +70,8 @@ export const useSettingsStore = defineStore('settings', {
         this.userSettings = null
         this.error = null
         showToast('Account deleted successfully')
-      } catch (err: any) {
-        this.error = err.message || 'Failed to delete account'
+      } catch (err) {
+        this.error = err instanceof Error ? err.message : 'Failed to delete account'
         showToast('Failed to delete account', { type: 'error' })
         throw err
       } finally {

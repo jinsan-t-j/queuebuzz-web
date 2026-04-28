@@ -23,11 +23,18 @@ const emit = defineEmits<{
   (e: 'crop', croppedDataUrl: string): void
 }>()
 
-const cropperRef = ref<any>(null)
+interface CropperInstance {
+  getResult: () => {
+    canvas: HTMLCanvasElement | null
+  }
+}
+
+const cropperRef = ref<CropperInstance | null>(null)
 
 function handleCrop() {
   if (!cropperRef.value) return
-  const { canvas } = cropperRef.value.getResult()
+  const result = cropperRef.value.getResult()
+  const canvas = result.canvas
   if (canvas) {
     emit('crop', canvas.toDataURL())
     emit('close')

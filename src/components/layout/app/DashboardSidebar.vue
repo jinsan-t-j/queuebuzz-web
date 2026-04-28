@@ -14,6 +14,7 @@
  */
 
 import { defineAsyncComponent } from 'vue'
+import type { Component } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
@@ -40,10 +41,10 @@ async function handleStatusConfirm() {
 interface NavItem {
   name: string
   to: string
-  icon: any
+  icon: Component
   exact?: boolean
   indent?: boolean
-  badge?: any
+  badge?: Component
 }
 
 const navItems: NavItem[] = [
