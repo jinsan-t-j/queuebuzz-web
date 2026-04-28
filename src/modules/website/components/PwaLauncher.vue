@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component PwaLauncher
  * @description Simplified app launcher for users running QueueBuzz in PWA mode.

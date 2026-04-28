@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component HistoryQueueTimeline
  * @description Vertical timeline showing chronological queue events
@@ -8,20 +8,29 @@
  *   type: 'success' | 'warning' | 'danger'
  */
 
-defineProps({
-  events: {
-    type: Array,
-    default: () => [],
-  },
-})
+interface TimelineEvent {
+  time: string
+  label: string
+  sub?: string
+  type?: 'success' | 'warning' | 'danger'
+}
 
-function dotColor(type) {
-  const map = {
+withDefaults(
+  defineProps<{
+    events?: TimelineEvent[]
+  }>(),
+  {
+    events: () => [],
+  },
+)
+
+function dotColor(type?: string) {
+  const map: Record<string, string> = {
     success: 'bg-mint border-white',
     warning: 'bg-warning border-white',
     danger: 'bg-plum border-white',
   }
-  return map[type] || map.success
+  return type && map[type] ? map[type] : map.success
 }
 </script>
 

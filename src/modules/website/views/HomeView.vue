@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component HomeView
  * @description Public landing page for QueueBuzz.

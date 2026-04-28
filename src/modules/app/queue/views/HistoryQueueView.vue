@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component HistoryQueueView
  * @description Queue history page with server-side pagination, search, sorting, filtering, and export.
@@ -20,7 +20,7 @@ const queueStore = useQueueStore()
 // State
 const searchQuery = ref('')
 const debouncedSearch = refDebounced(searchQuery, 300)
-const sortDirection = ref('desc')
+const sortDirection = ref<'asc' | 'desc'>('desc')
 const filter = ref('All')
 const currentPage = ref(1)
 const itemsPerPage = ref(5)
@@ -53,7 +53,7 @@ const { data, isLoading, isFetching } = useQuery({
       sortDirection: sortDirection.value,
       filter: filter.value,
     }),
-  keepPreviousData: true,
+  placeholderData: (previousData) => previousData,
 })
 
 // Quick access computeds

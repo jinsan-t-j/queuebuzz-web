@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component GuestHostCreateQueueView
  * @description Anonymous (guest) host queue creation form. Same form layout

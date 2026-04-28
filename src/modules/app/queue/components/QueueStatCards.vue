@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component QueueStatCards
  * @description Row of two stat cards showing "Waiting Now" count and

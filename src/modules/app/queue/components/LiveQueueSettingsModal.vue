@@ -180,7 +180,7 @@ function selectSuggestion(suggestion: string) {
               <label
                 class="block font-body text-xs font-bold uppercase tracking-[1.65px] text-plum/50"
               >
-                Avg. Service Time
+                How long does it typically take to serve one guest? (This is only for estimation)
               </label>
               <div class="flex items-center gap-1.5 rounded-lg bg-mint/10 px-2 py-1">
                 <TimeIcon class="h-3 w-3 text-mint" />

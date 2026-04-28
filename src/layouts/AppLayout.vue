@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component AppLayout
  * @description Wraps all authenticated host routes. Mounts DashboardSidebar and DashboardTopbar.

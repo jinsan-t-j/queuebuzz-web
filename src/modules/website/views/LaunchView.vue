@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component LaunchView
  * @description Dedicated view for the PWA launcher.

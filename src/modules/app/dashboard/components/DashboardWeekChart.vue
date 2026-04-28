@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardWeekChart
  * @description 7-bar chart Mon–Sun showing weekly performance.
@@ -13,23 +13,36 @@ import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import BaseTooltip from '@/components/base/BaseTooltip.vue'
 import BarChartEmptyIcon from '@/assets/icons/bar-chart-empty.svg?component'
 
-const props = defineProps({
-  data: {
-    type: Array,
-    default: () => [],
-  },
-  hasData: {
-    type: Boolean,
-    default: true,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-})
+interface WeekData {
+  day: string
+  value: number
+  isFuture: boolean
+  isToday: boolean
+  avgWait?: string
+}
 
-const activeTab = ref('served')
-const tabs = [
+interface TabOption {
+  key: string
+  label: string
+}
+
+const props = withDefaults(
+  defineProps<{
+    data?: WeekData[]
+    hasData?: boolean
+    isLoading?: boolean
+    hasActiveQueue?: boolean
+  }>(),
+  {
+    data: () => [],
+    hasData: true,
+    isLoading: false,
+    hasActiveQueue: false,
+  },
+)
+
+const activeTab = ref<string>('served')
+const tabs: TabOption[] = [
   { key: 'served', label: 'Served' },
   { key: 'avgWait', label: 'Avg. Wait' },
 ]
@@ -121,9 +134,15 @@ const processedData = computed(() => {
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <BarChartEmptyIcon class="h-5 w-5 text-plum-muted" />
       </div>
-      <p class="font-display text-base font-semibold text-plum">No data yet</p>
+      <p class="font-display text-base font-semibold text-plum">
+        {{ hasActiveQueue ? 'Tracking started' : 'No data yet' }}
+      </p>
       <p class="max-w-[225px] text-center font-body text-sm text-plum-muted leading-5">
-        We'll chart your weekly traffic here once your first queue becomes active.
+        {{
+          hasActiveQueue
+            ? "We're collecting data from your active session. Charts will update soon."
+            : "We'll chart your weekly traffic here once your first queue becomes active."
+        }}
       </p>
     </div>
 

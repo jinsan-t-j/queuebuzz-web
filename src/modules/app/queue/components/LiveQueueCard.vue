@@ -143,8 +143,8 @@ watch(entryStatusKey, (newKey, oldKey) => {
           <SearchIcon class="h-[10px] w-[10px] text-plum/40" />
           <input
             :value="searchQuery"
-            placeholder="Search by name..."
-            class="ml-2 w-full border-none bg-transparent font-body text-sm font-medium text-plum placeholder:text-plum-muted tracking-wider focus:outline-none"
+            placeholder="Search ..."
+            class="ml-2 w-full border-none bg-transparent font-body text-sm font-medium text-plum/80 placeholder:text-plum/30 tracking-wider focus:outline-none"
             @input="emit('search', ($event.target as HTMLInputElement).value)"
           />
         </div>
@@ -160,8 +160,8 @@ watch(entryStatusKey, (newKey, oldKey) => {
       <!-- Case 1: No entries at all (Truly empty) -->
       <template v-if="totalCount === 0 && !searchQuery">
         <div class="flex flex-col items-center justify-center py-10 opacity-40">
-          <p class="mb-4 font-body text-sm font-bold uppercase tracking-[2px] text-plum">
-            Action Center
+          <p class="mb-4 font-body text-sm text-plum/80 text-center max-w-[280px]">
+            When guests join the queue, they will appear here.
           </p>
           <ActionCenterIcon class="h-10 w-11" />
         </div>

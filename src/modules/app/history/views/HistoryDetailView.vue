@@ -89,7 +89,7 @@ function getStatusVariant(status: string) {
   }
 }
 
-function getQueueStatusVariant(status: string) {
+function getQueueStatusVariant(status: string): 'mint' | 'warning' | 'danger' | 'muted' {
   switch (status?.toLowerCase()) {
     case 'closed':
     case 'completed':
@@ -97,7 +97,7 @@ function getQueueStatusVariant(status: string) {
     case 'expired':
       return 'danger'
     default:
-      return 'plum-muted'
+      return 'muted'
   }
 }
 

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component PricingView
  * @description Public pricing page with free and premium plan comparison.

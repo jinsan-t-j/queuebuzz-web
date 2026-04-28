@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardReturnRate
  * @description Day vs Return Rate line chart + Queues vs Return Rate horizontal bars.
@@ -13,28 +13,32 @@ import { computed, ref } from 'vue'
 import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import MountainEmptyIcon from '@/assets/icons/mountain-empty.svg?component'
 
-const props = defineProps({
-  chartData: {
-    type: Array,
-    default: () => [],
+interface ChartData {
+  day: string
+  rate: number
+}
+
+interface QueueRate {
+  label: string
+  rate: number
+}
+
+const props = withDefaults(
+  defineProps<{
+    chartData?: ChartData[]
+    byQueue?: QueueRate[]
+    hasData?: boolean
+    isLoading?: boolean
+    isRefreshing?: boolean
+  }>(),
+  {
+    chartData: () => [],
+    byQueue: () => [],
+    hasData: false,
+    isLoading: false,
+    isRefreshing: false,
   },
-  byQueue: {
-    type: Array,
-    default: () => [],
-  },
-  hasData: {
-    type: Boolean,
-    default: false,
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  isRefreshing: {
-    type: Boolean,
-    default: false,
-  },
-})
+)
 
 const emit = defineEmits(['timeframe-change'])
 

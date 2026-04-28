@@ -13,7 +13,10 @@ export interface QueueRecord {
   allowPartyJoining: boolean
   maxPartySize: number
   strictQueueMode: boolean
+  collectEmails: boolean
   recoveryEmail?: string
+  hostProfileImageUrl?: string
+  hostBannerImageUrl?: string
   createdAt?: string
   expiresAt?: string
   updatedAt?: string

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component GracePeriodCard
  * @description Countdown card shown during idle/grace period when customer may have missed their turn.

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component TicketSaveBar
  * @description Bottom bar showing ticket save confirmation and share button.
@@ -31,7 +31,7 @@ const emit = defineEmits(['share-code', 'save'])
     <!-- Buttons row -->
     <div class="mt-3 flex gap-3">
       <!-- Save Button -->
-      <button 
+      <button
         :disabled="isSaving"
         class="flex h-[55px] flex-1 items-center justify-center gap-2 rounded-2xl border border-plum/10 transition-all active:scale-[0.98] bg-white hover:bg-plum/5"
         @click="emit('save')"

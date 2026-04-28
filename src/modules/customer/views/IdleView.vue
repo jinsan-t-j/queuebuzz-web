@@ -8,6 +8,7 @@
 // 1. Vue core imports
 import { ref, computed, watch, onBeforeMount, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 
 // 4. Composables
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
@@ -20,6 +21,7 @@ import GracePeriodCard from '@/modules/customer/components/GracePeriodCard.vue'
 
 import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
+import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -37,7 +39,8 @@ const {
 } = useCustomer()
 
 const queueStore = useQueueStore()
-const queueName = computed(() => queueStore.activeQueue?.name || 'Your Queue')
+const { activeQueue } = storeToRefs(queueStore)
+const queueName = computed(() => activeQueue.value?.name || 'Your Queue')
 const ticketNumber = computed(() => entry.value?.ticketNo || '...')
 
 const isLeaveModalOpen = ref(false)
@@ -108,8 +111,13 @@ const handleGraceExpired = () => {
       class="pointer-events-none absolute -bottom-16 -left-12 h-[250px] w-[250px] rounded-[100px_200px_213px_163px] bg-warning/40 blur-[40px]"
     />
 
-    <!-- Queue name header -->
-    <h1 class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum">
+    <CustomerHeader
+      v-if="activeQueue"
+      :name="activeQueue.name"
+      :profile-url="activeQueue.hostProfileImageUrl"
+      :banner-url="activeQueue.hostBannerImageUrl"
+    />
+    <h1 v-else class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum">
       {{ queueName }}
     </h1>
 

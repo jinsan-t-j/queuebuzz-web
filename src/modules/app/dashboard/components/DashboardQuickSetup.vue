@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardQuickSetup
  * @description Onboarding checklist with 3 setup steps.
@@ -10,12 +10,19 @@
 
 import { Check, ChevronRight, Lock } from 'lucide-vue-next'
 
-defineProps({
-  steps: {
-    type: Array,
-    default: () => [],
+interface Step {
+  label: string
+  sub: string
+  isDone: boolean
+}
+withDefaults(
+  defineProps<{
+    steps?: Step[]
+  }>(),
+  {
+    steps: () => [],
   },
-})
+)
 
 const emit = defineEmits(['step-click'])
 </script>

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component HistoryDetailHeader
  * @description Header for queue history detail page showing queue name,

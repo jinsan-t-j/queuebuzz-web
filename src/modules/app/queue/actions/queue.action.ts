@@ -10,6 +10,7 @@ export interface CreateQueuePayload {
   recoveryEmail?: string
   allowPartyJoining: boolean
   maxPartySize: number
+  collectEmails?: boolean
 }
 
 export interface CheckSlugAvailabilityResponse {

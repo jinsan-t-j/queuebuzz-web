@@ -194,7 +194,7 @@ function skipTask() {
 <template>
   <div
     v-if="pendingSteps.length > 0"
-    class="fixed bottom-6 right-6 z-50 flex flex-col items-end max-w-[340px] w-full"
+    class="fixed bottom-18 right-6 z-50 flex flex-col items-end max-w-[340px] w-full"
   >
     <div
       class="w-full flex flex-col bg-white border border-plum/10 rounded-[32px] shadow-[0_24px_64px_rgba(26,10,46,0.16)] overflow-hidden transition-all duration-500"

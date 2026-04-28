@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardRecentSessions
  * @description List of recent queue sessions with name, date, duration, and served count.
@@ -13,16 +13,26 @@
 import CalendarSessionIcon from '@/assets/icons/calendar-session.svg?component'
 import ClockEmptyIcon from '@/assets/icons/clock-empty.svg?component'
 
-defineProps({
-  sessions: {
-    type: Array,
-    default: () => [],
+interface Session {
+  id: string
+  name: string
+  date: string
+  duration: string
+  served: number
+}
+
+withDefaults(
+  defineProps<{
+    sessions?: Session[]
+    isLoading?: boolean
+    hasActiveQueue?: boolean
+  }>(),
+  {
+    sessions: () => [],
+    isLoading: false,
+    hasActiveQueue: false,
   },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-})
+)
 
 const emit = defineEmits(['select-session', 'view-history', 'create-first-queue'])
 </script>
@@ -54,11 +64,18 @@ const emit = defineEmits(['select-session', 'view-history', 'create-first-queue'
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <ClockEmptyIcon class="h-6 w-6 text-plum-muted" />
       </div>
-      <p class="font-display text-base font-semibold text-plum">No queues yet</p>
+      <p class="font-display text-base font-semibold text-plum">
+        {{ hasActiveQueue ? 'First session active!' : 'No queues yet' }}
+      </p>
       <p class="max-w-[216px] text-center font-body text-sm text-plum-muted leading-5">
-        Create your first service queue to start tracking activity.
+        {{
+          hasActiveQueue
+            ? "Your active session will appear here once it's completed."
+            : 'Create your first service queue to start tracking activity.'
+        }}
       </p>
       <button
+        v-if="!hasActiveQueue"
         class="font-body text-sm font-bold text-mint hover:text-mint-dark transition-colors"
         @click="emit('create-first-queue')"
       >

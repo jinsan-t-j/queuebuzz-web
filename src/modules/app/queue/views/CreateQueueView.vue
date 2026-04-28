@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component CreateQueueView
  * @description Unified queue view. Shows the creation form initially,
@@ -37,7 +37,10 @@ const {
 const showSuccessModal = ref(false)
 const showConflictModal = ref(false)
 
-const claimQueueId = computed(() => route.query.claim_queue_id)
+const claimQueueId = computed(() => {
+  const val = route.query.claim_queue_id
+  return Array.isArray(val) ? val[0] : (val as string | undefined)
+})
 
 function handleQueueCreated() {
   showSuccessModal.value = true

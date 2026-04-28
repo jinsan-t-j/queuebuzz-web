@@ -15,6 +15,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
 import PlayIcon from '@/assets/icons/play.svg?component'
 import CloseCircleIcon from '@/assets/icons/close-circle.svg?component'
+import type { Component } from 'vue'
 import { computed } from 'vue'
 
 const props = defineProps({
@@ -32,7 +33,16 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const content = computed(() => {
+interface ModalContent {
+  title: string
+  description: string
+  confirmText: string
+  variant: 'primary' | 'secondary' | 'danger' | 'ghost'
+  icon: Component
+  iconBg: string
+}
+
+const content = computed<ModalContent>(() => {
   switch (props.mode) {
     case 'resume':
       return {

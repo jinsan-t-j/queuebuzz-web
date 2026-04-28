@@ -2,7 +2,7 @@ echo "Running pre-commit checks..."
 
 # Run Pre-commit Staged Files Check
 echo "\n>>> Running lint-staged..."
-npx lint-staged
+npx lint-staged -- --max-warnings 0
 if [ $? -ne 0 ]; then
     echo "❌ lint-staged failed. Please fix the issues and try again."
     exit 1

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component WaitingStats
  * @description Three stat cards showing position, ahead count, and estimated wait time.

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
@@ -7,6 +7,9 @@ import { useClipboard, useDebounceFn } from '@vueuse/core'
 import { useQueueStore } from '@/stores/queue.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useDashboardStore } from '@/stores/dashboard.store'
+import { useSettingsStore } from '@/stores/settings.store'
+import { storeToRefs } from 'pinia'
+import { onMounted } from 'vue'
 import { createQueue, checkSlugAvailability } from '@/modules/app/queue/actions/queue.action'
 
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
@@ -20,7 +23,7 @@ const props = defineProps({
   role: {
     type: String,
     required: true,
-    validator: (val) => ['host', 'guest'].includes(val),
+    validator: (val: string) => ['host', 'guest'].includes(val),
   },
 })
 
@@ -29,6 +32,21 @@ const emit = defineEmits(['queue-created'])
 const router = useRouter()
 const queueStore = useQueueStore()
 const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
+const { userSettings } = storeToRefs(settingsStore)
+
+onMounted(async () => {
+  if (props.role === 'host') {
+    if (!userSettings.value) {
+      await settingsStore.fetchSettings()
+    }
+    if (userSettings.value) {
+      queueName.value = userSettings.value.settings?.defaultQueueName || 'Main Queue'
+      serviceTime.value = userSettings.value.settings?.avgServiceMins || 5
+      collectEmails.value = userSettings.value.settings?.collectEmails ?? false
+    }
+  }
+})
 
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
 const isSubmitting = ref(false)
@@ -46,6 +64,7 @@ const schema = computed(() => {
       then: (schema) => schema.required('Limit is required').min(1).max(50),
       otherwise: (schema) => schema.notRequired(),
     }),
+    collectEmails: yup.boolean().default(false),
   }
 
   if (props.role === 'host') {
@@ -76,16 +95,18 @@ const { handleSubmit, errors, setFieldError } = useForm({
     maxPartySize: 5,
     slug: null,
     recoveryEmail: null,
+    collectEmails: false,
   },
 })
 
 // Fields setup
-const { value: queueName } = useField('queueName')
-const { value: serviceTime } = useField('serviceTime')
-const { value: allowPartyJoining } = useField('allowPartyJoining')
-const { value: maxPartySize } = useField('maxPartySize')
-const { value: slug } = useField('slug')
-const { value: recoveryEmail } = useField('recoveryEmail')
+const { value: queueName } = useField<string | null>('queueName')
+const { value: serviceTime } = useField<number>('serviceTime')
+const { value: allowPartyJoining } = useField<boolean>('allowPartyJoining')
+const { value: maxPartySize } = useField<number>('maxPartySize')
+const { value: slug } = useField<string | null>('slug')
+const { value: recoveryEmail } = useField<string | null>('recoveryEmail')
+const { value: collectEmails } = useField<boolean>('collectEmails')
 
 const showEmailSection = ref(false)
 
@@ -129,6 +150,7 @@ const onSubmit = handleSubmit(async (values) => {
       recoveryEmail: values.recoveryEmail,
       allowPartyJoining: values.allowPartyJoining,
       maxPartySize: values.allowPartyJoining ? Number(values.maxPartySize) : 1,
+      collectEmails: values.collectEmails,
     }
     const queue = await createQueue(payload)
     if (queue) {
@@ -212,7 +234,7 @@ function copyCustomLink() {
             <div
               class="absolute -top-[37px] -translate-x-1/2 rounded-[5px] border border-[#e8e6ea] px-3 py-1.5 font-body text-sm font-semibold text-plum shadow-[0_4px_6px_rgba(0,0,0,0.10),0_10px_15px_rgba(0,0,0,0.10)] transition-all bg-white whitespace-nowrap"
               :style="{
-                left: `calc(${((serviceTime - 1) / 29) * 100}% + (${12 - ((serviceTime - 1) / 29) * 24}px))`,
+                left: `calc(${((Number(serviceTime) - 1) / 29) * 100}% + (${12 - ((Number(serviceTime) - 1) / 29) * 24}px))`,
               }"
             >
               {{ serviceTime }} min
@@ -326,6 +348,21 @@ function copyCustomLink() {
           <p class="mt-4 font-body text-sm text-[#5c5267]">
             This is the address people use to find your queue. If empty, we’ll use a random version.
           </p>
+        </div>
+
+        <!-- ═══ Card 4: Guest Settings ═══ -->
+        <div
+          class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="font-body font-semibold text-plum">Collect guest emails</p>
+              <p class="font-body text-sm text-[#5c5267] mt-0.5">
+                Require guests to provide an email address when they join.
+              </p>
+            </div>
+            <BaseToggle v-model="collectEmails" />
+          </div>
         </div>
       </template>
 

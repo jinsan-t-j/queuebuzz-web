@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component BaseButton
  * @description Reusable button with variant, size, and loading support.
@@ -24,26 +24,20 @@ import { computed } from 'vue'
 import { Loader2 } from 'lucide-vue-next'
 
 // 6. Props
-const props = defineProps({
-  variant: {
-    type: String,
-    default: 'primary',
-    validator: (v) => ['primary', 'secondary', 'danger', 'ghost'].includes(v),
+const props = withDefaults(
+  defineProps<{
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+    size?: 'sm' | 'md' | 'lg'
+    isLoading?: boolean
+    isDisabled?: boolean
+  }>(),
+  {
+    variant: 'primary',
+    size: 'md',
+    isLoading: false,
+    isDisabled: false,
   },
-  size: {
-    type: String,
-    default: 'md',
-    validator: (v) => ['sm', 'md', 'lg'].includes(v),
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-  isDisabled: {
-    type: Boolean,
-    default: false,
-  },
-})
+)
 
 // 7. Emits
 const emit = defineEmits(['click'])
@@ -75,7 +69,7 @@ const sizeClasses = computed(() => {
 const isButtonDisabled = computed(() => props.isLoading || props.isDisabled)
 
 // 11. Methods
-function handleClick(event) {
+function handleClick(event: MouseEvent) {
   if (!isButtonDisabled.value) {
     emit('click', event)
   }

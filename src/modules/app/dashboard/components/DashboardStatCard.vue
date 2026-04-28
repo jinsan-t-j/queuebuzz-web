@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardStatCard
  * @description Concise stat card with refined typography.
@@ -9,25 +9,20 @@
  * @prop {Boolean} isLoading - Show skeleton shimmer.
  */
 
-defineProps({
-  value: {
-    type: String,
-    default: '—',
+withDefaults(
+  defineProps<{
+    value?: string
+    label?: string
+    accent?: 'mint' | 'warning' | 'danger' | 'none'
+    isLoading?: boolean
+  }>(),
+  {
+    value: '—',
+    label: '',
+    accent: 'none',
+    isLoading: false,
   },
-  label: {
-    type: String,
-    default: '',
-  },
-  accent: {
-    type: String,
-    default: 'none',
-    validator: (v) => ['mint', 'warning', 'danger', 'none'].includes(v),
-  },
-  isLoading: {
-    type: Boolean,
-    default: false,
-  },
-})
+)
 </script>
 
 <template>

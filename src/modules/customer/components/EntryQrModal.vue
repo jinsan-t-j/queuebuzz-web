@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component EntryQrModal
  * @description Modal that displays a QR code for the customer's entry.

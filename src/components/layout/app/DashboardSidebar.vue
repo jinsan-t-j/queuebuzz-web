@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardSidebar
  * @description Host dashboard sidebar navigation. Shows the QueueBuzz wordmark,
@@ -14,6 +14,7 @@
  */
 
 import { defineAsyncComponent } from 'vue'
+import type { Component } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
@@ -37,7 +38,16 @@ async function handleStatusConfirm() {
   await handleStatusUpdateConfirm()
 }
 
-const navItems = [
+interface NavItem {
+  name: string
+  to: string
+  icon: Component
+  exact?: boolean
+  indent?: boolean
+  badge?: Component
+}
+
+const navItems: NavItem[] = [
   {
     name: 'Dashboard',
     to: '/dashboard',
@@ -62,7 +72,7 @@ const navItems = [
   },
 ]
 
-function isActive(item) {
+function isActive(item: NavItem) {
   if (item.exact) return route.path === item.to
   return route.path === item.to || route.path.startsWith(item.to + '/')
 }

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component CustomerNavbar
  * @description Customer-facing top bar with QueueBuzz wordmark.

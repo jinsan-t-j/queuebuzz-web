@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component DashboardView
  * @description Host dashboard showing active queue status, weekly performance,
@@ -55,7 +55,10 @@ const currentHour = ref(new Date().getHours())
 let greetingTimer = null
 
 const isNewAccount = computed(
-  () => !dashboardData.value?.recentSessions?.length && !isLoading.value,
+  () =>
+    !dashboardData.value?.recentSessions?.length &&
+    !dashboardData.value?.activeQueue?.isActive &&
+    !isLoading.value,
 )
 
 const greeting = computed(() => {
@@ -81,11 +84,29 @@ const dateString = computed(() => {
   return dateFormatter.format(today)
 })
 
-const activeQueue = computed(() => dashboardData.value?.activeQueue || {})
-const stats = computed(() => dashboardData.value?.stats || {})
+const activeQueue = computed(
+  () =>
+    dashboardData.value?.activeQueue || {
+      isActive: false,
+      queueName: '',
+      startedAt: '',
+      waiting: 0,
+    },
+)
+const stats = computed(
+  () => dashboardData.value?.stats || { servedToday: 0, avgWait: '0m', peakWait: 0, skipped: 0 },
+)
 const weekChart = computed(() => dashboardData.value?.weekChart || [])
 const recentSessions = computed(() => dashboardData.value?.recentSessions || [])
-const returnRate = computed(() => dashboardData.value?.returnRate || { hasData: false })
+const returnRate = computed(
+  () =>
+    dashboardData.value?.returnRate || {
+      hasData: false,
+      returningCount: 0,
+      chartData: [],
+      byQueue: [],
+    },
+)
 const droppedSkipped = computed(() => dashboardData.value?.droppedSkipped || [])
 const peakHours = computed(() => dashboardData.value?.peakHours || [])
 const quickSetup = computed(() => dashboardData.value?.quickSetup || { show: false, steps: [] })
@@ -102,7 +123,7 @@ const returnRateByQueue = computed(() => {
   const existing = returnRate.value?.byQueue || []
   const existingNames = new Set(existing.map((e) => e.label))
 
-  const names = new Set()
+  const names = new Set<string>()
   // Active queue is always considered "current"
   if (activeQueue.value?.queueName) {
     names.add(activeQueue.value.queueName)
@@ -318,7 +339,12 @@ onBeforeUnmount(() => {
             />
 
             <!-- Primary Chart -->
-            <DashboardWeekChart :data="weekChart" :has-data="hasWeekData" :is-loading="isLoading" />
+            <DashboardWeekChart
+              :data="weekChart"
+              :has-data="hasWeekData"
+              :is-loading="isLoading"
+              :has-active-queue="activeQueue?.isActive"
+            />
 
             <!-- Analytical Widgets Mini-Grid -->
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -348,6 +374,7 @@ onBeforeUnmount(() => {
             <DashboardRecentSessions
               :sessions="recentSessions"
               :is-loading="isLoading"
+              :has-active-queue="activeQueue?.isActive"
               @select-session="emit('select-session', $event)"
               @view-history="emit('view-history')"
               @create-first-queue="emit('create-first-queue')"

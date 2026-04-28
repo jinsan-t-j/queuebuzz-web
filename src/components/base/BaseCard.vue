@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component BaseCard
  * @description Reusable card container with optional padding variants.
@@ -18,13 +18,14 @@ import { computed } from 'vue'
 // 5. Component imports
 
 // 6. Props
-const props = defineProps({
-  padding: {
-    type: String,
-    default: 'md',
-    validator: (v) => ['none', 'sm', 'md', 'lg'].includes(v),
+const props = withDefaults(
+  defineProps<{
+    padding?: 'none' | 'sm' | 'md' | 'lg'
+  }>(),
+  {
+    padding: 'md',
   },
-})
+)
 
 // 7. Emits
 
@@ -49,12 +50,7 @@ const paddingClasses = computed(() => {
 </script>
 
 <template>
-  <div
-    :class="[
-      'rounded-card bg-white shadow-card',
-      paddingClasses,
-    ]"
-  >
+  <div :class="['rounded-card bg-white shadow-card', paddingClasses]">
     <slot />
   </div>
 </template>

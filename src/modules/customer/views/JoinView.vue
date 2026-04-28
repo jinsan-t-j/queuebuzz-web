@@ -13,6 +13,7 @@ import { useCustomer } from '@/modules/customer/composables/useCustomer'
 
 import JoinQueueForm from '@/modules/customer/components/JoinQueueForm.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
+import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -71,11 +72,11 @@ function handleJoinByCode() {
     </div>
 
     <template v-else-if="activeQueue">
-      <h1
-        class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum transition-all duration-300"
-      >
-        {{ activeQueue.name }}
-      </h1>
+      <CustomerHeader
+        :name="activeQueue.name"
+        :profile-url="activeQueue.hostProfileImageUrl"
+        :banner-url="activeQueue.hostBannerImageUrl"
+      />
 
       <JoinQueueForm
         :queue-name="activeQueue.name"
@@ -84,6 +85,7 @@ function handleJoinByCode() {
         :can-join-with-party="activeQueue.allowPartyJoining"
         :max-allowed-party-size="activeQueue.maxPartySize"
         :is-loading="isLoading"
+        :collect-emails="activeQueue.collectEmails"
         @join-queue="(payload) => handleJoinQueue(activeQueue.id, payload)"
         @go-to-join-by-code="handleJoinByCode"
       />

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component BaseInput
  * @description Reusable text input with label, error state, and v-model support.

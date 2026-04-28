@@ -8,4 +8,5 @@ export interface AuthUser {
   email: string
   tier: UserTier
   avatar: string | null
+  profileImageUrl?: string | null
 }

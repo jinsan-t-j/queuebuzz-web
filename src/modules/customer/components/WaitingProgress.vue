@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 /**
  * @component WaitingProgress
  * @description Buzz notification status indicator.
