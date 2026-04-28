@@ -34,7 +34,7 @@ jobs:
       contents: read
       deployments: write
       pull-requests: write
-    
+
     # Select environment based on branch
     environment:
       name: ${{ github.ref_name == 'main' && 'production' || 'stage' }}
@@ -72,7 +72,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: queuebuzz-web
+          projectName: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
           directory: dist
           # If branch is main, then it's a production deployment.
           # Otherwise (stage), it's a preview deployment.
