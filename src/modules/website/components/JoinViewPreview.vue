@@ -37,6 +37,10 @@ function openFilePicker(type: 'banner' | 'avatar') {
 function onCrop(dataUrl: string) {
   if (cropperOpen.value === 'banner') bannerPreview.value = dataUrl
   if (cropperOpen.value === 'avatar') avatarPreview.value = dataUrl
+  closeCropper()
+}
+
+function closeCropper() {
   cropperOpen.value = null
   cropperSrc.value = null
 }
@@ -263,10 +267,7 @@ function onCrop(dataUrl: string) {
     :image-src="cropperSrc"
     :aspect-ratio="16 / 6"
     title="Crop Banner Image"
-    @close="
-      cropperOpen = null
-      cropperSrc = null
-    "
+    @close="closeCropper"
     @crop="onCrop"
   />
   <BaseImageCropper
@@ -274,10 +275,7 @@ function onCrop(dataUrl: string) {
     :image-src="cropperSrc"
     :aspect-ratio="1"
     title="Crop Profile Photo"
-    @close="
-      cropperOpen = null
-      cropperSrc = null
-    "
+    @close="closeCropper"
     @crop="onCrop"
   />
 </template>
