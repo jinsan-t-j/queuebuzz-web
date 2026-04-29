@@ -4,9 +4,35 @@
  * @description Public website footer with links and copyright.
  * Used once inside WebsiteLayout.
  */
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 
 const currentYear = computed(() => new Date().getFullYear())
+
+const footerBrandingRef = ref<HTMLElement | null>(null)
+const isVisible = ref(false)
+
+let observer: IntersectionObserver | null = null
+
+onMounted(() => {
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) {
+        isVisible.value = true
+      } else {
+        isVisible.value = false
+      }
+    },
+    { threshold: 0.1 },
+  )
+
+  if (footerBrandingRef.value) {
+    observer.observe(footerBrandingRef.value)
+  }
+})
+
+onUnmounted(() => {
+  observer?.disconnect()
+})
 </script>
 
 <template>
@@ -117,6 +143,44 @@ const currentYear = computed(() => new Date().getFullYear())
           © {{ currentYear }} QueueBuzz. All rights reserved.
         </p>
       </div>
+
+      <!-- Huge Animated Branding -->
+      <div
+        ref="footerBrandingRef"
+        class="mt-12 md:mt-20 flex justify-center overflow-visible py-8 md:py-16"
+      >
+        <div class="flex gap-1 sm:gap-2 md:gap-4 flex-nowrap items-center justify-center">
+          <span
+            v-for="(char, i) in 'QueueBuzz'.split('')"
+            :key="i"
+            :class="[
+              'font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-black transition-all duration-500 hover:text-plum cursor-default inline-block leading-none',
+              isVisible ? 'animate-pop' : 'opacity-0',
+              i === 1 || i === 2 ? 'text-mint' : 'text-plum',
+            ]"
+            :style="{ animationDelay: `${i * 100}ms` }"
+          >
+            {{ char }}
+          </span>
+        </div>
+      </div>
     </div>
   </footer>
 </template>
+
+<style scoped>
+@keyframes wave {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-24px);
+  }
+}
+
+.animate-pop {
+  animation: wave 1s ease-in-out infinite;
+}
+</style>
