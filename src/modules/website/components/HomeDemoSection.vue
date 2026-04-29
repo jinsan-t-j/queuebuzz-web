@@ -39,7 +39,7 @@ const exportHovered = ref(false)
   <section id="demo" class="py-16 lg:py-24">
     <div class="container mx-auto px-6 text-center">
       <h2 class="font-display text-4xl font-bold md:text-5xl mb-12">
-        Total control. <span class="text-mint">Pure simplicity.</span>
+        Total control. <span class="text-plum">Pure simplicity.</span>
       </h2>
       <div class="mx-auto max-w-fit mb-16 overflow-x-auto scrollbar-hidden px-6">
         <BasePillSelector
@@ -104,11 +104,13 @@ const exportHovered = ref(false)
               <!-- ── REAL-TIME SYNC ── -->
               <div v-if="activeTab === 'real-time'" class="w-full space-y-3">
                 <div class="flex items-center justify-between mb-4">
-                  <p class="font-body text-xs font-bold text-plum-muted uppercase tracking-widest">
+                  <p class="font-body text-xs font-bold text-plum-soft uppercase tracking-widest">
                     Live Queue
                   </p>
-                  <span class="flex items-center gap-1.5 font-mono text-[10px] font-bold text-mint">
-                    <span class="h-1.5 w-1.5 rounded-full bg-mint animate-ping" />LIVE
+                  <span
+                    class="flex items-center gap-1.5 font-mono text-[10px] font-bold bg-plum text-mint px-2.5 py-1 rounded-full shadow-sm"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-mint animate-pulse mr-0.5" />LIVE
                   </span>
                 </div>
                 <div
@@ -144,7 +146,7 @@ const exportHovered = ref(false)
                     <p
                       :class="[
                         'font-body text-[10px] mt-0.5',
-                        i === 0 ? 'text-white/60' : 'text-plum-muted',
+                        i === 0 ? 'text-white/60' : 'text-plum-soft',
                       ]"
                     >
                       <Clock class="inline h-2.5 w-2.5 mr-0.5" />{{ g.wait }}
@@ -165,7 +167,7 @@ const exportHovered = ref(false)
                     class="h-4 w-4 text-mint flex-shrink-0"
                   />
                 </div>
-                <p class="text-center font-body text-[10px] text-plum-muted mt-3 animate-pulse">
+                <p class="text-center font-body text-[10px] text-plum-soft mt-3 animate-pulse">
                   Tap a guest to call them ↑
                 </p>
               </div>
@@ -176,7 +178,7 @@ const exportHovered = ref(false)
               <!-- ── ANALYTICS ── -->
               <div v-else class="w-full space-y-5">
                 <div class="flex items-center justify-between">
-                  <p class="font-body text-xs font-bold text-plum-muted uppercase tracking-widest">
+                  <p class="font-body text-xs font-bold text-plum-soft uppercase tracking-widest">
                     Peak Hours
                   </p>
                   <span
@@ -206,7 +208,7 @@ const exportHovered = ref(false)
                     >
                   </div>
                 </div>
-                <div class="flex justify-between font-body text-[9px] text-plum-muted px-1">
+                <div class="flex justify-between font-body text-[9px] text-plum-soft px-1">
                   <span>9 AM</span><span>11 AM</span><span>1 PM</span><span>3 PM</span
                   ><span>5 PM</span><span>7 PM</span>
                 </div>
@@ -224,7 +226,7 @@ const exportHovered = ref(false)
                     <ArrowDownToLine
                       :class="[
                         'h-4 w-4 transition-colors',
-                        exportHovered ? 'text-mint' : 'text-plum-muted',
+                        exportHovered ? 'text-plum' : 'text-plum-soft',
                       ]"
                     />
                     <span class="font-mono text-xs font-bold text-plum">EXPORT_DATA.CSV</span>
@@ -232,7 +234,7 @@ const exportHovered = ref(false)
                   <span
                     :class="[
                       'font-body text-[10px] font-bold transition-colors',
-                      exportHovered ? 'text-mint' : 'text-plum-muted',
+                      exportHovered ? 'text-plum' : 'text-plum-soft',
                     ]"
                   >
                     {{ exportHovered ? 'Downloading…' : 'Export' }}

@@ -242,6 +242,7 @@ onMounted(() => {
           <div class="relative w-full h-full flex items-center justify-center">
             <!-- Micro-Particle Galaxy -->
             <div
+              aria-hidden="true"
               class="absolute bottom-20 right-40 z-50 animate-float opacity-10 transition-transform duration-300"
               style="animation-duration: 10s; animation-delay: -2s"
               :style="{ transform: `translateY(${scrollY * -0.05}px)` }"
@@ -249,6 +250,7 @@ onMounted(() => {
               <ShieldCheck class="h-10 w-10 text-purple-600 blur-[1px]" />
             </div>
             <div
+              aria-hidden="true"
               class="absolute -top-10 left-1/2 z-0 animate-float opacity-20 transition-transform duration-200"
               style="animation-duration: 7s"
               :style="{ transform: `translateY(${scrollY * 0.3}px)` }"
@@ -256,10 +258,12 @@ onMounted(() => {
               <Smartphone class="h-12 w-12 text-plum" />
             </div>
             <div
+              aria-hidden="true"
               class="absolute top-1/3 -right-10 h-4 w-4 bg-mint/40 rounded-full blur-sm animate-pulse transition-transform duration-500"
               :style="{ transform: `translateY(${scrollY * -0.15}px)` }"
             />
             <div
+              aria-hidden="true"
               class="absolute bottom-1/3 -left-20 h-6 w-6 bg-plum/20 rounded-full blur-sm animate-pulse transition-transform duration-400"
               style="animation-delay: -3s"
               :style="{ transform: `translateY(${scrollY * 0.12}px)` }"
@@ -267,6 +271,7 @@ onMounted(() => {
 
             <!-- 1. Security (Quiet Pink Glass) -->
             <div
+              aria-hidden="true"
               class="group absolute w-[260px] h-[340px] z-10 -translate-x-48 translate-y-24 -rotate-[18deg] animate-float opacity-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform cursor-pointer hover:z-[100] hover:scale-110 hover:rotate-0 hover:opacity-100 hover:shadow-[0_30px_60px_rgba(236,72,153,0.25)] hover:[animation-play-state:paused] rounded-[40px] overflow-hidden"
               style="animation-delay: -4s; animation-duration: 8s"
             >
@@ -300,6 +305,7 @@ onMounted(() => {
 
             <!-- 2. Automation (Quiet Teal Glass) -->
             <div
+              aria-hidden="true"
               class="group absolute w-[280px] h-[340px] z-10 translate-x-60 -translate-y-32 -rotate-12 animate-float opacity-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform cursor-pointer hover:z-[100] hover:scale-110 hover:rotate-0 hover:opacity-100 hover:shadow-[0_20px_50px_rgba(20,184,166,0.3)] hover:[animation-play-state:paused] rounded-[40px] overflow-hidden"
               style="animation-delay: -5s; animation-duration: 10s"
             >
@@ -332,6 +338,7 @@ onMounted(() => {
 
             <!-- 3. Industry Grid -->
             <div
+              aria-hidden="true"
               class="group absolute w-[320px] h-[320px] z-20 -translate-x-40 translate-y-20 -rotate-12 animate-float opacity-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform cursor-pointer hover:z-[100] hover:scale-110 hover:rotate-0 hover:opacity-100 hover:shadow-[0_30px_60px_rgba(26,10,46,0.15)] hover:[animation-play-state:paused] rounded-[48px] overflow-hidden"
               style="animation-delay: -2s; animation-duration: 7s"
             >
@@ -366,6 +373,7 @@ onMounted(() => {
 
             <!-- 4. Community (Quiet Purple Glass) -->
             <div
+              aria-hidden="true"
               class="group absolute w-[260px] h-[320px] z-30 -translate-x-60 -translate-y-12 -rotate-6 animate-float opacity-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform cursor-pointer hover:z-[100] hover:scale-110 hover:rotate-0 hover:opacity-100 hover:shadow-[0_30px_60px_rgba(147,51,234,0.25)] rounded-[40px] overflow-hidden hover:[animation-play-state:paused]"
               style="animation-delay: -3.5s; animation-duration: 9s"
             >
@@ -399,6 +407,7 @@ onMounted(() => {
 
             <!-- 5. Insights (Quiet Blue Glass) -->
             <div
+              aria-hidden="true"
               class="group absolute w-[300px] h-[380px] z-20 translate-x-24 -translate-y-12 rotate-[8deg] animate-float opacity-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform cursor-pointer hover:z-[100] hover:scale-110 hover:rotate-0 hover:opacity-100 hover:shadow-[0_30px_60px_rgba(37,99,235,0.25)] hover:[animation-play-state:paused] rounded-[40px] overflow-hidden"
               style="animation-delay: -1s; animation-duration: 6s"
             >
@@ -438,6 +447,7 @@ onMounted(() => {
 
             <!-- 6. Alerts (Quiet Orange Glass) -->
             <div
+              aria-hidden="true"
               class="group absolute w-[220px] h-[280px] z-40 translate-x-52 translate-y-32 rotate-12 animate-float opacity-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform cursor-pointer hover:z-[100] hover:scale-110 hover:rotate-0 hover:opacity-100 hover:shadow-[0_30px_60px_rgba(249,115,22,0.25)] hover:[animation-play-state:paused] rounded-[40px] overflow-hidden"
               style="animation-delay: -2.5s; animation-duration: 7.5s"
             >
@@ -467,6 +477,7 @@ onMounted(() => {
 
             <!-- 7. Global (Quiet Gold Glass) -->
             <div
+              aria-hidden="true"
               class="group absolute w-[240px] h-[300px] z-35 translate-x-32 -translate-y-52 rotate-[15deg] animate-float opacity-50 transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] will-change-transform cursor-pointer hover:z-[100] hover:scale-110 hover:rotate-0 hover:shadow-[0_30px_60px_rgba(234,179,8,0.25)] hover:[animation-play-state:paused] rounded-[40px] overflow-hidden"
               style="animation-delay: -1.5s; animation-duration: 8.5s"
             >
@@ -532,9 +543,7 @@ onMounted(() => {
                   </div>
                   <div>
                     <p class="font-mono text-sm font-bold text-plum leading-none">128 ACTIVE</p>
-                    <p
-                      class="font-body text-[10px] text-plum-muted uppercase tracking-[0.2em] mt-1"
-                    >
+                    <p class="font-body text-[10px] text-plum-soft uppercase tracking-[0.2em] mt-1">
                       Live Global
                     </p>
                   </div>

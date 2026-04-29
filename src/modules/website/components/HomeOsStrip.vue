@@ -10,6 +10,7 @@ defineProps<{ scrollY: number }>()
   >
     <!-- Subtle Parallax Background Text -->
     <div
+      aria-hidden="true"
       class="absolute inset-0 flex items-center justify-center opacity-[0.03] font-display text-9xl font-black whitespace-nowrap pointer-events-none transition-transform duration-1000"
       :style="{ transform: `translateX(${scrollY * 0.1}px)` }"
     >
@@ -24,11 +25,11 @@ defineProps<{ scrollY: number }>()
           <div
             class="h-12 w-12 rounded-2xl bg-plum/5 flex items-center justify-center transition-colors group-hover:bg-mint/10"
           >
-            <Smartphone class="h-6 w-6 text-plum/40 group-hover:text-mint" />
+            <Smartphone class="h-6 w-6 text-plum-soft group-hover:text-mint" />
           </div>
           <div class="text-left">
             <p
-              class="font-display text-[10px] font-black tracking-widest text-plum/30 uppercase leading-none mb-1"
+              class="font-display text-[10px] font-black tracking-widest text-plum-soft uppercase leading-none mb-1"
             >
               Mobile
             </p>
@@ -45,11 +46,11 @@ defineProps<{ scrollY: number }>()
           <div
             class="h-12 w-12 rounded-2xl bg-plum/5 flex items-center justify-center transition-colors group-hover:bg-mint/10"
           >
-            <Laptop class="h-6 w-6 text-plum/40 group-hover:text-mint" />
+            <Laptop class="h-6 w-6 text-plum-soft group-hover:text-mint" />
           </div>
           <div class="text-left">
             <p
-              class="font-display text-[10px] font-black tracking-widest text-plum/30 uppercase leading-none mb-1"
+              class="font-display text-[10px] font-black tracking-widest text-plum-soft uppercase leading-none mb-1"
             >
               Desktop
             </p>
@@ -66,11 +67,11 @@ defineProps<{ scrollY: number }>()
           <div
             class="h-12 w-12 rounded-2xl bg-plum/5 flex items-center justify-center transition-colors group-hover:bg-mint/10"
           >
-            <Monitor class="h-6 w-6 text-plum/40 group-hover:text-mint" />
+            <Monitor class="h-6 w-6 text-plum-soft group-hover:text-mint" />
           </div>
           <div class="text-left">
             <p
-              class="font-display text-[10px] font-black tracking-widest text-plum/30 uppercase leading-none mb-1"
+              class="font-display text-[10px] font-black tracking-widest text-plum-soft uppercase leading-none mb-1"
             >
               Legacy
             </p>
@@ -87,11 +88,11 @@ defineProps<{ scrollY: number }>()
           <div
             class="h-12 w-12 rounded-2xl bg-plum/5 flex items-center justify-center transition-colors group-hover:bg-mint/10"
           >
-            <Globe class="h-6 w-6 text-plum/40 group-hover:text-mint" />
+            <Globe class="h-6 w-6 text-plum-soft group-hover:text-mint" />
           </div>
           <div class="text-left">
             <p
-              class="font-display text-[10px] font-black tracking-widest text-plum/30 uppercase leading-none mb-1"
+              class="font-display text-[10px] font-black tracking-widest text-plum-soft uppercase leading-none mb-1"
             >
               Universal
             </p>
