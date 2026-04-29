@@ -1,7 +1,11 @@
 ## Project
 
 **QueueBuzz** — virtual queue management app for physical businesses in India.
-Vue 3 · Tailwind CSS v4 · shadcn-vue · Fontsource (self-hosted fonts).
+
+### Tech Stack
+- **Frontend**: Vue 3 · TypeScript · Tailwind CSS v4 · shadcn-vue · Fontsource (self-hosted fonts)
+- **Backend**: Go 1.25+ · Fiber v3 · MongoDB · Redis · Firebase Admin SDK · Brevo Email API
+
 
 ---
 
@@ -137,8 +141,8 @@ Host app views + components  →  src/modules/app/[module]/views/
 Customer views + components  →  src/modules/customer/views/
                                 src/modules/customer/components/
 Website views                →  src/modules/website/
-Host app routes              →  src/router/app.routes.js
-Customer routes              →  src/router/host.routes.js
+Host app routes              →  src/router/routes/app.routes.ts
+Customer routes              →  src/router/routes/customer.routes.ts
 ```
 
 Generate routing files alongside views — one route entry per view generated.
@@ -712,7 +716,7 @@ Real API URLs are attached in a separate phase by replacing the stub body.
 ### Composable pattern (one per module)
 
 ```js
-// src/modules/app/queue/composables/useQueueApi.js
+// src/modules/app/queue/composables/useQueueApi.ts
 /**
  * @composable useQueueApi
  * @description API stub for queue operations.
@@ -792,12 +796,12 @@ export function useQueueApi() {
 ### One composable per module — updated paths
 
 ```
-src/modules/app/queue/composables/useQueueApi.js
-src/modules/app/dashboard/composables/useDashboardApi.js
-src/modules/app/settings/composables/useSettingsApi.js
-src/modules/app/premium/composables/usePremiumApi.js
-src/modules/app/auth/composables/useAuthApi.js
-src/modules/customer/composables/useCustomerApi.js
+src/modules/app/queue/composables/useQueueApi.ts
+src/modules/app/dashboard/composables/useDashboardApi.ts
+src/modules/app/settings/composables/useSettingsApi.ts
+src/modules/app/history/composables/useHistoryApi.ts
+src/modules/app/auth/composables/useAuthApi.ts
+src/modules/customer/composables/useCustomerApi.ts
 ```
 
 Each follows the same pattern: `isLoading`, `error`, stub functions
@@ -990,3 +994,38 @@ Breakpoint: md: prefix for desktop overrides
 - No separate CSS files per component
 - No duplicate base components — import from `@/components/base/`
 - No real API URLs — stubs only with `// STUB` comment
+
+<!-- gitnexus:start -->
+# GitNexus — Code Intelligence
+
+This project is indexed by GitNexus across two active repositories:
+- **queuebuzz-web** (1876 symbols, 3510 relationships, 153 execution flows)
+- **queuebuzz** (2221 symbols, 4757 relationships, 152 execution flows)
+
+Use the GitNexus MCP tools to understand code, assess impact, and navigate cross-repo boundaries safely.
+
+## Always Do
+
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `default_api:mcp_gitnexus_impact({target: "symbolName", direction: "upstream", repo: "queuebuzz-web"})` (or specify `repo: "queuebuzz"`) and report the blast radius (direct callers, affected processes, risk level) to the user.
+- **MUST run `default_api:mcp_gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
+- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
+- When exploring unfamiliar code, use `default_api:mcp_gitnexus_query({query: "concept", repo: "..."})` to find execution flows instead of grepping.
+- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `default_api:mcp_gitnexus_context({name: "symbolName", repo: "..."})`.
+
+## Never Do
+
+- NEVER edit a function, class, or method without first running `default_api:mcp_gitnexus_impact` on it.
+- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
+- NEVER rename symbols with find-and-replace — use `default_api:mcp_gitnexus_rename` which understands the call graph.
+- NEVER commit changes without running `default_api:mcp_gitnexus_detect_changes()` to check affected scope.
+
+## Resources
+
+| Resource | Use for |
+|----------|---------|
+| `gitnexus://repo/queuebuzz-web/context` | Frontend overview |
+| `gitnexus://repo/queuebuzz/context` | Backend overview |
+| `gitnexus://repo/queuebuzz-web/processes` | Frontend execution flows |
+| `gitnexus://repo/queuebuzz/processes` | Backend execution flows |
+
+<!-- gitnexus:end -->
