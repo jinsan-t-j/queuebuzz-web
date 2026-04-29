@@ -36,7 +36,7 @@ export async function fetchUserSettings(): Promise<UserSettings> {
  * @action updateUserSettings
  * @description Updates host profile or settings fields.
  */
-export async function updateUserSettings(payload: Partial<UserSettings>): Promise<void> {
+export async function updateUserSettings(payload: Partial<UserSettings> | FormData): Promise<void> {
   const config = createApiRequestConfig({}, { withCredentials: true })
   await apiClient.patch(API_ROUTES.HOST.UPDATE_ME, payload, config)
 }

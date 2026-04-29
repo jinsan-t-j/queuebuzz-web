@@ -126,7 +126,7 @@ const handleJoin = handleSubmit(async (values) => {
   <div class="flex flex-col px-5 py-4">
     <!-- Stats card -->
     <div class="rounded-3xl border border-plum-faint bg-white p-5 text-center">
-      <p class="font-body text-sm font-semibold uppercase tracking-[2.4px] text-plum-muted">
+      <p class="font-body text-sm font-semibold uppercase tracking-[2.4px] text-plum-soft">
         People in queue
       </p>
       <p class="mt-2.5 font-display text-[84px] font-normal leading-[84px] text-plum">
@@ -135,12 +135,12 @@ const handleJoin = handleSubmit(async (values) => {
       <div
         class="mx-auto mt-2.5 flex w-fit items-center gap-2 rounded-full border border-plum-faint/50 bg-sand px-4 py-2"
       >
-        <ClockFilledIcon class="h-4 w-4 text-mint" />
+        <ClockFilledIcon class="h-4 w-4 text-mint-dark" />
         <span v-if="estWaitMin === 0" class="font-body text-md font-medium text-plum"
           >Few moments</span
         >
         <span v-else class="font-mono text-lg font-bold text-plum">~{{ estWaitMin }} min</span>
-        <span class="font-body text-lg text-plum-muted">Wait</span>
+        <span class="font-body text-lg text-plum-soft">Wait</span>
       </div>
       <p class="mt-2.5 font-body text-sm leading-snug text-plum-muted">
         Your wait time is estimated,<br />
@@ -232,6 +232,7 @@ const handleJoin = handleSubmit(async (values) => {
               type="button"
               class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
               :disabled="accompanying <= 0"
+              aria-label="Decrease party size"
               @click="accompanying--"
             >
               −
@@ -243,6 +244,7 @@ const handleJoin = handleSubmit(async (values) => {
               type="button"
               class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
               :disabled="accompanying >= props.maxAllowedPartySize - 1"
+              aria-label="Increase party size"
               @click="accompanying++"
             >
               +

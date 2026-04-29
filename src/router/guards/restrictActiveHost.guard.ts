@@ -5,12 +5,18 @@
  * Redirects them back to their respective management view.
  */
 import { useAuthStore } from '@/stores/auth.store'
-import { useQueueStore } from '@/stores/queue.store'
-import { useToast } from '@/composables/useToast'
 import type { NavigationGuardWithThis } from 'vue-router'
 
 export const restrictActiveHostGuard: NavigationGuardWithThis<undefined> = async () => {
   const auth = useAuthStore()
+
+  if (!auth.isAuthenticated && !auth.activeGuestQueueId) {
+    return
+  }
+
+  const { useQueueStore } = await import('@/stores/queue.store')
+  const { useToast } = await import('@/composables/useToast')
+
   const queueStore = useQueueStore()
   const { showToast } = useToast()
 

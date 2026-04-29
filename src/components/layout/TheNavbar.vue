@@ -66,15 +66,23 @@ onUnmounted(() => {
 <template>
   <header
     :class="[
-      'sticky top-0 z-50 transition-all duration-300 border-b',
+      'sticky top-0 z-50 transition-all duration-500 border-b',
       isScrolled
-        ? 'bg-white/85 backdrop-blur-md shadow-sm border-plum-faint/50'
-        : 'bg-white border-plum-faint',
+        ? 'bg-white/60 backdrop-blur-3xl shadow-[0_8px_32px_rgba(26,10,46,0.08)] border-white/40 py-2'
+        : 'bg-white/10 backdrop-blur-sm border-transparent py-4',
     ]"
   >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-      <router-link to="/" class="font-display text-2xl font-bold text-plum py-4 px-2">
-        QueueBuzz
+      <router-link
+        to="/"
+        class="group flex items-center gap-2 font-display text-2xl font-bold text-plum"
+      >
+        <div
+          class="h-8 w-8 rounded-xl bg-mint flex items-center justify-center transition-transform duration-500 group-hover:rotate-12"
+        >
+          <div class="h-2 w-2 rounded-full bg-plum" />
+        </div>
+        <span class="tracking-tight">QueueBuzz</span>
       </router-link>
 
       <div class="hidden items-center gap-8 md:flex">
@@ -85,20 +93,20 @@ onUnmounted(() => {
           Pricing
         </router-link>
         <router-link
+          v-if="!isAuthenticated"
+          to="/join"
+          class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
+        >
+          Join Queue
+        </router-link>
+        <router-link
           to="/support"
           class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
         >
           Support
         </router-link>
         <router-link
-          v-if="isAuthenticated"
-          to="/dashboard"
-          class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
-        >
-          Dashboard
-        </router-link>
-        <router-link
-          v-else
+          v-if="!isAuthenticated"
           :to="loginRoute"
           class="font-body text-sm font-medium text-plum-soft transition-colors hover:text-plum py-4 px-2"
         >
@@ -106,7 +114,7 @@ onUnmounted(() => {
         </router-link>
         <router-link
           :to="ctaRoute"
-          class="rounded-pill bg-mint px-5 py-3.5 font-body text-sm font-semibold text-plum transition-colors hover:bg-mint-dark min-h-[48px] inline-flex items-center"
+          class="rounded-full bg-plum px-6 py-3 font-body text-sm font-bold text-white transition-all duration-300 hover:bg-mint hover:text-plum hover:shadow-[0_0_20px_rgba(0,229,160,0.4)] hover:-translate-y-0.5 active:scale-95 inline-flex items-center"
         >
           {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started Free' }}
         </router-link>
@@ -131,6 +139,14 @@ onUnmounted(() => {
           Pricing
         </router-link>
         <router-link
+          v-if="!isAuthenticated"
+          to="/join"
+          class="font-body text-sm font-medium text-plum-soft py-4 px-2"
+          @click="isMobileMenuOpen = false"
+        >
+          Join Queue
+        </router-link>
+        <router-link
           to="/support"
           class="font-body text-sm font-medium text-plum-soft py-4 px-2"
           @click="isMobileMenuOpen = false"
@@ -138,15 +154,7 @@ onUnmounted(() => {
           Support
         </router-link>
         <router-link
-          v-if="isAuthenticated"
-          to="/dashboard"
-          class="font-body text-sm font-medium text-plum-soft py-4 px-2"
-          @click="isMobileMenuOpen = false"
-        >
-          Dashboard
-        </router-link>
-        <router-link
-          v-else
+          v-if="!isAuthenticated"
           :to="loginRoute"
           class="font-body text-sm font-medium text-plum-soft py-4 px-2"
           @click="isMobileMenuOpen = false"

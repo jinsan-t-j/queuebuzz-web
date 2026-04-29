@@ -48,7 +48,7 @@ const bannerImageUrl = ref<string | null>(null)
 const profileImageError = ref<string | null>(null)
 const bannerImageError = ref<string | null>(null)
 
-const MAX_IMAGE_SIZE = 1024 * 1024 * 5 // 5MB
+const MAX_IMAGE_SIZE = 1024 * 1024 * 5 // 5MB (allowed for input, resized to <1MB by cropper)
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
 // Cropper state
@@ -126,7 +126,7 @@ function validateImageFile(file: File, maxSize: number): string | null {
   }
   if (file.size > maxSize) {
     const sizeMb = (maxSize / 1024 / 1024).toFixed(0)
-    return `Image must be under ${sizeMb}MB.`
+    return `Image must be under ${sizeMb}MB. (Detected: ${(file.size / 1024 / 1024).toFixed(2)}MB)`
   }
   return null
 }
@@ -199,19 +199,50 @@ function handleCroppedImage(dataUrl: string) {
 }
 
 async function handleSave() {
-  await settingsStore.updateSettings({
-    name: form.value.name,
-    phone: form.value.phone,
-    profileImageUrl: profileImageUrl.value || '',
-    bannerImageUrl: bannerImageUrl.value || '',
-    settings: {
-      defaultQueueName: form.value.default_queue_name,
-      avgServiceMins: form.value.avg_service_mins,
-      emailNotifications: form.value.email_notifications,
-      pushNotifications: form.value.push_notifications,
-      collectEmails: form.value.collect_emails,
-    },
-  })
+  const formData = new FormData()
+
+  // 1. Basic Fields
+  formData.append('name', form.value.name)
+  formData.append('phone', form.value.phone || '')
+
+  // 2. Settings (nested as JSON string)
+  formData.append(
+    'settings',
+    JSON.stringify({
+      default_queue_name: form.value.default_queue_name,
+      avg_service_mins: form.value.avg_service_mins,
+      email_notifications: form.value.email_notifications,
+      push_notifications: form.value.push_notifications,
+      collect_emails: form.value.collect_emails,
+    }),
+  )
+
+  // 3. Handle Images (Multipart Blobs)
+  // Profile Image
+  if (profileImageUrl.value) {
+    if (profileImageUrl.value.startsWith('data:')) {
+      const response = await fetch(profileImageUrl.value)
+      const blob = await response.blob()
+      formData.append('profile_image', blob, 'profile.jpg')
+    }
+  } else {
+    // Cleared
+    formData.append('profile_image_url', '')
+  }
+
+  // Banner Image
+  if (bannerImageUrl.value) {
+    if (bannerImageUrl.value.startsWith('data:')) {
+      const response = await fetch(bannerImageUrl.value)
+      const blob = await response.blob()
+      formData.append('banner_image', blob, 'banner.jpg')
+    }
+  } else {
+    // Cleared
+    formData.append('banner_image_url', '')
+  }
+
+  await settingsStore.updateSettings(formData)
   isDirty.value = false
 }
 

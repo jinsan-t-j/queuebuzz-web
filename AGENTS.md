@@ -17,6 +17,7 @@ Vue 3 · Tailwind CSS v4 · shadcn-vue · Fontsource (self-hosted fonts).
 - API calls use stub functions — real endpoints attached later
 - Loading and empty states included for every data-driven section
 - No Pinia store imports · No router guards · No auth logic
+- **Session End**: Always run `npm run lint` and `npm run typecheck` before finishing.
 
 ---
 
