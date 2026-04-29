@@ -214,7 +214,7 @@ onMounted(() => {
                     {{ item.label }}
                   </p>
                   <p
-                    class="font-body text-[9px] text-plum-muted uppercase tracking-widest mt-0.5 truncate"
+                    class="font-body text-[9px] text-plum-soft uppercase tracking-widest mt-0.5 truncate"
                   >
                     {{ item.sub }}
                   </p>
@@ -547,9 +547,7 @@ onMounted(() => {
 
       <!-- Industry Marquee -->
       <div class="mt-32 relative overflow-hidden">
-        <p
-          class="font-body text-xs font-bold uppercase tracking-[0.3em] text-plum-muted mb-12 opacity-60"
-        >
+        <p class="font-body text-xs font-bold uppercase tracking-[0.3em] text-plum-soft mb-12">
           Optimized for every industry
         </p>
 

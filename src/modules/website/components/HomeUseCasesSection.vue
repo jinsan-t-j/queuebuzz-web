@@ -78,12 +78,14 @@ function stopDragging() {
         <div class="flex gap-4">
           <button
             class="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+            aria-label="Previous slide"
             @click="$emit('prev')"
           >
             <ArrowRight class="rotate-180 h-6 w-6" />
           </button>
           <button
             class="w-14 h-14 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-white/10 transition-colors"
+            aria-label="Next slide"
             @click="$emit('next')"
           >
             <ArrowRight class="h-6 w-6" />

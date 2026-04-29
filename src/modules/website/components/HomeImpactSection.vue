@@ -12,7 +12,7 @@ defineProps<{
           <div class="font-display text-5xl font-black text-plum mb-2 md:text-7xl">
             {{ m.value }}
           </div>
-          <div class="font-body text-sm font-bold uppercase tracking-widest text-plum-muted">
+          <div class="font-body text-sm font-bold uppercase tracking-widest text-plum-soft">
             {{ m.label }}
           </div>
         </div>

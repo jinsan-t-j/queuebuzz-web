@@ -215,7 +215,7 @@ defineProps<{
             <ShieldCheck class="h-6 w-6 text-plum" />
           </div>
           <h3 class="font-display text-xl font-bold mb-2">Privacy-First</h3>
-          <p class="font-body text-sm text-plum-muted leading-relaxed">
+          <p class="font-body text-sm text-plum-soft leading-relaxed">
             No tracking, no cookies, and no mandatory phone numbers. We protect your customers as
             much as you do.
           </p>
@@ -234,7 +234,7 @@ defineProps<{
             <Zap class="h-6 w-6 text-mint" />
           </div>
           <h3 class="font-display text-xl font-bold mb-2">Frictionless Entry</h3>
-          <p class="font-body text-sm text-plum-muted leading-relaxed">
+          <p class="font-body text-sm text-plum-soft leading-relaxed">
             A simple QR scan opens the portal. No app store hurdles or account creation standing in
             the way.
           </p>
@@ -246,7 +246,7 @@ defineProps<{
             <Layers class="h-6 w-6 text-plum" />
           </div>
           <h3 class="font-display text-xl font-bold mb-2">Smart Routing</h3>
-          <p class="font-body text-sm text-plum-muted leading-relaxed">
+          <p class="font-body text-sm text-plum-soft leading-relaxed">
             Manage multiple service categories under one roof. Departmentalize your flow with ease.
           </p>
         </BaseCard>
@@ -264,7 +264,7 @@ defineProps<{
             <FileDown class="h-6 w-6 text-mint" />
           </div>
           <h3 class="font-display text-xl font-bold mb-2">Full Portability</h3>
-          <p class="font-body text-sm text-plum-muted leading-relaxed">
+          <p class="font-body text-sm text-plum-soft leading-relaxed">
             Your data is yours. Export every session to CSV for internal auditing and deep-dive
             analytics.
           </p>
@@ -284,7 +284,7 @@ defineProps<{
             <Globe class="h-6 w-6 text-plum" />
           </div>
           <h3 class="font-display text-xl font-bold mb-2">Robust Sync</h3>
-          <p class="font-body text-sm text-plum-muted leading-relaxed">
+          <p class="font-body text-sm text-plum-soft leading-relaxed">
             State is preserved across signal drops. Your customers will never lose their spot in
             line.
           </p>

@@ -68,8 +68,8 @@ onMounted(() => {
               {{ t.avatar }}
             </div>
             <div>
-              <h4 class="font-display font-bold text-plum text-lg">{{ t.name }}</h4>
-              <p class="font-body text-sm text-plum-muted">{{ t.role }}</p>
+              <h3 class="font-display font-bold text-plum text-lg">{{ t.name }}</h3>
+              <p class="font-body text-sm text-plum-soft">{{ t.role }}</p>
             </div>
           </div>
         </div>

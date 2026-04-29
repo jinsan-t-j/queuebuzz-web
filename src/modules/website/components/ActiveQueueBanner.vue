@@ -91,6 +91,7 @@ function stopDrag() {
           </router-link>
           <button
             class="w-8 h-8 rounded-full flex items-center justify-center bg-plum-soft/10 hover:bg-plum-soft/20 text-plum transition-colors pointer-events-auto mr-1"
+            aria-label="Dismiss banner"
             @click="isBannerDismissed = true"
           >
             <XIcon class="w-4 h-4" />
