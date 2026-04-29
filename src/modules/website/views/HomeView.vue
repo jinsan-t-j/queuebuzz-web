@@ -50,11 +50,10 @@ const {
 
 onMounted(async () => {
   if (authStore.isHydrated) {
-    // eslint-disable-next-line no-console
     try {
       await queueStore.fetchActiveQueue({ skipLogout: true })
     } catch {
-      console.error('Failed to fetch active queue')
+      // Intentionally left empty
     }
   }
 })
