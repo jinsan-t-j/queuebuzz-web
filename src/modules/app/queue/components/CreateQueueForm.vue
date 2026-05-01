@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
@@ -9,14 +9,11 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useDashboardStore } from '@/stores/dashboard.store'
 import { useSettingsStore } from '@/stores/settings.store'
 import { storeToRefs } from 'pinia'
-import { onMounted } from 'vue'
+import { useToast } from '@/composables/useToast'
 import { createQueue, checkSlugAvailability } from '@/modules/app/queue/actions/queue.action'
-
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
-import ChevronDownIcon from '@/assets/icons/chevron-down.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
-import LockIcon from '@/assets/icons/lock.svg?component'
 import BaseToggle from '@/components/base/BaseToggle.vue'
 
 const props = defineProps({
@@ -28,6 +25,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['queue-created'])
+
+const { showToast } = useToast()
 
 const router = useRouter()
 const queueStore = useQueueStore()
@@ -79,10 +78,7 @@ const schema = computed(() => {
         }),
     })
   } else {
-    return yup.object({
-      ...baseSchema,
-      recoveryEmail: yup.string().nullable().email('Must be a valid email address'),
-    })
+    return yup.object(baseSchema)
   }
 })
 
@@ -94,7 +90,6 @@ const { handleSubmit, errors, setFieldError } = useForm({
     allowPartyJoining: false,
     maxPartySize: 5,
     slug: null,
-    recoveryEmail: null,
     collectEmails: false,
   },
 })
@@ -105,10 +100,7 @@ const { value: serviceTime } = useField<number>('serviceTime')
 const { value: allowPartyJoining } = useField<boolean>('allowPartyJoining')
 const { value: maxPartySize } = useField<number>('maxPartySize')
 const { value: slug } = useField<string | null>('slug')
-const { value: recoveryEmail } = useField<string | null>('recoveryEmail')
 const { value: collectEmails } = useField<boolean>('collectEmails')
-
-const showEmailSection = ref(false)
 
 function selectSuggestion(suggestion) {
   queueName.value = suggestion
@@ -147,7 +139,6 @@ const onSubmit = handleSubmit(async (values) => {
       name: values.queueName,
       avgServiceMins: Number(values.serviceTime),
       slug: values.slug,
-      recoveryEmail: values.recoveryEmail,
       allowPartyJoining: values.allowPartyJoining,
       maxPartySize: values.allowPartyJoining ? Number(values.maxPartySize) : 1,
       collectEmails: values.collectEmails,
@@ -163,8 +154,10 @@ const onSubmit = handleSubmit(async (values) => {
       useDashboardStore().setDirty()
       emit('queue-created', queue)
     }
-  } catch {
-    // Error handling logic
+  } catch (err) {
+    const error = err as { response?: { data?: { error?: string } }; message?: string }
+    const msg = error.response?.data?.error || error.message || 'Something went wrong'
+    showToast(msg, { type: 'error' })
   } finally {
     isSubmitting.value = false
   }
@@ -366,47 +359,7 @@ function copyCustomLink() {
         </div>
       </template>
 
-      <template v-else>
-        <div
-          class="rounded-card border border-plum/5 bg-white shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
-        >
-          <button
-            type="button"
-            class="flex w-full items-center justify-between px-6 py-5 cursor-pointer"
-            @click="showEmailSection = !showEmailSection"
-          >
-            <div class="flex items-center gap-3">
-              <LockIcon class="h-[14px] w-[11px] text-[#5c5267]" />
-              <span class="font-body text-sm font-medium text-[#5c5267]">
-                Save this link now to ensure you can access it later →
-              </span>
-            </div>
-            <ChevronDownIcon
-              class="h-[6px] w-[9px] text-[#5c5267] transition-transform duration-300"
-              :class="{ 'rotate-180': showEmailSection }"
-            />
-          </button>
-
-          <div
-            v-show="showEmailSection"
-            class="border-t border-[#e8e6ea] px-6 pb-6 pt-6 origin-top transition-all duration-300"
-          >
-            <input
-              v-model.lazy="recoveryEmail"
-              type="email"
-              placeholder="your@email.com"
-              class="w-full border-none bg-transparent font-body text-base text-plum placeholder:text-[#5c5267]/40 outline-none"
-              :class="{ 'text-red-500 placeholder:text-red-500/40': errors.recoveryEmail }"
-            />
-            <div v-if="errors.recoveryEmail" class="mt-2 font-body text-sm text-red-500">
-              {{ errors.recoveryEmail }}
-            </div>
-            <p class="mt-4 font-body text-xs text-plum-muted">
-              Email yourself a magic link so you don't lose access later
-            </p>
-          </div>
-        </div>
-      </template>
+      <template v-else />
     </div>
 
     <!-- ═══ Action row ═══ -->
@@ -430,7 +383,7 @@ function copyCustomLink() {
 
     <!-- ═══ Account nudge (Guest only) ═══ -->
     <p v-if="role === 'guest'" class="mt-6 text-center font-body text-sm text-[#6b7280]">
-      Want to customize your URL?
+      Secure your queue & customize your URL.
       <router-link
         to="/login"
         class="font-semibold text-plum underline transition-colors hover:text-plum-soft"

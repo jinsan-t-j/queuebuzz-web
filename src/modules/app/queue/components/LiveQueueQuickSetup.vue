@@ -6,10 +6,8 @@ import {
   SparklesIcon,
   ChevronUpIcon,
   ChevronDownIcon,
-  MailIcon,
   BellRingIcon,
   ShieldCheckIcon,
-  Loader2Icon,
 } from 'lucide-vue-next'
 import BaseButton from '@/components/base/BaseButton.vue'
 
@@ -29,13 +27,11 @@ const {
 } = useLiveQueue()
 
 const LOCALSTORAGE_KEYS = {
-  EMAIL: 'queuebuzz_hide_email_notice',
   NOTIF: 'queuebuzz_hide_notif_nudge',
   STRICT: 'queuebuzz_hide_strict_tip',
 }
 
 const states = ref({
-  isEmailDismissed: false,
   isNotifDismissed: false,
   isStrictDismissed: false,
   isExpanded: true,
@@ -43,27 +39,17 @@ const states = ref({
   isNotifDenied: false,
 })
 
-const email = ref({ value: '', error: null as string | null })
 const browserPermission = ref(
   typeof Notification !== 'undefined' ? Notification.permission : 'default',
 )
 
 // Logic Flags
-const isRecoveryEmailMissing = computed(() => activeQueue.value && !activeQueue.value.recoveryEmail)
 const isStrictModeOff = computed(() => activeQueue.value && !activeQueue.value.strictQueueMode)
 
 /**
  * Step Configuration
  */
 const STEPS_CONFIG = [
-  {
-    id: 'email',
-    num: 1,
-    label: 'Recovery Email',
-    icon: MailIcon,
-    check: () => !isRecoveryEmailMissing.value,
-    dismissed: () => states.value.isEmailDismissed,
-  },
   {
     id: 'notification',
     num: 2,
@@ -101,7 +87,6 @@ const progressPercent = computed(() => {
 })
 
 function loadPreferences() {
-  states.value.isEmailDismissed = localStorage.getItem(LOCALSTORAGE_KEYS.EMAIL) === 'true'
   states.value.isNotifDismissed = localStorage.getItem(LOCALSTORAGE_KEYS.NOTIF) === 'true'
   states.value.isStrictDismissed = localStorage.getItem(LOCALSTORAGE_KEYS.STRICT) === 'true'
 }
@@ -150,15 +135,6 @@ watch(
 function selectStep(id: string) {
   if (!states.value.isExpanded) states.value.isExpanded = true
   states.value.activeStepId = id
-}
-
-async function handleEmailSubmit() {
-  if (!email.value.value) return (email.value.error = 'Email is required')
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.value))
-    return (email.value.error = 'Invalid email format')
-
-  email.value.error = null
-  await handleUpdateSettings({ recoveryEmail: email.value.value })
 }
 
 async function handleEnableNotifs() {
@@ -233,7 +209,7 @@ function skipTask() {
         </div>
 
         <span class="font-body text-[11px] font-bold uppercase tracking-[2px] flex-1 text-mint">
-          Queue Performance ({{ Math.floor(progressPercent / 33.3) }}/3)
+          Queue Performance ({{ steps.filter((s) => s.isCompleted || s.isDismissed).length }}/2)
         </span>
 
         <component
@@ -332,36 +308,6 @@ function skipTask() {
             </div>
 
             <!-- Email Tool -->
-            <div v-else-if="states.activeStepId === 'email'" key="email" class="space-y-3">
-              <p class="font-body text-xs text-plum-muted leading-relaxed">
-                Add an email to recover your queue session if you accidentally close the browser.
-              </p>
-              <div class="space-y-2">
-                <input
-                  v-model="email.value"
-                  type="email"
-                  placeholder="Enter recovery email"
-                  class="w-full rounded-xl border border-plum/10 bg-sand px-4 py-2.5 font-body text-sm text-plum placeholder:text-plum/30 outline-none transition-all focus:border-mint focus:ring-4 focus:ring-mint/5"
-                  :class="{ 'border-danger/50 focus:border-danger': email.error }"
-                />
-                <p v-if="email.error" class="font-body text-[10px] font-bold text-danger px-1">
-                  {{ email.error }}
-                </p>
-                <BaseButton
-                  variant="primary"
-                  class="w-full h-11"
-                  :disabled="isLoading"
-                  @click="handleEmailSubmit"
-                >
-                  <div class="flex items-center justify-center gap-2">
-                    <Loader2Icon v-if="isLoading" class="h-3.5 w-3.5 animate-spin" />
-                    <span class="text-[11px] font-bold uppercase tracking-wider"
-                      >Secure Access</span
-                    >
-                  </div>
-                </BaseButton>
-              </div>
-            </div>
 
             <!-- Notification Tool -->
             <div v-else-if="states.activeStepId === 'notification'" key="notif" class="space-y-4">

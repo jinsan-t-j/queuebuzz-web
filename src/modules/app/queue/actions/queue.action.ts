@@ -7,7 +7,6 @@ export interface CreateQueuePayload {
   name: string
   avgServiceMins: number
   slug?: string
-  recoveryEmail?: string
   allowPartyJoining: boolean
   maxPartySize: number
   collectEmails?: boolean

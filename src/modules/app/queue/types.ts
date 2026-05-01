@@ -58,7 +58,6 @@ export interface UpdateQueuePayload {
   name?: string
   avgServiceMins?: number
   slug?: string
-  recoveryEmail?: string
   strictQueueMode?: boolean
   notes?: string
 }

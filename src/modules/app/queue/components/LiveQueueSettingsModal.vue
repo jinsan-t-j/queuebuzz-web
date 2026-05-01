@@ -2,7 +2,7 @@
 /**
  * @component LiveQueueSettingsModal
  * @description Modal for updating active queue settings.
- * Includes Queue Name, Avg. Service Time, and Recovery Email.
+ * Includes Queue Name and Avg. Service Time.
  */
 import { ref, computed, watch } from 'vue'
 import { useForm, useField } from 'vee-validate'
@@ -17,7 +17,6 @@ import CloseIcon from '@/assets/icons/close-x.svg?component'
 import TimeIcon from '@/assets/icons/clock-time.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
-import LockIcon from '@/assets/icons/lock.svg?component'
 import BaseModal from '@/components/base/BaseModal.vue'
 
 const props = defineProps<{
@@ -35,7 +34,6 @@ const emit = defineEmits<{
 interface SubmitValues {
   name: string
   avgServiceMins: number
-  recoveryEmail: string | null
   strictQueueMode: boolean
 }
 
@@ -48,11 +46,6 @@ const schema = yup.object({
     .min(3, 'At least 3 characters')
     .max(50, 'At least 50 characters'),
   avgServiceMins: yup.number().required('Service time is required').min(1).max(60),
-  recoveryEmail: yup
-    .string()
-    .nullable()
-    .email('Invalid email address')
-    .transform((value) => (value === '' ? null : value)),
   strictQueueMode: yup.boolean(),
 })
 
@@ -61,17 +54,13 @@ const { handleSubmit, errors, resetForm, meta } = useForm({
   initialValues: {
     queueName: props.queue?.name || '',
     avgServiceMins: props.queue?.avgServiceMins || 5,
-    recoveryEmail: props.queue?.recoveryEmail || null,
     strictQueueMode: props.queue?.strictQueueMode || false,
   },
 })
 
 const { value: queueName } = useField<string>('queueName')
 const { value: avgServiceMins } = useField<number>('avgServiceMins')
-const { value: recoveryEmail } = useField<string | null>('recoveryEmail')
 const { value: strictQueueMode } = useField<boolean>('strictQueueMode')
-
-const isRecoveryEmailSet = computed(() => !!props.queue?.recoveryEmail)
 
 // Sync with prop updates
 watch(
@@ -82,7 +71,6 @@ watch(
         values: {
           queueName: newQueue.name,
           avgServiceMins: newQueue.avgServiceMins,
-          recoveryEmail: newQueue.recoveryEmail || null,
           strictQueueMode: newQueue.strictQueueMode || false,
         },
       })
@@ -95,7 +83,6 @@ const onSubmit = handleSubmit((values) => {
   emit('submit', {
     name: values.queueName,
     avgServiceMins: values.avgServiceMins,
-    recoveryEmail: values.recoveryEmail,
     strictQueueMode: values.strictQueueMode,
   })
 })
@@ -218,45 +205,7 @@ function selectSuggestion(suggestion: string) {
             </div>
           </div>
 
-          <!-- Recovery Email -->
-          <div
-            class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10"
-            :class="{ 'bg-sand/50 opacity-80': isRecoveryEmailSet }"
-          >
-            <div class="flex items-center justify-between mb-3">
-              <label
-                class="block font-body text-xs font-bold uppercase tracking-[1.65px] text-plum/50"
-              >
-                Recovery Email
-              </label>
-              <div v-if="isRecoveryEmailSet" class="flex items-center gap-1">
-                <LockIcon class="h-5 w-5 text-mint" />
-              </div>
-            </div>
-
-            <div class="relative">
-              <input
-                v-model="recoveryEmail"
-                type="email"
-                placeholder="email@example.com"
-                :disabled="isRecoveryEmailSet"
-                class="w-full border-b border-plum/5 bg-transparent py-2 font-body text-base font-semibold text-plum placeholder:text-plum/20 outline-none transition-all focus:border-mint disabled:cursor-not-allowed"
-                :class="{ 'border-danger': errors.recoveryEmail }"
-              />
-              <p
-                v-if="!isRecoveryEmailSet"
-                class="mt-2 font-body text-xs text-plum/40 leading-relaxed italic"
-              >
-                * Needed to resume this queue if you close the browser. Cannot be changed once set.
-              </p>
-              <p v-else class="mt-2 font-body text-xs text-plum/40 leading-relaxed">
-                Settings locked for security.
-              </p>
-            </div>
-            <div v-if="errors.recoveryEmail" class="mt-2 font-body text-xs text-danger">
-              {{ errors.recoveryEmail }}
-            </div>
-          </div>
+          <!-- Recovery Email section removed -->
 
           <!-- Actions -->
           <div class="flex items-center justify-end gap-3">
