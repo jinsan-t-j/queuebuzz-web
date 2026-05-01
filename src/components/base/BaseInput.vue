@@ -26,7 +26,7 @@ import { computed } from 'vue'
 // 6. Props
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: [String, Number],
     default: '',
   },
   label: {
