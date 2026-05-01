@@ -102,6 +102,32 @@ function endDrag() {
   window.removeEventListener('mouseup', endDrag)
 }
 
+function startTouchDrag(e: TouchEvent) {
+  // Don't drag if clicking buttons or editor
+  if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('.tiptap'))
+    return
+
+  isDragging.value = true
+  const touch = e.touches[0]
+  dragStart.value = { x: touch.clientX - pos.value.x, y: touch.clientY - pos.value.y }
+  window.addEventListener('touchmove', onTouchDrag, { passive: false })
+  window.addEventListener('touchend', endTouchDrag)
+}
+
+function onTouchDrag(e: TouchEvent) {
+  if (!isDragging.value) return
+  // Prevent scrolling while dragging on mobile
+  e.preventDefault()
+  const touch = e.touches[0]
+  pos.value = { x: touch.clientX - dragStart.value.x, y: touch.clientY - dragStart.value.y }
+}
+
+function endTouchDrag() {
+  isDragging.value = false
+  window.removeEventListener('touchmove', onTouchDrag)
+  window.removeEventListener('touchend', endTouchDrag)
+}
+
 onBeforeUnmount(() => {
   if (debounceTimer) {
     clearTimeout(debounceTimer)
@@ -111,6 +137,10 @@ onBeforeUnmount(() => {
     }
   }
   editor.value?.destroy()
+  window.removeEventListener('mousemove', onDrag)
+  window.removeEventListener('mouseup', endDrag)
+  window.removeEventListener('touchmove', onTouchDrag)
+  window.removeEventListener('touchend', endTouchDrag)
 })
 </script>
 
@@ -119,6 +149,7 @@ onBeforeUnmount(() => {
     class="absolute z-50 bg-white rounded-[28px] border border-plum-faint shadow-[0_20px_50px_rgba(26,10,46,0.15)] p-4 flex flex-col gap-3 w-[320px] cursor-grab active:cursor-grabbing select-none"
     :style="{ top: pos.y + 'px', left: pos.x + 'px' }"
     @mousedown="startDrag"
+    @touchstart="startTouchDrag"
   >
     <!-- Header -->
     <div class="flex items-center justify-between">
