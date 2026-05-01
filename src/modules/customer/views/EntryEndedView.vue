@@ -51,7 +51,7 @@ const config = computed(() => {
       return {
         title: 'Queue has ended',
         description:
-          'The host has closed this queue session. All remaining entries have been cleared.',
+          'The host has closed this queue session. All remaining entries have been cleared. Please Contact the host or administractor to know more.',
         icon: ErrorCircleIcon,
         iconColor: 'text-danger',
         bgColor: 'bg-[#FEF2F2]',

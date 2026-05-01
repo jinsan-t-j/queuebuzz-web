@@ -16,6 +16,7 @@ import type {
   HistoryQueryResult,
 } from '@/modules/app/history/types'
 import { fetchHistory, fetchHistoryDetail } from '@/modules/app/history/actions/history.action'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import {
   getLiveQueue,
   getLiveQueueById,
@@ -312,10 +313,14 @@ export const useQueueStore = defineStore('queue', {
             }
           },
           queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
-            // Handle both envelope structure and flat structure
             const status = payload.data?.status
             if (status) {
               this.setQueueStatus(status)
+
+              // If queue is ended/expired, notify customer store to clear session
+              if (status === 'CLOSED' || status === 'EXPIRED') {
+                useCustomerStore().onGlobalQueueEnd()
+              }
             }
           },
         },

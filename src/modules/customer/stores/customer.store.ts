@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useQueueStore } from '@/stores/queue.store'
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
+import router from '@/router'
 import { useNotificationStore } from '@/stores/notification.store'
 import type { Entry, JoinQueuePayload } from '@/modules/customer/types'
 import * as CustomerActions from '@/modules/customer/actions/customer.action'
@@ -484,6 +485,17 @@ export const useCustomerStore = defineStore('customer', {
       } finally {
         this.isLoading = false
       }
+    },
+
+    onGlobalQueueEnd() {
+      if (!this.entry) return
+      const queueId = useQueueStore().activeQueue?.id || ''
+      this.clearEntry()
+      router.push({
+        name: 'customer-ended',
+        params: { queueId },
+        query: { reason: 'terminated' },
+      })
     },
 
     resetCustomerSession() {
