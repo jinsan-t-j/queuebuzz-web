@@ -1,16 +1,17 @@
-name: "Lighthouse Performance Audit"
+name: "E2E & Accessibility Audit"
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - 'src/**'
+      - 'tests/**'
       - 'index.html'
-      - 'vite.config.js'
+      - 'vite.config.*'
       - 'package-lock.json'
 
 jobs:
-  lighthouse:
+  e2e:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
@@ -25,9 +26,38 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline --no-audit
 
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests
+        run: npx playwright test --project=chromium
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+  lighthouse:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    needs: e2e
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
       - name: Build app
         run: |
-          # Use official backend endpoint from GitHub variables
           echo "VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}" > .env.production
           npm run build
 
@@ -36,7 +66,4 @@ jobs:
         with:
           uploadArtifacts: true
           temporaryPublicStorage: true
-          urls: |
-            http://localhost:4173/
-            http://localhost:4173/q/scan
           configPath: ./.lighthouserc.json
