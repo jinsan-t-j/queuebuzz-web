@@ -3,6 +3,7 @@
  * @description Authenticated host app routes. Uses AppLayout with auth guard.
  */
 import { authGuard } from '@/router/guards/auth.guard'
+import { billingGuard } from '@/router/guards/billing.guard'
 import type { RouteRecordRaw } from 'vue-router'
 
 export const appRoutes: RouteRecordRaw[] = [
@@ -58,8 +59,12 @@ export const appRoutes: RouteRecordRaw[] = [
       {
         path: 'queue/history/:id',
         name: 'queue-history-detail',
+        beforeEnter: billingGuard,
         component: () => import('@/modules/app/history/views/HistoryDetailView.vue'),
-        meta: { title: 'Queue History' },
+        meta: {
+          title: 'Queue History',
+          requiredFeature: 'history_detail',
+        },
       },
       {
         path: 'settings',

@@ -1,181 +1,572 @@
 <script setup lang="ts">
-// 1. Vue core imports
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { CheckCircle2, ShieldCheck } from 'lucide-vue-next'
-
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
+import { ref, onMounted, onUnmounted } from 'vue'
+import {
+  CheckCircle2,
+  Sparkles,
+  ZapOff,
+  Layers,
+  Users,
+  Clock,
+  History,
+  FileSpreadsheet,
+  Palette,
+  Loader2,
+} from 'lucide-vue-next'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  useBilling,
+  comparisonFeatures,
+  formatComparisonValue,
+} from '@/modules/app/billing/composables/useBilling'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
+import { useToast } from '@/composables/useToast'
 
-// 6. Props
+const {
+  isLoading,
+  billingCycle,
+  checkoutLoadingPlan,
+  checkoutError,
+  gridPlans,
+  maxDiscount,
+  fetchPlans,
+  handleChoosePlan,
+  isEliteTier,
+} = useBilling()
 
-// 7. Emits
+const route = useRoute()
+const router = useRouter()
 
-// 8. Composable destructuring
-
-// 9. Reactive state
 const scrollY = ref(0)
+
 const handleScroll = () => {
   scrollY.value = window.scrollY
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('scroll', handleScroll, { passive: true })
+  await fetchPlans()
+
+  // Handle payment redirects
+  if (route.query.checkout === 'error') {
+    const { showToast } = useToast()
+    showToast('Payment failed or was cancelled. Please try again.', {
+      type: 'error',
+    })
+    // Clean up URL
+    router.replace({ query: { ...route.query, checkout: undefined } })
+  }
 })
+
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
-
-// 10. Computed properties
-const plans = computed(() => [
-  {
-    id: 'free',
-    name: 'Free',
-    price: '$0',
-    period: 'forever',
-    features: [
-      'One active queue',
-      'Up to 50 entries per session',
-      'QR code + join code',
-      'Basic queue management',
-    ],
-    cta: 'Get Started',
-    isPrimary: false,
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    price: '$19',
-    period: '/month',
-    features: [
-      'Unlimited active queues',
-      'Unlimited entries',
-      'Custom branding',
-      'Analytics dashboard',
-      'Priority support',
-      'SMS notifications',
-    ],
-    cta: 'Go Premium',
-    isPrimary: true,
-  },
-])
-
-// 11. Methods
-
-// 12. Lifecycle hooks
 </script>
 
 <template>
-  <div class="relative min-h-screen overflow-hidden bg-sand">
-    <!-- Global Atmospheric Splashes -->
-    <div class="pointer-events-none absolute inset-0 z-0">
+  <div class="relative min-h-screen bg-sand text-plum selection:bg-mint/30 overflow-x-hidden">
+    <!-- Floating Orbs Background -->
+    <div class="fixed inset-0 pointer-events-none z-0">
       <div
-        class="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-mint/5 rounded-full blur-[140px] animate-blob transition-transform duration-1000 ease-out"
-        :style="{ transform: `translateY(${scrollY * 0.05}px)` }"
+        class="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-mint/5 rounded-full blur-[120px] animate-blob transition-transform duration-1000 ease-out"
+        :style="{ transform: `translateY(${scrollY * 0.04}px)` }"
       />
       <div
-        class="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] bg-plum/5 rounded-full blur-[140px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
-        :style="{ transform: `translateY(${scrollY * -0.08}px)` }"
+        class="absolute bottom-[-5%] left-[-5%] w-[600px] h-[600px] bg-plum/5 rounded-full blur-[120px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
+        :style="{ transform: `translateY(${scrollY * -0.06}px)` }"
+      />
+    </div>
+
+    <!-- Holi Background Atmosphere -->
+    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <div
+        class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob transition-transform duration-700 ease-out"
+        :style="{
+          clipPath: 'polygon(15% 0, 100% 10%, 85% 95%, 0 80%)',
+          transform: `translateY(${scrollY * 0.08}px)`,
+        }"
+      />
+      <div
+        class="absolute bottom-[-5%] right-[-10%] w-[60%] h-[50%] bg-blue-500/5 blur-[140px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
+        :style="{
+          clipPath: 'polygon(25% 15%, 90% 0, 100% 85%, 10% 100%)',
+          transform: `translateY(${scrollY * -0.12}px)`,
+        }"
       />
     </div>
 
     <div class="relative z-10 mx-auto max-w-7xl px-6 py-24 lg:py-32">
-      <div class="text-center mb-20">
+      <!-- Header -->
+      <div class="text-center mb-16 lg:mb-24">
         <h1
           class="font-display text-5xl font-black text-plum md:text-7xl lg:text-8xl tracking-tight leading-none mb-8"
         >
-          Simple pricing, <br />
-          <span class="text-mint">no surprises.</span>
+          Plans built to <br />
+          <span class="text-mint underline decoration-plum-faint underline-offset-8"
+            >scale with you.</span
+          >
         </h1>
         <p
-          class="mx-auto max-w-2xl font-body text-lg md:text-xl text-plum-soft leading-relaxed opacity-80"
+          class="mx-auto max-w-2xl font-body text-lg md:text-xl text-plum-soft leading-relaxed opacity-80 mb-12"
         >
-          Scale your business without the overhead. Start free, upgrade when you're ready to
-          dominate the queue.
+          From solo shops to global enterprises. Flexible plans for every stage.
         </p>
+
+        <!-- Billing Toggle -->
+        <div class="flex flex-col items-center gap-4">
+          <div
+            class="inline-flex items-center p-1 bg-white rounded-2xl shadow-sm border border-plum-faint"
+          >
+            <button
+              :class="[
+                'px-8 py-3 rounded-xl font-body text-sm font-bold transition-all',
+                billingCycle === 'monthly'
+                  ? 'bg-plum text-white'
+                  : 'text-plum-muted hover:text-plum',
+              ]"
+              type="button"
+              @click="billingCycle = 'monthly'"
+            >
+              Monthly
+            </button>
+            <button
+              :class="[
+                'px-8 py-3 rounded-xl font-body text-sm font-bold transition-all relative',
+                billingCycle === 'yearly'
+                  ? 'bg-plum text-white'
+                  : 'text-plum-muted hover:text-plum',
+              ]"
+              type="button"
+              @click="billingCycle = 'yearly'"
+            >
+              Yearly
+              <span
+                v-if="maxDiscount > 0"
+                class="absolute -top-3 -right-2 px-2.5 py-1 bg-mint text-plum text-[10px] font-black rounded-full shadow-lg uppercase tracking-wider animate-bounce"
+              >
+                Save up to {{ maxDiscount }}%
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div class="mx-auto max-w-5xl grid gap-8 md:grid-cols-2 items-stretch">
-        <BaseCard
-          v-for="plan in plans"
-          :key="plan.id"
-          class="relative flex flex-col p-10 md:p-12 bg-white/40 backdrop-blur-3xl border-plum/5 hover:bg-white/60 transition-all duration-500 group overflow-hidden"
-          :class="
-            plan.isPrimary
-              ? 'ring-2 ring-mint shadow-[0_32px_64px_rgba(0,229,160,0.15)] md:-translate-y-4'
-              : 'shadow-xl'
-          "
-        >
-          <!-- Premium Badge -->
-          <div
-            v-if="plan.isPrimary"
-            class="absolute top-6 right-6 px-3 py-1 rounded-full bg-mint text-plum font-display text-[10px] font-black uppercase tracking-widest"
-          >
-            MOST POPULAR
-          </div>
+      <!-- Pricing Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+        <template v-if="isLoading">
+          <div v-for="i in 3" :key="i" class="h-[600px] bg-white/40 rounded-[48px] animate-pulse" />
+        </template>
 
-          <div class="flex-1">
-            <h2 class="font-display text-3xl font-bold text-plum mb-2">{{ plan.name }}</h2>
-            <div class="flex items-baseline gap-2 mb-10">
-              <span class="font-display text-5xl font-black text-plum">{{ plan.price }}</span>
-              <span class="font-body text-base text-plum-muted">{{ plan.period }}</span>
+        <template v-else>
+          <BaseCard
+            v-for="plan in gridPlans"
+            :key="plan.slug"
+            class="relative flex flex-col p-10 md:p-12 transition-all duration-500 group rounded-[48px] overflow-hidden"
+            :class="[
+              isEliteTier(plan)
+                ? 'bg-mint text-plum ring-1 ring-plum/20 shadow-[0_40px_100px_-20px_rgba(0,229,160,0.3)] scale-105 z-10'
+                : 'bg-white border-plum-faint hover:border-mint hover:shadow-2xl',
+            ]"
+          >
+            <!-- Popular Badge -->
+            <div
+              v-if="isEliteTier(plan)"
+              class="absolute top-8 right-8 px-4 py-1.5 bg-plum text-sand text-[10px] font-black rounded-full uppercase tracking-widest shadow-sm"
+            >
+              Best Value
             </div>
 
-            <ul class="space-y-5 mb-12">
-              <li
-                v-for="feature in plan.features"
-                :key="feature"
-                class="flex items-center gap-4 font-body text-sm text-plum group-hover:translate-x-1 transition-transform"
+            <div class="mb-8">
+              <h3 class="font-display text-3xl font-black mb-3">
+                {{ plan.name }}
+              </h3>
+              <p
+                :class="[
+                  'font-body text-sm leading-relaxed',
+                  isEliteTier(plan) ? 'text-plum/80' : 'text-plum-muted',
+                ]"
               >
-                <div
-                  class="h-6 w-6 rounded-lg bg-mint/10 flex items-center justify-center shrink-0"
-                >
-                  <CheckCircle2 class="h-4 w-4 text-mint" />
+                {{ plan.description }}
+              </p>
+            </div>
+
+            <div class="mb-12">
+              <div class="flex items-baseline gap-2">
+                <span class="font-display text-6xl font-black tracking-tighter">
+                  {{
+                    plan.isFree ? 'Free' : plan.currencySymbol + Math.floor((plan.price || 0) / 100)
+                  }}
+                </span>
+                <div v-if="!plan.isFree" class="flex flex-col">
+                  <span class="font-body text-xs font-bold opacity-60 uppercase tracking-widest">
+                    /{{ billingCycle === 'monthly' ? 'mo' : 'yr' }}
+                  </span>
+                  <span
+                    v-if="billingCycle === 'yearly' && plan.discountPercent > 0"
+                    class="text-mint text-[11px] font-black uppercase"
+                  >
+                    Save {{ plan.discountPercent }}%
+                  </span>
                 </div>
-                <span class="leading-snug">{{ feature }}</span>
-              </li>
-            </ul>
+                <div v-else class="flex flex-col">
+                  <span class="text-mint text-[11px] font-black uppercase tracking-wider">
+                    No credit card
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex-1 mb-12">
+              <div
+                :class="[
+                  'font-display text-[11px] font-black uppercase tracking-[0.2em] mb-6 block',
+                  isEliteTier(plan) ? 'text-plum/60' : 'text-mint',
+                ]"
+              >
+                Features Included
+              </div>
+              <ul class="space-y-5">
+                <li class="flex items-start gap-4">
+                  <Layers
+                    :class="['w-5 h-5 mt-0.5', isEliteTier(plan) ? 'text-plum' : 'text-mint']"
+                  />
+                  <div class="flex flex-col">
+                    <span class="font-body text-sm font-bold leading-none">
+                      {{
+                        plan.limits.maxQueuesPerMonth <= 0
+                          ? 'Unlimited'
+                          : plan.limits.maxQueuesPerMonth
+                      }}
+                      {{ plan.limits.maxQueuesPerMonth === 1 ? 'Queue' : 'Queues' }}
+                    </span>
+                    <span class="text-[10px] uppercase font-black tracking-tight mt-1 opacity-60"
+                      >Per Month</span
+                    >
+                  </div>
+                </li>
+                <li class="flex items-start gap-4">
+                  <Users
+                    :class="['w-5 h-5 mt-0.5', isEliteTier(plan) ? 'text-plum' : 'text-mint']"
+                  />
+                  <div class="flex flex-col">
+                    <span class="font-body text-sm font-bold leading-none">
+                      {{
+                        plan.limits.maxGuestsPerQueue <= 0
+                          ? 'Unlimited'
+                          : plan.limits.maxGuestsPerQueue
+                      }}
+                      Guests
+                    </span>
+                    <span class="text-[10px] uppercase font-black tracking-tight mt-1 opacity-60"
+                      >Per session</span
+                    >
+                  </div>
+                </li>
+                <li class="flex items-start gap-4">
+                  <Clock
+                    :class="['w-5 h-5 mt-0.5', isEliteTier(plan) ? 'text-plum' : 'text-mint']"
+                  />
+                  <div class="flex flex-col">
+                    <span class="font-body text-sm font-bold leading-none">
+                      {{
+                        plan.limits.queueExpiryHours <= 0
+                          ? 'No'
+                          : plan.limits.queueExpiryHours + 'h'
+                      }}
+                      Expiry
+                    </span>
+                    <span class="text-[10px] uppercase font-black tracking-tight mt-1 opacity-60"
+                      >Queue Lifetime</span
+                    >
+                  </div>
+                </li>
+
+                <li v-if="plan.limits.historyAccess" class="flex items-center gap-4">
+                  <History :class="['w-5 h-5', isEliteTier(plan) ? 'text-plum' : 'text-mint']" />
+                  <span class="font-body text-sm font-bold"
+                    >{{
+                      plan.limits.historyRetentionDays <= 0
+                        ? 'Unlimited'
+                        : plan.limits.historyRetentionDays + ' Days'
+                    }}
+                    History</span
+                  >
+                </li>
+                <li v-if="plan.limits.canExport" class="flex items-center gap-4">
+                  <FileSpreadsheet
+                    :class="['w-5 h-5', isEliteTier(plan) ? 'text-plum' : 'text-mint']"
+                  />
+                  <span class="font-body text-sm font-bold">CSV/Excel Export</span>
+                </li>
+                <li v-if="plan.limits.customBranding" class="flex items-center gap-4">
+                  <Palette :class="['w-5 h-5', isEliteTier(plan) ? 'text-plum' : 'text-mint']" />
+                  <span class="font-body text-sm font-bold">Custom Branding</span>
+                </li>
+
+                <li
+                  v-if="!plan.limits.customBranding && !isEliteTier(plan)"
+                  class="flex items-center gap-4 opacity-30"
+                >
+                  <ZapOff class="w-5 h-5" />
+                  <span class="font-body text-sm font-medium line-through">Custom Branding</span>
+                </li>
+              </ul>
+            </div>
+
+            <BaseButton
+              :variant="isEliteTier(plan) ? 'secondary' : 'primary'"
+              size="lg"
+              class="w-full h-16 rounded-2xl font-black text-base shadow-xl group-hover:scale-[1.02] transition-transform"
+              :disabled="checkoutLoadingPlan === plan.id"
+              @click="handleChoosePlan(plan)"
+            >
+              <Loader2 v-if="checkoutLoadingPlan === plan.id" class="w-5 h-5 animate-spin mr-2" />
+              {{
+                checkoutLoadingPlan === plan.id
+                  ? 'Redirecting...'
+                  : plan.isFree
+                    ? 'Get Started'
+                    : 'Choose Plan'
+              }}
+            </BaseButton>
+            <p
+              v-if="checkoutError && checkoutLoadingPlan === null"
+              class="mt-3 font-body text-xs text-danger text-center"
+            >
+              {{ checkoutError }}
+            </p>
+          </BaseCard>
+        </template>
+      </div>
+
+      <!-- Enterprise Banner -->
+      <div class="mb-32">
+        <BaseCard
+          class="bg-white border-2 border-plum-faint p-8 md:p-12 rounded-[48px] flex flex-col lg:flex-row items-center justify-between gap-12 group hover:border-plum transition-all shadow-xl relative overflow-hidden"
+        >
+          <div class="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+            <Sparkles class="w-48 h-48 text-plum" />
           </div>
 
-          <div class="mt-auto">
-            <router-link :to="plan.isPrimary ? '/premium' : '/login'">
-              <BaseButton
-                :variant="plan.isPrimary ? 'primary' : 'secondary'"
-                size="lg"
-                class="w-full h-16 text-lg font-bold shadow-lg transition-all active:scale-95"
-                :class="plan.isPrimary ? 'hover:shadow-mint/30' : ''"
-              >
-                {{ plan.cta }}
-              </BaseButton>
-            </router-link>
-            <p
-              class="text-center mt-4 font-body text-[10px] text-plum-muted uppercase tracking-[0.2em]"
+          <div class="max-w-2xl text-center lg:text-left relative z-10">
+            <div
+              class="inline-flex items-center gap-2 px-3 py-1 bg-plum text-sand text-[10px] font-black rounded-full uppercase tracking-widest mb-6"
             >
-              {{ plan.id === 'free' ? 'No credit card required' : 'Cancel anytime' }}
+              Global Scale
+            </div>
+            <h3 class="font-display text-4xl md:text-5xl font-black text-plum mb-4">Enterprise</h3>
+            <p class="font-body text-lg text-plum-soft opacity-70 mb-0 leading-relaxed">
+              For high-volume operations requiring advanced security, custom SLAs, and dedicated
+              account management. Tailored limits for every business need.
             </p>
+          </div>
+
+          <div class="flex flex-col items-center lg:items-end gap-6 min-w-[280px] relative z-10">
+            <div class="text-center lg:text-right">
+              <span class="font-display text-4xl font-black text-plum block mb-2"
+                >Custom Pricing</span
+              >
+              <span class="font-body text-sm font-bold text-plum-muted uppercase tracking-widest"
+                >No hidden fees</span
+              >
+            </div>
+            <BaseButton
+              variant="primary"
+              class="w-full lg:w-auto h-16 px-12 rounded-2xl font-black text-lg shadow-2xl hover:scale-105 transition-transform"
+            >
+              Contact Sales
+            </BaseButton>
           </div>
         </BaseCard>
       </div>
 
-      <!-- Trust Badges -->
-      <div
-        class="mt-32 flex flex-wrap justify-center gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-700"
-      >
+      <!-- Full Comparison Table -->
+      <div class="mb-32">
+        <div class="text-center mb-16">
+          <h2 class="font-display text-4xl md:text-5xl font-black text-plum mb-4">
+            Compare all features
+          </h2>
+          <p class="font-body text-plum-soft opacity-60">
+            Deep dive into every plan's capabilities.
+          </p>
+        </div>
+
         <div
-          v-for="t in ['Secure Payments', 'Cloud Hosted', 'GDPR Compliant', 'No Contracts']"
-          :key="t"
-          class="flex items-center gap-3"
+          class="bg-white rounded-[48px] border border-plum-faint p-8 lg:p-12 shadow-2xl overflow-hidden"
         >
-          <ShieldCheck class="h-5 w-5 text-plum" />
-          <span class="font-display text-[11px] font-black uppercase tracking-widest">{{ t }}</span>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+              <thead>
+                <tr>
+                  <th
+                    class="py-8 pr-6 font-display text-[10px] font-black text-plum-muted uppercase tracking-[0.2em] border-b border-plum-faint"
+                  >
+                    Feature Set
+                  </th>
+                  <th
+                    v-for="plan in gridPlans"
+                    :key="plan.slug"
+                    class="py-8 px-6 text-center border-b border-plum-faint"
+                  >
+                    <span
+                      :class="[
+                        'font-display text-sm font-black uppercase tracking-widest',
+                        isEliteTier(plan) ? 'text-mint' : 'text-plum',
+                      ]"
+                      >{{ plan.name }}</span
+                    >
+                  </th>
+                  <th
+                    class="py-8 pl-6 text-center border-b border-plum-faint font-display text-sm font-black text-plum-muted opacity-40 uppercase tracking-widest"
+                  >
+                    Enterprise
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-for="cat in comparisonFeatures" :key="cat.category">
+                  <tr>
+                    <td
+                      :colspan="gridPlans.length + 2"
+                      class="py-10 font-display text-sm font-black text-mint uppercase tracking-[0.1em]"
+                    >
+                      {{ cat.category }}
+                    </td>
+                  </tr>
+                  <tr
+                    v-for="item in cat.items"
+                    :key="item.name"
+                    class="group hover:bg-sand/30 transition-colors"
+                  >
+                    <td
+                      class="py-5 pr-6 border-b border-plum-faint/30 font-body text-sm font-bold text-plum-soft group-hover:text-plum transition-colors"
+                    >
+                      {{ item.name }}
+                    </td>
+                    <td
+                      v-for="plan in gridPlans"
+                      :key="plan.slug"
+                      class="py-5 px-6 text-center border-b border-plum-faint/30"
+                    >
+                      <div class="flex justify-center items-center">
+                        <template v-if="formatComparisonValue(item, plan) === 'Yes'">
+                          <div
+                            class="w-8 h-8 rounded-full bg-mint/10 flex items-center justify-center"
+                          >
+                            <CheckCircle2 class="w-5 h-5 text-mint" />
+                          </div>
+                        </template>
+                        <template v-else-if="formatComparisonValue(item, plan) === 'No'">
+                          <span class="text-plum/10 text-xl">—</span>
+                        </template>
+                        <template v-else>
+                          <span class="font-display text-sm font-black text-plum">{{
+                            formatComparisonValue(item, plan)
+                          }}</span>
+                        </template>
+                      </div>
+                    </td>
+                    <td
+                      class="py-5 px-6 text-center border-b border-plum-faint/30 font-display text-[10px] font-black text-plum-muted opacity-50 uppercase tracking-widest"
+                    >
+                      {{
+                        item.key === 'maxGuestsPerQueue' ||
+                        item.key === 'maxQueuesPerMonth' ||
+                        item.key === 'historyRetentionDays'
+                          ? 'Unlimited'
+                          : 'Custom'
+                      }}
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final CTA -->
+      <div
+        class="bg-plum rounded-[64px] p-12 md:p-24 text-center relative overflow-hidden shadow-[0_60px_120px_-30px_rgba(26,10,46,0.5)]"
+      >
+        <div class="absolute inset-0 pointer-events-none opacity-20">
+          <div
+            class="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-mint rounded-full blur-[140px]"
+          />
+          <div
+            class="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] bg-pink-500 rounded-full blur-[140px]"
+          />
+        </div>
+
+        <div class="relative z-10 max-w-3xl mx-auto">
+          <h2
+            class="font-display text-4xl md:text-6xl lg:text-7xl font-black text-sand mb-8 tracking-tighter leading-none"
+          >
+            Ready to reclaim <br />
+            your business flow?
+          </h2>
+          <p class="font-body text-sand/60 text-lg md:text-xl mb-12 leading-relaxed">
+            Join thousands of businesses worldwide using QueueBuzz to eliminate physical lines and
+            boost customer satisfaction.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <BaseButton
+              variant="primary"
+              size="lg"
+              class="h-18 px-14 rounded-2xl text-xl font-black shadow-2xl hover:scale-105 transition-transform"
+            >
+              Get Started for Free
+            </BaseButton>
+            <BaseButton
+              variant="ghost"
+              size="lg"
+              class="h-18 px-14 rounded-2xl text-sand hover:bg-sand/10 font-bold border-sand/20"
+            >
+              Talk to an Expert
+            </BaseButton>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+/* Custom Scrollbar for the table container */
+.overflow-x-auto::-webkit-scrollbar {
+  height: 6px;
+}
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #e8e2f0;
+  border-radius: 10px;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #00e5a0;
+}
+</style>

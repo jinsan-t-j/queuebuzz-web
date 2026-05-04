@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --max-warnings=0 --fix",
     "preview": "vite preview",
     "lighthouse": "npm run build && lhci autorun",
+    "dodo:listen": "dodo wh listen --forward-to http://localhost:4000/api/v1/billing/webhook --test",
     "prepare": "husky"
   },
   "dependencies": {

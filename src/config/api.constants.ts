@@ -19,9 +19,11 @@ export function buildApiUrl(path: string): string {
 }
 
 export const AUTH_ROUTES = {
-  SOCIAL_START: (provider: string, claimQueueId?: string): string => {
-    const url = `${API_ORIGIN_URL}/auth/social/${provider}/start`
-    return claimQueueId ? `${url}?claim_queue_id=${claimQueueId}` : url
+  SOCIAL_START: (provider: string, claimQueueId?: string, redirect?: string): string => {
+    const url = new URL(`${API_ORIGIN_URL}/auth/social/${provider}/start`)
+    if (claimQueueId) url.searchParams.set('claim_queue_id', claimQueueId)
+    if (redirect) url.searchParams.set('redirect', redirect)
+    return url.toString()
   },
 } as const
 
@@ -78,5 +80,10 @@ export const API_ROUTES = {
     CLEAR_ALL: '/queue/history',
     DETAIL: (id: string): string => `/queue/manage/${id}/history`,
     EXPORT_CSV: (id: string): string => `/queue/manage/${id}/history/export/csv`,
+  },
+  BILLING: {
+    PLANS: '/billing/plans',
+    CHECKOUT: '/billing/checkout',
+    CURRENT_PLAN: '/billing/current-plan',
   },
 } as const
