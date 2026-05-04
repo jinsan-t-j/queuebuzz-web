@@ -26,7 +26,7 @@ import { Loader2 } from 'lucide-vue-next'
 // 6. Props
 const props = withDefaults(
   defineProps<{
-    variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline'
     size?: 'sm' | 'md' | 'lg'
     isLoading?: boolean
     isDisabled?: boolean
@@ -49,10 +49,11 @@ const emit = defineEmits(['click'])
 // 10. Computed properties
 const variantClasses = computed(() => {
   const map = {
-    primary: 'bg-mint text-plum hover:bg-mint-dark',
+    primary: 'bg-mint text-on-mint hover:bg-mint-dark',
     secondary: 'bg-plum-faint text-plum hover:bg-plum-faint/80',
     danger: 'bg-danger text-white hover:bg-danger/90',
     ghost: 'bg-transparent text-plum-muted hover:bg-plum-faint hover:text-plum',
+    outline: 'bg-transparent text-plum border border-plum-faint hover:bg-plum-faint/50',
   }
   return map[props.variant]
 })

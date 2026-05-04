@@ -149,7 +149,7 @@ function closeCropper() {
           <div
             class="mx-auto mt-2 flex w-fit items-center gap-1.5 rounded-full border border-plum-faint/50 bg-sand px-3 py-1"
           >
-            <Clock class="h-3 w-3 text-mint" />
+            <Clock class="h-3 w-3 text-mint-dark" />
             <span class="font-mono text-xs font-bold text-plum">~12 min</span>
             <span class="font-body text-xs text-plum-soft">Wait</span>
           </div>
@@ -182,7 +182,7 @@ function closeCropper() {
             <div
               class="h-8 w-8 rounded-full bg-mint-light flex items-center justify-center flex-shrink-0"
             >
-              <svg class="h-4 w-4 text-mint" viewBox="0 0 24 24" fill="currentColor">
+              <svg class="h-4 w-4 text-mint-dark" viewBox="0 0 24 24" fill="currentColor">
                 <path
                   d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.15 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.15 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"
                 />
@@ -230,11 +230,11 @@ function closeCropper() {
 
         <!-- Join CTA -->
         <button
-          class="w-full rounded-2xl bg-mint font-body text-sm font-semibold text-plum shadow-[0_8px_24px_rgba(0,229,160,0.50)] flex items-center justify-center gap-2 px-6 py-4"
+          class="w-full rounded-2xl bg-mint font-body text-sm font-semibold text-on-mint shadow-[0_8px_24px_rgba(0,229,160,0.50)] flex items-center justify-center gap-2 px-6 py-4"
         >
           Join the Queue
           <svg
-            class="h-4 w-4 text-plum"
+            class="h-4 w-4 text-on-mint"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"

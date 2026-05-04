@@ -97,9 +97,7 @@ watch(
 
 <template>
   <BaseModal :is-open="isOpen" @close="emit('close')">
-    <div
-      class="relative w-full overflow-hidden rounded-[48px] bg-white p-8 text-center shadow-[0_30px_80px_rgba(26,10,46,0.15)]"
-    >
+    <div class="relative w-full overflow-hidden p-8 text-center">
       <!-- Hidden Capture Template -->
       <HostQRCaptureTemplate :queue-name="queueName" :join-code="joinCode" :slug="slug" />
 
@@ -119,7 +117,7 @@ watch(
         <!-- Success/Heading -->
         <div v-if="isSuccess" class="mb-4 flex justify-center">
           <div
-            class="flex h-16 w-16 items-center justify-center rounded-full bg-mint-light/50 text-mint shadow-[0_0_20px_rgba(0,229,160,0.2)]"
+            class="flex h-16 w-16 items-center justify-center rounded-full bg-mint-light/50 dark:bg-mint/20 text-mint shadow-[0_0_20px_rgba(0,229,160,0.2)] dark:shadow-none"
           >
             <CheckCircleIcon class="h-8 w-8" />
           </div>
@@ -139,7 +137,7 @@ watch(
 
         <!-- QR Display -->
         <div
-          class="group relative mx-auto mb-4 flex h-[240px] w-[240px] items-center justify-center overflow-hidden rounded-[32px] bg-white p-6 shadow-[0_12px_40px_rgba(26,10,46,0.08)] transition-all hover:shadow-[0_20px_60px_rgba(26,10,46,0.12)]"
+          class="group relative mx-auto mb-4 flex h-[240px] w-[240px] items-center justify-center overflow-hidden rounded-[32px] bg-white p-6 shadow-[0_12px_40px_rgba(26,10,46,0.08)] transition-all hover:shadow-[0_20px_60px_rgba(26,10,46,0.12)] dark:shadow-none"
         >
           <img
             v-if="qrDataUrl"
@@ -151,9 +149,12 @@ watch(
 
           <!-- Subtle icon overlay on hover -->
           <div
-            class="absolute inset-0 flex items-center justify-center bg-white/20 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px] cursor-pointer"
+            class="absolute inset-0 flex items-center justify-center bg-white/20 dark:bg-black/20 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px] cursor-pointer"
           >
-            <div class="rounded-full bg-white p-3 shadow-lg" @click="handleDownload">
+            <div
+              class="rounded-full bg-white dark:bg-plum-soft p-3 shadow-lg dark:shadow-none"
+              @click="handleDownload"
+            >
               <DownloadIcon v-if="!isCapturing" class="h-6 w-6 text-plum" />
               <div
                 v-else
@@ -164,7 +165,7 @@ watch(
         </div>
 
         <!-- Join Code Display -->
-        <div class="mb-4 rounded-3xl bg-sand/50 p-6 border border-plum/5">
+        <div class="mb-4 rounded-3xl bg-sand/50 dark:bg-plum-faint/10 p-6 border border-plum-faint">
           <p class="font-body text-sm font-bold uppercase tracking-[0.2em] text-plum/30 mb-2">
             JOIN CODE
           </p>
@@ -173,7 +174,7 @@ watch(
               {{ currentJoinCode }}
             </span>
             <button
-              class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-plum/40 shadow-sm transition-all hover:bg-plum hover:text-white active:scale-95 cursor-pointer"
+              class="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-plum-soft text-plum/40 shadow-sm dark:shadow-none transition-all hover:bg-plum hover:text-white dark:hover:bg-plum-faint dark:hover:text-plum active:scale-95 cursor-pointer"
               @click="handleShare"
             >
               <CopyIcon v-if="!copied" class="h-3.5 w-3.5" />
@@ -187,7 +188,7 @@ watch(
           <BaseButton
             variant="primary"
             :is-loading="isCapturing"
-            class="w-full py-5 text-lg font-bold shadow-xl shadow-mint/20 active:scale-95 transition-all"
+            class="w-full py-5 text-lg font-bold shadow-xl dark:shadow-none shadow-mint/20 active:scale-95 transition-all"
             @click="handleDownload"
           >
             <DownloadIcon v-if="!isCapturing" class="mr-2 h-5 w-5" />

@@ -23,7 +23,7 @@ const pausedAt = computed(() => activeQueue.value?.updatedAt || null)
 const pausedTimeFormatted = computed(() => {
   if (!isPaused.value || !pausedAt.value) return '00m 00s'
   const start = new Date(pausedAt.value).getTime()
-  if (isNaN(start)) return '00m 00s'
+  if (Number.isNaN(start)) return '00m 00s'
 
   const diffMs = now.value.getTime() - start
   if (diffMs < 0) return '00m 00s'
@@ -54,12 +54,15 @@ function openTerminateModal() {
 <template>
   <div
     v-if="activeQueue"
-    class="mx-4 mb-4 rounded-3xl border border-plum-faint bg-sand/50 p-5 transition-all hover:bg-sand"
+    class="mx-4 mb-4 rounded-3xl border border-plum-faint bg-white p-5 transition-all"
   >
     <div class="flex items-center justify-between mb-5">
       <div class="flex flex-col">
         <span class="text-[10px] font-black uppercase tracking-wider text-plum-muted">Status</span>
-        <p class="font-body text-xs font-bold" :class="isPaused ? 'text-warning' : 'text-mint'">
+        <p
+          class="font-body text-xs font-bold"
+          :class="isPaused ? 'text-warning-dark' : 'text-mint-dark'"
+        >
           {{ isPaused ? 'Paused' : 'Active Now' }}
         </p>
       </div>
@@ -76,7 +79,7 @@ function openTerminateModal() {
     <div class="flex flex-col gap-2">
       <button
         v-if="!isPaused"
-        class="group flex w-full items-center gap-3 rounded-2xl bg-white px-4 py-2.5 font-body text-[13px] font-bold text-plum shadow-sm transition-all hover:bg-plum hover:text-sand"
+        class="group flex w-full items-center gap-3 rounded-2xl border border-plum-faint bg-white px-4 py-2.5 font-body text-[13px] font-bold text-plum transition-all hover:bg-plum hover:text-sand"
         @click="openPauseModal"
       >
         <PauseCircle class="h-4 w-4 text-plum group-hover:text-mint" />
@@ -84,18 +87,18 @@ function openTerminateModal() {
       </button>
       <button
         v-else
-        class="group flex w-full items-center gap-3 rounded-2xl bg-warning px-4 py-2.5 font-body text-[13px] font-bold text-white shadow-md transition-all hover:opacity-90"
+        class="group flex w-full items-center gap-3 rounded-2xl bg-warning px-4 py-2.5 font-body text-[13px] font-bold text-on-mint transition-all hover:opacity-90"
         @click="handleResume"
       >
-        <PlayCircle class="h-4 w-4 text-white" />
+        <PlayCircle class="h-4 w-4 text-on-mint" />
         Resume Now
       </button>
 
       <button
-        class="group flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 font-body text-[13px] font-bold text-danger transition-all hover:bg-danger/10"
+        class="group flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 font-body text-[13px] font-bold text-danger-dark transition-all hover:bg-danger/10"
         @click="openTerminateModal"
       >
-        <LogOut class="h-3.5 w-3.5 text-danger" />
+        <LogOut class="h-3.5 w-3.5 text-danger-dark" />
         End Session
       </button>
     </div>

@@ -79,7 +79,7 @@ function toggleEmail() {
  * Handle Notification Permission
  */
 async function ensureNotificationPermission() {
-  if (!('Notification' in window)) return true
+  if (!('Notification' in globalThis)) return true
 
   if (Notification.permission === 'granted') return true
   if (Notification.permission === 'denied') return false
@@ -272,7 +272,7 @@ const handleJoin = handleSubmit(async (values) => {
         </div>
       </div>
       <div class="flex items-center min-h-[44px]">
-        <BaseToggle v-model="buzzEnabled" />
+        <BaseToggle v-model="buzzEnabled" aria-label="Toggle haptic vibration buzz notifications" />
       </div>
     </div>
 
@@ -356,7 +356,7 @@ const handleJoin = handleSubmit(async (values) => {
     <button
       :disabled="isSubmitting || isLoading"
       :class="[
-        'mt-6 flex h-[64px] w-full items-center justify-center gap-2 rounded-2xl bg-mint font-body text-lg font-semibold text-plum shadow-[0_8px_24px_rgba(0,229,160,0.50)] transition-all',
+        'mt-6 flex h-[64px] w-full items-center justify-center gap-2 rounded-2xl bg-mint font-body text-lg font-semibold text-on-mint shadow-[0_8px_24px_rgba(0,229,160,0.50)] transition-all',
         isSubmitting || isLoading
           ? 'cursor-not-allowed opacity-70'
           : 'hover:shadow-[0_12px_32px_rgba(0,229,160,0.60)]',
@@ -364,7 +364,7 @@ const handleJoin = handleSubmit(async (values) => {
       @click="handleJoin"
     >
       {{ isSubmitting || isLoading ? 'Joining…' : 'Join the Queue' }}
-      <ArrowRightBoldIcon v-if="!(isSubmitting || isLoading)" class="h-4 w-4 text-plum" />
+      <ArrowRightBoldIcon v-if="!(isSubmitting || isLoading)" class="h-4 w-4 text-on-mint" />
     </button>
 
     <!-- Join by code link -->

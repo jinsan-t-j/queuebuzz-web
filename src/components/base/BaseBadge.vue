@@ -36,9 +36,9 @@ const props = withDefaults(
 // 10. Computed properties
 const variantClasses = computed(() => {
   const map = {
-    mint: 'bg-mint-light text-mint-dark',
-    warning: 'bg-warning/10 text-warning',
-    danger: 'bg-danger/10 text-danger',
+    mint: 'bg-mint-light text-on-mint',
+    warning: 'bg-warning/10 text-warning-dark',
+    danger: 'bg-danger/10 text-danger-dark',
     muted: 'bg-plum-faint text-plum-muted',
   }
   return map[props.variant]

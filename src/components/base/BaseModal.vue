@@ -40,14 +40,14 @@ const emit = defineEmits<{
           leave-from-class="translate-y-0 scale-100 opacity-100"
           leave-to-class="translate-y-4 scale-95 opacity-0"
         >
-          <div
-            class="relative w-full max-w-lg overflow-y-auto rounded-[32px] shadow-[0_40px_80px_rgba(26,10,46,0.18)] focus:outline-none"
-            role="dialog"
+          <dialog
+            open
+            class="relative w-full max-w-lg overflow-y-auto rounded-[32px] bg-white border border-plum-faint shadow-[0_40px_80px_rgba(26,10,46,0.18)] dark:shadow-none focus:outline-none m-0 p-0"
             aria-modal="true"
             @click.stop
           >
             <slot />
-          </div>
+          </dialog>
         </Transition>
       </div>
     </Transition>

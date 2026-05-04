@@ -63,7 +63,7 @@ const content = computed<ModalContent>(() => {
         confirmText: 'Terminate Queue',
         variant: 'danger',
         icon: CloseCircleIcon,
-        iconBg: 'bg-red-50',
+        iconBg: 'bg-danger/10',
       }
     default: // pause
       return {
@@ -81,7 +81,7 @@ const content = computed<ModalContent>(() => {
 
 <template>
   <BaseModal :is-open="isOpen" @close="emit('close')">
-    <div class="bg-white p-10 text-center font-body">
+    <div class="p-10 text-center font-body">
       <!-- Icon/Visual -->
       <div
         class="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-[28px] transition-all duration-500"

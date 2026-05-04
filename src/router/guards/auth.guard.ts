@@ -31,7 +31,4 @@ export const authGuard: NavigationGuardWithThis<undefined> = async (to) => {
   if (!auth.isAuthenticated) {
     return { path: '/login-or-signup', query: { redirect: to.fullPath } }
   }
-
-  void auth
-  void to
 }

@@ -28,7 +28,7 @@ defineProps<{
       v-else-if="error && !hasQueue"
       class="flex flex-col items-center justify-center min-h-[60vh] gap-6 text-center px-4"
     >
-      <div class="w-16 h-16 rounded-2xl bg-[#FEF2F2] flex items-center justify-center">
+      <div class="w-16 h-16 rounded-2xl bg-danger/10 flex items-center justify-center">
         <svg class="w-8 h-8 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             stroke-linecap="round"

@@ -95,7 +95,7 @@ function isActive(item: NavItem) {
 
 <template>
   <aside
-    class="relative flex shrink-0 flex-col bg-white border-r border-plum-faint transition-all duration-300 ease-in-out"
+    class="relative flex shrink-0 flex-col bg-sand border-r border-plum-faint transition-all duration-300 ease-in-out"
     :class="isCollapsed ? 'w-20' : 'w-[280px]'"
   >
     <!-- Logo area -->
@@ -104,9 +104,9 @@ function isActive(item: NavItem) {
       :class="isCollapsed ? 'justify-center px-0' : 'px-7'"
     >
       <div
-        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-mint shadow-[0_8px_20px_rgba(0,229,160,0.3)]"
+        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-mint text-on-mint shadow-lg dark:shadow-none"
       >
-        <LayoutGrid class="h-5 w-5 text-plum" />
+        <LayoutGrid class="h-5 w-5 text-on-mint" />
       </div>
       <span
         v-if="!isCollapsed"
@@ -127,9 +127,7 @@ function isActive(item: NavItem) {
         :to="item.to"
         class="group relative flex items-center rounded-2xl transition-all duration-300"
         :class="[
-          isActive(item)
-            ? 'bg-plum text-sand shadow-lg shadow-plum/10'
-            : 'text-plum-muted hover:bg-sand/50 hover:text-plum',
+          isActive(item) ? 'bg-plum text-sand' : 'text-plum-muted hover:bg-white hover:text-plum',
           isCollapsed ? 'h-12 w-12 justify-center' : 'gap-3.5 px-4 py-3.5 w-full',
         ]"
       >
@@ -162,13 +160,13 @@ function isActive(item: NavItem) {
     <div v-if="!isCollapsed" class="p-4 transition-all duration-300">
       <router-link
         to="/premium"
-        class="group flex flex-col gap-4 rounded-3xl bg-sand p-5 transition-all hover:bg-mint-light"
+        class="group flex flex-col gap-4 rounded-3xl bg-white border border-plum-faint p-5 transition-all hover:border-mint"
       >
         <div class="flex items-center justify-between">
           <div
-            class="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm transition-transform group-hover:scale-110"
+            class="flex h-10 w-10 items-center justify-center rounded-xl bg-sand transition-transform group-hover:scale-110"
           >
-            <Sparkles class="h-5 w-5 text-mint" />
+            <Sparkles class="h-5 w-5 text-mint-dark" />
           </div>
           <ArrowRight
             class="h-4 w-4 text-plum-muted transition-transform group-hover:translate-x-1"
@@ -185,7 +183,8 @@ function isActive(item: NavItem) {
 
     <!-- Floating Collapse Toggle -->
     <button
-      class="absolute -right-3 top-12 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-plum-faint bg-white text-plum-muted shadow-sm transition-all duration-300 hover:scale-110 hover:bg-plum hover:text-sand"
+      class="absolute -right-3 top-12 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-plum-faint bg-white p-1.5 text-plum-muted transition-all duration-300 hover:scale-110 hover:bg-plum hover:text-sand"
+      :aria-label="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
       @click="toggleCollapse"
     >
       <component :is="isCollapsed ? ChevronRight : ChevronLeft" class="h-3.5 w-3.5" />

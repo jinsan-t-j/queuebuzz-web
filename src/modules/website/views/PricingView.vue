@@ -40,11 +40,11 @@ const router = useRouter()
 const scrollY = ref(0)
 
 const handleScroll = () => {
-  scrollY.value = window.scrollY
+  scrollY.value = globalThis.scrollY
 }
 
 onMounted(async () => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
+  globalThis.addEventListener('scroll', handleScroll, { passive: true })
   await fetchPlans()
 
   // Handle payment redirects
@@ -59,7 +59,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
+  globalThis.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -102,7 +102,7 @@ onUnmounted(() => {
           class="font-display text-5xl font-black text-plum md:text-7xl lg:text-8xl tracking-tight leading-none mb-8"
         >
           Plans built to <br />
-          <span class="text-mint underline decoration-plum-faint underline-offset-8"
+          <span class="text-mint-dark underline decoration-plum-faint underline-offset-8"
             >scale with you.</span
           >
         </h1>
@@ -142,7 +142,7 @@ onUnmounted(() => {
               Yearly
               <span
                 v-if="maxDiscount > 0"
-                class="absolute -top-3 -right-2 px-2.5 py-1 bg-mint text-plum text-[10px] font-black rounded-full shadow-lg uppercase tracking-wider animate-bounce"
+                class="absolute -top-3 -right-2 px-2.5 py-1 bg-mint text-on-mint text-[10px] font-black rounded-full shadow-lg uppercase tracking-wider animate-bounce"
               >
                 Save up to {{ maxDiscount }}%
               </span>
@@ -164,7 +164,7 @@ onUnmounted(() => {
             class="relative flex flex-col p-10 md:p-12 transition-all duration-500 group rounded-[48px] overflow-hidden"
             :class="[
               isEliteTier(plan)
-                ? 'bg-mint text-plum ring-1 ring-plum/20 shadow-[0_40px_100px_-20px_rgba(0,229,160,0.3)] scale-105 z-10'
+                ? 'bg-mint text-on-mint ring-1 ring-plum/20 shadow-[0_40px_100px_-20px_rgba(0,229,160,0.3)] scale-105 z-10'
                 : 'bg-white border-plum-faint hover:border-mint hover:shadow-2xl',
             ]"
           >
@@ -183,7 +183,7 @@ onUnmounted(() => {
               <p
                 :class="[
                   'font-body text-sm leading-relaxed',
-                  isEliteTier(plan) ? 'text-plum/80' : 'text-plum-muted',
+                  isEliteTier(plan) ? 'text-on-mint/80' : 'text-plum-muted',
                 ]"
               >
                 {{ plan.description }}
@@ -198,18 +198,20 @@ onUnmounted(() => {
                   }}
                 </span>
                 <div v-if="!plan.isFree" class="flex flex-col">
-                  <span class="font-body text-xs font-bold opacity-60 uppercase tracking-widest">
+                  <span
+                    class="font-body text-xs font-bold text-plum-muted uppercase tracking-widest"
+                  >
                     /{{ billingCycle === 'monthly' ? 'mo' : 'yr' }}
                   </span>
                   <span
                     v-if="billingCycle === 'yearly' && plan.discountPercent > 0"
-                    class="text-mint text-[11px] font-black uppercase"
+                    class="text-mint-dark text-[11px] font-black uppercase"
                   >
                     Save {{ plan.discountPercent }}%
                   </span>
                 </div>
                 <div v-else class="flex flex-col">
-                  <span class="text-mint text-[11px] font-black uppercase tracking-wider">
+                  <span class="text-mint-dark text-[11px] font-black uppercase tracking-wider">
                     No credit card
                   </span>
                 </div>
@@ -220,7 +222,7 @@ onUnmounted(() => {
               <div
                 :class="[
                   'font-display text-[11px] font-black uppercase tracking-[0.2em] mb-6 block',
-                  isEliteTier(plan) ? 'text-plum/60' : 'text-mint',
+                  isEliteTier(plan) ? 'text-on-mint/60' : 'text-mint-dark',
                 ]"
               >
                 Features Included
@@ -228,7 +230,7 @@ onUnmounted(() => {
               <ul class="space-y-5">
                 <li class="flex items-start gap-4">
                   <Layers
-                    :class="['w-5 h-5 mt-0.5', isEliteTier(plan) ? 'text-plum' : 'text-mint']"
+                    :class="['w-5 h-5 mt-0.5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']"
                   />
                   <div class="flex flex-col">
                     <span class="font-body text-sm font-bold leading-none">
@@ -239,14 +241,15 @@ onUnmounted(() => {
                       }}
                       {{ plan.limits.maxQueuesPerMonth === 1 ? 'Queue' : 'Queues' }}
                     </span>
-                    <span class="text-[10px] uppercase font-black tracking-tight mt-1 opacity-60"
+                    <span
+                      class="text-[10px] uppercase font-black tracking-tight mt-1 text-plum-muted"
                       >Per Month</span
                     >
                   </div>
                 </li>
                 <li class="flex items-start gap-4">
                   <Users
-                    :class="['w-5 h-5 mt-0.5', isEliteTier(plan) ? 'text-plum' : 'text-mint']"
+                    :class="['w-5 h-5 mt-0.5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']"
                   />
                   <div class="flex flex-col">
                     <span class="font-body text-sm font-bold leading-none">
@@ -257,14 +260,15 @@ onUnmounted(() => {
                       }}
                       Guests
                     </span>
-                    <span class="text-[10px] uppercase font-black tracking-tight mt-1 opacity-60"
+                    <span
+                      class="text-[10px] uppercase font-black tracking-tight mt-1 text-plum-muted"
                       >Per session</span
                     >
                   </div>
                 </li>
                 <li class="flex items-start gap-4">
                   <Clock
-                    :class="['w-5 h-5 mt-0.5', isEliteTier(plan) ? 'text-plum' : 'text-mint']"
+                    :class="['w-5 h-5 mt-0.5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']"
                   />
                   <div class="flex flex-col">
                     <span class="font-body text-sm font-bold leading-none">
@@ -275,14 +279,15 @@ onUnmounted(() => {
                       }}
                       Expiry
                     </span>
-                    <span class="text-[10px] uppercase font-black tracking-tight mt-1 opacity-60"
+                    <span
+                      class="text-[10px] uppercase font-black tracking-tight mt-1 text-plum-muted"
                       >Queue Lifetime</span
                     >
                   </div>
                 </li>
 
                 <li v-if="plan.limits.historyAccess" class="flex items-center gap-4">
-                  <History :class="['w-5 h-5', isEliteTier(plan) ? 'text-plum' : 'text-mint']" />
+                  <History :class="['w-5 h-5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']" />
                   <span class="font-body text-sm font-bold"
                     >{{
                       plan.limits.historyRetentionDays <= 0
@@ -294,12 +299,12 @@ onUnmounted(() => {
                 </li>
                 <li v-if="plan.limits.canExport" class="flex items-center gap-4">
                   <FileSpreadsheet
-                    :class="['w-5 h-5', isEliteTier(plan) ? 'text-plum' : 'text-mint']"
+                    :class="['w-5 h-5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint-dark']"
                   />
                   <span class="font-body text-sm font-bold">CSV/Excel Export</span>
                 </li>
                 <li v-if="plan.limits.customBranding" class="flex items-center gap-4">
-                  <Palette :class="['w-5 h-5', isEliteTier(plan) ? 'text-plum' : 'text-mint']" />
+                  <Palette :class="['w-5 h-5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']" />
                   <span class="font-body text-sm font-bold">Custom Branding</span>
                 </li>
 
@@ -386,9 +391,7 @@ onUnmounted(() => {
           <h2 class="font-display text-4xl md:text-5xl font-black text-plum mb-4">
             Compare all features
           </h2>
-          <p class="font-body text-plum-soft opacity-60">
-            Deep dive into every plan's capabilities.
-          </p>
+          <p class="font-body text-plum-muted">Deep dive into every plan's capabilities.</p>
         </div>
 
         <div
@@ -411,13 +414,13 @@ onUnmounted(() => {
                     <span
                       :class="[
                         'font-display text-sm font-black uppercase tracking-widest',
-                        isEliteTier(plan) ? 'text-mint' : 'text-plum',
+                        isEliteTier(plan) ? 'text-mint-dark' : 'text-plum',
                       ]"
                       >{{ plan.name }}</span
                     >
                   </th>
                   <th
-                    class="py-8 pl-6 text-center border-b border-plum-faint font-display text-sm font-black text-plum-muted opacity-40 uppercase tracking-widest"
+                    class="py-8 pl-6 text-center border-b border-plum-faint font-display text-sm font-black text-plum-muted uppercase tracking-widest"
                   >
                     Enterprise
                   </th>
@@ -428,7 +431,7 @@ onUnmounted(() => {
                   <tr>
                     <td
                       :colspan="gridPlans.length + 2"
-                      class="py-10 font-display text-sm font-black text-mint uppercase tracking-[0.1em]"
+                      class="py-10 font-display text-sm font-black text-mint-dark uppercase tracking-[0.1em]"
                     >
                       {{ cat.category }}
                     </td>
@@ -453,7 +456,7 @@ onUnmounted(() => {
                           <div
                             class="w-8 h-8 rounded-full bg-mint/10 flex items-center justify-center"
                           >
-                            <CheckCircle2 class="w-5 h-5 text-mint" />
+                            <CheckCircle2 class="w-5 h-5 text-mint-dark" />
                           </div>
                         </template>
                         <template v-else-if="formatComparisonValue(item, plan) === 'No'">
@@ -467,7 +470,7 @@ onUnmounted(() => {
                       </div>
                     </td>
                     <td
-                      class="py-5 px-6 text-center border-b border-plum-faint/30 font-display text-[10px] font-black text-plum-muted opacity-50 uppercase tracking-widest"
+                      class="py-5 px-6 text-center border-b border-plum-faint/30 font-display text-[10px] font-black text-plum-muted uppercase tracking-widest"
                     >
                       {{
                         item.key === 'maxGuestsPerQueue' ||

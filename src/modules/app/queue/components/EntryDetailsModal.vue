@@ -37,11 +37,11 @@ const statusConfig = computed(() => {
     case ENTRY_STATUS.WAITING:
       return { label: 'Waiting in line', color: 'bg-warning/10 text-warning' }
     case ENTRY_STATUS.CALLED:
-      return { label: 'Currently Called', color: 'bg-mint text-plum font-bold' }
+      return { label: 'Currently Called', color: 'bg-mint text-on-mint font-bold' }
     case ENTRY_STATUS.SERVED:
       return { label: 'Successfully Served', color: 'bg-mint/10 text-mint' }
     case ENTRY_STATUS.ARRIVED:
-      return { label: 'Confirmed Arrival', color: 'bg-mint text-plum font-bold' }
+      return { label: 'Confirmed Arrival', color: 'bg-mint text-on-mint font-bold' }
     case ENTRY_STATUS.IDLE:
       return { label: 'No Show (In Grace Period)', color: 'bg-warning/10 text-warning font-bold' }
     default:
@@ -69,13 +69,13 @@ const estWaitMin = computed(() => {
 
 <template>
   <BaseModal :is-open="isOpen" @close="emit('close')">
-    <div class="relative bg-white">
+    <div class="relative bg-white dark:bg-transparent">
       <!-- Close button -->
       <button
-        class="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-sand cursor-pointer transition-colors hover:bg-plum/5"
+        class="absolute right-6 top-6 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-sand dark:bg-plum-faint/30 cursor-pointer transition-colors hover:bg-plum/5 dark:hover:bg-plum-faint/50"
         @click="emit('close')"
       >
-        <CloseXIcon class="h-4 w-4 text-plum/40" />
+        <CloseXIcon class="h-4 w-4 text-plum/40 dark:text-plum" />
       </button>
 
       <div class="p-6">
@@ -96,13 +96,13 @@ const estWaitMin = computed(() => {
           <!-- Party Size -->
           <div
             v-if="showPartySize"
-            class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80"
+            class="flex flex-col items-center justify-center rounded-2xl bg-sand dark:bg-plum-faint/30 p-5 text-center transition-all hover:bg-sand/80 dark:hover:bg-plum-faint/50"
           >
             <span class="font-body text-sm font-bold uppercase tracking-widest text-plum-muted">
               Party Size
             </span>
             <div class="mt-2 flex items-center gap-2">
-              <PartyIcon class="h-5 w-5 text-plum/40" />
+              <PartyIcon class="h-5 w-5 text-plum/40 dark:text-plum" />
               <span class="font-body text-2xl font-bold text-plum">
                 {{ entry.partySize }}
               </span>
@@ -111,14 +111,14 @@ const estWaitMin = computed(() => {
 
           <!-- Est. Wait -->
           <div
-            class="flex flex-col items-center justify-center rounded-2xl bg-sand p-5 text-center transition-all hover:bg-sand/80"
+            class="flex flex-col items-center justify-center rounded-2xl bg-sand dark:bg-plum-faint/30 p-5 text-center transition-all hover:bg-sand/80 dark:hover:bg-plum-faint/50"
             :class="{ 'col-span-2': !showPartySize }"
           >
             <span class="font-body text-sm font-bold uppercase tracking-widest text-plum-muted">
               Est. Wait
             </span>
             <div class="mt-2 flex items-center gap-2 text-plum">
-              <ClockTimeIcon class="h-5 w-5 text-plum/40" />
+              <ClockTimeIcon class="h-5 w-5 text-plum/40 dark:text-plum" />
               <span class="font-body text-2xl font-bold">
                 {{ estWaitMin }}<span class="text-sm">m</span>
               </span>
@@ -127,7 +127,7 @@ const estWaitMin = computed(() => {
         </div>
 
         <!-- Details List -->
-        <div class="space-y-4 border-t border-plum-faint pt-6 px-2">
+        <div class="space-y-4 border-t border-plum-faint dark:border-plum-faint/50 pt-6 px-2">
           <div class="flex items-center justify-between">
             <span class="font-body text-sm text-plum-muted">Guest Name</span>
             <span class="font-body text-base font-bold text-plum">{{ entry.name }}</span>

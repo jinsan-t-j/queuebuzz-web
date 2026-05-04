@@ -47,34 +47,34 @@ function formatStatus(status?: string) {
 </script>
 
 <template>
-  <div class="relative min-h-[200px] max-h-[400px] overflow-y-auto">
+  <div class="relative min-h-[200px] max-h-[600px] overflow-y-auto scrollbar-hidden">
     <!-- Desktop Table -->
     <div class="hidden md:block">
       <table class="w-full text-left border-separate border-spacing-0">
-        <thead class="sticky top-0 z-10 bg-white">
-          <tr class="border-b border-plum-faint bg-sand/20 shadow-[0_1px_0_0_rgba(232,226,240,1)]">
+        <thead class="sticky top-0 z-10 bg-white border-b border-plum-faint">
+          <tr class="bg-sand/50 border-b border-plum-faint">
             <th
-              class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted"
+              class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted"
             >
               Date
             </th>
             <th
-              class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted"
+              class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted"
             >
               Queue Name
             </th>
             <th
-              class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted"
+              class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted"
             >
               Status
             </th>
             <th
-              class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted"
+              class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted"
             >
               Served
             </th>
             <th
-              class="px-6 py-4 font-body text-[11px] font-bold uppercase tracking-wider text-plum-muted text-right"
+              class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted text-right"
             >
               Avg. Wait
             </th>
@@ -86,19 +86,19 @@ function formatStatus(status?: string) {
           <template v-if="isLoading">
             <tr v-for="i in 10" :key="i" class="animate-pulse">
               <td class="px-6 py-5">
-                <div class="h-4 w-24 bg-plum-faint rounded" />
+                <div class="h-4 w-24 bg-sand rounded" />
               </td>
               <td class="px-6 py-5">
-                <div class="h-4 w-40 bg-plum-faint rounded" />
+                <div class="h-4 w-40 bg-sand rounded" />
               </td>
               <td class="px-6 py-5">
-                <div class="h-6 w-20 bg-plum-faint rounded-full" />
+                <div class="h-6 w-20 bg-sand rounded-full" />
               </td>
               <td class="px-6 py-5">
-                <div class="h-4 w-12 bg-plum-faint rounded" />
+                <div class="h-4 w-12 bg-sand rounded" />
               </td>
               <td class="px-6 py-5 text-right">
-                <div class="h-4 w-12 bg-plum-faint rounded ml-auto" />
+                <div class="h-4 w-12 bg-sand rounded ml-auto" />
               </td>
               <td class="px-6 py-5" />
             </tr>
@@ -111,7 +111,7 @@ function formatStatus(status?: string) {
                 <div class="w-16 h-16 rounded-3xl bg-sand flex items-center justify-center">
                   <InboxIcon class="w-8 h-8 text-plum-muted/30" />
                 </div>
-                <p class="font-display font-bold text-xl text-plum">No history found</p>
+                <p class="font-display font-black text-xl text-plum">No history found</p>
                 <p class="font-body text-sm text-plum-muted max-w-xs mx-auto">
                   We couldn't find any queues matching your current search or filters.
                 </p>
@@ -124,25 +124,25 @@ function formatStatus(status?: string) {
             v-for="queue in items"
             v-else
             :key="queue.id"
-            class="group hover:bg-sand/30 transition-colors cursor-pointer"
+            class="group hover:bg-sand transition-colors cursor-pointer border-b border-plum-faint"
             @click="emit('view-detail', queue.id)"
           >
             <td class="px-6 py-5 whitespace-nowrap">
-              <span class="font-body text-sm text-plum">{{ queue.dateFormatted }}</span>
+              <span class="font-body text-sm text-plum font-black">{{ queue.dateFormatted }}</span>
             </td>
             <td class="px-6 py-5">
-              <span class="font-body font-semibold text-sm text-plum">{{ queue.name }}</span>
+              <span class="font-body font-black text-sm text-plum">{{ queue.name }}</span>
             </td>
             <td class="px-6 py-5">
-              <BaseBadge :variant="getStatusVariant(queue.status)">
+              <BaseBadge :variant="getStatusVariant(queue.status)" class="font-black">
                 {{ formatStatus(queue.status) }}
               </BaseBadge>
             </td>
             <td class="px-6 py-5">
-              <span class="font-mono text-sm text-plum">{{ queue.totalServed }}</span>
+              <span class="font-mono text-sm text-plum font-black">{{ queue.totalServed }}</span>
             </td>
             <td class="px-6 py-5 text-right">
-              <span class="font-mono text-sm text-plum">{{ queue.avgWait }}</span>
+              <span class="font-mono text-sm text-plum font-black">{{ queue.avgWait }}</span>
             </td>
             <td class="px-6 py-5 text-right">
               <ArrowRightIcon
@@ -160,13 +160,13 @@ function formatStatus(status?: string) {
       <template v-if="isLoading">
         <div v-for="i in 5" :key="i" class="p-6 space-y-4 animate-pulse">
           <div class="flex justify-between items-center">
-            <div class="h-4 w-24 bg-plum-faint rounded" />
-            <div class="h-6 w-20 bg-plum-faint rounded-full" />
+            <div class="h-4 w-24 bg-sand rounded" />
+            <div class="h-6 w-20 bg-sand rounded-full" />
           </div>
-          <div class="h-5 w-48 bg-plum-faint rounded" />
+          <div class="h-5 w-48 bg-sand rounded" />
           <div class="flex gap-6">
-            <div class="h-8 w-16 bg-plum-faint rounded" />
-            <div class="h-8 w-16 bg-plum-faint rounded" />
+            <div class="h-8 w-16 bg-sand rounded" />
+            <div class="h-8 w-16 bg-sand rounded" />
           </div>
         </div>
       </template>
@@ -177,7 +177,7 @@ function formatStatus(status?: string) {
           <div class="w-16 h-16 rounded-3xl bg-sand flex items-center justify-center">
             <InboxIcon class="w-8 h-8 text-plum-muted/30" />
           </div>
-          <p class="font-display font-bold text-lg text-plum">No history found</p>
+          <p class="font-display font-black text-lg text-plum">No history found</p>
         </div>
       </div>
 
@@ -186,7 +186,7 @@ function formatStatus(status?: string) {
         v-for="queue in items"
         v-else
         :key="queue.id"
-        class="p-6 active:bg-sand/30 transition-colors"
+        class="p-6 active:bg-sand transition-colors"
         @click="emit('view-detail', queue.id)"
       >
         <div class="flex justify-between items-start mb-2">
@@ -195,19 +195,19 @@ function formatStatus(status?: string) {
             {{ formatStatus(queue.status) }}
           </BaseBadge>
         </div>
-        <h4 class="font-body font-semibold text-plum mb-4">{{ queue.name }}</h4>
+        <h4 class="font-body font-black text-plum mb-4">{{ queue.name }}</h4>
         <div class="flex gap-8">
           <div>
-            <p class="font-body text-[10px] font-bold uppercase tracking-wider text-plum-muted">
+            <p class="font-body text-[10px] font-black uppercase tracking-wider text-plum-muted">
               Served
             </p>
-            <p class="font-mono text-xs text-plum font-semibold">{{ queue.totalServed }}</p>
+            <p class="font-mono text-xs text-plum font-black">{{ queue.totalServed }}</p>
           </div>
           <div>
-            <p class="font-body text-[10px] font-bold uppercase tracking-wider text-plum-muted">
+            <p class="font-body text-[10px] font-black uppercase tracking-wider text-plum-muted">
               Avg. Wait
             </p>
-            <p class="font-mono text-xs text-plum font-semibold">{{ queue.avgWait }}</p>
+            <p class="font-mono text-xs text-plum font-black">{{ queue.avgWait }}</p>
           </div>
         </div>
       </div>

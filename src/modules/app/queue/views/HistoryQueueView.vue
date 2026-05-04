@@ -108,7 +108,7 @@ function handleExport() {
   link.setAttribute('download', 'queues_export.csv')
   document.body.appendChild(link)
   link.click()
-  document.body.removeChild(link)
+  link.remove()
 }
 
 function goToPage(page) {
@@ -127,22 +127,28 @@ function handleRowClick(id) {
     <!-- ═══ Stats row ═══ -->
     <div class="flex gap-4">
       <div
-        class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+        class="flex-1 rounded-card border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
       >
-        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-ash">Total Queues</p>
+        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-plum-muted">
+          Total Queues
+        </p>
         <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">{{ totalQueues }}</p>
       </div>
       <div
-        class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+        class="flex-1 rounded-card border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
       >
-        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-ash">Total Served</p>
+        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-plum-muted">
+          Total Served
+        </p>
         <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-plum">{{ totalServed }}</p>
       </div>
       <div
-        class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+        class="flex-1 rounded-card border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
       >
-        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-ash">Avg. Wait</p>
-        <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-[#4ade80]">{{ avgWait }}</p>
+        <p class="font-body text-sm font-bold uppercase tracking-[1.2px] text-plum-muted">
+          Avg. Wait
+        </p>
+        <p class="mt-2 font-mono text-[30px] font-bold leading-9 text-mint-dark">{{ avgWait }}</p>
       </div>
     </div>
 
@@ -152,22 +158,22 @@ function handleRowClick(id) {
     >
       <!-- Toolbar: Title + Search + Filters -->
       <div
-        class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#f1f5f9] px-6 py-5 gap-4"
+        class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-plum-faint px-6 py-5 gap-4"
       >
         <h3 class="font-display text-lg text-plum w-48">Past Queues</h3>
 
         <div class="flex flex-1 items-center justify-end gap-3 w-full">
           <!-- Interactive Search Bar -->
           <div class="relative flex-1 max-w-[240px]">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ash" />
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-plum-muted" />
             <input
               v-model="searchQuery"
               placeholder="Search queue name..."
-              class="w-full rounded-full border border-plum/10 pl-9 pr-8 py-2 text-sm font-body text-plum outline-none focus:border-plum transition-colors"
+              class="w-full rounded-full border border-plum-faint pl-9 pr-8 py-2 text-sm font-body text-plum outline-none focus:border-plum transition-colors"
             />
             <button
               v-if="searchQuery"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-ash hover:text-plum transition-colors"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-plum-muted hover:text-plum transition-colors"
               @click="clearSearch"
             >
               <X class="h-4 w-4" />
@@ -215,7 +221,7 @@ function handleRowClick(id) {
       <div class="flex items-center bg-sand/50 px-6 py-4">
         <!-- Sortable Date Column -->
         <button
-          class="flex items-center gap-1 w-[160px] font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b] hover:text-plum transition-colors group cursor-pointer"
+          class="flex items-center gap-1 w-[160px] font-body text-sm font-bold uppercase tracking-[1px] text-plum-muted hover:text-plum transition-colors group cursor-pointer"
           @click="toggleSort"
         >
           DATE
@@ -224,16 +230,16 @@ function handleRowClick(id) {
             :class="sortDirection ? 'opacity-100 text-plum' : 'opacity-40'"
           />
         </button>
-        <span class="w-[200px] font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b]"
+        <span class="w-[200px] font-body text-sm font-bold uppercase tracking-[1px] text-plum-muted"
           >Queue Name</span
         >
-        <span class="w-[120px] font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b]"
+        <span class="w-[120px] font-body text-sm font-bold uppercase tracking-[1px] text-plum-muted"
           >Status</span
         >
-        <span class="w-[120px] font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b]"
+        <span class="w-[120px] font-body text-sm font-bold uppercase tracking-[1px] text-plum-muted"
           >Total Served</span
         >
-        <span class="flex-1 font-body text-sm font-bold uppercase tracking-[1px] text-[#64748b]"
+        <span class="flex-1 font-body text-sm font-bold uppercase tracking-[1px] text-plum-muted"
           >Avg. Wait</span
         >
         <span class="w-6" />
@@ -253,7 +259,7 @@ function handleRowClick(id) {
 
         <div
           v-if="!isLoading && pastQueues.length === 0"
-          class="flex items-center justify-center p-12 text-center text-ash font-body"
+          class="flex items-center justify-center p-12 text-center text-plum-muted font-body"
         >
           No matching queues found.
         </div>
@@ -262,11 +268,11 @@ function handleRowClick(id) {
           v-for="(queue, idx) in pastQueues"
           v-else
           :key="queue.id"
-          class="flex cursor-pointer items-center px-6 py-5 transition-colors hover:bg-sand/80"
-          :class="idx > 0 ? 'border-t border-[#f1f5f9]' : ''"
+          class="flex cursor-pointer items-center px-6 py-5 transition-colors hover:bg-plum-faint/30"
+          :class="idx > 0 ? 'border-t border-plum-faint' : ''"
           @click="handleRowClick(queue.id)"
         >
-          <span class="w-[160px] font-body text-sm text-[#475569]">{{ queue.dateFormatted }}</span>
+          <span class="w-[160px] font-body text-sm text-plum-muted">{{ queue.dateFormatted }}</span>
           <span class="w-[200px] font-body text-sm font-semibold text-plum truncate pr-4">{{
             queue.name
           }}</span>
@@ -274,10 +280,10 @@ function handleRowClick(id) {
             <span
               class="inline-flex rounded-full px-2.5 py-0.5"
               :class="{
-                'bg-[#dcfce7] text-[#166534]': queue.status === 'Completed',
-                'bg-[#e0e7ff] text-[#3730a3]': queue.status === 'Active',
-                'bg-[#fef9c3] text-[#854d0e]': queue.status === 'Paused',
-                'bg-[#fee2e2] text-[#991b1b]': queue.status === 'Terminated',
+                'bg-mint/10 text-mint-dark': queue.status === 'Completed',
+                'bg-plum-faint text-plum': queue.status === 'Active',
+                'bg-warning/10 text-warning-dark': queue.status === 'Paused',
+                'bg-danger/10 text-danger-dark': queue.status === 'Terminated',
               }"
             >
               {{ queue.status }}
@@ -285,16 +291,16 @@ function handleRowClick(id) {
           </span>
           <span class="w-[120px] font-mono text-sm text-plum">{{ queue.totalServed }}</span>
           <span class="flex-1 font-mono text-sm text-plum">{{ queue.avgWait }}</span>
-          <ChevronRightIcon class="h-[9px] w-[6px] text-ash" />
+          <ChevronRightIcon class="h-[9px] w-[6px] text-plum-muted" />
         </div>
       </div>
 
       <!-- Pagination -->
-      <div class="flex items-center justify-between border-t border-[#f1f5f9] px-6 py-5">
-        <span class="font-body text-sm text-ash flex items-center gap-2">
+      <div class="flex items-center justify-between border-t border-plum-faint px-6 py-5">
+        <span class="font-body text-sm text-plum-muted flex items-center gap-2">
           <span
             v-if="isFetching && !isLoading"
-            class="h-3 w-3 animate-spin rounded-full border-2 border-ash border-t-transparent"
+            class="h-3 w-3 animate-spin rounded-full border-2 border-plum-muted border-t-transparent"
           />
           Showing page {{ currentPage }} of {{ totalPages }} ({{ totalEntries }} total)
         </span>
@@ -311,7 +317,7 @@ function handleRowClick(id) {
             :key="page"
             class="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg font-body text-sm font-bold transition-colors"
             :class="[
-              page === currentPage ? 'bg-plum text-white' : 'text-[#475569] hover:bg-plum-faint',
+              page === currentPage ? 'bg-plum text-white' : 'text-plum-muted hover:bg-plum-faint',
               { 'opacity-50 pointer-events-none': isLoading },
             ]"
             @click="goToPage(page)"
@@ -319,7 +325,7 @@ function handleRowClick(id) {
             {{ page }}
           </button>
           <button
-            class="rounded-lg px-3 py-1 font-body text-sm font-bold text-[#475569] transition-colors hover:bg-plum-faint disabled:opacity-50"
+            class="rounded-lg px-3 py-1 font-body text-sm font-bold text-plum-muted transition-colors hover:bg-plum-faint disabled:opacity-50"
             :disabled="currentPage >= totalPages || isLoading"
             @click="goToPage(currentPage + 1)"
           >
@@ -333,7 +339,7 @@ function handleRowClick(id) {
     <div
       class="relative mt-6 overflow-hidden rounded-card bg-plum p-8 shadow-[0_8px_10px_rgba(0,0,0,0.10),0_20px_25px_rgba(0,0,0,0.10)]"
     >
-      <div class="absolute -left-10 top-0 h-28 w-36 rounded-full bg-[#4ade80]/5" />
+      <div class="absolute -left-10 top-0 h-28 w-36 rounded-full bg-mint/5" />
       <div class="absolute -right-10 top-0 h-28 w-28 rounded-full bg-white/5" />
 
       <div class="relative flex items-center justify-between">
@@ -345,7 +351,7 @@ function handleRowClick(id) {
         </div>
         <router-link
           to="/premium"
-          class="rounded-input bg-[#4ade80] px-8 py-3 font-body text-base font-bold text-plum shadow-[0_4px_6px_rgba(74,222,128,0.20),0_10px_15px_rgba(74,222,128,0.20)] transition-colors hover:bg-[#22c55e]"
+          class="rounded-input bg-mint px-8 py-3 font-body text-base font-bold text-plum shadow-lg transition-colors hover:bg-mint-dark hover:text-white"
         >
           Go Pro
         </router-link>

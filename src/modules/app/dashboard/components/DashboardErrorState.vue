@@ -17,7 +17,7 @@ defineEmits<{
 
 <template>
   <div class="flex flex-col items-center justify-center py-12 gap-3">
-    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF2F2]">
+    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-danger/10">
       <AlertCircle class="h-6 w-6 text-danger" />
     </div>
     <p class="font-display text-lg font-bold text-plum">Something went wrong</p>

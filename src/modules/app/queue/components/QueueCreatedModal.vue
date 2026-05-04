@@ -54,7 +54,7 @@ const handleOpenQueue = () => router.push(props.queueUrl)
   <Teleport to="body">
     <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/25">
       <div
-        class="relative w-full max-w-[480px] rounded-card bg-white p-10 text-center shadow-[0_25px_50px_rgba(0,0,0,0.25)]"
+        class="relative w-full max-w-[480px] rounded-card bg-white p-10 text-center shadow-[0_25px_50px_rgba(0,0,0,0.25)] dark:shadow-none"
       >
         <!-- Close button -->
         <button

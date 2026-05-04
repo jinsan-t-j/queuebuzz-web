@@ -85,16 +85,6 @@ function goTo(page) {
   }
 }
 
-// Status chip classes
-function statusClasses(status) {
-  const map = {
-    served: 'bg-mint-light text-[#00B87A]',
-    skipped: 'bg-plum-faint text-plum-muted',
-    'no-show': 'bg-[#FFF7ED] text-warning',
-  }
-  return map[status] || map.served
-}
-
 function statusLabel(status) {
   const map = {
     served: 'Served',
@@ -109,23 +99,23 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
 </script>
 
 <template>
-  <div class="rounded-2xl border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+  <div class="rounded-2xl border border-plum-faint bg-white">
     <!-- Header with search -->
     <div
-      class="flex flex-col gap-4 border-b border-plum/5 px-6 py-5 md:flex-row md:items-center md:justify-between"
+      class="flex flex-col gap-4 border-b border-plum-faint px-6 py-5 md:flex-row md:items-center md:justify-between"
     >
-      <h3 class="font-display text-xl font-bold text-plum">Customer History</h3>
+      <h3 class="font-display text-xl font-black text-plum">Customer History</h3>
 
       <!-- Search input -->
       <div class="relative w-full max-w-xs">
         <Search
-          class="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-plum/30"
+          class="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-plum-muted"
         />
         <input
           v-model="searchQuery"
           type="search"
           placeholder="Search by name or ticket..."
-          class="h-10 w-full rounded-xl border border-plum-faint bg-white py-2 pl-9 pr-8 font-body text-sm text-plum placeholder:text-plum-muted/60 focus:border-plum focus:outline-none focus:ring-0"
+          class="h-10 w-full rounded-xl border border-plum-faint bg-white py-2 pl-9 pr-8 font-body text-sm text-plum placeholder:text-plum-muted font-black focus:border-plum focus:outline-none focus:ring-0"
         />
         <button
           v-if="searchQuery"
@@ -139,13 +129,13 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
 
     <!-- Loading skeleton -->
     <div v-if="isLoading" class="px-6 py-4">
-      <div v-for="i in 5" :key="i" class="flex gap-6 border-b border-plum/5 py-4 last:border-0">
-        <div class="h-4 w-12 rounded bg-plum-faint animate-pulse" />
-        <div class="h-4 w-24 rounded bg-plum-faint animate-pulse" />
-        <div class="h-4 w-16 rounded bg-plum-faint animate-pulse" />
-        <div class="h-4 w-12 rounded bg-plum-faint animate-pulse" />
-        <div class="h-4 w-14 rounded bg-plum-faint animate-pulse" />
-        <div class="h-4 w-16 rounded bg-plum-faint animate-pulse" />
+      <div v-for="i in 5" :key="i" class="flex gap-6 border-b border-plum-faint py-4 last:border-0">
+        <div class="h-4 w-12 rounded bg-sand animate-pulse" />
+        <div class="h-4 w-24 rounded bg-sand animate-pulse" />
+        <div class="h-4 w-16 rounded bg-sand animate-pulse" />
+        <div class="h-4 w-12 rounded bg-sand animate-pulse" />
+        <div class="h-4 w-14 rounded bg-sand animate-pulse" />
+        <div class="h-4 w-16 rounded bg-sand animate-pulse" />
       </div>
     </div>
 
@@ -156,8 +146,8 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
         v-if="filteredEntries.length === 0"
         class="flex flex-col items-center justify-center py-16 gap-3"
       >
-        <p class="font-display text-base font-semibold text-plum">No entries found</p>
-        <p class="font-body text-sm text-plum-muted">
+        <p class="font-display text-base font-black text-plum">No entries found</p>
+        <p class="font-body text-sm text-plum-muted font-medium">
           Try a different search term or clear the search.
         </p>
       </div>
@@ -169,7 +159,7 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
             <th
               v-for="col in columns"
               :key="col"
-              class="px-6 py-3 text-left font-body text-sm font-bold uppercase tracking-[0.6px] text-plum/40"
+              class="px-6 py-3 text-left font-body text-[11px] font-black uppercase tracking-[1px] text-plum-muted"
             >
               {{ col }}
             </th>
@@ -178,47 +168,46 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
 
         <!-- Body -->
         <tbody>
-          <tr v-for="entry in paginatedEntries" :key="entry.id" class="border-t border-plum/5">
-            <td class="px-6 py-3.5">
-              <span class="font-mono text-sm font-bold text-mint">
+          <tr
+            v-for="entry in paginatedEntries"
+            :key="entry.id"
+            class="border-t border-plum-faint hover:bg-sand/30 transition-colors"
+          >
+            <td class="px-6 py-4">
+              <span class="font-mono text-sm font-black text-mint-dark">
                 {{ entry.ticket }}
               </span>
             </td>
-            <td class="px-6 py-3.5">
-              <span class="font-body text-sm font-bold text-plum">
+            <td class="px-6 py-4">
+              <span class="font-body text-sm font-black text-plum">
                 {{ entry.name }}
               </span>
             </td>
-            <td class="px-6 py-3.5">
-              <span class="font-mono text-sm text-plum/60">
+            <td class="px-6 py-4">
+              <span class="font-mono text-xs text-plum font-black">
                 {{ entry.joined }}
               </span>
             </td>
-            <td class="px-6 py-3.5">
-              <span class="font-mono text-sm text-plum/60">
+            <td class="px-6 py-4">
+              <span class="font-mono text-xs text-plum font-black">
                 {{ entry.waited }}
               </span>
             </td>
-            <td class="px-6 py-3.5">
+            <td class="px-6 py-4">
               <span
-                :class="[
-                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-body text-sm font-semibold',
-                  statusClasses(entry.status),
-                ]"
+                class="inline-flex items-center gap-1.5 rounded-md border border-plum-faint px-3 py-1 font-body text-[11px] font-black uppercase tracking-wider text-plum"
               >
                 <span
                   :class="[
                     'h-1.5 w-1.5 rounded-full',
-                    entry.status === 'served' ? 'bg-[#00B87A]' : '',
-                    entry.status === 'skipped' ? 'bg-warning' : '',
-                    entry.status === 'no-show' ? 'bg-warning' : '',
+                    entry.status === 'served' ? 'bg-mint' : 'bg-warning',
                   ]"
                 />
                 {{ statusLabel(entry.status) }}
               </span>
             </td>
-            <td class="px-6 py-3.5">
-              <span class="font-mono text-sm text-plum/60">
+            <td class="px-6 py-4">
+              <span class="font-mono text-xs text-plum font-black">
                 {{ entry.servedAt || '—' }}
               </span>
             </td>
@@ -230,9 +219,9 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
     <!-- Pagination footer -->
     <div
       v-if="!isLoading && filteredEntries.length > 0"
-      class="flex items-center justify-between border-t border-plum/5 px-6 py-4"
+      class="flex items-center justify-between border-t border-plum-faint px-6 py-4"
     >
-      <p class="font-body text-sm text-plum/60">
+      <p class="font-body text-sm text-plum-muted font-black">
         Showing {{ showingFrom }}–{{ showingTo }} of
         {{ totalCount || filteredEntries.length }}
       </p>
@@ -240,14 +229,14 @@ const columns = ['Ticket', 'Name', 'Joined', 'Waited', 'Status', 'Served At']
       <div class="flex items-center gap-2">
         <button
           :disabled="currentPage === 1"
-          class="rounded-lg border border-plum-faint px-3 py-1.5 font-body text-sm font-bold text-plum/60 transition-colors hover:border-plum hover:text-plum disabled:opacity-30"
+          class="rounded-lg border border-plum-faint px-4 py-2 font-body text-sm font-black text-plum transition-colors hover:bg-sand disabled:opacity-30"
           @click="goTo(currentPage - 1)"
         >
           Prev
         </button>
         <button
           :disabled="currentPage === totalPages"
-          class="rounded-lg border border-plum-faint px-3 py-1.5 font-body text-sm font-bold text-plum/60 transition-colors hover:border-plum hover:text-plum disabled:opacity-30"
+          class="rounded-lg border border-plum-faint px-4 py-2 font-body text-sm font-black text-plum transition-colors hover:bg-sand disabled:opacity-30"
           @click="goTo(currentPage + 1)"
         >
           Next

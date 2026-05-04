@@ -287,7 +287,7 @@ onBeforeUnmount(() => {
             <h2 class="font-display text-2xl font-bold text-plum">
               {{ isLoading ? 'Loading...' : greeting }}
             </h2>
-            <p v-if="!isLoading" class="font-body text-xs text-plum-muted opacity-80">
+            <p v-if="!isLoading" class="font-body text-xs text-plum-muted">
               {{ dateString }}
             </p>
           </div>
@@ -295,7 +295,7 @@ onBeforeUnmount(() => {
           <button
             v-if="!isLoading"
             :disabled="isRefreshing"
-            class="flex items-center gap-2 rounded-lg border border-plum-faint bg-white px-3 py-1.5 font-body text-[10px] font-bold uppercase tracking-widest text-plum-muted transition-all hover:border-plum hover:text-plum shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            class="flex items-center gap-2 rounded-lg border border-plum-faint bg-white px-3 py-1.5 font-body text-[11px] font-bold uppercase tracking-widest text-plum-muted transition-all hover:border-plum hover:text-plum shadow-sm dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
             @click="retry"
           >
             <RefreshCw class="h-3 w-3 opacity-60" :class="{ 'animate-spin': isRefreshing }" />

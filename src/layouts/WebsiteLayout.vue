@@ -6,7 +6,12 @@
  */
 
 // 1. Vue core imports
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, onMounted } from 'vue'
+
+onMounted(() => {
+  // Website module is light-only
+  document.documentElement.classList.remove('dark')
+})
 
 // 2. Router / Pinia imports
 

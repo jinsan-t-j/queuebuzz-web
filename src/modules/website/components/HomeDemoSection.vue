@@ -63,7 +63,7 @@ const exportHovered = ref(false)
               <div
                 class="h-14 w-14 rounded-2xl bg-mint-light flex items-center justify-center mb-6"
               >
-                <component :is="activeFeature?.icon" class="h-7 w-7 text-mint" />
+                <component :is="activeFeature?.icon" class="h-7 w-7 text-mint-dark" />
               </div>
               <h3 class="font-display text-3xl font-bold mb-4">{{ activeFeature?.heading }}</h3>
               <p class="font-body text-lg text-plum-soft leading-relaxed">
@@ -87,7 +87,7 @@ const exportHovered = ref(false)
                     Create an account to
                     <span class="font-semibold text-plum">enable custom branding</span>
                   </p>
-                  <span class="font-body text-[10px] font-bold text-mint whitespace-nowrap"
+                  <span class="font-body text-[10px] font-bold text-mint-dark whitespace-nowrap"
                     >Sign Up →</span
                   >
                 </RouterLink>
@@ -129,7 +129,7 @@ const exportHovered = ref(false)
                   <div
                     :class="[
                       'w-8 h-8 rounded-xl flex items-center justify-center font-mono text-xs font-bold flex-shrink-0',
-                      i === 0 ? 'bg-mint text-plum' : 'bg-plum/5 text-plum-muted',
+                      i === 0 ? 'bg-mint text-on-mint' : 'bg-plum/5 text-plum-muted',
                     ]"
                   >
                     {{ g.ticket }}
@@ -167,7 +167,7 @@ const exportHovered = ref(false)
                     class="h-4 w-4 text-mint flex-shrink-0"
                   />
                 </div>
-                <p class="text-center font-body text-[10px] text-plum-soft mt-3 animate-pulse">
+                <p class="text-center font-body text-[10px] text-plum-soft mt-3">
                   Tap a guest to call them ↑
                 </p>
               </div>

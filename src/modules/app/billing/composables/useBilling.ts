@@ -142,11 +142,17 @@ export function formatComparisonValue(item: ComparisonItem, plan: DisplayPlan): 
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const val = (plan.limits as any)[item.key]
-  if (item.type === 'boolean') return val ? 'Yes' : 'No'
-  if (item.type === 'hours') return val <= 0 ? 'Unlimited' : `${val}h`
-  if (item.type === 'days') return val <= 0 ? 'Unlimited' : `${val} days`
-  if (item.type === 'number') return val <= 0 ? 'Unlimited' : val
-  return val
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const formatters: Record<string, (v: any) => string | number> = {
+    boolean: (v) => (v ? 'Yes' : 'No'),
+    hours: (v) => (v <= 0 ? 'Unlimited' : `${v}h`),
+    days: (v) => (v <= 0 ? 'Unlimited' : `${v} days`),
+    number: (v) => (v <= 0 ? 'Unlimited' : v),
+  }
+
+  const formatter = formatters[item.type]
+  return formatter ? formatter(val) : val
 }
 
 export function useBilling() {

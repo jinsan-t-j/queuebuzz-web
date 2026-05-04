@@ -43,7 +43,9 @@ apiClient.interceptors.request.use(
 
     return config
   },
-  (error: unknown) => Promise.reject(error),
+  (error: unknown) => {
+    throw error
+  },
 )
 
 let isRefreshing = false
@@ -78,7 +80,7 @@ apiClient.interceptors.response.use(
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       if (originalRequest.url?.includes('/auth/refresh/token')) {
-        return Promise.reject(error)
+        throw error
       }
 
       // If another request is already refreshing the token, pause this one
@@ -89,7 +91,9 @@ apiClient.interceptors.response.use(
           .then(() => {
             return apiClient(originalRequest)
           })
-          .catch((err) => Promise.reject(err))
+          .catch((err) => {
+            throw err
+          })
       }
 
       originalRequest._retry = true
@@ -108,15 +112,15 @@ apiClient.interceptors.response.use(
 
         if (!originalRequest._skipLogout) {
           sessionStorage.setItem('qb_toast', 'Session expired.')
-          window.location.href = '/'
+          globalThis.location.href = '/'
         }
 
-        return Promise.reject(err)
+        throw err
       } finally {
         isRefreshing = false
       }
     }
 
-    return Promise.reject(error)
+    throw error
   },
 )

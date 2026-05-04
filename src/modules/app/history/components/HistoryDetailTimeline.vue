@@ -66,13 +66,13 @@ function getColorClass(color: string) {
     case 'mint':
       return 'text-mint bg-mint-light/20'
     case 'warning':
-      return 'text-warning bg-orange-100'
+      return 'text-warning bg-warning/15'
     case 'danger':
-      return 'text-danger bg-red-100'
+      return 'text-danger bg-danger/15'
     case 'plum-soft':
-      return 'text-plum-soft bg-plum-faint/30'
+      return 'text-plum-soft bg-plum-faint'
     default:
-      return 'text-plum-muted bg-plum-faint/20'
+      return 'text-plum-muted bg-plum-faint'
   }
 }
 </script>
@@ -80,12 +80,12 @@ function getColorClass(color: string) {
 <template>
   <div
     v-if="events.length > 0"
-    class="relative pl-8 space-y-6 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-plum-faint"
+    class="relative pl-8 space-y-6 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[1px] before:bg-plum-faint"
   >
     <div v-for="(event, index) in events" :key="index" class="relative">
       <!-- Timeline Dot/Icon -->
       <div
-        class="absolute -left-[25px] w-5 h-5 rounded-full border-4 border-sand flex items-center justify-center z-10"
+        class="absolute -left-[25px] w-5 h-5 rounded-full border border-plum-faint flex items-center justify-center z-10"
         :class="getColorClass(event.color)"
       >
         <component :is="getIcon(event.type)" class="w-3 h-3" />
@@ -95,10 +95,10 @@ function getColorClass(color: string) {
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <span class="font-body font-semibold text-plum text-sm">{{ event.message }}</span>
+            <span class="font-body font-black text-plum text-sm">{{ event.message }}</span>
             <button
               v-if="event.subEvents?.length"
-              class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-plum-faint hover:bg-plum-faint/60 transition-colors text-[10px] font-body text-plum-muted"
+              class="flex items-center gap-1 px-2 py-0.5 rounded-md border border-plum-faint hover:bg-sand transition-colors text-[10px] font-body text-plum font-black"
               @click="toggleGroup(index)"
             >
               {{ event.subEvents.length }} details
@@ -108,26 +108,27 @@ function getColorClass(color: string) {
               />
             </button>
           </div>
-          <span class="font-mono text-xs text-plum-muted/60 bg-sand px-2 py-1 rounded-md">{{
-            event.timestamp
-          }}</span>
+          <span
+            class="font-mono text-[10px] text-plum-muted font-black px-2 py-0.5 border border-plum-faint rounded-md"
+            >{{ event.timestamp }}</span
+          >
         </div>
 
         <!-- Collapsible Details -->
         <div
           v-if="event.subEvents?.length && openGroupIndices.has(index)"
-          class="ml-2 pl-4 py-2 border-l-2 border-plum-faint space-y-2 animate-in slide-in-from-top-2 duration-200"
+          class="ml-2 pl-4 py-2 border-l border-plum-faint space-y-2 bg-sand/30 rounded-r-lg"
         >
           <div
             v-for="(sub, sIdx) in event.subEvents"
             :key="sIdx"
-            class="flex items-center justify-between text-xs font-body text-plum-muted/80"
+            class="flex items-center justify-between text-[11px] font-body text-plum font-black"
           >
             <div class="flex items-center gap-2">
-              <span class="font-mono text-plum-soft font-bold">{{ sub.ticketNo }}</span>
+              <span class="font-mono text-plum-soft font-black">{{ sub.ticketNo }}</span>
               <span>{{ sub.name }}</span>
             </div>
-            <span>{{ sub.time }}</span>
+            <span class="text-plum-muted">{{ sub.time }}</span>
           </div>
         </div>
       </div>
@@ -136,11 +137,13 @@ function getColorClass(color: string) {
 
   <!-- Empty State -->
   <div v-else class="flex flex-col items-center justify-center py-12 text-center">
-    <div class="w-12 h-12 rounded-2xl bg-sand flex items-center justify-center mb-4">
+    <div
+      class="w-12 h-12 rounded-2xl bg-sand flex items-center justify-center mb-4 border border-plum-faint"
+    >
       <FileTextIcon class="w-6 h-6 text-plum-muted" />
     </div>
-    <p class="font-display font-bold text-plum mb-1">No activity logged</p>
-    <p class="font-body text-xs text-plum-muted max-w-[200px]">
+    <p class="font-display font-black text-plum mb-1">No activity logged</p>
+    <p class="font-body text-xs text-plum-muted max-w-[200px] font-medium">
       This queue ended without any recorded customer interactions or status changes.
     </p>
   </div>

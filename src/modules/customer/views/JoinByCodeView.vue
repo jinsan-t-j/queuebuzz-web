@@ -193,7 +193,7 @@ function handleQrResult(result: string) {
             isLoading
               ? 'bg-plum-faint text-plum-soft'
               : isFilled
-                ? 'bg-mint text-plum shadow-[0_16px_32px_-8px_rgba(0,229,160,0.5)] hover:shadow-[0_20px_40px_-8px_rgba(0,229,160,0.6)] transform hover:-translate-y-1'
+                ? 'bg-mint text-on-mint shadow-[0_16px_32px_-8px_rgba(0,229,160,0.5)] hover:shadow-[0_20px_40px_-8px_rgba(0,229,160,0.6)] transform hover:-translate-y-1'
                 : 'bg-plum/5 text-plum-muted cursor-not-allowed',
           ]"
           @click="findQueue"

@@ -6,11 +6,16 @@
       "startServerReadyTimeout": 30000,
       "numberOfRuns": 3,
       "url": [
-        "http://localhost:4173/",
-        "http://localhost:4173/join"
+        "http://localhost:4173/login-or-signup",
+        "http://localhost:4173/dashboard",
+        "http://localhost:4173/dashboard/queue",
+        "http://localhost:4173/dashboard/queue/history",
+        "http://localhost:4173/dashboard/settings"
       ],
+      "puppeteerScript": "./lhci-login.js",
+      "chromeFlags": "--no-sandbox --disable-web-security --ignore-certificate-errors --ignore-ssl-errors=yes --disable-gpu",
       "settings": {
-        "chromeFlags": "--no-sandbox --disable-web-security --ignore-certificate-errors --ignore-ssl-errors=yes --disable-gpu"
+        "onlyCategories": ["accessibility", "best-practices"]
       }
     },
     "assert": {

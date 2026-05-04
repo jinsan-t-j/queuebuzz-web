@@ -216,9 +216,9 @@ export function useWebsiteData() {
 
   // --- METHODS ---
   const updateItemsPerView = () => {
-    if (typeof window === 'undefined') return
-    if (window.innerWidth < 768) itemsPerView.value = 1
-    else if (window.innerWidth < 1024) itemsPerView.value = 2
+    if (typeof globalThis === 'undefined') return
+    if (globalThis.innerWidth < 768) itemsPerView.value = 1
+    else if (globalThis.innerWidth < 1024) itemsPerView.value = 2
     else itemsPerView.value = 3
   }
 
@@ -276,19 +276,19 @@ export function useWebsiteData() {
 
   // --- LIFECYCLE ---
   onMounted(async () => {
-    if (typeof window === 'undefined') return
+    if (typeof globalThis === 'undefined') return
 
     updateItemsPerView()
-    window.addEventListener('resize', updateItemsPerView)
-    window.addEventListener(
+    globalThis.addEventListener('resize', updateItemsPerView)
+    globalThis.addEventListener(
       'scroll',
       () => {
-        scrollY.value = window.scrollY
+        scrollY.value = globalThis.scrollY
       },
       { passive: true },
     )
 
-    isPwa.value = window.matchMedia('(display-mode: standalone)').matches
+    isPwa.value = globalThis.matchMedia('(display-mode: standalone)').matches
 
     observer.value = new IntersectionObserver(
       (entries) => {
@@ -308,8 +308,8 @@ export function useWebsiteData() {
   })
 
   onUnmounted(() => {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('resize', updateItemsPerView)
+    if (typeof globalThis !== 'undefined') {
+      globalThis.removeEventListener('resize', updateItemsPerView)
     }
     observer.value?.disconnect()
   })

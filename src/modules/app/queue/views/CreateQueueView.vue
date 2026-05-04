@@ -121,7 +121,7 @@ onUnmounted(() => {
   <div v-if="!activeQueue" class="mx-auto max-w-[680px]">
     <h1 class="font-display text-[40px] font-extrabold text-plum">Let's get started.</h1>
 
-    <CreateQueueForm role="host" @queue-created="handleQueueCreated" />
+    <CreateQueueForm :role="'host'" @queue-created="handleQueueCreated" />
   </div>
 
   <!-- ═══ Live queue dashboard ═══ -->

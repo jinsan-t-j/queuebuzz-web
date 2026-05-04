@@ -233,7 +233,7 @@ const handleFinishService = async () => {
           'cursor-pointer mt-4 flex h-[68px] w-full items-center justify-center rounded-2xl font-body text-lg font-bold transition-all',
           status === 'ARRIVED'
             ? 'bg-plum text-sand shadow-lg border border-plum'
-            : 'bg-mint text-plum shadow-[0_8px_10px_rgba(0,229,160,0.20),0_20px_25px_rgba(0,229,160,0.20)]',
+            : 'bg-mint text-on-mint shadow-[0_8px_10px_rgba(0,229,160,0.20),0_20px_25px_rgba(0,229,160,0.20)]',
           isConfirming || isFinishing ? 'cursor-not-allowed opacity-70' : '',
         ]"
         @click="handleMainCta"

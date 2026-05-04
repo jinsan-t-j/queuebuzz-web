@@ -51,7 +51,7 @@ function goToSignup() {
       <h1 class="font-display text-[40px] font-extrabold text-plum">Let's get started.</h1>
 
       <CreateQueueForm
-        role="guest"
+        :role="'guest'"
         @create-account="goToSignup"
         @queue-created="handleQueueCreated"
       />

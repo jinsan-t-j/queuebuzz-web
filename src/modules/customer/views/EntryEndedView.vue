@@ -43,7 +43,7 @@ const config = computed(() => {
         title: "You've left the queue",
         description: 'Your spot has been released. We hope to see you again soon!',
         icon: CheckCircleIcon,
-        iconColor: 'text-mint',
+        iconColor: 'text-mint-dark',
         bgColor: 'bg-mint-light',
       }
     case 'expired':

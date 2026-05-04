@@ -28,14 +28,14 @@ const handleSubmit = async () => {
 
 const scrollY = ref(0)
 const handleScroll = () => {
-  scrollY.value = window.scrollY
+  scrollY.value = globalThis.scrollY
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
+  globalThis.addEventListener('scroll', handleScroll, { passive: true })
 })
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
+  globalThis.removeEventListener('scroll', handleScroll)
 })
 </script>
 
@@ -60,7 +60,7 @@ onUnmounted(() => {
         <h1
           class="font-display text-5xl font-black text-plum md:text-7xl tracking-tight leading-none mb-8"
         >
-          How can we <span class="text-mint">help?</span>
+          How can we <span class="text-mint-dark">help?</span>
         </h1>
         <p
           class="mx-auto max-w-2xl font-body text-lg md:text-xl text-plum-soft leading-relaxed opacity-80"
@@ -78,7 +78,7 @@ onUnmounted(() => {
       >
         <div class="flex items-center gap-3 mb-12">
           <div class="h-12 w-12 rounded-2xl bg-mint-light flex items-center justify-center">
-            <MessageSquare class="h-6 w-6 text-mint" />
+            <MessageSquare class="h-6 w-6 text-mint-dark" />
           </div>
           <h2 class="font-display text-3xl font-bold text-plum">Send a Message</h2>
         </div>
@@ -171,7 +171,7 @@ onUnmounted(() => {
               v-if="isSuccess"
               class="p-6 rounded-3xl bg-mint-light/50 border border-mint text-plum font-body text-sm text-center flex items-center justify-center gap-3"
             >
-              <Sparkles class="h-5 w-5 text-mint" />
+              <Sparkles class="h-5 w-5 text-mint-dark" />
               <span>Thanks for reaching out! We'll get back to you shortly.</span>
             </div>
           </Transition>

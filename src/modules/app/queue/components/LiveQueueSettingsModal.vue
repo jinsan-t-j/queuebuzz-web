@@ -102,17 +102,19 @@ function selectSuggestion(suggestion: string) {
     @update:is-open="$emit('update:is-open', $event)"
     @close="emit('close')"
   >
-    <div class="relative w-full rounded-[32px] bg-white p-6 shadow-2xl">
+    <div class="relative w-full p-6">
       <!-- Header -->
       <div class="mb-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-plum/5">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-xl bg-plum/5 dark:bg-plum-faint/10"
+          >
             <navSettingsIcon class="h-5 w-5 text-plum" />
           </div>
           <h2 class="font-display text-xl font-bold tracking-tight text-plum">Queue Settings</h2>
         </div>
         <button
-          class="flex h-8 w-8 items-center justify-center rounded-full bg-sand text-plum/30 transition-colors hover:text-plum cursor-pointer"
+          class="flex h-8 w-8 items-center justify-center rounded-full bg-sand dark:bg-plum-faint/20 text-plum/30 transition-colors hover:text-plum cursor-pointer"
           @click="emit('close')"
         >
           <CloseIcon class="h-4 w-4" />
@@ -123,15 +125,14 @@ function selectSuggestion(suggestion: string) {
         <form class="space-y-6" @submit.prevent="onSubmit">
           <!-- Queue Name -->
           <div
-            class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10"
+            class="rounded-card border border-plum/5 dark:border-plum-faint bg-white p-5 shadow-sm dark:shadow-none transition-all hover:border-plum/10 dark:hover:border-plum/20"
           >
-            <label
-              class="mb-3 block font-body text-xs font-bold uppercase tracking-[1.65px] text-plum/50"
-            >
+            <label for="queueName" class="mb-3 block font-body text-sm font-semibold text-plum/50">
               Queue Name
             </label>
             <div class="relative">
               <input
+                id="queueName"
                 v-model="queueName"
                 placeholder="What are people queuing for?"
                 class="mb-2 w-full border-b border-plum/5 bg-transparent py-2 font-display text-xl font-semibold text-plum placeholder:text-plum/20 outline-none focus:border-mint transition-colors"
@@ -151,7 +152,7 @@ function selectSuggestion(suggestion: string) {
                 v-for="suggestion in suggestions"
                 :key="suggestion"
                 type="button"
-                class="rounded-full border border-plum-faint px-3 py-1 font-body text-xs font-medium text-plum/60 transition-colors hover:bg-plum-faint hover:text-plum cursor-pointer"
+                class="rounded-full border border-plum-faint dark:border-plum-faint/50 px-3 py-1 font-body text-xs font-medium text-plum/60 transition-colors hover:bg-plum-faint dark:hover:bg-plum-faint/20 hover:text-plum cursor-pointer"
                 @click="selectSuggestion(suggestion)"
               >
                 {{ suggestion }}
@@ -161,25 +162,30 @@ function selectSuggestion(suggestion: string) {
 
           <!-- Avg Service Time -->
           <div
-            class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10"
+            class="rounded-card border border-plum/5 dark:border-plum-faint bg-white p-5 shadow-sm dark:shadow-none transition-all hover:border-plum/10 dark:hover:border-plum/20"
           >
             <div class="flex items-center justify-between mb-4">
               <label
-                class="block font-body text-xs font-bold uppercase tracking-[1.65px] text-plum/50"
+                for="avgServiceMins"
+                class="block font-body text-sm font-semibold text-plum/50"
               >
                 How long does it typically take to serve one guest? (This is only for estimation)
               </label>
               <div class="flex items-center gap-1.5 rounded-lg bg-mint/10 px-2 py-1">
                 <TimeIcon class="h-3 w-3 text-mint" />
-                <span class="font-body text-xs font-bold text-mint">{{ avgServiceMins }}m</span>
+                <span class="font-body text-sm font-semibold text-mint">{{ avgServiceMins }}m</span>
               </div>
             </div>
 
             <div class="mt-2">
-              <BaseSlider v-model="avgServiceMins" :min="1" :max="60" :step="1" />
-              <div
-                class="flex justify-between font-body text-xs text-plum/40 font-bold uppercase tracking-wider mt-1"
-              >
+              <BaseSlider
+                id="avgServiceMins"
+                v-model="avgServiceMins"
+                :min="1"
+                :max="60"
+                :step="1"
+              />
+              <div class="flex justify-between font-body text-xs text-plum/40 font-semibold mt-1">
                 <span>Quick (1m)</span>
                 <span>Relaxed (60m)</span>
               </div>
@@ -188,20 +194,25 @@ function selectSuggestion(suggestion: string) {
 
           <!-- Strict Calling Mode -->
           <div
-            class="rounded-card border border-plum/5 bg-white p-5 shadow-sm transition-all hover:border-plum/10"
+            class="rounded-card border border-plum/5 dark:border-plum-faint bg-white p-5 shadow-sm dark:shadow-none transition-all hover:border-plum/10 dark:hover:border-plum/20"
           >
             <div class="flex items-center justify-between">
               <div class="flex flex-col gap-1">
                 <label
-                  class="block font-body text-xs font-bold uppercase tracking-[1.65px] text-plum/50"
+                  for="strictQueueMode"
+                  class="block font-body text-sm font-semibold text-plum/50"
                 >
                   Strict Calling Mode
                 </label>
-                <p class="font-body text-xs text-plum/40 leading-relaxed max-w-[200px]">
+                <p class="font-body text-xs text-plum/40 leading-relaxed">
                   Call next guest only after marking current guest as served.
                 </p>
               </div>
-              <BaseToggle v-model="strictQueueMode" />
+              <BaseToggle
+                id="strictQueueMode"
+                v-model="strictQueueMode"
+                aria-label="Toggle strict queue mode"
+              />
             </div>
           </div>
 

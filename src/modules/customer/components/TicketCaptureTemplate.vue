@@ -16,7 +16,7 @@ defineProps<{
 const qrDataUrl = ref('')
 
 onMounted(async () => {
-  qrDataUrl.value = await QRCode.toDataURL(window.location.href, {
+  qrDataUrl.value = await QRCode.toDataURL(globalThis.location.href, {
     width: 600,
     margin: 2,
     color: { dark: '#1A0A2E', light: '#FFFFFF' },

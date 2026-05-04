@@ -4,18 +4,15 @@
  * @description Public website navigation bar. Displays the QueueBuzz logo,
  * nav links, and a CTA button. Used once inside WebsiteLayout.
  */
-import { computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth.store'
 import { useQueueStore } from '@/stores/queue.store'
 
 import { Menu, X } from 'lucide-vue-next'
 
-import { ref, onMounted, onUnmounted } from 'vue'
-
 const authStore = useAuthStore()
 const queueStore = useQueueStore()
-
 const { isAuthenticated } = storeToRefs(authStore)
 const { activeQueue } = storeToRefs(queueStore)
 
@@ -48,17 +45,17 @@ let rafId = null
 function handleScroll() {
   if (rafId) return
   rafId = requestAnimationFrame(() => {
-    isScrolled.value = window.scrollY > 10
+    isScrolled.value = globalThis.scrollY > 10
     rafId = null
   })
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
+  globalThis.addEventListener('scroll', handleScroll, { passive: true })
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
+  globalThis.removeEventListener('scroll', handleScroll)
   if (rafId) cancelAnimationFrame(rafId)
 })
 </script>
@@ -112,6 +109,7 @@ onUnmounted(() => {
         >
           Sign In
         </router-link>
+
         <router-link
           :to="ctaRoute"
           class="rounded-full bg-plum px-6 py-3 font-body text-sm font-bold text-white transition-all duration-300 hover:bg-mint hover:text-plum hover:shadow-[0_0_20px_rgba(0,229,160,0.4)] hover:-translate-y-0.5 active:scale-95 inline-flex items-center"
@@ -161,9 +159,10 @@ onUnmounted(() => {
         >
           Sign In
         </router-link>
+
         <router-link
           :to="ctaRoute"
-          class="rounded-pill bg-mint px-5 py-3.5 text-center font-body text-sm font-semibold text-plum min-h-[48px] flex items-center justify-center"
+          class="rounded-pill bg-mint px-5 py-3.5 text-center font-body text-sm font-semibold text-on-mint min-h-[48px] flex items-center justify-center"
           @click="isMobileMenuOpen = false"
         >
           {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started Free' }}

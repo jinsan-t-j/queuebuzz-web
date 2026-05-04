@@ -182,9 +182,9 @@ onMounted(() => {
             </router-link>
             <router-link to="/join" class="w-full sm:w-auto">
               <BaseButton
-                variant="ghost"
+                variant="outline"
                 size="lg"
-                class="h-14 px-8 text-base border border-plum-faint/80 bg-white/60 backdrop-blur-sm !rounded-2xl hover:bg-white hover:border-plum/20 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 w-full sm:w-auto text-plum"
+                class="h-14 px-8 text-base bg-white/60 backdrop-blur-sm !rounded-2xl hover:bg-white hover:border-plum/20 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300 w-full sm:w-auto"
               >
                 Join a Queue
               </BaseButton>
@@ -207,14 +207,14 @@ onMounted(() => {
                 <div
                   class="flex-shrink-0 h-8 w-8 rounded-xl bg-mint-light flex items-center justify-center group-hover:bg-mint/20 transition-colors"
                 >
-                  <component :is="item.icon" class="h-4 w-4 text-mint" />
+                  <component :is="item.icon" class="h-4 w-4 text-mint-dark" />
                 </div>
                 <div class="min-w-0">
                   <p class="font-body text-[11px] font-bold text-plum leading-none truncate">
                     {{ item.label }}
                   </p>
                   <p
-                    class="font-body text-[9px] text-plum-soft uppercase tracking-widest mt-0.5 truncate"
+                    class="font-body text-[10px] text-plum-soft uppercase tracking-widest mt-0.5 truncate"
                   >
                     {{ item.sub }}
                   </p>
@@ -230,10 +230,12 @@ onMounted(() => {
         >
           <!-- Background Atmosphere Blobs -->
           <div
+            aria-hidden="true"
             class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-mint/10 rounded-full blur-[140px] animate-pulse transition-transform duration-300 ease-out"
             :style="{ transform: `translate(-50%, calc(-50% + ${scrollY * 0.15}px))` }"
           />
           <div
+            aria-hidden="true"
             class="absolute top-1/3 left-1/3 w-64 h-64 bg-plum/5 rounded-full blur-[100px] animate-bounce transition-transform duration-500 ease-out"
             style="animation-duration: 8s"
             :style="{ transform: `translateY(${scrollY * -0.1}px)` }"
@@ -543,7 +545,9 @@ onMounted(() => {
                   </div>
                   <div>
                     <p class="font-mono text-sm font-bold text-plum leading-none">128 ACTIVE</p>
-                    <p class="font-body text-[10px] text-plum-soft uppercase tracking-[0.2em] mt-1">
+                    <p
+                      class="font-body text-[11px] text-plum font-bold uppercase tracking-[0.2em] mt-1"
+                    >
                       Live Global
                     </p>
                   </div>
@@ -572,9 +576,9 @@ onMounted(() => {
               <div
                 v-for="cat in industryCategories[0]"
                 :key="cat.name"
-                class="flex-shrink-0 flex items-center gap-3 px-8 py-4 rounded-2xl border border-plum/5 bg-white/40 backdrop-blur-sm font-display text-[10px] font-black tracking-[0.2em] shadow-sm hover:bg-white transition-all"
+                class="flex-shrink-0 flex items-center gap-3 px-8 py-4 rounded-2xl border border-plum/10 bg-white/40 backdrop-blur-sm font-display text-[11px] font-black text-plum tracking-[0.2em] shadow-sm hover:bg-white transition-all"
               >
-                <component :is="cat.icon" class="h-3.5 w-3.5 text-mint" />
+                <component :is="cat.icon" class="h-3.5 w-3.5 text-mint-dark" />
                 {{ cat.name }}
               </div>
             </div>
@@ -589,9 +593,9 @@ onMounted(() => {
               <div
                 v-for="cat in industryCategories[1]"
                 :key="cat.name"
-                class="flex-shrink-0 flex items-center gap-3 px-8 py-4 rounded-2xl border border-plum/5 bg-white/40 backdrop-blur-sm font-display text-[10px] font-black tracking-[0.2em] shadow-sm hover:bg-white transition-all"
+                class="flex-shrink-0 flex items-center gap-3 px-8 py-4 rounded-2xl border border-plum/10 bg-white/40 backdrop-blur-sm font-display text-[11px] font-black text-plum tracking-[0.2em] shadow-sm hover:bg-white transition-all"
               >
-                <component :is="cat.icon" class="h-3.5 w-3.5 text-mint" />
+                <component :is="cat.icon" class="h-3.5 w-3.5 text-mint-dark" />
                 {{ cat.name }}
               </div>
             </div>

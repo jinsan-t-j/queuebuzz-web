@@ -110,10 +110,10 @@ function formatStatus(status: string) {
 </script>
 
 <template>
-  <div class="px-6 md:px-8 space-y-8 min-h-screen">
+  <div class="px-6 md:px-8 space-y-8 min-h-screen pb-12 bg-sand">
     <!-- Navigation -->
     <div class="flex items-center gap-4">
-      <BaseButton variant="ghost" size="sm" class="rounded-xl" @click="goBack">
+      <BaseButton variant="ghost" size="sm" class="rounded-xl font-black" @click="goBack">
         <ArrowLeftIcon class="w-4 h-4 mr-2" />
         Back to History
       </BaseButton>
@@ -123,12 +123,14 @@ function formatStatus(status: string) {
     <div v-if="queueDetail" class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="space-y-2">
         <div class="flex items-center gap-3">
-          <h1 class="font-display font-bold text-3xl text-plum">{{ queueDetail.queueName }}</h1>
-          <BaseBadge :variant="getQueueStatusVariant(queueDetail.status)">{{
+          <h1 class="font-display font-black text-3xl text-plum tracking-tight">
+            {{ queueDetail.queueName }}
+          </h1>
+          <BaseBadge :variant="getQueueStatusVariant(queueDetail.status)" class="font-black">{{
             formatStatus(queueDetail.status)
           }}</BaseBadge>
         </div>
-        <p class="font-body text-plum-muted flex items-center gap-2">
+        <p class="font-body text-plum-muted flex items-center gap-2 font-medium">
           <ClockIcon class="w-4 h-4" />
           {{ queueDetail.date }}
           <template v-if="queueDetail?.closedAt">
@@ -144,7 +146,7 @@ function formatStatus(status: string) {
       </div>
 
       <div class="flex items-center gap-3">
-        <BaseButton variant="ghost" :loading="isExporting" @click="downloadCsv">
+        <BaseButton variant="ghost" :loading="isExporting" class="font-black" @click="downloadCsv">
           <DownloadIcon class="w-4 h-4 mr-2" />
           Export Session Data
         </BaseButton>
@@ -157,56 +159,56 @@ function formatStatus(status: string) {
       <div class="lg:col-span-8 space-y-8">
         <!-- Session Stats Grid -->
         <div v-if="queueDetail?.stats" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <BaseCard class="p-5 border-l-4 border-l-plum">
+          <BaseCard class="p-5 border border-plum-faint shadow-none bg-white">
             <p
-              class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1"
+              class="font-body text-[10px] uppercase font-black tracking-widest text-plum-muted mb-1"
             >
               Bookings
             </p>
             <div class="flex items-end gap-2">
-              <span class="font-mono text-2xl font-bold text-plum">{{
+              <span class="font-mono text-2xl font-black text-plum">{{
                 queueDetail.stats.totalBookings || 0
               }}</span>
               <UsersIcon class="w-4 h-4 text-plum-faint mb-1" />
             </div>
           </BaseCard>
 
-          <BaseCard class="p-5 border-l-4 border-l-mint">
+          <BaseCard class="p-5 border border-plum-faint shadow-none bg-white">
             <p
-              class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1"
+              class="font-body text-[10px] uppercase font-black tracking-widest text-plum-muted mb-1"
             >
               Served
             </p>
             <div class="flex items-end gap-2">
-              <span class="font-mono text-2xl font-bold text-plum">{{
+              <span class="font-mono text-2xl font-black text-plum">{{
                 queueDetail.stats.totalServed || 0
               }}</span>
               <CheckCircleIcon class="w-4 h-4 text-mint mb-1" />
             </div>
           </BaseCard>
 
-          <BaseCard class="p-5 border-l-4 border-l-danger">
+          <BaseCard class="p-5 border border-plum-faint shadow-none bg-white">
             <p
-              class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1"
+              class="font-body text-[10px] uppercase font-black tracking-widest text-plum-muted mb-1"
             >
               Drops
             </p>
             <div class="flex items-end gap-2">
-              <span class="font-mono text-2xl font-bold text-plum">{{
+              <span class="font-mono text-2xl font-black text-plum">{{
                 queueDetail.stats.totalSkipped || 0
               }}</span>
               <XCircleIcon class="w-4 h-4 text-danger mb-1" />
             </div>
           </BaseCard>
 
-          <BaseCard class="p-5 border-l-4 border-l-plum-soft">
+          <BaseCard class="p-5 border border-plum-faint shadow-none bg-white">
             <p
-              class="font-body text-[10px] uppercase font-bold tracking-widest text-plum-muted mb-1"
+              class="font-body text-[10px] uppercase font-black tracking-widest text-plum-muted mb-1"
             >
               Avg Wait
             </p>
             <div class="flex items-end gap-2">
-              <span class="font-mono text-2xl font-bold text-plum">{{
+              <span class="font-mono text-2xl font-black text-plum">{{
                 queueDetail.stats.avgWaitTime || '0m'
               }}</span>
               <ClockIcon class="w-4 h-4 text-plum-muted mb-1" />
@@ -216,52 +218,58 @@ function formatStatus(status: string) {
 
         <!-- Loading Stats -->
         <div v-else-if="isLoading" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div v-for="i in 4" :key="i" class="h-20 bg-plum-faint animate-pulse rounded-2xl" />
+          <div
+            v-for="i in 4"
+            :key="i"
+            class="h-20 bg-sand animate-pulse rounded-2xl border border-plum-faint"
+          />
         </div>
 
         <!-- Customer List -->
         <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="font-display font-bold text-xl text-plum">Customer Entries</h2>
+          <div class="flex items-center justify-between px-1">
+            <h2 class="font-display font-black text-xl text-plum tracking-tight">
+              Customer Entries
+            </h2>
             <div class="relative">
               <SearchIcon
                 class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-plum-muted pointer-events-none"
               />
               <input
                 v-model="searchQuery"
-                placeholder="Search..."
-                class="h-9 w-48 bg-white border border-plum-faint rounded-xl pl-9 pr-4 font-body text-xs text-plum focus:border-plum focus:outline-none transition-all"
+                placeholder="Search ticket or name..."
+                class="h-9 w-48 bg-white border border-plum-faint rounded-xl pl-9 pr-4 font-body text-xs text-plum focus:border-plum transition-all outline-none"
               />
             </div>
           </div>
 
-          <BaseCard class="overflow-hidden border-plum-faint shadow-sm">
+          <BaseCard class="overflow-hidden border border-plum-faint shadow-none bg-white">
             <div class="overflow-x-auto">
-              <table class="w-full text-left">
+              <table class="w-full text-left border-separate border-spacing-0">
                 <thead>
-                  <tr class="bg-sand/30 border-b border-plum-faint">
+                  <tr class="bg-sand border-b border-plum-faint">
                     <th
-                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                      class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted"
                     >
                       Ticket
                     </th>
                     <th
-                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                      class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted"
                     >
                       Name
                     </th>
                     <th
-                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                      class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted"
                     >
                       Status
                     </th>
                     <th
-                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                      class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted"
                     >
                       Wait Time
                     </th>
                     <th
-                      class="px-6 py-4 font-body text-xs font-bold uppercase tracking-wider text-plum-muted"
+                      class="px-6 py-4 font-body text-[11px] font-black uppercase tracking-wider text-plum-muted"
                     >
                       Served At
                     </th>
@@ -271,7 +279,7 @@ function formatStatus(status: string) {
                   <template v-if="isLoading">
                     <tr v-for="i in 5" :key="i" class="animate-pulse">
                       <td v-for="j in 5" :key="j" class="px-6 py-4">
-                        <div class="h-4 bg-plum-faint rounded w-full" />
+                        <div class="h-4 bg-sand rounded w-full" />
                       </td>
                     </tr>
                   </template>
@@ -279,21 +287,23 @@ function formatStatus(status: string) {
                     <tr
                       v-for="entry in filteredEntries"
                       :key="entry.ticketNo"
-                      class="hover:bg-sand/20 transition-colors"
+                      class="hover:bg-sand transition-colors border-b border-plum-faint/50"
                     >
-                      <td class="px-6 py-4 font-mono text-sm text-plum font-semibold">
+                      <td class="px-6 py-4 font-mono text-sm text-plum font-black">
                         {{ entry.ticketNo }}
                       </td>
-                      <td class="px-6 py-4 font-body text-sm text-plum">{{ entry.displayName }}</td>
+                      <td class="px-6 py-4 font-body text-sm text-plum font-black">
+                        {{ entry.displayName }}
+                      </td>
                       <td class="px-6 py-4">
-                        <BaseBadge :variant="getStatusVariant(entry.status)"
+                        <BaseBadge :variant="getStatusVariant(entry.status)" class="font-black"
                           >{{ formatStatus(entry.status) }}
                         </BaseBadge>
                       </td>
-                      <td class="px-6 py-4 font-mono text-xs text-plum-muted">
+                      <td class="px-6 py-4 font-mono text-xs text-plum font-black">
                         {{ entry.waitTimeMin ? `${entry.waitTimeMin}m` : '---' }}
                       </td>
-                      <td class="px-6 py-4 font-body text-xs text-plum-muted">
+                      <td class="px-6 py-4 font-body text-xs text-plum font-black">
                         {{
                           entry.servedAt
                             ? new Date(entry.servedAt).toLocaleTimeString([], {
@@ -308,7 +318,7 @@ function formatStatus(status: string) {
                   <tr v-else>
                     <td
                       colspan="5"
-                      class="px-6 py-12 text-center text-plum-muted font-body text-sm italic"
+                      class="px-6 py-12 text-center text-plum-muted font-body text-sm italic font-medium"
                     >
                       No entries match your search.
                     </td>
@@ -323,31 +333,34 @@ function formatStatus(status: string) {
       <!-- Right Column: Timeline & Insights (4 cols) -->
       <div class="lg:col-span-4 space-y-8">
         <!-- Private Notes (If any) -->
-        <BaseCard v-if="queueDetail?.notes" class="p-6 bg-white relative overflow-hidden">
+        <BaseCard
+          v-if="queueDetail?.notes"
+          class="p-6 bg-white border border-plum-faint shadow-none relative"
+        >
           <QuoteIcon class="absolute top-4 right-4 w-12 h-12 text-plum-faint/40 rotate-180" />
           <div class="flex items-center gap-2 mb-4">
             <BookOpenIcon class="w-4 h-4 text-plum" />
-            <h3 class="font-display font-bold text-plum select-none">Session Notes</h3>
+            <h3 class="font-display font-black text-plum tracking-tight">Session Notes</h3>
           </div>
-          <p class="font-body text-sm text-plum-soft italic leading-relaxed relative z-10">
+          <p class="font-body text-sm text-plum font-medium leading-relaxed relative z-10">
             "{{ queueDetail.notes }}"
           </p>
         </BaseCard>
 
         <!-- Insights -->
-        <BaseCard class="p-6 bg-mint-light/10 border-mint/20">
+        <BaseCard class="p-6 bg-mint-light/10 border border-mint/20 shadow-none">
           <div class="flex items-center gap-2 mb-4">
             <SparklesIcon class="w-4 h-4 text-mint" />
-            <h3 class="font-display font-bold text-plum">Session Insights</h3>
+            <h3 class="font-display font-black text-plum tracking-tight">Session Insights</h3>
           </div>
           <ul v-if="queueDetail?.insights?.length" class="space-y-3">
             <li v-for="(insight, i) in queueDetail.insights" :key="i" class="flex gap-3">
               <span class="w-1.5 h-1.5 rounded-full bg-mint mt-1.5 flex-shrink-0" />
-              <span class="font-body text-sm text-plum-soft">{{ insight }}</span>
+              <span class="font-body text-sm text-plum font-black">{{ insight }}</span>
             </li>
           </ul>
           <div v-else class="py-2">
-            <p class="font-body text-xs text-plum-muted italic">
+            <p class="font-body text-xs text-plum-muted italic font-medium">
               No specific insights generated for this session.
             </p>
           </div>
@@ -355,8 +368,12 @@ function formatStatus(status: string) {
 
         <!-- Timeline -->
         <div class="space-y-4">
-          <h3 class="font-display font-bold text-xl text-plum px-1">Session Timeline</h3>
-          <BaseCard class="p-6 bg-white min-h-[200px] flex flex-col justify-center">
+          <h3 class="font-display font-black text-xl text-plum px-1 tracking-tight">
+            Session Timeline
+          </h3>
+          <BaseCard
+            class="p-6 bg-white border border-plum-faint shadow-none min-h-[200px] flex flex-col justify-center"
+          >
             <HistoryDetailTimeline :events="queueDetail?.timeline || []" />
           </BaseCard>
         </div>

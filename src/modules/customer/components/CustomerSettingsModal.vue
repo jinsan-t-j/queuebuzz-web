@@ -134,7 +134,7 @@ onMounted(() => {
 
         <!-- Party Size Field (Stepper) -->
         <div v-if="canJoinWithParty" class="space-y-2">
-          <label class="font-body text-sm font-medium text-plum">Party Size</label>
+          <p class="font-body text-sm font-medium text-plum">Party Size</p>
           <div
             class="flex items-center justify-between rounded-2xl border border-plum-faint bg-plum-faint/30 p-4"
           >

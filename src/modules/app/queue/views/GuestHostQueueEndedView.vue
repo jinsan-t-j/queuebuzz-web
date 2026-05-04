@@ -57,7 +57,7 @@ const { mutate: mutateAuth, isPending } = useMutation({
   onSuccess: (data) => {
     if (data.redirectUrl) {
       showToast(`Account found. Redirecting to ${data.provider} login...`)
-      window.location.assign(data.redirectUrl)
+      globalThis.location.assign(data.redirectUrl)
     } else {
       showToast(data?.message || 'Check your email for the magic link.')
     }
@@ -101,7 +101,7 @@ const config = computed(() => {
         description: "The queue you're looking for doesn't exist or has been deleted by the host.",
         icon: ErrorCircleIcon,
         iconColor: 'text-danger',
-        bgColor: 'bg-[#FEF2F2]',
+        bgColor: 'bg-danger/10',
       }
     case QUEUE_ERROR_REASONS.UNAUTHORIZED:
       return {
@@ -118,8 +118,8 @@ const config = computed(() => {
         description:
           'We encountered an unexpected error while loading the queue. Please try again later.',
         icon: WarningTriangleIcon,
-        iconColor: 'text-[#F97316]',
-        bgColor: 'bg-[#FFF7ED]',
+        iconColor: 'text-warning',
+        bgColor: 'bg-warning/10',
       }
     case QUEUE_ERROR_REASONS.SESSION_EXPIRED:
     default:
@@ -128,8 +128,8 @@ const config = computed(() => {
         description:
           'Guest queue sessions last for 24 hours. Your session has ended to prevent data loss.',
         icon: ClockWarningOrangeIcon,
-        iconColor: 'text-[#F97316]',
-        bgColor: 'bg-[#FFF7ED]',
+        iconColor: 'text-warning',
+        bgColor: 'bg-warning/10',
       }
   }
 })
@@ -157,7 +157,7 @@ function handleSendLink() {
   <div class="relative min-h-screen overflow-hidden">
     <!-- Blob decorations -->
     <div
-      class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-[#F97316]/10 opacity-50 blur-[80px]"
+      class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-warning/10 opacity-50 blur-[80px]"
     />
     <div
       class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]"
@@ -168,7 +168,7 @@ function handleSendLink() {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
         <!-- ═══ Status Card (Left Column) ═══ -->
         <div
-          class="flex flex-col justify-center rounded-[40px] h-full bg-white px-10 py-12 text-center shadow-[0_4px_24px_rgba(26,10,46,0.06)] border border-plum-faint md:sticky md:top-24"
+          class="flex flex-col justify-center rounded-[40px] h-full bg-white px-10 py-12 text-center shadow-sm dark:shadow-none border border-plum-faint md:sticky md:top-24"
         >
           <!-- Status Icon -->
           <div
@@ -189,9 +189,7 @@ function handleSendLink() {
         </div>
 
         <!-- ═══ Registration CTA Card (Right Column) ═══ -->
-        <div
-          class="rounded-[40px] bg-plum p-10 shadow-[0_20px_50px_rgba(26,10,46,0.25)] border border-white/10"
-        >
+        <div class="rounded-[40px] bg-plum p-10 shadow-lg dark:shadow-none border border-white/10">
           <p class="font-body text-sm font-bold uppercase tracking-[1.5px] text-mint">
             Upgrade Your Experience
           </p>
@@ -216,10 +214,14 @@ function handleSendLink() {
           <!-- Email form -->
           <div class="mt-10 flex flex-col gap-4">
             <div class="flex flex-col gap-2.5">
-              <label class="font-body text-sm font-bold uppercase tracking-wider text-sand/50 ml-1">
+              <label
+                for="emailAddressEnded"
+                class="font-body text-sm font-bold uppercase tracking-wider text-sand/50 ml-1"
+              >
                 Email address
               </label>
               <input
+                id="emailAddressEnded"
                 v-model="localEmail"
                 type="email"
                 placeholder="you@company.com"
@@ -229,7 +231,7 @@ function handleSendLink() {
               />
             </div>
             <button
-              class="group mt-2 flex w-full items-center justify-center gap-3 rounded-[24px] bg-mint px-8 py-5 font-body text-lg font-bold text-plum transition-all hover:scale-[1.02] hover:bg-[#00FFB2] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+              class="group mt-2 flex w-full items-center justify-center gap-3 rounded-[24px] bg-mint px-8 py-5 font-body text-lg font-bold text-plum transition-all hover:scale-[1.02] hover:bg-mint active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
               :disabled="isPending"
               @click="handleSendLink"
             >

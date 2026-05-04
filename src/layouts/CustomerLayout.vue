@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { defineAsyncComponent } from 'vue'
+import { defineAsyncComponent, onMounted } from 'vue'
 import CustomerNavbar from '@/components/layout/customer/CustomerNavbar.vue'
 import CustomerFooter from '@/components/layout/customer/CustomerFooter.vue'
+
+onMounted(() => {
+  // Customer module is light-only
+  document.documentElement.classList.remove('dark')
+})
 
 const SystemAlertBanner = defineAsyncComponent(
   () => import('@/components/base/SystemAlertBanner.vue'),

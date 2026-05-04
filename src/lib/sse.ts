@@ -58,31 +58,26 @@ function parseEventBlock(block: string): SseEventFrame | null {
   const dataLines: string[] = []
 
   for (const line of block.split('\n')) {
-    if (!line || line.startsWith(':')) {
-      continue
-    }
+    if (!line || line.startsWith(':')) continue
 
     const { field, value } = parseField(line)
 
-    if (field === 'event') {
-      event = value || 'message'
-      continue
-    }
-
-    if (field === 'data') {
-      dataLines.push(value)
-      continue
-    }
-
-    if (field === 'id') {
-      id = value
-      continue
-    }
-
-    if (field === 'retry') {
-      const parsedRetry = Number.parseInt(value, 10)
-      if (!Number.isNaN(parsedRetry) && parsedRetry >= 0) {
-        retry = parsedRetry
+    switch (field) {
+      case 'event':
+        event = value || 'message'
+        break
+      case 'data':
+        dataLines.push(value)
+        break
+      case 'id':
+        id = value
+        break
+      case 'retry': {
+        const parsedRetry = Number.parseInt(value, 10)
+        if (!Number.isNaN(parsedRetry) && parsedRetry >= 0) {
+          retry = parsedRetry
+        }
+        break
       }
     }
   }
@@ -243,7 +238,11 @@ export function createSseClient(options: SseClientOptions): SseClient {
       })
 
       if (!response.ok) {
-        throw { status: response.status, message: `SSE handshake failed with ${response.status}` }
+        const err = new Error(`SSE handshake failed with ${response.status}`) as Error & {
+          status: number
+        }
+        err.status = response.status
+        throw err
       }
 
       const contentType = response.headers.get('content-type') || ''

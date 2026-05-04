@@ -156,7 +156,7 @@ onUnmounted(() => {
             :class="[
               'font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-black transition-all duration-500 hover:text-plum cursor-default inline-block leading-none',
               isVisible ? 'animate-pop' : 'opacity-0',
-              i === 1 || i === 2 ? 'text-mint' : 'text-plum',
+              i === 1 || i === 2 ? 'text-mint-dark' : 'text-plum',
             ]"
             :style="{ animationDelay: `${i * 100}ms` }"
           >

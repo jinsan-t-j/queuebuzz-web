@@ -22,7 +22,7 @@ const emit = defineEmits<{
   <BaseModal :is-open="isOpen" @close="emit('cancel')">
     <div class="bg-white p-8 md:p-10 text-center">
       <!-- Warning Icon -->
-      <div class="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50">
+      <div class="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/10">
         <AlertTriangle class="h-7 w-7 text-danger" />
       </div>
 

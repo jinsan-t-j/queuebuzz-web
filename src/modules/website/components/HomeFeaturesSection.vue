@@ -28,6 +28,7 @@ defineProps<{
   <section id="features" class="relative py-16 lg:py-24 z-10">
     <!-- Section Local Splashes: Purple & Blue Shards (Interactive Parallax) -->
     <div
+      aria-hidden="true"
       class="pointer-events-none absolute top-0 right-0 w-[600px] h-[600px] bg-purple-600/5 blur-[140px] animate-blob transition-transform duration-700 ease-out"
       :style="{
         clipPath: 'polygon(100% 0, 0 40%, 100% 100%)',
@@ -35,6 +36,7 @@ defineProps<{
       }"
     />
     <div
+      aria-hidden="true"
       class="pointer-events-none absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-400/5 blur-[100px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
       :style="{
         clipPath: 'polygon(0 0, 100% 60%, 0 100%)',
@@ -50,7 +52,7 @@ defineProps<{
         <BaseBadge class="mb-4">CORE CAPABILITIES</BaseBadge>
         <h2 class="font-display text-4xl font-bold leading-tight md:text-6xl">
           Everything you need, <br />
-          <span class="text-mint">nothing you don't.</span>
+          <span class="text-mint-dark">nothing you don't.</span>
         </h2>
       </div>
 
@@ -63,7 +65,7 @@ defineProps<{
             <div
               class="h-16 w-16 rounded-3xl bg-mint-light flex items-center justify-center mb-8 group-hover:scale-110 transition-transform"
             >
-              <Layout class="h-8 w-8 text-mint" />
+              <Layout class="h-8 w-8 text-mint-dark" />
             </div>
             <h3 class="font-display text-3xl font-bold mb-4">Modern Command Center</h3>
             <p class="font-body text-plum-soft text-lg leading-relaxed mb-6">
@@ -94,7 +96,7 @@ defineProps<{
                 <div class="w-2 h-2 rounded-full bg-mint" />
               </div>
               <Layout class="h-5 w-5 text-plum/20" />
-              <Users class="h-5 w-5 text-mint" />
+              <Users class="h-5 w-5 text-mint-dark" />
               <BarChart3 class="h-5 w-5 text-plum/20" />
               <Settings class="h-5 w-5 text-plum/20" />
             </div>
@@ -145,7 +147,9 @@ defineProps<{
                 <p class="font-body text-[10px] text-plum/40 uppercase tracking-widest mb-2">
                   Queue Code
                 </p>
-                <h5 class="font-display text-4xl font-black text-mint tracking-[0.2em]">H64XUF</h5>
+                <h5 class="font-display text-4xl font-black text-mint-dark tracking-[0.2em]">
+                  H64XUF
+                </h5>
               </div>
 
               <!-- Guest List -->
@@ -168,7 +172,7 @@ defineProps<{
                     <div
                       :class="[
                         'w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs',
-                        g.active ? 'bg-mint text-white' : 'bg-plum/5 text-plum/40',
+                        g.active ? 'bg-mint text-on-mint' : 'bg-plum/5 text-plum/40',
                       ]"
                     >
                       {{ i + 1 }}
@@ -178,7 +182,7 @@ defineProps<{
                       <p
                         :class="[
                           'font-body text-[10px] mt-1',
-                          g.active ? 'text-mint font-bold' : 'text-plum-muted',
+                          g.active ? 'text-mint-dark font-bold' : 'text-plum-muted',
                         ]"
                       >
                         {{ g.status }}
@@ -226,12 +230,12 @@ defineProps<{
           class="p-8 bg-white/40 border-plum/5 hover:bg-white/60 transition-all group relative"
         >
           <div
-            class="absolute top-6 right-6 px-2 py-0.5 rounded-full bg-mint/10 font-mono text-[8px] font-bold text-mint uppercase tracking-tighter"
+            class="absolute top-6 right-6 px-2 py-0.5 rounded-full bg-mint-light font-mono text-[8px] font-bold text-mint-dark uppercase tracking-tighter"
           >
             APP-LESS
           </div>
           <div class="h-12 w-12 rounded-2xl bg-mint-light flex items-center justify-center mb-6">
-            <Zap class="h-6 w-6 text-mint" />
+            <Zap class="h-6 w-6 text-mint-dark" />
           </div>
           <h3 class="font-display text-xl font-bold mb-2">Frictionless Entry</h3>
           <p class="font-body text-sm text-plum-soft leading-relaxed">
@@ -256,12 +260,12 @@ defineProps<{
           class="p-8 bg-white/40 border-plum/5 hover:bg-white/60 transition-all group relative"
         >
           <div
-            class="absolute top-6 right-6 px-2 py-0.5 rounded-full bg-mint/10 font-mono text-[8px] font-bold text-mint uppercase tracking-tighter"
+            class="absolute top-6 right-6 px-2 py-0.5 rounded-full bg-mint-light font-mono text-[8px] font-bold text-mint-dark uppercase tracking-tighter"
           >
             CSV EXPORT
           </div>
           <div class="h-12 w-12 rounded-2xl bg-mint-light flex items-center justify-center mb-6">
-            <FileDown class="h-6 w-6 text-mint" />
+            <FileDown class="h-6 w-6 text-mint-dark" />
           </div>
           <h3 class="font-display text-xl font-bold mb-2">Full Portability</h3>
           <p class="font-body text-sm text-plum-soft leading-relaxed">

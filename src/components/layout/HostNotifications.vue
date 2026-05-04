@@ -13,15 +13,15 @@ const icons = {
 
 const colors = {
   info: 'bg-plum-faint text-plum border-plum/10',
-  success: 'bg-[#ECFDF5] text-[#065F46] border-[#059669]/10',
-  warning: 'bg-orange-50 text-orange-700 border-orange-200',
-  error: 'bg-red-50 text-red-700 border-red-200',
+  success: 'bg-mint-light text-plum border-mint/10',
+  warning: 'bg-warning/10 text-warning-dark border-warning/20',
+  error: 'bg-danger/10 text-danger border-danger/20',
 }
 
 const iconColors = {
   info: 'text-plum/40',
   success: 'text-mint',
-  warning: 'text-orange-500',
+  warning: 'text-warning',
   error: 'text-danger',
 }
 </script>

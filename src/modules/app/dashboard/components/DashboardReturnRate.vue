@@ -95,7 +95,9 @@ const dayLabels = computed(() => {
 </script>
 
 <template>
-  <div class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+  <div
+    class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
+  >
     <!-- Loading skeleton -->
     <template v-if="isLoading">
       <div class="flex items-center justify-between mb-4">
@@ -107,9 +109,8 @@ const dayLabels = computed(() => {
           <path
             d="M 10 80 C 60 80, 100 40, 150 40 C 200 40, 250 90, 300 90 C 350 90, 400 30, 440 30"
             fill="none"
-            stroke="#CBD5E1"
-            stroke-width="3"
-            class="animate-pulse"
+            stroke="currentColor"
+            class="text-plum-faint animate-pulse"
           />
         </svg>
       </div>
@@ -189,7 +190,7 @@ const dayLabels = computed(() => {
                   v-for="(dot, i) in chartPlot.dots"
                   :key="i"
                   :offset="`${(dot.x / 440) * 100}%`"
-                  :stop-color="dot.rate > 0 ? '#00E5A0' : '#E8E2F0'"
+                  :stop-color="dot.rate > 0 ? 'var(--color-mint)' : 'var(--color-plum-faint)'"
                 />
               </linearGradient>
             </defs>
@@ -206,8 +207,8 @@ const dayLabels = computed(() => {
               :cx="point.x"
               :cy="point.y"
               :r="point.rate > 0 ? 3 : 2"
-              :fill="point.rate > 0 ? '#00E5A0' : '#E8E2F0'"
-              :stroke="point.rate > 0 ? 'white' : 'none'"
+              :fill="point.rate > 0 ? 'var(--color-mint)' : 'var(--color-plum-faint)'"
+              :stroke="point.rate > 0 ? 'var(--color-white)' : 'none'"
               stroke-width="2"
             />
           </svg>

@@ -8,12 +8,16 @@ interface Props {
   min?: number
   max?: number
   step?: number
+  ariaLabel?: string
+  id?: string
 }
 
 withDefaults(defineProps<Props>(), {
   min: 0,
   max: 100,
   step: 1,
+  ariaLabel: 'Range slider',
+  id: '',
 })
 
 const emit = defineEmits<{
@@ -37,11 +41,13 @@ function handleInput(e: Event) {
 
       <!-- Input -->
       <input
+        :id="id"
         type="range"
         :min="min"
         :max="max"
         :step="step"
         :value="modelValue"
+        :aria-label="ariaLabel"
         class="absolute -top-[7px] left-0 h-5 w-full cursor-pointer appearance-none bg-transparent outline-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-[4px] [&::-webkit-slider-thumb]:border-mint-light [&::-webkit-slider-thumb]:bg-mint [&::-webkit-slider-thumb]:shadow-lg"
         @input="handleInput"
       />

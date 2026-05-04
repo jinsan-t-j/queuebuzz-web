@@ -21,7 +21,7 @@ const messaging = getMessaging(app)
 
 onBackgroundMessage(messaging, (payload) => {
   const { title, options } = getNotificationDetails(payload)
-  void self.registration.showNotification(title, options)
+  globalThis.registration.showNotification(title, options)
 })
 
 /** @param {import('firebase/messaging/sw').MessagePayload} payload */
@@ -56,7 +56,7 @@ self.addEventListener('notificationclick', (event) => {
   const link = event.notification.data?.link || '/'
 
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+    globalThis.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
       const targetUrl = new URL(link, self.location.origin)
 
       for (const client of clients) {
@@ -71,7 +71,7 @@ self.addEventListener('notificationclick', (event) => {
         return client.focus()
       }
 
-      return self.clients.openWindow?.(link) ?? Promise.resolve()
+      return globalThis.clients.openWindow?.(link) ?? Promise.resolve()
     }),
   )
 })

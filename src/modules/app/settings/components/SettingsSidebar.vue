@@ -34,7 +34,7 @@ const navItems = [
         class="flex items-center gap-3 cursor-pointer whitespace-nowrap rounded-2xl px-4 py-3 font-body text-sm font-medium transition-all duration-200"
         :class="[
           props.activeSection === item.id
-            ? 'bg-plum text-sand shadow-lg shadow-plum/10'
+            ? 'bg-plum text-sand shadow-lg dark:shadow-none shadow-plum/10'
             : 'text-plum-muted hover:bg-plum-faint hover:text-plum',
         ]"
         @click="emit('navigate', item.id)"

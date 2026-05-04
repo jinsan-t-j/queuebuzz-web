@@ -30,7 +30,7 @@ const router = useRouter()
   <div class="flex flex-col gap-8">
     <!-- Welcome Hero -->
     <div
-      class="rounded-3xl border border-mint/20 bg-mint-light/30 px-8 py-10 overflow-hidden relative"
+      class="rounded-3xl border border-mint/20 bg-mint-light px-8 py-10 overflow-hidden relative"
     >
       <!-- Decorative Background Element -->
       <div
@@ -39,7 +39,7 @@ const router = useRouter()
 
       <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex flex-col gap-2">
-          <h1 class="font-display text-3xl font-bold text-plum tracking-tight">
+          <h1 class="font-display text-3xl font-black text-plum tracking-tight">
             Welcome to QueueBuzz, {{ userName || 'Partner' }}!
           </h1>
           <p class="max-w-xl font-body text-base text-plum-muted leading-relaxed">
@@ -57,41 +57,41 @@ const router = useRouter()
     <!-- Quick Actions for New Users -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
       <div
-        class="group p-6 rounded-3xl bg-white border border-plum-faint hover:border-mint transition-all cursor-pointer shadow-sm hover:shadow-md"
+        class="group p-6 rounded-3xl bg-white border border-plum-faint hover:border-mint transition-all cursor-pointer shadow-none"
         @click="emit('create-first-queue')"
       >
         <div
-          class="w-12 h-12 rounded-2xl bg-mint-light flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+          class="w-12 h-12 rounded-2xl bg-sand flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
         >
-          <RefreshCw class="w-6 h-6 text-plum" />
+          <RefreshCw class="w-6 h-6 text-mint-dark" />
         </div>
-        <h3 class="font-display font-bold text-lg text-plum mb-1">Create Queue</h3>
+        <h3 class="font-display font-black text-lg text-plum mb-1">Create Queue</h3>
         <p class="font-body text-sm text-plum-muted">
           Define your service capacity and join codes.
         </p>
       </div>
 
       <div
-        class="group p-6 rounded-3xl bg-white border border-plum-faint hover:border-mint transition-all cursor-pointer shadow-sm hover:shadow-md"
+        class="group p-6 rounded-3xl bg-white border border-plum-faint hover:border-mint transition-all cursor-pointer shadow-none"
         @click="router.push('/settings')"
       >
         <div
-          class="w-12 h-12 rounded-2xl bg-plum-faint flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+          class="w-12 h-12 rounded-2xl bg-sand flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
         >
           <AlertCircle class="w-6 h-6 text-plum" />
         </div>
-        <h3 class="font-display font-bold text-lg text-plum mb-1">Business Info</h3>
+        <h3 class="font-display font-black text-lg text-plum mb-1">Business Info</h3>
         <p class="font-body text-sm text-plum-muted">
           Add your logo and location for customers to see.
         </p>
       </div>
 
       <div
-        class="group p-6 rounded-3xl bg-white border border-plum-faint hover:border-mint transition-all cursor-pointer shadow-sm hover:shadow-md"
+        class="group p-6 rounded-3xl bg-white border border-plum-faint hover:border-mint transition-all cursor-pointer shadow-none"
         @click="router.push('/billing')"
       >
         <div
-          class="w-12 h-12 rounded-2xl bg-[#F0E6FF] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
+          class="w-12 h-12 rounded-2xl bg-sand flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"
         >
           <svg
             class="w-6 h-6 text-plum"
@@ -107,7 +107,7 @@ const router = useRouter()
             />
           </svg>
         </div>
-        <h3 class="font-display font-bold text-lg text-plum mb-1">Pick a Plan</h3>
+        <h3 class="font-display font-black text-lg text-plum mb-1">Pick a Plan</h3>
         <p class="font-body text-sm text-plum-muted">
           Unlock advanced analytics and priority support.
         </p>

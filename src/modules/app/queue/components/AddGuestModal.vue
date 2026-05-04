@@ -71,13 +71,11 @@ const handleClose = () => {
 
 <template>
   <BaseModal :is-open="isOpen" @close="handleClose">
-    <div
-      class="relative w-full rounded-[48px] bg-[#f8f8f8] px-16 pb-12 pt-10 text-center shadow-[0_30px_70px_rgba(0,0,0,0.10)]"
-    >
+    <div class="px-16 pb-12 pt-10 text-center">
       <!-- Close button -->
       <button
         type="button"
-        class="absolute right-6 top-6 flex h-8 w-8 items-center justify-center rounded-lg text-plum/40 transition-colors hover:bg-plum/5 hover:text-plum cursor-pointer"
+        class="absolute right-6 top-6 flex h-8 w-8 items-center justify-center rounded-lg text-plum-muted/40 transition-colors hover:bg-plum/5 hover:text-plum cursor-pointer"
         @click="handleClose"
       >
         <CloseXIcon class="h-3 w-3" />
@@ -169,7 +167,7 @@ const handleClose = () => {
             class="pb-6 pt-2 px-1 animate-in fade-in slide-in-from-top-1 duration-300"
           >
             <div
-              class="flex items-center justify-between bg-white rounded-2xl border border-plum-faint p-2 shadow-sm"
+              class="flex items-center justify-between bg-white rounded-2xl border border-plum-faint p-2 shadow-sm dark:shadow-none"
             >
               <div class="flex flex-col ml-3 relative h-10 justify-center">
                 <transition
@@ -225,7 +223,7 @@ const handleClose = () => {
                   :class="
                     accompanying >= maxAllowedPartySize - 1
                       ? 'bg-plum-faint text-plum-muted/40 cursor-not-allowed'
-                      : 'bg-plum text-white hover:bg-plum-soft active:scale-95 shadow-md shadow-plum/10 cursor-pointer'
+                      : 'bg-plum text-sand hover:bg-plum-soft active:scale-95 shadow-md shadow-plum/10 cursor-pointer'
                   "
                   :disabled="accompanying >= maxAllowedPartySize - 1"
                   @click="accompanying = Math.min(maxAllowedPartySize - 1, accompanying + 1)"
@@ -255,7 +253,7 @@ const handleClose = () => {
           <BaseButton
             type="submit"
             variant="primary"
-            class="flex-1 py-4.5 rounded-3xl font-bold shadow-xl shadow-mint/20"
+            class="flex-1 py-4.5 rounded-3xl font-bold shadow-xl shadow-mint/20 dark:shadow-none"
           >
             Add to Queue
           </BaseButton>

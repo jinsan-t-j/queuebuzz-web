@@ -50,7 +50,12 @@ const paddingClasses = computed(() => {
 </script>
 
 <template>
-  <div :class="['rounded-card bg-white shadow-card', paddingClasses]">
+  <div
+    :class="[
+      'rounded-card bg-white border border-plum-faint shadow-card dark:shadow-none transition-all',
+      paddingClasses,
+    ]"
+  >
     <slot />
   </div>
 </template>

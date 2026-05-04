@@ -183,11 +183,12 @@ function copyCustomLink() {
   <form @submit.prevent="onSubmit">
     <div class="mt-8 flex flex-col gap-5">
       <!-- ═══ Card 1: Queue Name ═══ -->
-      <div
-        class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
-      >
-        <label class="mb-3 block font-body text-sm font-medium text-[#5c5267]"> Queue Name </label>
+      <div class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none">
+        <label for="queueName" class="mb-3 block font-body text-sm font-medium text-plum-muted">
+          Queue Name
+        </label>
         <input
+          id="queueName"
           v-model="queueName"
           placeholder=" What are people queuing for?"
           class="mb-2 w-full border-none bg-transparent font-display text-[22px] font-semibold text-plum placeholder:text-plum/20 outline-none"
@@ -205,7 +206,7 @@ function copyCustomLink() {
             v-for="suggestion in suggestions"
             :key="suggestion"
             type="button"
-            class="rounded-full border border-plum-faint px-4 py-1.5 font-body text-sm font-medium text-[#5c5267] transition-colors hover:bg-plum-faint cursor-pointer"
+            class="rounded-full border border-plum-faint px-4 py-1.5 font-body text-sm font-medium text-plum-muted transition-colors hover:bg-plum-faint cursor-pointer"
             @click="selectSuggestion(suggestion)"
           >
             {{ suggestion }}
@@ -215,9 +216,9 @@ function copyCustomLink() {
 
       <!-- ═══ Card 2: Service Time ═══ -->
       <div
-        class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)] relative"
+        class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none relative"
       >
-        <label class="block font-body text-sm font-medium text-[#5c5267]">
+        <label for="serviceTime" class="block font-body text-sm font-medium text-plum-muted">
           How long does it typically take to serve one guest?
         </label>
 
@@ -225,7 +226,7 @@ function copyCustomLink() {
           <!-- Value callout tooltip over slider -->
           <div class="flex flex-col relative w-full">
             <div
-              class="absolute -top-[37px] -translate-x-1/2 rounded-[5px] border border-[#e8e6ea] px-3 py-1.5 font-body text-sm font-semibold text-plum shadow-[0_4px_6px_rgba(0,0,0,0.10),0_10px_15px_rgba(0,0,0,0.10)] transition-all bg-white whitespace-nowrap"
+              class="absolute -top-[37px] -translate-x-1/2 rounded-[5px] border border-plum-faint px-3 py-1.5 font-body text-sm font-semibold text-plum shadow-sm dark:shadow-none transition-all bg-white whitespace-nowrap"
               :style="{
                 left: `calc(${((Number(serviceTime) - 1) / 29) * 100}% + (${12 - ((Number(serviceTime) - 1) / 29) * 24}px))`,
               }"
@@ -234,14 +235,16 @@ function copyCustomLink() {
             </div>
 
             <input
+              id="serviceTime"
               v-model.number="serviceTime"
               type="range"
               min="1"
               max="30"
+              aria-label="Service time in minutes"
               class="w-full accent-mint h-2 bg-plum/10 rounded-lg appearance-none cursor-pointer"
             />
 
-            <div class="mt-2 flex justify-between font-body text-sm text-[#5c5267]">
+            <div class="mt-2 flex justify-between font-body text-sm text-plum-muted">
               <span>1 min</span>
               <span>30 min</span>
             </div>
@@ -253,23 +256,31 @@ function copyCustomLink() {
       </div>
 
       <!-- ═══ Card 3: Party Settings ═══ -->
-      <div
-        class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
-      >
+      <div class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none">
         <div class="flex items-center justify-between">
           <div>
-            <label class="block font-body text-sm font-medium text-[#5c5267]">
+            <label
+              for="allowPartyJoining"
+              class="block font-body text-sm font-medium text-plum-muted"
+            >
               Would you like guests to be able to bring others with them?
             </label>
           </div>
-          <BaseToggle v-model="allowPartyJoining" />
+          <BaseToggle
+            id="allowPartyJoining"
+            v-model="allowPartyJoining"
+            aria-label="Toggle party joining mode"
+          />
         </div>
 
         <div
           v-if="allowPartyJoining"
           class="mt-8 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
         >
-          <label class="block font-body text-sm font-medium text-[#5c5267] mb-6">
+          <label
+            for="maxPartySize"
+            class="block font-body text-sm font-medium text-plum-muted mb-6"
+          >
             How many people are allowed including guest?
           </label>
 
@@ -291,6 +302,7 @@ function copyCustomLink() {
             <div class="flex items-center gap-2 ml-2">
               <span class="text-sm text-plum-muted font-body">Custom:</span>
               <input
+                id="maxPartySize"
                 v-model.number="maxPartySize"
                 type="number"
                 min="1"
@@ -307,10 +319,8 @@ function copyCustomLink() {
 
       <!-- ═══ Card 3: Host vs Guest Version ═══ -->
       <template v-if="role === 'host'">
-        <div
-          class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
-        >
-          <label class="mb-3 block font-body text-sm font-medium text-[#5c5267]">
+        <div class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none">
+          <label for="slug" class="mb-3 block font-body text-sm font-medium text-plum-muted">
             Queue Link
           </label>
           <div
@@ -318,6 +328,7 @@ function copyCustomLink() {
           >
             <span class="font-body text-[18px] text-plum hidden sm:inline">queuebuzz.com/</span>
             <input
+              id="slug"
               v-model="slug"
               placeholder="eenie-meenie"
               class="w-full border-none bg-transparent font-display text-[18px] text-plum placeholder:text-plum/30 font-body outline-none"
@@ -328,33 +339,37 @@ function copyCustomLink() {
             </div>
             <button
               type="button"
-              class="inline-flex items-center text-center gap-2 rounded-xl bg-mint px-4 py-2 font-body text-base font-medium text-plum cursor-pointer transition-colors hover:bg-mint-dark min-w-[100px] justify-center"
+              class="inline-flex items-center text-center gap-2 rounded-xl bg-mint px-4 py-2 font-body text-base font-medium text-on-mint cursor-pointer transition-colors hover:bg-mint-dark min-w-[100px] justify-center"
               @click="copyCustomLink"
             >
-              <CopyCodeIcon v-if="!isSlugCopied" class="h-[17px] w-[14px] text-plum" />
+              <CopyCodeIcon v-if="!isSlugCopied" class="h-[17px] w-[14px] text-on-mint" />
               {{ isSlugCopied ? 'Copied!' : 'Copy' }}
             </button>
           </div>
           <div v-if="errors.slug" class="mt-2 font-body text-sm text-red-500">
             {{ errors.slug }}
           </div>
-          <p class="mt-4 font-body text-sm text-[#5c5267]">
+          <p class="mt-4 font-body text-sm text-plum-muted">
             This is the address people use to find your queue. If empty, we’ll use a random version.
           </p>
         </div>
 
         <!-- ═══ Card 4: Guest Settings ═══ -->
-        <div
-          class="rounded-card border border-plum/5 bg-white p-6 shadow-[0_4px_24px_rgba(26,10,46,0.05)]"
-        >
+        <div class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none">
           <div class="flex items-center justify-between">
             <div>
-              <p class="font-body font-semibold text-plum">Collect guest emails</p>
-              <p class="font-body text-sm text-[#5c5267] mt-0.5">
+              <label for="collectEmails" class="font-body font-semibold text-plum"
+                >Collect guest emails</label
+              >
+              <p class="font-body text-sm text-plum-muted mt-0.5">
                 Require guests to provide an email address when they join.
               </p>
             </div>
-            <BaseToggle v-model="collectEmails" />
+            <BaseToggle
+              id="collectEmails"
+              v-model="collectEmails"
+              aria-label="Toggle collect emails from customers"
+            />
           </div>
         </div>
       </template>
@@ -366,7 +381,7 @@ function copyCustomLink() {
     <div class="mt-8 flex items-center justify-between">
       <button
         type="button"
-        class="font-body text-base font-semibold text-[#5c5267] transition-colors hover:text-plum cursor-pointer"
+        class="font-body text-base font-semibold text-plum-muted transition-colors hover:text-plum cursor-pointer"
         @click="handleCancel"
       >
         Cancel
@@ -374,15 +389,15 @@ function copyCustomLink() {
       <button
         type="submit"
         :disabled="isSubmitting || isCheckingSlug"
-        class="rounded-input bg-mint px-8 py-3 font-body text-lg font-medium text-plum shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[160px]"
+        class="rounded-input bg-mint px-8 py-3 font-body text-lg font-medium text-on-mint shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[160px]"
       >
-        <SpinnerLoadingIcon v-if="isSubmitting" class="mr-2 h-5 w-5 animate-spin text-plum" />
+        <SpinnerLoadingIcon v-if="isSubmitting" class="mr-2 h-5 w-5 animate-spin text-on-mint" />
         {{ isSubmitting ? 'Opening...' : 'Open Queue →' }}
       </button>
     </div>
 
     <!-- ═══ Account nudge (Guest only) ═══ -->
-    <p v-if="role === 'guest'" class="mt-6 text-center font-body text-sm text-[#6b7280]">
+    <p v-if="role === 'guest'" class="mt-6 text-center font-body text-sm text-plum-muted">
       Secure your queue & customize your URL.
       <router-link
         to="/login"

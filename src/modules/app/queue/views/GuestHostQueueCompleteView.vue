@@ -210,12 +210,15 @@ function handleSendLink() {
           <!-- Email form -->
           <div class="mt-8 flex flex-col gap-4">
             <div class="flex flex-col gap-1.5">
-              <label class="font-body text-sm font-bold text-plum"> Email address </label>
+              <label for="emailAddressComplete" class="font-body text-sm font-bold text-plum">
+                Email address
+              </label>
               <input
+                id="emailAddressComplete"
                 :value="localEmail"
                 type="email"
                 placeholder="name@company.com"
-                class="w-full rounded-input border border-plum-faint px-4 py-4 font-body text-lg text-plum placeholder:text-[#6b7280] outline-none transition-colors focus:border-mint"
+                class="w-full rounded-input border border-plum-faint px-4 py-4 font-body text-lg text-plum placeholder:text-plum-muted/60 outline-none transition-colors focus:border-mint"
                 @input="handleEmailInput"
               />
             </div>

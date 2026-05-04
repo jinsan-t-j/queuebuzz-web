@@ -132,19 +132,19 @@ watch(entryStatusKey, (newKey, oldKey) => {
 
 <template>
   <div
-    class="max-h-[580px] flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+    class="max-h-[580px] flex flex-1 flex-col rounded-card border border-plum-faint bg-white shadow-sm dark:shadow-none"
   >
     <!-- Header -->
-    <div class="border-b border-plum/5 bg-plum/[0.02] px-6 py-4">
+    <div class="border-b border-plum-faint bg-plum-faint/10 px-6 py-4">
       <div class="flex items-center gap-3">
         <div
-          class="flex flex-1 items-center gap-0 rounded-input border border-plum/5 bg-sand px-4 py-2"
+          class="flex flex-1 items-center gap-0 rounded-input border border-plum-faint bg-plum-faint/10 px-4 py-2"
         >
-          <SearchIcon class="h-[10px] w-[10px] text-plum/40" />
+          <SearchIcon class="h-[10px] w-[10px] text-plum-muted" />
           <input
             :value="searchQuery"
             placeholder="Search ..."
-            class="ml-2 w-full border-none bg-transparent font-body text-sm font-medium text-plum/80 placeholder:text-plum/30 tracking-wider focus:outline-none"
+            class="ml-2 w-full border-none bg-transparent font-body text-sm font-medium text-plum placeholder:text-plum-muted tracking-wider focus:outline-none"
             @input="emit('search', ($event.target as HTMLInputElement).value)"
           />
         </div>
@@ -159,8 +159,8 @@ watch(entryStatusKey, (newKey, oldKey) => {
       <!-- Active Guests -->
       <!-- Case 1: No entries at all (Truly empty) -->
       <template v-if="totalCount === 0 && !searchQuery">
-        <div class="flex flex-col items-center justify-center py-10 opacity-40">
-          <p class="mb-4 font-body text-sm text-plum/80 text-center max-w-[280px]">
+        <div class="flex flex-col items-center justify-center py-10 opacity-80">
+          <p class="mb-4 font-body text-sm text-plum-muted text-center max-w-[280px]">
             When guests join the queue, they will appear here.
           </p>
           <ActionCenterIcon class="h-10 w-11" />
@@ -186,15 +186,15 @@ watch(entryStatusKey, (newKey, oldKey) => {
         <div
           v-for="entry in activeEntries"
           :key="entry.id"
-          class="group flex cursor-pointer items-center rounded-2xl border px-4 py-4 transition-all duration-300 hover:shadow-md"
+          class="group flex cursor-pointer items-center rounded-2xl border px-4 py-4 transition-all duration-300 hover:shadow-md dark:hover:shadow-none"
           :class="[
             entry.status === ENTRY_STATUS.CALLED
-              ? 'border-2 border-mint shadow-[0_8px_32px_-8px_rgba(0,229,160,0.4)] bg-mint/[0.03] animate-status-pulse'
+              ? 'border-2 border-mint shadow-[0_8px_32px_-8px_rgba(0,229,160,0.4)] dark:shadow-none bg-mint/5 dark:bg-mint/10 animate-status-pulse'
               : entry.status === ENTRY_STATUS.ARRIVED
-                ? 'border-mint/20 bg-mint/5 shadow-sm'
+                ? 'border-mint/20 bg-mint/5 dark:bg-mint/10 shadow-sm dark:shadow-none'
                 : entry.status === ENTRY_STATUS.IDLE
-                  ? 'border-warning/30 bg-warning/[0.03] opacity-80'
-                  : 'border-plum/5 shadow-sm bg-white hover:border-plum/20',
+                  ? 'border-warning/30 bg-warning/5 dark:bg-warning/10 opacity-80'
+                  : 'border-plum-faint shadow-sm dark:shadow-none bg-white dark:bg-plum-faint/30 hover:border-plum-faint/80',
             recoveredIds.has(entry.id)
               ? '!border-mint !bg-mint/10 !scale-[1.02] ring-2 ring-mint ring-offset-1 z-10'
               : '',
@@ -206,12 +206,12 @@ watch(entryStatusKey, (newKey, oldKey) => {
               class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl font-mono text-lg font-bold transition-all duration-300"
               :class="
                 entry.status === ENTRY_STATUS.CALLED
-                  ? 'bg-plum text-mint'
+                  ? 'bg-plum dark:bg-mint text-mint dark:text-on-mint'
                   : entry.status === ENTRY_STATUS.ARRIVED
-                    ? 'bg-mint text-sand shadow-sm'
+                    ? 'bg-mint text-on-mint shadow-sm dark:shadow-none'
                     : entry.status === ENTRY_STATUS.IDLE
                       ? 'bg-warning/20 text-warning'
-                      : 'bg-plum/5 text-plum/40'
+                      : 'bg-plum-faint text-plum-muted'
               "
             >
               <template v-if="entry.status === ENTRY_STATUS.CALLED">
@@ -249,7 +249,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
 
                 <BaseTooltip v-if="entry.createdBy" text="Added by you">
                   <ShieldCheckIcon
-                    class="h-3.5 w-3.5 flex-shrink-0 text-[#00B87A] opacity-60 transition-opacity hover:opacity-100"
+                    class="h-3.5 w-3.5 flex-shrink-0 text-mint-dark opacity-60 transition-opacity hover:opacity-100"
                   />
                 </BaseTooltip>
               </div>
@@ -278,13 +278,13 @@ watch(entryStatusKey, (newKey, oldKey) => {
           </div>
           <div class="relative ml-2 guest-dropdown-container">
             <button
-              class="flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-plum/5 cursor-pointer"
+              class="flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-plum/5 dark:hover:bg-plum-faint/40 cursor-pointer"
               @click.stop="openDetails(entry)"
             >
               <div class="flex h-4 w-1 flex-col items-center justify-center gap-[2px]">
-                <span class="block h-[3px] w-[3px] rounded-full bg-plum/40" />
-                <span class="block h-[3px] w-[3px] rounded-full bg-plum/40" />
-                <span class="block h-[3px] w-[3px] rounded-full bg-plum/40" />
+                <span class="block h-[3px] w-[3px] rounded-full bg-plum-muted" />
+                <span class="block h-[3px] w-[3px] rounded-full bg-plum-muted" />
+                <span class="block h-[3px] w-[3px] rounded-full bg-plum-muted" />
               </div>
             </button>
           </div>
@@ -292,7 +292,10 @@ watch(entryStatusKey, (newKey, oldKey) => {
       </template>
     </div>
 
-    <div v-if="servedEntries.length > 0" class="border-t border-plum/5 bg-plum/[0.01]">
+    <div
+      v-if="servedEntries.length > 0"
+      class="border-t border-plum-faint bg-plum-faint/10 dark:bg-plum-faint/30"
+    >
       <button
         class="flex w-full items-center justify-between px-6 py-3 text-plum-muted transition-colors hover:text-plum/60 cursor-pointer"
         @click="isHistoryExpanded = !isHistoryExpanded"
@@ -324,12 +327,12 @@ watch(entryStatusKey, (newKey, oldKey) => {
         <div
           v-for="entry in servedEntries"
           :key="entry.id"
-          class="group flex cursor-pointer items-center rounded-xl border border-plum/[0.03] bg-sand/30 px-3 py-3 opacity-60 hover:opacity-100 transition-all"
+          class="group flex cursor-pointer items-center rounded-xl border border-plum-faint bg-plum-faint/10 px-3 py-3 opacity-60 hover:opacity-100 transition-all"
           @click="openDetails(entry)"
         >
           <div class="flex items-center gap-3 min-w-0 flex-1">
             <span
-              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-plum/5 text-plum/30 font-mono text-sm font-bold"
+              class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-plum-faint/30 text-plum-muted font-mono text-sm font-bold"
             >
               <template v-if="entry.servedAt">
                 <CheckIcon class="h-4 w-4" />
@@ -356,14 +359,14 @@ watch(entryStatusKey, (newKey, oldKey) => {
     </div>
 
     <!-- Action buttons -->
-    <div class="border-t border-plum/5 p-4">
+    <div class="border-t border-plum-faint p-4">
       <button
         class="flex w-full items-center justify-center gap-3 rounded-2xl px-8 py-4 font-body text-lg font-bold transition-all active:scale-[0.98] cursor-pointer"
         :disabled="nextCallDisabled"
         :class="
           !nextCallDisabled
-            ? 'bg-plum text-sand hover:bg-plum-soft shadow-lg shadow-plum/10'
-            : 'bg-plum/40 text-white cursor-not-allowed'
+            ? 'bg-plum text-sand hover:bg-plum-soft shadow-lg shadow-plum/10 dark:shadow-none'
+            : 'bg-plum-muted/40 text-white cursor-not-allowed'
         "
         @click="emit('call-next')"
       >
@@ -372,7 +375,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
       </button>
       <p
         v-if="activeEntries.length === 0 || isPaused || (strictQueueMode && hasActiveCalledEntry)"
-        class="mt-3 text-center font-body text-xs font-medium uppercase tracking-wider text-plum/30"
+        class="mt-3 text-center font-body text-xs font-medium uppercase tracking-wider text-plum-muted"
       >
         <template v-if="isPaused">Resume queue to call guests</template>
         <template v-else-if="strictQueueMode && hasActiveCalledEntry">

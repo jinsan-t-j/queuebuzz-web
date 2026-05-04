@@ -56,8 +56,8 @@ const gridCells = computed(() => {
   const rowsMap = new Map()
   const hoursSet = new Set<number>()
 
-  for (let i = 0; i < props.data.length; i++) {
-    const item = props.data[i]
+  for (const element of props.data) {
+    const item = element
     hoursSet.add(item.hour)
     if (!rowsMap.has(item.day)) {
       rowsMap.set(item.day, new Map())
@@ -85,7 +85,9 @@ function cellColor(value: number) {
 </script>
 
 <template>
-  <div class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+  <div
+    class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
+  >
     <div class="flex items-center justify-between">
       <h4 class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted">
         Dropped & Skipped

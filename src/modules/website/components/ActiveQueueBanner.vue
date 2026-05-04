@@ -26,10 +26,10 @@ function startDrag(e: MouseEvent | TouchEvent) {
   startX = clientX - bannerX.value
   startY = clientY - bannerY.value
 
-  window.addEventListener('mousemove', handleDrag)
-  window.addEventListener('mouseup', stopDrag)
-  window.addEventListener('touchmove', handleDrag)
-  window.addEventListener('touchend', stopDrag)
+  globalThis.addEventListener('mousemove', handleDrag)
+  globalThis.addEventListener('mouseup', stopDrag)
+  globalThis.addEventListener('touchmove', handleDrag)
+  globalThis.addEventListener('touchend', stopDrag)
 }
 
 function handleDrag(e: MouseEvent | TouchEvent) {
@@ -43,10 +43,10 @@ function handleDrag(e: MouseEvent | TouchEvent) {
 
 function stopDrag() {
   isDragging.value = false
-  window.removeEventListener('mousemove', handleDrag)
-  window.removeEventListener('mouseup', stopDrag)
-  window.removeEventListener('touchmove', handleDrag)
-  window.removeEventListener('touchend', stopDrag)
+  globalThis.removeEventListener('mousemove', handleDrag)
+  globalThis.removeEventListener('mouseup', stopDrag)
+  globalThis.removeEventListener('touchmove', handleDrag)
+  globalThis.removeEventListener('touchend', stopDrag)
 }
 </script>
 

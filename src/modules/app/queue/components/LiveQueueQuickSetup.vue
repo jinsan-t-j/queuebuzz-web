@@ -102,9 +102,9 @@ onMounted(() => {
   loadPreferences()
   updateBrowserPermission()
 
-  window.addEventListener('storage', loadPreferences)
+  globalThis.addEventListener('storage', loadPreferences)
   // Re-check permission if user switches back to this tab
-  window.addEventListener('focus', updateBrowserPermission)
+  globalThis.addEventListener('focus', updateBrowserPermission)
 
   if (pendingSteps.value.length > 0) {
     states.value.activeStepId = pendingSteps.value[0].id
@@ -116,7 +116,7 @@ onMounted(() => {
     }, 3000)
   }
 
-  if (window.Notification && Notification.permission === 'denied') {
+  if (globalThis.Notification && Notification.permission === 'denied') {
     states.value.isNotifDenied = true
   }
 })
@@ -173,12 +173,12 @@ function skipTask() {
     class="fixed bottom-18 right-6 z-50 flex flex-col items-end max-w-[340px] w-full"
   >
     <div
-      class="w-full flex flex-col bg-white border border-plum/10 rounded-[32px] shadow-[0_24px_64px_rgba(26,10,46,0.16)] overflow-hidden transition-all duration-500"
+      class="w-full flex flex-col bg-white border border-plum/10 dark:border-plum-faint rounded-[32px] shadow-[0_24px_64px_rgba(26,10,46,0.16)] dark:shadow-none overflow-hidden transition-all duration-500"
       :class="states.isExpanded ? 'max-h-[600px]' : 'max-h-[56px]'"
     >
       <!-- Header / Accordion Trigger -->
       <button
-        class="w-full flex items-center gap-3 px-5 py-3.5 bg-plum text-sand transition-all hover:bg-plum-soft active:scale-[0.99] group text-left"
+        class="w-full flex items-center gap-3 px-5 py-3.5 bg-plum text-sand dark:bg-plum-faint dark:text-plum transition-all hover:bg-plum-soft dark:hover:bg-plum-faint/80 active:scale-[0.99] group text-left"
         @click="states.isExpanded = !states.isExpanded"
       >
         <div class="relative flex items-center justify-center w-6 h-6 shrink-0">
@@ -201,20 +201,25 @@ function skipTask() {
               stroke-width="2.5"
               stroke-dasharray="62.83"
               :stroke-dashoffset="62.83 - (62.83 * progressPercent) / 100"
-              class="transition-all duration-700 ease-out text-mint"
+              class="transition-all duration-700 ease-out text-mint dark:text-mint-dark"
             />
           </svg>
-          <SparklesIcon v-if="progressPercent < 100" class="w-3 h-3 text-mint" />
-          <CheckCircleIcon v-else class="w-3.5 h-3.5 text-mint" />
+          <SparklesIcon
+            v-if="progressPercent < 100"
+            class="w-3 h-3 text-mint dark:text-mint-dark"
+          />
+          <CheckCircleIcon v-else class="w-3.5 h-3.5 text-mint dark:text-mint-dark" />
         </div>
 
-        <span class="font-body text-[11px] font-bold uppercase tracking-[2px] flex-1 text-mint">
+        <span
+          class="font-body text-[11px] font-bold uppercase tracking-[2px] flex-1 text-mint dark:text-mint-dark"
+        >
           Queue Performance ({{ steps.filter((s) => s.isCompleted || s.isDismissed).length }}/2)
         </span>
 
         <component
           :is="states.isExpanded ? ChevronDownIcon : ChevronUpIcon"
-          class="w-4 h-4 text-sand/40 group-hover:text-sand transition-transform duration-300"
+          class="w-4 h-4 text-sand/40 dark:text-plum/40 group-hover:text-sand dark:group-hover:text-plum transition-transform duration-300"
           :class="{ 'rotate-180': states.isExpanded }"
         />
       </button>
@@ -228,7 +233,9 @@ function skipTask() {
             :key="step.id"
             :class="[
               'group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 text-left w-full cursor-pointer overflow-hidden',
-              step.isActive ? 'bg-white border-plum/10 shadow-sm' : 'bg-sand/30 hover:bg-sand/60',
+              step.isActive
+                ? 'bg-white dark:bg-plum-faint/10 border-plum/10 shadow-sm dark:shadow-none'
+                : 'bg-sand/30 dark:bg-sand/10 hover:bg-sand/60 dark:hover:bg-sand/20',
             ]"
             @click="selectStep(step.id)"
           >
@@ -241,10 +248,10 @@ function skipTask() {
               :class="[
                 'w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-500 font-bold text-[9px]',
                 step.isCompleted || step.isDismissed
-                  ? 'bg-mint text-white'
+                  ? 'bg-mint text-on-mint'
                   : step.isActive
-                    ? 'bg-plum text-sand'
-                    : 'bg-plum/5 text-plum/30',
+                    ? 'bg-plum text-sand dark:bg-plum-faint dark:text-plum'
+                    : 'bg-plum/5 dark:bg-plum-faint/5 text-plum/30 dark:text-plum/30',
               ]"
             >
               <CheckCircleIcon v-if="step.isCompleted || step.isDismissed" class="w-3 h-3" />
@@ -350,7 +357,7 @@ function skipTask() {
                 </p>
                 <BaseButton
                   variant="primary"
-                  class="w-full h-11 !bg-mint !text-plum"
+                  class="w-full h-11 !bg-mint !text-on-mint"
                   :disabled="isFcmRegistering"
                   @click="handleEnableNotifs"
                 >

@@ -4,6 +4,43 @@ import { useQueueStore } from '@/stores/queue.store'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 import type { TrendSummary } from '@/modules/app/queue/types'
 
+function buildHourlyBoundaries(now: Date): { labels: string[]; boundaries: Date[] } {
+  const labels: string[] = []
+  const boundaries: Date[] = []
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now)
+    d.setHours(now.getHours() - i, 0, 0, 0)
+    const h = d.getHours()
+    const h12 = h % 12 || 12
+    const ampm = h >= 12 ? 'pm' : 'am'
+    labels.push(`${h12}${ampm}`)
+    boundaries.push(d)
+  }
+  return { labels, boundaries }
+}
+
+function distributeIntoBuckets(entries: { servedAt?: string }[], boundaries: Date[]): number[] {
+  const bars = new Array(boundaries.length).fill(0)
+  const withTimestamp = entries.filter((e) => e.servedAt)
+
+  for (const entry of withTimestamp) {
+    const servedTime = new Date(entry.servedAt).getTime()
+    for (let i = boundaries.length - 1; i >= 0; i--) {
+      const currentBound = boundaries[i].getTime()
+      if (servedTime >= currentBound) {
+        const nextBound =
+          i < boundaries.length - 1 ? boundaries[i + 1].getTime() : currentBound + 3600000
+
+        if (servedTime < nextBound) {
+          bars[i]++
+        }
+        break
+      }
+    }
+  }
+  return bars
+}
+
 /**
  * @composable useQueueAnalysis
  * @description Derives queue analysis metrics (served count, completion rate,
@@ -32,42 +69,8 @@ export function useQueueAnalysis() {
     const queue = store.activeQueue
     if (!queue) return { labels: [] as string[], bars: [] as number[] }
 
-    const now = new Date()
-    const labels: string[] = []
-    const boundaries: Date[] = []
-
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now)
-      d.setHours(now.getHours() - i, 0, 0, 0)
-
-      const h = d.getHours()
-      const h12 = h % 12 || 12
-      const ampm = h >= 12 ? 'pm' : 'am'
-
-      labels.push(`${h12}${ampm}`)
-      boundaries.push(d)
-    }
-
-    // Reuse the cached served entries
-    const withTimestamp = servedEntries.value.filter((e) => e.servedAt)
-    const bars = new Array(labels.length).fill(0)
-
-    for (const entry of withTimestamp) {
-      const servedTime = new Date(entry.servedAt!)
-      for (let i = boundaries.length - 1; i >= 0; i--) {
-        if (servedTime >= boundaries[i]) {
-          const nextBound =
-            i < boundaries.length - 1
-              ? boundaries[i + 1].getTime()
-              : boundaries[i].getTime() + 3600000
-
-          if (servedTime.getTime() < nextBound) {
-            bars[i]++
-          }
-          break
-        }
-      }
-    }
+    const { labels, boundaries } = buildHourlyBoundaries(new Date())
+    const bars = distributeIntoBuckets(servedEntries.value, boundaries)
 
     return { labels, bars }
   })
@@ -80,8 +83,8 @@ export function useQueueAnalysis() {
     const bars = chartBars.value
     if (bars.length < 2) return { text: 'No data', direction: 'flat' }
 
-    const current = bars[bars.length - 1]
-    const previous = bars[bars.length - 2]
+    const current = bars.at(-1)
+    const previous = bars.at(-2)
 
     if (previous === 0) {
       return {
@@ -92,7 +95,10 @@ export function useQueueAnalysis() {
 
     const diff = current - previous
     const pct = Math.round((Math.abs(diff) / previous) * 100)
-    const direction = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat'
+
+    let direction: 'up' | 'down' | 'flat' = 'flat'
+    if (diff > 0) direction = 'up'
+    else if (diff < 0) direction = 'down'
 
     const text = diff === 0 ? 'Same as last hr' : `${pct}% ${direction} vs last hr`
 

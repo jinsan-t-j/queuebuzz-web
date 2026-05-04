@@ -38,7 +38,7 @@ const emit = defineEmits(['retry-geofence'])
 
     <!-- Try Again CTA -->
     <button
-      class="mt-8 flex h-[60px] w-full items-center justify-center rounded-2xl bg-mint font-body text-base font-bold text-plum shadow-[0_8px_24px_rgba(0,229,160,0.50)] transition-all hover:shadow-[0_12px_32px_rgba(0,229,160,0.60)]"
+      class="mt-8 flex h-[60px] w-full items-center justify-center rounded-2xl bg-mint font-body text-base font-bold text-on-mint shadow-[0_8px_24px_rgba(0,229,160,0.50)] transition-all hover:shadow-[0_12px_32px_rgba(0,229,160,0.60)]"
       @click="emit('retry-geofence')"
     >
       Try Again

@@ -50,9 +50,10 @@ const tabs: TabOption[] = [
 const yAxisTicks = computed(() => {
   if (!props.data || !props.data.length || props.isLoading) return [10, 5, 0]
   const isServed = activeTab.value === 'served'
-  const values = props.data.map((d) =>
-    isServed ? d.value || 0 : d.avgWait ? parseInt(d.avgWait) : 0,
-  )
+  const values = props.data.map((d) => {
+    if (isServed) return d.value || 0
+    return d.avgWait ? Number.parseInt(d.avgWait) : 0
+  })
   const maxValue = Math.max(...values, 1)
 
   // Standard "nice" numbers for chart axes
@@ -80,7 +81,12 @@ const processedData = computed(() => {
   const maxScaleValue = yAxisTicks.value[0] || 10
 
   return props.data.map((d) => {
-    const val = isServed ? d.value || 0 : d.avgWait ? parseInt(d.avgWait) : 0
+    let val = 0
+    if (isServed) {
+      val = d.value || 0
+    } else if (d.avgWait) {
+      val = Number.parseInt(d.avgWait)
+    }
     let tooltipText
     if (d.isFuture) {
       tooltipText = 'No data yet'
@@ -99,11 +105,17 @@ const processedData = computed(() => {
     }
   })
 })
+
+function getBarClass(item: WeekData): string {
+  if (item.isFuture) return 'bg-plum-faint border-t-2 border-dashed border-plum-muted/30'
+  if (item.isToday) return 'bg-mint shadow-lg shadow-mint/30 dark:shadow-none'
+  return 'bg-mint/40'
+}
 </script>
 
 <template>
   <div
-    class="rounded-[14px] border border-ash-border bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+    class="rounded-[14px] border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
   >
     <!-- Header -->
     <div class="flex items-center justify-between">
@@ -181,11 +193,7 @@ const processedData = computed(() => {
                 <div
                   :class="[
                     'w-full max-w-[48px] rounded-t-lg transition-all duration-500',
-                    item.isFuture
-                      ? 'bg-plum-faint border-t-2 border-dashed border-plum-muted/30'
-                      : item.isToday
-                        ? 'bg-mint shadow-[0_4px_16px_rgba(0,229,160,0.3)]'
-                        : 'bg-mint/40',
+                    getBarClass(item),
                   ]"
                   :style="{ height: item.barHeight }"
                 />
