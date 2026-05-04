@@ -6,13 +6,13 @@
  */
 
 import { onMounted, defineAsyncComponent } from 'vue'
+import { useToast } from '@/composables/useToast'
 
 const GlobalToast = defineAsyncComponent(() => import('@/components/common/GlobalToast.vue'))
 
-onMounted(async () => {
+onMounted(() => {
   const persistentMessage = sessionStorage.getItem('qb_toast')
   if (persistentMessage) {
-    const { useToast } = await import('@/composables/useToast')
     const { showToast } = useToast()
     showToast(persistentMessage, { type: 'error' })
     sessionStorage.removeItem('qb_toast')

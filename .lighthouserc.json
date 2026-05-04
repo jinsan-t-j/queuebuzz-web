@@ -12,7 +12,7 @@
         "http://localhost:4173/dashboard/queue/history",
         "http://localhost:4173/dashboard/settings"
       ],
-      "puppeteerScript": "./lhci-login.js",
+      "puppeteerScript": "./lhci-login.cjs",
       "chromeFlags": "--no-sandbox --disable-web-security --ignore-certificate-errors --ignore-ssl-errors=yes --disable-gpu",
       "settings": {
         "onlyCategories": ["accessibility", "best-practices"]
