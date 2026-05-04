@@ -7,9 +7,7 @@
 import { computed } from 'vue'
 import { useNow } from '@vueuse/core'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
-import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
-import { PlayCircle as PlayCircleIcon } from 'lucide-vue-next'
-import TerminateIcon from '@/assets/icons/terminate.svg?component'
+import { PauseCircle, PlayCircle, LogOut } from 'lucide-vue-next'
 
 const {
   activeQueue,
@@ -56,44 +54,49 @@ function openTerminateModal() {
 <template>
   <div
     v-if="activeQueue"
-    class="mx-4 mb-2 rounded-2xl border bg-white/5 p-4 transition-colors"
-    :class="isPaused ? 'border-warning/30' : 'border-white/10'"
+    class="mx-4 mb-4 rounded-3xl border border-plum-faint bg-sand/50 p-5 transition-all hover:bg-sand"
   >
-    <div class="flex items-center justify-between mb-4">
-      <p
-        class="font-body text-sm font-bold uppercase tracking-[1px]"
-        :class="isPaused ? 'text-warning' : 'text-white/40'"
-      >
-        Queue {{ isPaused ? 'PAUSED' : 'RUNNING' }}
-      </p>
-      <span v-if="isPaused" class="font-mono text-sm font-bold text-warning">
-        {{ pausedTimeFormatted }}
-      </span>
+    <div class="flex items-center justify-between mb-5">
+      <div class="flex flex-col">
+        <span class="text-[10px] font-black uppercase tracking-wider text-plum-muted">Status</span>
+        <p class="font-body text-xs font-bold" :class="isPaused ? 'text-warning' : 'text-mint'">
+          {{ isPaused ? 'Paused' : 'Active Now' }}
+        </p>
+      </div>
+      <div v-if="isPaused" class="flex flex-col items-end">
+        <span class="text-[10px] font-black uppercase tracking-wider text-plum-muted"
+          >Duration</span
+        >
+        <span class="font-mono text-xs font-bold text-plum">
+          {{ pausedTimeFormatted }}
+        </span>
+      </div>
     </div>
 
     <div class="flex flex-col gap-2">
       <button
         v-if="!isPaused"
-        class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-white/80 transition-colors hover:bg-white/10"
+        class="group flex w-full items-center gap-3 rounded-2xl bg-white px-4 py-2.5 font-body text-[13px] font-bold text-plum shadow-sm transition-all hover:bg-plum hover:text-sand"
         @click="openPauseModal"
       >
-        <PauseCircleIcon class="h-3 w-3 text-white/80" />
+        <PauseCircle class="h-4 w-4 text-plum group-hover:text-mint" />
         Pause Queue
       </button>
       <button
         v-else
-        class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-warning transition-colors hover:bg-warning/10"
+        class="group flex w-full items-center gap-3 rounded-2xl bg-warning px-4 py-2.5 font-body text-[13px] font-bold text-white shadow-md transition-all hover:opacity-90"
         @click="handleResume"
       >
-        <PlayCircleIcon class="h-[14px] w-[14px] text-warning" />
-        Resume Queue
+        <PlayCircle class="h-4 w-4 text-white" />
+        Resume Now
       </button>
+
       <button
-        class="flex items-center gap-3 rounded-lg px-3 py-2 font-body text-sm font-semibold text-[#f87171] transition-colors hover:bg-white/10"
+        class="group flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 font-body text-[13px] font-bold text-danger transition-all hover:bg-danger/10"
         @click="openTerminateModal"
       >
-        <TerminateIcon class="h-[10px] w-[9px] text-[#f87171]" />
-        Terminate
+        <LogOut class="h-3.5 w-3.5 text-danger" />
+        End Session
       </button>
     </div>
   </div>

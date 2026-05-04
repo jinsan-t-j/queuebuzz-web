@@ -9,15 +9,11 @@
  */
 
 import { Check, ChevronRight, Lock } from 'lucide-vue-next'
+import type { SetupStep } from '../types'
 
-interface Step {
-  label: string
-  sub: string
-  isDone: boolean
-}
 withDefaults(
   defineProps<{
-    steps?: Step[]
+    steps?: SetupStep[]
   }>(),
   {
     steps: () => [],

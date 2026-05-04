@@ -9,11 +9,11 @@
 import { ref, computed, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
-import { ArrowRight, AlertCircle, RefreshCw } from 'lucide-vue-next'
+import { RefreshCw } from 'lucide-vue-next'
 
 import { useDashboardStore } from '@/stores/dashboard.store'
+import { useToast } from '@/composables/useToast'
 
-import BaseButton from '@/components/base/BaseButton.vue'
 import QueueStatusBar from '../components/QueueStatusBar.vue'
 import DashboardStatCard from '../components/DashboardStatCard.vue'
 
@@ -45,6 +45,13 @@ const DashboardPeakHours = defineAsyncComponent(
 const DashboardQuickSetup = defineAsyncComponent(
   () => import('../components/DashboardQuickSetup.vue'),
 )
+const DashboardOnboardingHero = defineAsyncComponent(
+  () => import('../components/DashboardOnboardingHero.vue'),
+)
+
+const DashboardErrorState = defineAsyncComponent(
+  () => import('../components/DashboardErrorState.vue'),
+)
 
 const router = useRouter()
 const route = useRoute()
@@ -56,7 +63,7 @@ let greetingTimer = null
 
 const isNewAccount = computed(
   () =>
-    !dashboardData.value?.recentSessions?.length &&
+    !dashboardData.value?.hasHistory &&
     !dashboardData.value?.activeQueue?.isActive &&
     !isLoading.value,
 )
@@ -68,7 +75,7 @@ const greeting = computed(() => {
   return `Good evening, ${name}`
 })
 
-const locale = typeof navigator !== 'undefined' ? navigator.language || 'en-US' : 'en-US'
+const locale = typeof navigator === 'undefined' ? 'en-US' : navigator.language || 'en-US'
 
 const dateFormatter = new Intl.DateTimeFormat(locale, {
   weekday: 'long',
@@ -191,7 +198,7 @@ function retry() {
 
 function clearGreetingTimer() {
   if (greetingTimer !== null) {
-    window.clearTimeout(greetingTimer)
+    globalThis.clearTimeout(greetingTimer)
     greetingTimer = null
   }
 }
@@ -214,7 +221,7 @@ function scheduleGreetingUpdate() {
   }
 
   const timeoutMs = Math.max(nextBoundary.getTime() - now.getTime(), 1000)
-  greetingTimer = window.setTimeout(scheduleGreetingUpdate, timeoutMs)
+  greetingTimer = globalThis.setTimeout(scheduleGreetingUpdate, timeoutMs)
 }
 
 function handleVisibilityChange() {
@@ -228,6 +235,25 @@ onMounted(() => {
   scheduleGreetingUpdate()
   document.addEventListener('visibilitychange', handleVisibilityChange)
   loadDashboard()
+
+  // Handle payment redirects
+  if (route.query.checkout === 'success') {
+    const { showToast } = useToast()
+    const planName = String(route.query.plan || 'Premium')
+    showToast(`Welcome to ${planName}! Your subscription is now active.`, {
+      type: 'success',
+      duration: 5000,
+    })
+    // Clean up URL
+    router.replace({ query: { ...route.query, checkout: undefined, plan: undefined } })
+  } else if (route.query.checkout === 'error') {
+    const { showToast } = useToast()
+    showToast('Payment failed or was cancelled. Please try again.', {
+      type: 'error',
+    })
+    // Clean up URL
+    router.replace({ query: { ...route.query, checkout: undefined } })
+  }
 })
 
 onBeforeUnmount(() => {
@@ -239,39 +265,19 @@ onBeforeUnmount(() => {
 <template>
   <div class="flex flex-col gap-6">
     <!-- Error state -->
-    <div v-if="error && !isLoading" class="flex flex-col items-center justify-center py-12 gap-3">
-      <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF2F2]">
-        <AlertCircle class="h-6 w-6 text-danger" />
-      </div>
-      <p class="font-display text-lg font-bold text-plum">Something went wrong</p>
-      <p class="font-body text-sm text-plum-muted">{{ error }}</p>
-      <BaseButton variant="ghost" size="sm" @click="retry"> Try again </BaseButton>
-    </div>
+    <DashboardErrorState v-if="error && !isLoading" :error="error" @retry="retry" />
 
     <template v-else>
-      <!-- Welcome Hero (Compact) -->
-      <div
+      <!-- Welcome Hero (Enhanced Onboarding) -->
+      <DashboardOnboardingHero
         v-if="!isLoading && isNewAccount"
-        class="rounded-2xl border border-mint/20 bg-mint-light/30 px-8 py-8"
-      >
-        <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div class="flex flex-col gap-1.5">
-            <h1 class="font-display text-xl font-bold text-plum tracking-tight">
-              Ready to serve, {{ dashboardData?.greeting?.name || 'John' }}?
-            </h1>
-            <p class="max-w-md font-body text-sm text-plum-muted leading-relaxed">
-              Launch your first queue session and start tracking customer wait times in real-time.
-            </p>
-          </div>
-          <button
-            class="group flex items-center justify-center gap-3 rounded-xl bg-plum px-8 py-3.5 font-display text-sm font-bold text-sand transition-all hover:bg-plum-soft shadow-lg shadow-plum/10"
-            @click="emit('start-now')"
-          >
-            Start Session
-            <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </button>
-        </div>
-      </div>
+        :user-name="dashboardData?.greeting?.name"
+        :quick-setup="quickSetup"
+        :show-quick-setup="showQuickSetup"
+        @start-now="emit('start-now')"
+        @create-first-queue="emit('create-first-queue')"
+        @step-click="emit('step-click', $event)"
+      />
 
       <!-- Greeting + Active State Content -->
       <template v-if="!isNewAccount || isLoading">

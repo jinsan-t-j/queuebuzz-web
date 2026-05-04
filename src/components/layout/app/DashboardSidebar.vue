@@ -17,13 +17,17 @@ import { defineAsyncComponent } from 'vue'
 import type { Component } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
-
-import SidebarLogo from '@/assets/icons/sidebar-logo.svg?component'
-import NavDashboard from '@/assets/icons/nav-dashboard.svg?component'
-import Queue from '@/assets/icons/queue.svg?component'
-import NavHistory from '@/assets/icons/nav-history.svg?component'
-import NavSettings from '@/assets/icons/nav-settings.svg?component'
-import DiamondPremium from '@/assets/icons/diamond-premium.svg?component'
+import { useLocalStorage, onKeyStroke } from '@vueuse/core'
+import {
+  LayoutGrid,
+  Users,
+  History,
+  Settings,
+  Sparkles,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-vue-next'
 
 const SidebarQueueControl = defineAsyncComponent(() => import('./SidebarQueueControl.vue'))
 const QueueStatusUpdateModal = defineAsyncComponent(
@@ -33,6 +37,17 @@ const QueueStatusUpdateModal = defineAsyncComponent(
 const { showStatusUpdateModal, statusUpdateMode, handleStatusUpdateConfirm } = useLiveQueue()
 
 const route = useRoute()
+const isCollapsed = useLocalStorage('qb-sidebar-collapsed', false)
+
+function toggleCollapse() {
+  isCollapsed.value = !isCollapsed.value
+}
+
+// Power user shortcut: [ to toggle sidebar (standard in Linear/Notion)
+onKeyStroke('[', (e) => {
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+  toggleCollapse()
+})
 
 async function handleStatusConfirm() {
   await handleStatusUpdateConfirm()
@@ -47,28 +62,28 @@ interface NavItem {
   badge?: Component
 }
 
-const navItems: NavItem[] = [
+const navItems = [
   {
     name: 'Dashboard',
     to: '/dashboard',
-    icon: NavDashboard,
+    icon: LayoutGrid,
     exact: true,
   },
   {
     name: 'Queue',
     to: '/dashboard/queue',
-    icon: Queue,
+    icon: Users,
     exact: true,
   },
   {
     name: 'History',
     to: '/dashboard/queue/history',
-    icon: NavHistory,
+    icon: History,
   },
   {
     name: 'Settings',
     to: '/dashboard/settings',
-    icon: NavSettings,
+    icon: Settings,
   },
 ]
 
@@ -79,51 +94,102 @@ function isActive(item: NavItem) {
 </script>
 
 <template>
-  <aside class="flex w-64 shrink-0 flex-col bg-plum">
-    <!-- Wordmark -->
-    <div class="flex h-16 items-center gap-3 px-6">
-      <SidebarLogo class="h-[22px] w-6 text-mint" />
-      <span class="font-display text-xl text-white">Queue Buzz</span>
+  <aside
+    class="relative flex shrink-0 flex-col bg-white border-r border-plum-faint transition-all duration-300 ease-in-out"
+    :class="isCollapsed ? 'w-20' : 'w-[280px]'"
+  >
+    <!-- Logo area -->
+    <div
+      class="flex items-center gap-3 py-8 transition-all duration-300"
+      :class="isCollapsed ? 'justify-center px-0' : 'px-7'"
+    >
+      <div
+        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-mint shadow-[0_8px_20px_rgba(0,229,160,0.3)]"
+      >
+        <LayoutGrid class="h-5 w-5 text-plum" />
+      </div>
+      <span
+        v-if="!isCollapsed"
+        class="font-display text-2xl font-black tracking-tight text-plum whitespace-nowrap overflow-hidden transition-all duration-300"
+      >
+        QueueBuzz
+      </span>
     </div>
 
     <!-- Navigation -->
-    <nav class="flex flex-1 flex-col gap-2 px-4 py-4">
+    <nav
+      class="flex flex-1 flex-col gap-1.5 py-4 transition-all duration-300"
+      :class="isCollapsed ? 'items-center px-2' : 'px-4'"
+    >
       <router-link
         v-for="item in navItems"
         :key="item.name"
         :to="item.to"
-        class="flex items-center gap-3 rounded-input px-3 py-2.5 font-body text-base font-medium transition-colors"
+        class="group relative flex items-center rounded-2xl transition-all duration-300"
         :class="[
           isActive(item)
-            ? 'bg-mint text-plum shadow-[0_4px_6px_rgba(0,229,160,0.20),0_10px_15px_rgba(0,229,160,0.20)]'
-            : item.indent
-              ? 'text-ash pl-10'
-              : 'text-white/60 hover:text-white/80',
+            ? 'bg-plum text-sand shadow-lg shadow-plum/10'
+            : 'text-plum-muted hover:bg-sand/50 hover:text-plum',
+          isCollapsed ? 'h-12 w-12 justify-center' : 'gap-3.5 px-4 py-3.5 w-full',
         ]"
       >
         <component
           :is="item.icon"
-          class="h-[18px] w-[18px]"
-          :class="isActive(item) ? 'text-plum' : item.indent ? 'text-ash' : 'text-white/60'"
+          class="h-5 w-5 shrink-0 transition-transform duration-300 group-hover:scale-110"
+          :class="isActive(item) ? 'text-mint' : 'text-plum-muted group-hover:text-plum'"
         />
-        <span class="flex-1">{{ item.name }}</span>
-        <component :is="item.badge" v-if="item.badge" class="h-4 w-4" />
+        <span
+          v-if="!isCollapsed"
+          class="flex-1 font-body text-[15px] font-semibold whitespace-nowrap overflow-hidden transition-all duration-300"
+        >
+          {{ item.name }}
+        </span>
+
+        <!-- Active indicator -->
+        <div
+          v-if="isActive(item) && !isCollapsed"
+          class="absolute left-0 h-6 w-1 rounded-r-full bg-mint"
+        />
       </router-link>
     </nav>
 
     <!-- Queue Running Status -->
-    <SidebarQueueControl />
+    <div v-if="!isCollapsed" class="transition-all duration-300">
+      <SidebarQueueControl />
+    </div>
 
     <!-- Go Premium -->
-    <div class="border-t border-white/10 p-4">
+    <div v-if="!isCollapsed" class="p-4 transition-all duration-300">
       <router-link
         to="/premium"
-        class="flex items-center gap-[9px] px-3 py-2.5 font-body text-sm text-mint transition-colors hover:text-mint-dark"
+        class="group flex flex-col gap-4 rounded-3xl bg-sand p-5 transition-all hover:bg-mint-light"
       >
-        <DiamondPremium class="h-[19px] w-[21px] text-mint" />
-        Go Premium
+        <div class="flex items-center justify-between">
+          <div
+            class="flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm transition-transform group-hover:scale-110"
+          >
+            <Sparkles class="h-5 w-5 text-mint" />
+          </div>
+          <ArrowRight
+            class="h-4 w-4 text-plum-muted transition-transform group-hover:translate-x-1"
+          />
+        </div>
+        <div>
+          <p class="font-body text-[13px] font-black text-plum">Upgrade to Pro</p>
+          <p class="mt-1 font-body text-[11px] font-medium text-plum-muted">
+            Unlimited queues & more
+          </p>
+        </div>
       </router-link>
     </div>
+
+    <!-- Floating Collapse Toggle -->
+    <button
+      class="absolute -right-3 top-12 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-plum-faint bg-white text-plum-muted shadow-sm transition-all duration-300 hover:scale-110 hover:bg-plum hover:text-sand"
+      @click="toggleCollapse"
+    >
+      <component :is="isCollapsed ? ChevronRight : ChevronLeft" class="h-3.5 w-3.5" />
+    </button>
     <QueueStatusUpdateModal
       :is-open="showStatusUpdateModal"
       :mode="statusUpdateMode"

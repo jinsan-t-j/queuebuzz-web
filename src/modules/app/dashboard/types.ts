@@ -1,3 +1,14 @@
+export interface SetupStep {
+  label: string
+  sub: string
+  isDone: boolean
+}
+
+export interface QuickSetup {
+  show: boolean
+  steps: SetupStep[]
+}
+
 export interface DashboardData {
   activeQueue: {
     isActive: boolean
@@ -45,15 +56,9 @@ export interface DashboardData {
     hour: string
     value: number
   }>
-  quickSetup: {
-    show: boolean
-    steps: Array<{
-      label: string
-      sub: string
-      isDone: boolean
-    }>
-  }
+  quickSetup: QuickSetup
   greeting: {
     name: string
   }
+  hasHistory: boolean
 }
