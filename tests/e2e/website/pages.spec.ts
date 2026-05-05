@@ -37,6 +37,18 @@ test.describe('Website — Pricing', () => {
   })
 })
 
+test.describe('Website — Go Premium', () => {
+  test('should render premium page with premium plan cards', async ({ page }) => {
+    await page.goto('/premium')
+
+    // Page heading
+    await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 5000 })
+
+    // Plan tier text
+    await expect(page.getByText(/Premium|Pro/i).first()).toBeVisible()
+  })
+})
+
 test.describe('Website — Legal', () => {
   test('should render privacy policy page', async ({ page }) => {
     await page.goto('/privacy')
