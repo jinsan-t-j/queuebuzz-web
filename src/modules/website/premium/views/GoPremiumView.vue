@@ -124,6 +124,24 @@ function handleEnterpriseContact() {
       />
     </div>
 
+    <!-- Holi Background Atmosphere -->
+    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <div
+        class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob transition-transform duration-700 ease-out"
+        :style="{
+          clipPath: 'polygon(15% 0, 100% 10%, 85% 95%, 0 80%)',
+          transform: `translateY(${scrollY * 0.08}px)`,
+        }"
+      />
+      <div
+        class="absolute bottom-[-5%] right-[-10%] w-[60%] h-[50%] bg-blue-500/5 blur-[140px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
+        :style="{
+          clipPath: 'polygon(25% 15%, 90% 0, 100% 85%, 10% 100%)',
+          transform: `translateY(${scrollY * -0.12}px)`,
+        }"
+      />
+    </div>
+
     <div class="relative z-10 mx-auto max-w-7xl px-6 py-24 lg:py-32">
       <!-- Header -->
       <div class="text-center mb-16 lg:mb-24">
