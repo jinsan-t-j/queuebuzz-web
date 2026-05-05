@@ -41,22 +41,20 @@ defineEmits(['go-to-queue', 'start-queue'])
 <template>
   <div
     :class="[
-      'group flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border px-6 py-4 transition-all duration-500',
-      isActive && !isLoading
-        ? 'border-mint/40 bg-gradient-to-r from-mint-light/30 via-white to-white shadow-[0_4px_20px_rgba(0,229,160,0.08)] hover:shadow-[0_8px_30px_rgba(0,229,160,0.12)]'
-        : 'border-plum-faint bg-white',
+      'group flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border px-6 py-4 transition-all duration-300 shadow-none',
+      isActive && !isLoading ? 'border-mint bg-mint-light' : 'border-plum-faint bg-white',
     ]"
   >
     <!-- Loading State -->
     <div v-if="isLoading" class="flex w-full items-center justify-between animate-pulse">
       <div class="flex items-center gap-3">
-        <div class="h-8 w-8 rounded-xl bg-plum-faint" />
+        <div class="h-8 w-8 rounded-xl bg-sand" />
         <div class="flex flex-col gap-1.5">
-          <div class="h-4 w-32 rounded bg-plum-faint" />
-          <div class="h-3 w-20 rounded bg-plum-faint" />
+          <div class="h-4 w-32 rounded bg-sand" />
+          <div class="h-3 w-20 rounded bg-sand" />
         </div>
       </div>
-      <div class="h-10 w-28 rounded-full bg-plum-faint" />
+      <div class="h-10 w-28 rounded-full bg-sand" />
     </div>
 
     <!-- Content State -->
@@ -70,11 +68,11 @@ defineEmits(['go-to-queue', 'start-queue'])
           />
           <div
             :class="[
-              'relative flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-500',
-              isActive ? 'bg-mint-light border border-mint/20' : 'bg-plum-faint',
+              'relative flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 border border-plum-faint',
+              isActive ? 'bg-mint text-on-mint' : 'bg-sand text-plum-muted',
             ]"
           >
-            <Activity :class="['h-5 w-5', isActive ? 'text-mint' : 'text-plum-muted']" />
+            <Activity class="h-5 w-5" />
           </div>
         </div>
 
@@ -83,20 +81,20 @@ defineEmits(['go-to-queue', 'start-queue'])
           <div class="flex items-center gap-2">
             <span
               v-if="isActive"
-              class="inline-flex items-center rounded-full bg-mint px-2 py-0.5 font-body text-[10px] font-black uppercase tracking-wider text-plum"
+              class="inline-flex items-center rounded-full bg-plum px-2 py-0.5 font-body text-[10px] font-black uppercase tracking-wider text-sand"
             >
               Live
             </span>
-            <span class="font-display text-base font-bold text-plum">
+            <span class="font-display text-base font-black text-plum">
               {{ isActive ? queueName : 'No active session' }}
             </span>
           </div>
-          <p v-if="isActive" class="mt-0.5 font-body text-xs text-plum-muted">
-            Started <span class="font-semibold text-plum">{{ startedAt }}</span>
+          <p v-if="isActive" class="mt-0.5 font-body text-[13px] text-plum">
+            Started <span class="font-black text-plum">{{ startedAt }}</span>
             <span class="mx-2 opacity-30">|</span>
-            <span class="font-bold text-mint">{{ waitingCount }} customers</span> waiting
+            <span class="font-black text-mint-dark">{{ waitingCount }} customers</span> waiting
           </p>
-          <p v-else class="mt-0.5 font-body text-xs text-plum-muted">
+          <p v-else class="mt-0.5 font-body text-[13px] text-plum-muted">
             Ready to start your day? Launch a new queue.
           </p>
         </div>
@@ -106,19 +104,14 @@ defineEmits(['go-to-queue', 'start-queue'])
       <router-link
         :to="'/dashboard/queue'"
         :class="[
-          'inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 font-display text-sm font-bold transition-all duration-300',
+          'inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 font-display text-sm font-black transition-all duration-300',
           isActive
-            ? 'bg-mint text-plum hover:bg-mint-dark shadow-lg shadow-mint/20 hover:-translate-y-0.5 active:translate-y-0'
-            : 'bg-plum text-sand hover:bg-plum-soft',
+            ? 'bg-plum text-sand hover:bg-mint hover:text-on-mint shadow-none'
+            : 'bg-plum text-sand hover:bg-mint hover:text-on-mint shadow-none',
         ]"
       >
         {{ isActive ? 'Manage Live' : 'Start Session' }}
-        <ArrowRight
-          :class="[
-            'h-4 w-4 transition-transform duration-300',
-            isActive ? 'group-hover:translate-x-1' : 'group-hover:translate-x-0.5',
-          ]"
-        />
+        <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </router-link>
     </template>
   </div>

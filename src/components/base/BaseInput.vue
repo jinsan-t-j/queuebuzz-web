@@ -26,7 +26,7 @@ import { computed } from 'vue'
 // 6. Props
 const props = defineProps({
   modelValue: {
-    type: String,
+    type: [String, Number],
     default: '',
   },
   label: {
@@ -48,6 +48,10 @@ const props = defineProps({
   isDisabled: {
     type: Boolean,
     default: false,
+  },
+  id: {
+    type: String,
+    default: () => `input-${globalThis.crypto.randomUUID().split('-')[0]}`,
   },
 })
 
@@ -71,16 +75,17 @@ function handleInput(event) {
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label v-if="label" class="font-body text-sm font-medium text-plum">
+    <label v-if="label" :for="id" class="font-body text-sm font-medium text-plum">
       {{ label }}
     </label>
     <input
+      :id="id"
       :type="type"
       :value="modelValue"
       :placeholder="placeholder"
       :disabled="isDisabled"
       :class="[
-        'rounded-input border px-4 py-2.5 font-body text-sm text-plum outline-none transition-colors placeholder:text-plum-muted',
+        'rounded-input border bg-white px-4 py-2.5 font-body text-sm text-plum outline-none transition-colors placeholder:text-plum-muted',
         hasError
           ? 'border-danger focus:ring-2 focus:ring-danger/20'
           : 'border-plum-faint focus:border-mint focus:ring-2 focus:ring-mint/20',

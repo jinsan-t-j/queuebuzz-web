@@ -22,6 +22,7 @@ const { showToast } = useToast()
 const isSocialLoading = ref(false)
 
 const claimQueueId = computed(() => route.query.claim_queue_id as string | undefined)
+const redirectPath = computed(() => route.query.redirect as string | undefined)
 
 const schema = yup.object({
   email: yup.string().email('Invalid email address').required('Email is required'),
@@ -35,11 +36,11 @@ const { value: email, errorMessage: emailError } = useField<string>('email')
 
 const { mutate: mutateAuth, isPending } = useMutation({
   mutationFn: async (userEmail: string) => {
-    return await authenticate(userEmail, claimQueueId.value)
+    return await authenticate(userEmail, claimQueueId.value, redirectPath.value)
   },
   onSuccess: (data) => {
     if (data?.redirectUrl) {
-      window.location.assign(data.redirectUrl)
+      globalThis.location.assign(data.redirectUrl)
     } else {
       showToast(data?.message || 'Check your email for the magic link.')
       emit('submit-success')
@@ -60,7 +61,9 @@ const onSubmit = handleSubmit((values) => {
 function handleSocialLogin(provider: SocialProvider) {
   if (isSocialLoading.value) return
   isSocialLoading.value = true
-  window.location.assign(AUTH_ROUTES.SOCIAL_START(provider, claimQueueId.value))
+  globalThis.location.assign(
+    AUTH_ROUTES.SOCIAL_START(provider, claimQueueId.value, redirectPath.value),
+  )
 }
 </script>
 

@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+test-results
+playwright-report
+accessibility-results.json
 
 # Editor directories and files
 .vscode/*
@@ -23,7 +26,12 @@ dist-ssr
 *.sln
 *.sw?
 .env
-.agent/*
-.lighthouseci/*
+.agent
+.lighthouseci
 .codex
 .agent
+.gitnexus
+.scannerwork
+.claude
+CLAUDE.md
+AGENTS.md

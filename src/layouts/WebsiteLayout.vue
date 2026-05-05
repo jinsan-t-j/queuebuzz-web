@@ -6,6 +6,12 @@
  */
 
 // 1. Vue core imports
+import { defineAsyncComponent, onMounted } from 'vue'
+
+onMounted(() => {
+  // Website module is light-only
+  document.documentElement.classList.remove('dark')
+})
 
 // 2. Router / Pinia imports
 
@@ -22,8 +28,12 @@ import TheFooter from '@/components/layout/TheFooter.vue'
 // 7. Emits
 
 // 8. Composable destructuring
+const SystemAlertBanner = defineAsyncComponent(
+  () => import('@/components/base/SystemAlertBanner.vue'),
+)
 
 // 9. Reactive state
+const showMaintenanceBanner = import.meta.env.VITE_SHOW_MAINTENANCE_BANNER === 'true'
 
 // 10. Computed properties
 
@@ -34,6 +44,7 @@ import TheFooter from '@/components/layout/TheFooter.vue'
 
 <template>
   <div class="flex min-h-screen flex-col main-bg">
+    <SystemAlertBanner v-if="showMaintenanceBanner" />
     <TheNavbar />
     <main class="flex-1">
       <router-view />

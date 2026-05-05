@@ -24,12 +24,12 @@ export const restrictCustomerGuard: NavigationGuardWithThis<undefined> = async (
     if (['WAITING', 'CALLED', 'IDLE'].includes(status)) {
       showToast('Welcome back! Redirecting to your active queue.', { type: 'info', duration: 2500 })
 
-      const routeName =
-        status === 'CALLED'
-          ? 'customer-called'
-          : status === 'IDLE'
-            ? 'customer-idle'
-            : 'customer-waiting'
+      let routeName = 'customer-waiting'
+      if (status === 'CALLED') {
+        routeName = 'customer-called'
+      } else if (status === 'IDLE') {
+        routeName = 'customer-idle'
+      }
 
       return {
         name: routeName,

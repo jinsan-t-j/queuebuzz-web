@@ -54,29 +54,29 @@ const emit = defineEmits(['go-back', 'export-csv', 'export-pdf'])
   <div class="flex flex-col gap-4">
     <!-- Title row -->
     <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-3">
         <!-- Name + Badge -->
         <div class="flex flex-wrap items-center gap-4">
-          <h1 class="font-display text-[32px] font-bold leading-tight text-plum">
+          <h1 class="font-display text-[32px] font-black leading-tight text-plum">
             {{ queueName }}
           </h1>
           <span
-            class="rounded-md bg-plum px-3 py-1 font-body text-sm font-bold uppercase tracking-[1.2px] text-white"
+            class="rounded-md border border-plum-faint px-3 py-1 font-body text-sm font-black uppercase tracking-[1.2px] text-plum"
           >
             {{ status }}
           </span>
         </div>
 
         <!-- Date + Time -->
-        <div class="flex flex-wrap items-center gap-4 text-plum/60">
-          <div class="flex items-center gap-1">
-            <CalendarDateIcon class="h-3.5 w-3.5" />
-            <span class="font-body text-sm">{{ date }}</span>
+        <div class="flex flex-wrap items-center gap-4 text-plum-muted">
+          <div class="flex items-center gap-1.5">
+            <CalendarDateIcon class="h-3.5 w-3.5 text-plum-muted" />
+            <span class="font-body text-sm font-black">{{ date }}</span>
           </div>
-          <span class="h-1 w-1 rounded-full bg-plum/20" />
-          <div class="flex items-center gap-1">
-            <ClockTimeIcon class="h-3.5 w-3.5" />
-            <span class="font-body text-sm">{{ timeRange }}</span>
+          <span class="h-3 w-[1px] bg-plum-faint" />
+          <div class="flex items-center gap-1.5">
+            <ClockTimeIcon class="h-3.5 w-3.5 text-plum-muted" />
+            <span class="font-body text-sm font-black">{{ timeRange }}</span>
           </div>
         </div>
       </div>
@@ -85,20 +85,20 @@ const emit = defineEmits(['go-back', 'export-csv', 'export-pdf'])
       <div class="flex items-center gap-2">
         <button
           :disabled="isExportingCsv"
-          class="inline-flex items-center gap-1.5 rounded-lg border border-plum/10 bg-transparent px-3 py-2 font-body text-sm font-bold text-plum transition-colors hover:border-plum disabled:opacity-50"
+          class="inline-flex items-center gap-2 rounded-lg border border-plum-faint bg-white px-4 py-2.5 font-body text-sm font-black text-plum transition-colors hover:bg-sand disabled:opacity-30"
           @click="emit('export-csv')"
         >
-          <Loader2 v-if="isExportingCsv" class="h-3 w-3 animate-spin" />
-          <DownloadArrowIcon v-else class="h-3 w-3" />
+          <Loader2 v-if="isExportingCsv" class="h-3.5 w-3.5 animate-spin" />
+          <DownloadArrowIcon v-else class="h-3.5 w-3.5" />
           CSV
         </button>
         <button
           :disabled="isExportingPdf"
-          class="inline-flex items-center gap-1.5 rounded-lg border border-plum/10 bg-transparent px-3 py-2 font-body text-sm font-bold text-plum transition-colors hover:border-plum disabled:opacity-50"
+          class="inline-flex items-center gap-2 rounded-lg border border-plum-faint bg-white px-4 py-2.5 font-body text-sm font-black text-plum transition-colors hover:bg-sand disabled:opacity-30"
           @click="emit('export-pdf')"
         >
-          <Loader2 v-if="isExportingPdf" class="h-3 w-3 animate-spin" />
-          <DownloadArrowIcon v-else class="h-3 w-3" />
+          <Loader2 v-if="isExportingPdf" class="h-3.5 w-3.5 animate-spin" />
+          <DownloadArrowIcon v-else class="h-3.5 w-3.5" />
           PDF
         </button>
       </div>

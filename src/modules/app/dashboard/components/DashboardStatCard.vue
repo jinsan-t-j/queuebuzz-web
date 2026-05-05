@@ -27,23 +27,23 @@ withDefaults(
 
 <template>
   <div
-    class="group relative flex flex-col justify-between rounded-2xl border border-plum-faint bg-white p-4 transition-all duration-200 hover:border-plum"
+    class="group relative flex flex-col justify-between rounded-2xl border border-plum-faint bg-white p-4 transition-all duration-300 hover:border-mint"
   >
     <!-- Loading State -->
     <template v-if="isLoading">
-      <div class="h-2.5 w-12 rounded bg-plum-faint animate-pulse" />
-      <div class="mt-2 h-7 w-16 rounded bg-plum-faint animate-pulse" />
+      <div class="h-2.5 w-12 rounded bg-sand animate-pulse" />
+      <div class="mt-2 h-7 w-16 rounded bg-sand animate-pulse" />
     </template>
 
     <!-- Content -->
     <template v-else>
-      <p class="font-body text-[10px] font-bold uppercase tracking-wider text-plum-muted">
+      <p class="font-body text-[11px] font-black uppercase tracking-widest text-plum-muted">
         {{ label }}
       </p>
       <p
         :class="[
-          'mt-1 font-display text-2xl font-bold tracking-tight',
-          accent === 'mint' ? 'text-mint' : 'text-plum',
+          'mt-1 font-display text-2xl font-black tracking-tight transition-colors',
+          accent === 'mint' ? 'text-mint-dark' : 'text-plum',
         ]"
       >
         {{ value }}

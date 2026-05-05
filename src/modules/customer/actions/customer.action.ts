@@ -140,7 +140,7 @@ export async function joinByCode(code: string): Promise<JoinByCodeResult> {
 
     const data = response.data
 
-    if (!data || !data.queueId) {
+    if (!data?.queueId) {
       return { found: false }
     }
 

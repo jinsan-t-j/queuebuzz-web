@@ -24,16 +24,16 @@ withDefaults(
 </script>
 
 <template>
-  <div class="rounded-2xl border border-plum/5 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
-    <p class="font-body text-sm font-bold uppercase tracking-[0.6px] text-plum/40">
+  <div class="rounded-2xl border border-plum-faint bg-white p-5">
+    <p class="font-body text-[11px] font-black uppercase tracking-[1px] text-plum-muted">
       {{ label }}
     </p>
     <p
       :class="[
-        'mt-2 font-display text-2xl font-light leading-tight',
-        accent === 'mint' ? 'text-mint' : '',
-        accent === 'warning' ? 'text-warning' : '',
-        accent === 'danger' ? 'text-danger' : '',
+        'mt-2 font-display text-2xl font-black leading-tight',
+        accent === 'mint' ? 'text-mint-dark' : '',
+        accent === 'warning' ? 'text-warning-dark' : '',
+        accent === 'danger' ? 'text-danger-dark' : '',
         accent === 'none' ? 'text-plum' : '',
       ]"
     >

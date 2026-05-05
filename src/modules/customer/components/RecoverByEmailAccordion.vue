@@ -63,7 +63,7 @@ async function handleSubmit() {
       <button
         :disabled="!email || isSubmitting"
         :class="[
-          'mt-3 flex h-10 w-full items-center justify-center rounded-full bg-mint font-body text-sm font-semibold text-plum transition-all',
+          'mt-3 flex h-10 w-full items-center justify-center rounded-full bg-mint font-body text-sm font-semibold text-on-mint transition-all',
           !email || isSubmitting ? 'cursor-not-allowed opacity-50' : '',
         ]"
         @click="handleSubmit"

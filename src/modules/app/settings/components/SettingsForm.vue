@@ -18,13 +18,11 @@ const BaseImageCropper = defineAsyncComponent(
   () => import('@/components/base/BaseImageCropper.vue'),
 )
 
-const ClearQueueHistoryConfirmModal = defineAsyncComponent(
-  () => import('./ClearQueueHistoryConfirmModal.vue'),
+const SettingsSubscriptionSection = defineAsyncComponent(
+  () => import('./SettingsSubscriptionSection.vue'),
 )
-const DeleteAccountConfirmModal = defineAsyncComponent(
-  () => import('./DeleteAccountConfirmModal.vue'),
-)
-import router from '@/router'
+
+const SettingsDangerZone = defineAsyncComponent(() => import('./SettingsDangerZone.vue'))
 
 const settingsStore = useSettingsStore()
 const { userSettings, isLoading, isSaving, error } = storeToRefs(settingsStore)
@@ -49,7 +47,7 @@ const profileImageError = ref<string | null>(null)
 const bannerImageError = ref<string | null>(null)
 
 const MAX_IMAGE_SIZE = 1024 * 1024 * 5 // 5MB (allowed for input, resized to <1MB by cropper)
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 
 // Cropper state
 const isCropperOpen = ref(false)
@@ -59,10 +57,6 @@ const cropAspectRatio = computed(() => (cropType.value === 'profile' ? 1 : 16 / 
 const cropTitle = computed(() =>
   cropType.value === 'profile' ? 'Crop Profile Photo' : 'Crop Cover Banner',
 )
-
-// Modals state
-const showClearHistoryModal = ref(false)
-const showDeleteAccountModal = ref(false)
 
 // File input refs
 const profileFileInput = ref<HTMLInputElement | null>(null)
@@ -121,7 +115,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
 }
 
 function validateImageFile(file: File, maxSize: number): string | null {
-  if (!ACCEPTED_TYPES.includes(file.type)) {
+  if (!ACCEPTED_TYPES.has(file.type)) {
     return 'Only JPEG, PNG, WebP, and GIF images are accepted.'
   }
   if (file.size > maxSize) {
@@ -249,19 +243,6 @@ async function handleSave() {
 function handleDiscard() {
   syncForm()
 }
-
-async function confirmClearHistory() {
-  await settingsStore.clearAllHistory()
-  showClearHistoryModal.value = false
-}
-
-async function confirmDeleteAccount() {
-  await settingsStore.deleteHostAccount()
-  showDeleteAccountModal.value = false
-  if (!error.value) {
-    router.push('/login')
-  }
-}
 </script>
 
 <template>
@@ -287,7 +268,7 @@ async function confirmDeleteAccount() {
                 class="flex gap-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
               >
                 <button
-                  class="flex items-center gap-1.5 rounded-full bg-white/90 px-4 py-2 font-body text-xs font-semibold text-plum shadow-sm backdrop-blur-sm transition-transform hover:scale-105"
+                  class="flex items-center gap-1.5 rounded-full bg-white/90 px-4 py-2 font-body text-xs font-semibold text-plum shadow-sm dark:shadow-none backdrop-blur-sm transition-transform hover:scale-105"
                   @click.stop="bannerFileInput?.click()"
                 >
                   <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -301,7 +282,7 @@ async function confirmDeleteAccount() {
                   Change
                 </button>
                 <button
-                  class="flex items-center gap-1.5 rounded-full bg-danger/90 px-4 py-2 font-body text-xs font-semibold text-white shadow-sm backdrop-blur-sm transition-transform hover:scale-105"
+                  class="flex items-center gap-1.5 rounded-full bg-danger/90 px-4 py-2 font-body text-xs font-semibold text-white shadow-sm dark:shadow-none backdrop-blur-sm transition-transform hover:scale-105"
                   @click.stop="removeBannerImage"
                 >
                   <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -324,7 +305,7 @@ async function confirmDeleteAccount() {
             class="flex aspect-[16/5] w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-plum-faint/60 via-sand to-mint-light/30 transition-all duration-200 group-hover:from-plum-faint/80"
           >
             <div
-              class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 shadow-sm backdrop-blur-sm"
+              class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 shadow-sm dark:shadow-none backdrop-blur-sm"
             >
               <svg
                 class="h-5 w-5 text-plum-muted"
@@ -341,14 +322,14 @@ async function confirmDeleteAccount() {
               </svg>
             </div>
             <p class="font-body text-xs font-medium text-plum-muted">Add a cover banner</p>
-            <p class="font-body text-[10px] text-plum-muted/50">
+            <p class="font-body text-[10px] text-plum-muted">
               16:5 · JPEG, PNG, WebP, GIF · Max 5MB
             </p>
           </div>
 
           <p
             v-if="bannerImageError"
-            class="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-danger/90 px-3 py-1 font-body text-xs text-white shadow-sm backdrop-blur-sm"
+            class="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-danger/90 px-3 py-1 font-body text-xs text-white shadow-sm dark:shadow-none backdrop-blur-sm"
           >
             {{ bannerImageError }}
           </p>
@@ -368,7 +349,7 @@ async function confirmDeleteAccount() {
           <div class="flex items-end gap-5 -mt-10">
             <!-- Uploadable avatar circle -->
             <div
-              class="group/avatar relative h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-full border-4 border-white bg-white shadow-lg transition-transform duration-200 hover:scale-105"
+              class="group/avatar relative h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-full border-4 border-white dark:border-plum-faint bg-white shadow-lg dark:shadow-none transition-transform duration-200 hover:scale-105"
               @click="profileFileInput?.click()"
             >
               <img
@@ -421,7 +402,7 @@ async function confirmDeleteAccount() {
                 </p>
                 <button
                   v-if="hasProfileImage"
-                  class="font-body text-xs font-semibold text-danger cursor-pointer transition-colors hover:text-danger/80"
+                  class="font-body text-xs font-semibold text-danger-dark cursor-pointer transition-colors hover:text-danger-dark/80"
                   @click.stop="removeProfileImage"
                 >
                   Remove photo
@@ -430,7 +411,7 @@ async function confirmDeleteAccount() {
             </div>
           </div>
 
-          <p v-if="profileImageError" class="mt-2 font-body text-xs text-danger">
+          <p v-if="profileImageError" class="mt-2 font-body text-xs text-danger-dark">
             {{ profileImageError }}
           </p>
 
@@ -483,7 +464,7 @@ async function confirmDeleteAccount() {
 
           <div class="space-y-4">
             <div class="flex items-center justify-between">
-              <label class="font-body text-sm font-medium text-plum">
+              <label for="avgServiceMins" class="font-body text-sm font-medium text-plum">
                 How long does it typically take to serve one guest? (This is only for estimation)
               </label>
               <span class="font-mono text-lg font-bold text-plum"
@@ -491,6 +472,7 @@ async function confirmDeleteAccount() {
               >
             </div>
             <BaseSlider
+              id="avgServiceMins"
               v-model="form.avg_service_mins"
               :min="1"
               :max="60"
@@ -510,7 +492,11 @@ async function confirmDeleteAccount() {
               <p class="font-body font-semibold text-plum">Email Alerts</p>
               <p class="font-body text-sm text-plum-muted">Receive updates when queue is busy.</p>
             </div>
-            <BaseToggle v-model="form.email_notifications" @update:model-value="onFieldChange" />
+            <BaseToggle
+              v-model="form.email_notifications"
+              aria-label="Toggle email notifications"
+              @update:model-value="onFieldChange"
+            />
           </div>
 
           <div class="flex items-center justify-between py-4">
@@ -518,7 +504,11 @@ async function confirmDeleteAccount() {
               <p class="font-body font-semibold text-plum">Push Notifications</p>
               <p class="font-body text-sm text-plum-muted">Get browser alerts for new arrivals.</p>
             </div>
-            <BaseToggle v-model="form.push_notifications" @update:model-value="onFieldChange" />
+            <BaseToggle
+              v-model="form.push_notifications"
+              aria-label="Toggle push notifications"
+              @update:model-value="onFieldChange"
+            />
           </div>
 
           <div class="flex items-center justify-between py-4 last:pb-0">
@@ -526,56 +516,32 @@ async function confirmDeleteAccount() {
               <p class="font-body font-semibold text-plum">Collect Guest Emails</p>
               <p class="font-body text-sm text-plum-muted">Require email when customers join.</p>
             </div>
-            <BaseToggle v-model="form.collect_emails" @update:model-value="onFieldChange" />
+            <BaseToggle
+              v-model="form.collect_emails"
+              aria-label="Toggle collect emails from customers"
+              @update:model-value="onFieldChange"
+            />
           </div>
         </div>
       </BaseCard>
 
-      <!-- ═══ Section: Danger Zone ═══ -->
-      <div id="danger" class="rounded-[32px] border border-red-100 bg-red-50/50 p-8">
-        <h2 class="mb-6 font-display text-2xl font-bold text-danger">Danger Zone</h2>
+      <SettingsSubscriptionSection />
 
-        <div class="flex flex-col gap-4">
-          <div
-            class="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm border border-red-100"
-          >
-            <div>
-              <p class="font-body font-bold text-plum">Clear Queue History</p>
-              <p class="font-body text-sm text-plum-muted">
-                Wipe all past session records permanently.
-              </p>
-            </div>
-            <BaseButton variant="danger" size="sm" @click="showClearHistoryModal = true">
-              Clear All
-            </BaseButton>
-          </div>
-
-          <div
-            class="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm border border-red-100"
-          >
-            <div>
-              <p class="font-body font-bold text-plum text-danger">Delete Account</p>
-              <p class="font-body text-sm text-plum-muted">
-                Permanently remove your profile and all data.
-              </p>
-            </div>
-            <BaseButton variant="danger" size="sm" @click="showDeleteAccountModal = true">
-              Delete Me
-            </BaseButton>
-          </div>
-        </div>
-      </div>
+      <SettingsDangerZone />
     </template>
 
     <!-- Error State -->
-    <div v-if="error" class="rounded-2xl bg-red-50 p-4 text-center font-body text-sm text-danger">
+    <div
+      v-if="error"
+      class="rounded-2xl bg-danger/10 p-4 text-center font-body text-sm text-danger-dark"
+    >
       {{ error }}
     </div>
 
     <!-- Sticky Action Bar -->
     <div
       v-if="isDirty"
-      class="fixed bottom-0 left-0 right-0 z-50 border-t border-plum-faint bg-white/80 backdrop-blur-md px-6 py-4 md:left-64"
+      class="fixed bottom-0 left-0 right-0 z-50 border-t border-plum-faint bg-white/80 dark:bg-plum-soft/80 backdrop-blur-md px-6 py-4 md:left-64"
     >
       <div class="mx-auto flex max-w-3xl items-center justify-between">
         <p class="font-body text-sm font-medium text-plum">You have unsaved changes</p>
@@ -585,20 +551,6 @@ async function confirmDeleteAccount() {
         </div>
       </div>
     </div>
-
-    <!-- Modals -->
-    <ClearQueueHistoryConfirmModal
-      :is-open="showClearHistoryModal"
-      :is-loading="isLoading"
-      @cancel="showClearHistoryModal = false"
-      @confirm="confirmClearHistory"
-    />
-    <DeleteAccountConfirmModal
-      :is-open="showDeleteAccountModal"
-      :is-loading="isLoading"
-      @cancel="showDeleteAccountModal = false"
-      @confirm="confirmDeleteAccount"
-    />
 
     <!-- Image Cropper Modal -->
     <BaseImageCropper

@@ -28,28 +28,46 @@ const handleSubmit = async () => {
 
 const scrollY = ref(0)
 const handleScroll = () => {
-  scrollY.value = window.scrollY
+  scrollY.value = globalThis.scrollY
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
+  globalThis.addEventListener('scroll', handleScroll, { passive: true })
 })
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
+  globalThis.removeEventListener('scroll', handleScroll)
 })
 </script>
 
 <template>
   <div class="relative min-h-screen overflow-hidden bg-sand pb-24">
-    <!-- Global Atmospheric Splashes -->
-    <div class="pointer-events-none absolute inset-0 z-0">
+    <!-- Floating Orbs Background -->
+    <div class="fixed inset-0 pointer-events-none z-0">
       <div
-        class="absolute top-[-5%] left-[-5%] w-[600px] h-[600px] bg-pink-500/5 rounded-full blur-[140px] animate-blob transition-transform duration-1000 ease-out"
+        class="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-mint/5 rounded-full blur-[120px] animate-blob transition-transform duration-1000 ease-out"
         :style="{ transform: `translateY(${scrollY * 0.04}px)` }"
       />
       <div
-        class="absolute bottom-[-5%] right-[-5%] w-[800px] h-[800px] bg-mint/5 rounded-full blur-[140px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
+        class="absolute bottom-[-5%] left-[-5%] w-[600px] h-[600px] bg-plum/5 rounded-full blur-[120px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
         :style="{ transform: `translateY(${scrollY * -0.06}px)` }"
+      />
+    </div>
+
+    <!-- Holi Background Atmosphere -->
+    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <div
+        class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob transition-transform duration-700 ease-out"
+        :style="{
+          clipPath: 'polygon(15% 0, 100% 10%, 85% 95%, 0 80%)',
+          transform: `translateY(${scrollY * 0.08}px)`,
+        }"
+      />
+      <div
+        class="absolute bottom-[-5%] right-[-10%] w-[60%] h-[50%] bg-blue-500/5 blur-[140px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
+        :style="{
+          clipPath: 'polygon(25% 15%, 90% 0, 100% 85%, 10% 100%)',
+          transform: `translateY(${scrollY * -0.12}px)`,
+        }"
       />
     </div>
 
@@ -60,7 +78,7 @@ onUnmounted(() => {
         <h1
           class="font-display text-5xl font-black text-plum md:text-7xl tracking-tight leading-none mb-8"
         >
-          How can we <span class="text-mint">help?</span>
+          How can we <span class="text-mint-dark">help?</span>
         </h1>
         <p
           class="mx-auto max-w-2xl font-body text-lg md:text-xl text-plum-soft leading-relaxed opacity-80"
@@ -78,7 +96,7 @@ onUnmounted(() => {
       >
         <div class="flex items-center gap-3 mb-12">
           <div class="h-12 w-12 rounded-2xl bg-mint-light flex items-center justify-center">
-            <MessageSquare class="h-6 w-6 text-mint" />
+            <MessageSquare class="h-6 w-6 text-mint-dark" />
           </div>
           <h2 class="font-display text-3xl font-bold text-plum">Send a Message</h2>
         </div>
@@ -171,7 +189,7 @@ onUnmounted(() => {
               v-if="isSuccess"
               class="p-6 rounded-3xl bg-mint-light/50 border border-mint text-plum font-body text-sm text-center flex items-center justify-center gap-3"
             >
-              <Sparkles class="h-5 w-5 text-mint" />
+              <Sparkles class="h-5 w-5 text-mint-dark" />
               <span>Thanks for reaching out! We'll get back to you shortly.</span>
             </div>
           </Transition>
@@ -204,3 +222,28 @@ onUnmounted(() => {
     </section>
   </div>
 </template>
+
+<style scoped>
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+</style>

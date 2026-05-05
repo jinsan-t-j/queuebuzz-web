@@ -1,9 +1,5 @@
 <script setup lang="ts">
-/**
- * @view HistoryListView
- * @description List of past queues with searching, filtering, and pagination.
- */
-import { onMounted, watch, ref } from 'vue'
+import { onMounted, watch, ref, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHistory } from '../composables/useHistory'
 import {
@@ -15,7 +11,6 @@ import {
   ChevronDown as ChevronDownIcon,
   Check as CheckIcon,
   X as XIcon,
-  Sparkles as SparklesIcon,
 } from 'lucide-vue-next'
 
 import BaseCard from '@/components/base/BaseCard.vue'
@@ -23,6 +18,10 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import HistoryStatsOverview from '../components/HistoryStatsOverview.vue'
 import HistoryListTable from '../components/HistoryListTable.vue'
 import { onClickOutside } from '@vueuse/core'
+
+const HistoryUpgradeBanner = defineAsyncComponent(
+  () => import('../components/HistoryUpgradeBanner.vue'),
+)
 
 const router = useRouter()
 const {
@@ -105,45 +104,23 @@ function downloadCsv() {
 <template>
   <div class="px-6 md:px-8 space-y-8 pb-12">
     <!-- Pro Banner -->
-    <div
-      class="group relative overflow-hidden rounded-3xl bg-plum p-1 border border-plum-soft shadow-xl shadow-plum/10"
-    >
-      <div
-        class="absolute -top-12 -right-12 w-48 h-48 bg-mint/5 blur-[60px] rounded-full group-hover:bg-mint/10 transition-colors duration-500"
-      />
-      <div class="relative flex flex-col md:flex-row items-center justify-between gap-6 px-8 py-5">
-        <div class="flex items-center gap-5 text-center md:text-left">
-          <div
-            class="hidden sm:flex w-12 h-12 rounded-2xl bg-mint/10 items-center justify-center border border-mint/20 group-hover:scale-110 transition-transform duration-300"
-          >
-            <SparklesIcon class="w-6 h-6 text-mint" />
-          </div>
-          <div>
-            <h3 class="font-display font-bold text-white text-lg">Unlock 12-Month Analytics</h3>
-            <p class="font-body text-plum-muted text-sm mt-0.5">
-              Upgrade to Pro to access your full session history and custom reports.
-            </p>
-          </div>
-        </div>
-        <BaseButton
-          variant="primary"
-          class="bg-mint text-plum hover:bg-mint/90 font-bold px-8 h-12 shadow-lg shadow-mint/10 border-0"
-        >
-          Upgrade for ₹499/mo
-        </BaseButton>
-      </div>
-    </div>
+    <HistoryUpgradeBanner />
 
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div class="space-y-1">
-        <h1 class="font-display font-bold text-4xl text-plum tracking-tight">Queue History</h1>
-        <p class="font-body text-plum-muted text-sm">
+        <h1 class="font-display font-black text-4xl text-plum tracking-tight">Queue History</h1>
+        <p class="font-body text-plum-muted text-sm font-medium">
           Monitor and export your past queue performance
         </p>
       </div>
 
-      <BaseButton variant="ghost" :loading="isExporting" class="h-11" @click="downloadCsv">
+      <BaseButton
+        variant="ghost"
+        :loading="isExporting"
+        class="h-11 font-black"
+        @click="downloadCsv"
+      >
         <DownloadIcon class="w-4 h-4 mr-2" />
         Export All Data
       </BaseButton>
@@ -153,10 +130,10 @@ function downloadCsv() {
     <HistoryStatsOverview :summary="summary" :is-loading="isLoading" />
 
     <!-- Main List Section -->
-    <BaseCard class="overflow-hidden border border-plum-faint shadow-sm">
+    <BaseCard class="overflow-hidden border border-plum-faint shadow-none bg-white">
       <!-- Toolbar -->
       <div
-        class="flex flex-col md:flex-row items-center justify-between gap-4 p-5 border-b border-plum-faint bg-sand/10"
+        class="flex flex-col md:flex-row items-center justify-between gap-4 p-5 border-b border-plum-faint bg-sand"
       >
         <!-- Search -->
         <div class="relative w-full md:w-[400px]">
@@ -167,7 +144,7 @@ function downloadCsv() {
             v-model="searchQuery"
             type="search"
             placeholder="Search by queue name..."
-            class="w-full h-12 bg-white border border-plum-faint rounded-2xl pl-11 pr-10 font-body text-sm text-plum placeholder:text-plum-muted focus:border-plum focus:ring-4 focus:ring-plum/5 transition-all outline-none"
+            class="w-full h-12 bg-white border border-plum-faint rounded-2xl pl-11 pr-10 font-body text-sm text-plum placeholder:text-plum-muted focus:border-plum transition-all outline-none"
           />
           <button
             v-if="searchQuery"
@@ -181,10 +158,10 @@ function downloadCsv() {
         <!-- Filter -->
         <div ref="filterDropdownRef" class="w-full md:w-auto relative">
           <button
-            class="flex items-center gap-3 h-12 px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum hover:bg-white transition-all bg-white w-full md:w-[200px] justify-between shadow-sm"
+            class="flex items-center gap-3 h-12 px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum hover:bg-white transition-all bg-white w-full md:w-[200px] justify-between shadow-none"
             @click="isFilterOpen = !isFilterOpen"
           >
-            <span class="flex items-center gap-2">
+            <span class="flex items-center gap-2 font-black">
               <FilterIcon class="w-4 h-4 text-plum-muted" />
               {{ filters.find((f) => f.value === activeFilter)?.label }}
             </span>
@@ -205,7 +182,7 @@ function downloadCsv() {
           >
             <div
               v-if="isFilterOpen"
-              class="absolute top-full right-0 mt-3 z-50 bg-white rounded-2xl border border-plum-faint shadow-[0_12px_48px_rgba(26,10,46,0.16)] p-1.5 min-w-[220px]"
+              class="absolute top-full right-0 mt-3 z-50 bg-white rounded-2xl border border-plum-faint shadow-none p-1.5 min-w-[220px]"
             >
               <button
                 v-for="filter in filters"
@@ -214,8 +191,8 @@ function downloadCsv() {
                   'w-full flex items-center justify-between px-4 py-3 rounded-xl cursor-pointer text-left',
                   'font-body text-sm transition-all',
                   activeFilter === filter.value
-                    ? 'bg-mint-light text-plum font-semibold shadow-inner'
-                    : 'text-plum-muted hover:bg-sand/60 hover:text-plum',
+                    ? 'bg-mint-light text-plum font-black'
+                    : 'text-plum-muted hover:bg-sand hover:text-plum',
                 ]"
                 @click="selectFilter(filter.value)"
               >
@@ -239,21 +216,22 @@ function downloadCsv() {
       >
         <div class="font-body text-sm text-plum-muted">
           Showing
-          <span class="text-plum font-bold tracking-tight px-1">{{
+          <span class="text-plum font-black tracking-tight px-1">{{
             totalCount > 0 ? (currentPage - 1) * 10 + 1 : 0
           }}</span>
           to
-          <span class="text-plum font-bold tracking-tight px-1">{{
+          <span class="text-plum font-black tracking-tight px-1">{{
             Math.min(currentPage * 10, totalCount)
           }}</span>
-          of <span class="text-plum font-bold tracking-tight px-1">{{ totalCount }}</span> entries
+          of <span class="text-plum font-black tracking-tight px-1">{{ totalCount }}</span> entries
         </div>
 
         <div class="flex items-center gap-2">
           <!-- Prev -->
           <button
             :disabled="currentPage === 1"
-            class="w-11 h-11 rounded-2xl flex items-center justify-center border border-plum-faint text-plum-muted disabled:opacity-20 hover:border-plum hover:text-plum hover:bg-sand/20 transition-all bg-white shadow-sm"
+            class="w-11 h-11 rounded-2xl flex items-center justify-center border border-plum-faint text-plum-muted disabled:opacity-20 hover:border-plum hover:text-plum hover:bg-sand transition-all bg-white shadow-none"
+            aria-label="Previous page"
             @click="goToPage(currentPage - 1)"
           >
             <ChevronLeftIcon class="w-5 h-5" />
@@ -265,10 +243,10 @@ function downloadCsv() {
               v-for="page in totalPages"
               :key="page"
               :class="[
-                'w-11 h-11 rounded-2xl font-body text-sm font-bold transition-all shadow-sm',
+                'w-11 h-11 rounded-2xl font-body text-sm font-black transition-all shadow-none',
                 page === currentPage
-                  ? 'bg-plum text-sand shadow-plum/20 scale-105'
-                  : 'text-plum-muted hover:bg-sand/40 border border-plum-faint bg-white',
+                  ? 'bg-plum text-sand'
+                  : 'text-plum-muted hover:bg-sand border border-plum-faint bg-white',
               ]"
               @click="goToPage(page)"
             >
@@ -278,7 +256,7 @@ function downloadCsv() {
 
           <!-- Mobile page indicator -->
           <div
-            class="sm:hidden px-6 font-body text-sm text-plum font-bold bg-sand/40 py-2.5 rounded-2xl"
+            class="sm:hidden px-6 font-body text-sm text-plum font-black bg-sand py-2.5 rounded-2xl"
           >
             {{ currentPage }} / {{ totalPages }}
           </div>
@@ -286,7 +264,8 @@ function downloadCsv() {
           <!-- Next -->
           <button
             :disabled="currentPage === totalPages || totalPages === 0"
-            class="w-11 h-11 rounded-2xl flex items-center justify-center border border-plum-faint text-plum-muted disabled:opacity-20 hover:border-plum hover:text-plum hover:bg-sand/20 transition-all bg-white shadow-sm"
+            class="w-11 h-11 rounded-2xl flex items-center justify-center border border-plum-faint text-plum-muted disabled:opacity-20 hover:border-plum hover:text-plum hover:bg-sand transition-all bg-white shadow-none"
+            aria-label="Next page"
             @click="goToPage(currentPage + 1)"
           >
             <ChevronRightIcon class="w-5 h-5" />

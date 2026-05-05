@@ -59,7 +59,7 @@ watch(
       <div class="text-center">
         <!-- Warning Icon -->
         <div
-          class="mx-auto mb-6 w-16 h-16 rounded-full bg-[#FEF2F2] flex items-center justify-center"
+          class="mx-auto mb-6 w-16 h-16 rounded-full bg-danger/10 flex items-center justify-center"
         >
           <AlertCircleIcon class="w-8 h-8 text-danger" />
         </div>

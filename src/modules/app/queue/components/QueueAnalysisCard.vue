@@ -31,7 +31,7 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
 
 <template>
   <div
-    class="flex flex-1 flex-col rounded-card border border-plum/5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+    class="flex flex-1 flex-col rounded-card border border-plum/5 dark:border-plum-faint bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
   >
     <!-- Header -->
     <div class="px-8 py-6">
@@ -39,7 +39,9 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
     </div>
 
     <!-- Stats row -->
-    <div class="mx-8 rounded-card border border-plum/5 bg-plum/[0.02] p-8">
+    <div
+      class="mx-8 rounded-card border border-plum/5 dark:border-plum-faint bg-plum/[0.02] dark:bg-plum-faint/10 p-8"
+    >
       <div class="flex">
         <!-- Served Today -->
         <div class="flex-1">
@@ -106,8 +108,10 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
         <div
           class="w-full rounded-t-lg transition-all duration-500 ease-out"
           :class="[
-            idx === chartBars.length - 1 ? 'bg-mint' : 'bg-plum/10 group-hover:bg-plum/20',
-            bar === 0 ? 'bg-plum/[0.03]' : '',
+            idx === chartBars.length - 1
+              ? 'bg-mint'
+              : 'bg-plum/10 dark:bg-plum-faint/20 group-hover:bg-plum/20 dark:group-hover:bg-plum-faint/30',
+            bar === 0 ? 'bg-plum/[0.03] dark:bg-plum-faint/5' : '',
           ]"
           :style="{ height: `${Math.max((bar / maxBarValue) * 60, 4)}px` }"
         />

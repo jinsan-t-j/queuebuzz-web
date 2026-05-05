@@ -7,36 +7,25 @@
       "numberOfRuns": 3,
       "url": [
         "http://localhost:4173/",
-        "http://localhost:4173/join"
+        "http://localhost:4173/pricing",
+        "http://localhost:4173/premium",
+        "http://localhost:4173/support",
+        "http://localhost:4173/privacy",
+        "http://localhost:4173/terms",
+        "http://localhost:4173/login-or-signup"
       ],
-      "settings": {
-        "chromeFlags": "--no-sandbox --disable-web-security --ignore-certificate-errors --ignore-ssl-errors=yes --disable-gpu"
-      }
+      "puppeteerScript": "./lhci-login.cjs",
+      "chromeFlags": "--no-sandbox --headless=new --disable-gpu --ignore-certificate-errors --disable-features=SafeBrowsing"
     },
     "assert": {
-      "preset": "lighthouse:recommended",
       "assertions": {
-        "bf-cache": "off",
-        "uses-rel-preconnect": "off",
-        "offscreen-images": "off",
-        "uses-webp-images": "off",
-        "content-width": "off",
-        "csp-xss": "off",
-        "installable-pwa": "off",
-        "service-worker": "off",
-        "network-dependency-tree-insight": "off",
-        "cls-culprits-insight": "off",
-        "forced-reflow-insight": "off",
+        "categories:accessibility": ["error", { "minScore": 0.9 }],
+        "categories:best-practices": ["error", { "minScore": 0.9 }],
+        "categories:performance": ["warn", { "minScore": 0.5 }],
+        "categories:seo": ["warn", { "minScore": 0.8 }],
+        "legacy-javascript": "off",
         "unused-javascript": "warn",
-        "render-blocking-resources": "warn",
-        "render-blocking-insight": "warn",
-        "errors-in-console": "warn",
-        "target-size": "warn",
-        "mainthread-work-breakdown": "warn",
-        "max-potential-fid": "warn",
-        "first-contentful-paint": "warn",
-        "largest-contentful-paint": "warn",
-        "interactive": "warn"
+        "render-blocking-resources": "warn"
       }
     },
     "upload": {

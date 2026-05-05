@@ -91,7 +91,7 @@ export function useLiveQueue() {
       },
     })
 
-    const base = window.location.origin
+    const base = globalThis.location.origin
     return `${base}${route.fullPath}`
   })
 
@@ -214,7 +214,7 @@ export function useLiveQueue() {
       return false
     }
 
-    if (!('Notification' in window)) {
+    if (!('Notification' in globalThis)) {
       showToast('Notifications are not supported by this browser.', { type: 'warning' })
       return false
     }

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useQueueStore } from '@/stores/queue.store'
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
+import router from '@/router'
 import { useNotificationStore } from '@/stores/notification.store'
 import type { Entry, JoinQueuePayload } from '@/modules/customer/types'
 import * as CustomerActions from '@/modules/customer/actions/customer.action'
@@ -26,7 +27,7 @@ export const useCustomerStore = defineStore('customer', {
     isJoined: (state) => !!state.entry,
     entryId: (state) => state.entry?.id ?? null,
     status: (state) => state.entry?.status ?? null,
-    ahead: (state) => (state.position != null ? Math.max(0, state.position - 1) : null),
+    ahead: (state) => (state.position == null ? null : Math.max(0, state.position - 1)),
     estWaitMin: (state) => {
       const position = state.position
       if (position == null) return null
@@ -68,7 +69,7 @@ export const useCustomerStore = defineStore('customer', {
     },
 
     rememberPushToken(token: string, entryId?: string | null) {
-      if (typeof window === 'undefined') {
+      if (globalThis.globalThis === undefined) {
         return
       }
 
@@ -77,11 +78,11 @@ export const useCustomerStore = defineStore('customer', {
         return
       }
 
-      window.localStorage.setItem(key, token)
+      globalThis.localStorage.setItem(key, token)
     },
 
     clearRememberedPushToken(entryId?: string | null) {
-      if (typeof window === 'undefined') {
+      if (typeof globalThis === 'undefined') {
         return
       }
 
@@ -90,7 +91,7 @@ export const useCustomerStore = defineStore('customer', {
         return
       }
 
-      window.localStorage.removeItem(key)
+      globalThis.localStorage.removeItem(key)
     },
 
     getDisplayTicketNumber(entry?: Entry | null) {
@@ -106,7 +107,7 @@ export const useCustomerStore = defineStore('customer', {
     },
 
     async syncPushToken(): Promise<boolean> {
-      if (!this.entry?.id || typeof window === 'undefined' || !('Notification' in window)) {
+      if (!this.entry?.id || typeof globalThis === 'undefined' || !('Notification' in globalThis)) {
         return false
       }
 
@@ -128,7 +129,7 @@ export const useCustomerStore = defineStore('customer', {
           return false
         }
 
-        if (window.localStorage.getItem(tokenKey) === token) {
+        if (globalThis.localStorage.getItem(tokenKey) === token) {
           return true
         }
 
@@ -195,8 +196,7 @@ export const useCustomerStore = defineStore('customer', {
       if (!entryId) return
 
       if (
-        this.entry &&
-        this.entry.id === entryId &&
+        this.entry?.id === entryId &&
         (this.streamState === 'open' || this.streamState === 'connecting')
       ) {
         this.connectToEvents(entryId)
@@ -228,7 +228,7 @@ export const useCustomerStore = defineStore('customer', {
       this.connectedEntryId = entryId
 
       // Visibility Listener to suspend/resume connection to save battery/network
-      if (!(window as unknown as { _c_visibility_handler: () => void })._c_visibility_handler) {
+      if (!(globalThis as unknown as { _c_visibility_handler: () => void })._c_visibility_handler) {
         const handler = () => {
           const id = this.connectedEntryId
           if (!id) return
@@ -241,7 +241,7 @@ export const useCustomerStore = defineStore('customer', {
           }
         }
         document.addEventListener('visibilitychange', handler)
-        ;(window as unknown as { _c_visibility_handler: () => void })._c_visibility_handler =
+        ;(globalThis as unknown as { _c_visibility_handler: () => void })._c_visibility_handler =
           handler
       }
 
@@ -346,12 +346,13 @@ export const useCustomerStore = defineStore('customer', {
       this.connectedEntryId = null
       this.streamState = 'idle'
 
-      if ((window as unknown as { _c_visibility_handler: () => void })._c_visibility_handler) {
+      if ((globalThis as unknown as { _c_visibility_handler: () => void })._c_visibility_handler) {
         document.removeEventListener(
           'visibilitychange',
-          (window as unknown as { _c_visibility_handler: () => void })._c_visibility_handler,
+          (globalThis as unknown as { _c_visibility_handler: () => void })._c_visibility_handler,
         )
-        delete (window as unknown as { _c_visibility_handler?: () => void })._c_visibility_handler
+        delete (globalThis as unknown as { _c_visibility_handler?: () => void })
+          ._c_visibility_handler
       }
     },
 
@@ -451,13 +452,17 @@ export const useCustomerStore = defineStore('customer', {
         const result = await CustomerActions.updateEntry(payload)
         if (result.success) {
           if (this.entry) {
-            if (payload.name) this.entry.name = payload.name
-            if (payload.email) this.entry.email = payload.email
-            if (payload.partySize) this.entry.partySize = payload.partySize
+            Object.assign(this.entry, {
+              ...(payload.name && { name: payload.name }),
+              ...(payload.email && { email: payload.email }),
+              ...(payload.partySize && { partySize: payload.partySize }),
+            })
           }
 
-          if (payload.fcmToken && this.entry?.id && typeof window !== 'undefined') {
-            this.rememberPushToken(payload.fcmToken, this.entry.id)
+          const canRememberToken =
+            payload.fcmToken && this.entry?.id && typeof globalThis !== 'undefined'
+          if (canRememberToken) {
+            this.rememberPushToken(payload.fcmToken, this.entry!.id)
           }
         }
         return result.success
@@ -484,6 +489,17 @@ export const useCustomerStore = defineStore('customer', {
       } finally {
         this.isLoading = false
       }
+    },
+
+    onGlobalQueueEnd() {
+      if (!this.entry) return
+      const queueId = useQueueStore().activeQueue?.id || ''
+      this.clearEntry()
+      router.push({
+        name: 'customer-ended',
+        params: { queueId },
+        query: { reason: 'terminated' },
+      })
     },
 
     resetCustomerSession() {

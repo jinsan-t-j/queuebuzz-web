@@ -14,9 +14,9 @@ const emit = defineEmits<{
 
 <template>
   <BaseModal :is-open="isOpen" @close="emit('close')">
-    <div class="bg-white p-10 text-center font-body">
+    <div class="p-10 text-center font-body">
       <div
-        class="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-[28px] bg-[#FEF2F2]"
+        class="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-[28px] bg-danger/10"
       >
         <svg class="w-10 h-10 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
@@ -38,7 +38,7 @@ const emit = defineEmits<{
         <BaseButton
           variant="danger"
           size="lg"
-          class="w-full shadow-lg shadow-danger/10"
+          class="w-full shadow-lg dark:shadow-none shadow-danger/10"
           @click="emit('confirm')"
         >
           Disable

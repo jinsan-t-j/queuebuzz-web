@@ -30,7 +30,6 @@ const queueId = route.params.id as string
 // Keep track of last known data for the summary screen after termination
 const lastSessionData = ref({
   servedCount: 0,
-  recoveryEmail: null,
   avgMins: 0,
   createdAt: null,
   notes: '',
@@ -42,7 +41,6 @@ watch(
     if (val) {
       lastSessionData.value = {
         servedCount: servedTodayCount.value,
-        recoveryEmail: val.recoveryEmail || '',
         avgMins: val.avgServiceMins || 2,
         createdAt: val.createdAt,
         notes: val.notes || '',
@@ -104,7 +102,7 @@ async function onStatusUpdateConfirmed({
   const isTerminate = mode === 'terminate'
 
   if (success && isTerminate) {
-    const { servedCount, recoveryEmail, avgMins, createdAt } = lastSessionData.value
+    const { servedCount, avgMins, createdAt } = lastSessionData.value
     let durationFormatted = '0m'
 
     if (createdAt) {
@@ -121,7 +119,6 @@ async function onStatusUpdateConfirmed({
         served: servedCount.toString(),
         total: durationFormatted,
         avg: formatWaitTime(avgMins),
-        email: recoveryEmail,
         notes: lastSessionData.value.notes,
       },
     })

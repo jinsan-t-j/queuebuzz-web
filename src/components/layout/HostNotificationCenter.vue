@@ -26,8 +26,8 @@ const icons = {
 const colors = {
   info: 'bg-plum-faint text-plum',
   success: 'bg-mint-light text-plum',
-  warning: 'bg-orange-50 text-orange-600',
-  error: 'bg-red-50 text-red-600',
+  warning: 'bg-warning/10 text-warning-dark',
+  error: 'bg-danger/10 text-danger',
 }
 
 function toggle() {
@@ -45,8 +45,8 @@ watch(isOpen, (val, _, onCleanup) => {
         isOpen.value = false
       }
     }
-    window.addEventListener('keydown', handleEsc)
-    onCleanup(() => window.removeEventListener('keydown', handleEsc))
+    globalThis.addEventListener('keydown', handleEsc)
+    onCleanup(() => globalThis.removeEventListener('keydown', handleEsc))
   }
 })
 </script>
@@ -57,6 +57,7 @@ watch(isOpen, (val, _, onCleanup) => {
     <button
       class="relative cursor-pointer flex h-10 w-10 items-center justify-center rounded-2xl border border-plum-faint bg-white text-plum shadow-sm transition-all hover:border-plum hover:shadow-md"
       :class="{ 'ring-2 ring-plum/10': isOpen }"
+      aria-label="Open notifications"
       @click="toggle"
     >
       <Bell class="h-5 w-5" />

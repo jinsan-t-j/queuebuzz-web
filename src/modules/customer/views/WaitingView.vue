@@ -63,7 +63,7 @@ function handleShareCode() {
   const data = {
     title: 'Join my queue on QueueBuzz',
     text: `I'm waiting at ${queueName.value}. My ticket is #${entry.value.ticketNo}.`,
-    url: window.location.href,
+    url: globalThis.location.href,
   }
   if (navigator.share) {
     navigator.share(data).catch(() => {})
@@ -193,7 +193,7 @@ onUnmounted(() => {
               <h3 class="font-display text-base font-bold text-plum">Settings</h3>
               <span
                 v-if="showEmailHighlight"
-                class="animate-pulse rounded-full bg-mint px-2 py-0.5 font-body text-sm font-bold text-plum"
+                class="animate-pulse rounded-full bg-mint px-2 py-0.5 font-body text-sm font-bold text-on-mint"
               >
                 Recommended
               </span>

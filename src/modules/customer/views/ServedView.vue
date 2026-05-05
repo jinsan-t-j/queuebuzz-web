@@ -48,7 +48,7 @@ onBeforeMount(async () => {
 const handleFeedback = () => {
   const tNum = ticketNumber.value
   const qName = queueName.value
-  window.open(`${TALLY_FORM_URL}?ticket=${tNum}&queue=${encodeURIComponent(qName)}`, '_blank')
+  globalThis.open(`${TALLY_FORM_URL}?ticket=${tNum}&queue=${encodeURIComponent(qName)}`, '_blank')
 }
 
 function handleDone() {
@@ -109,7 +109,7 @@ function handleDone() {
       <!-- Feedback section (Tally) -->
       <div class="mt-10 flex flex-col items-center gap-4 w-full">
         <button
-          class="flex items-center justify-center gap-2 px-8 h-[60px] w-full rounded-[20px] bg-mint text-plum font-body font-bold shadow-md hover:scale-[1.02] active:scale-100 transition-all"
+          class="flex items-center justify-center gap-2 px-8 h-[60px] w-full rounded-[20px] bg-mint text-on-mint font-body font-bold shadow-md hover:scale-[1.02] active:scale-100 transition-all"
           @click="handleFeedback"
         >
           Share Feedback

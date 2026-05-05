@@ -54,7 +54,9 @@ const processedData = computed(() => {
 </script>
 
 <template>
-  <div class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+  <div
+    class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
+  >
     <div class="flex items-center justify-between">
       <h4 class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted">
         Peak Hours

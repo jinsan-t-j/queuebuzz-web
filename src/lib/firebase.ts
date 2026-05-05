@@ -82,7 +82,7 @@ function isRetriableTokenError(message: string) {
 }
 
 function wait(ms: number) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms))
+  return new Promise((resolve) => globalThis.setTimeout(resolve, ms))
 }
 
 async function waitForServiceWorkerActivation(
@@ -148,12 +148,12 @@ async function ensureServiceWorker(): Promise<ServiceWorkerRegistration | undefi
 }
 
 async function isMessagingSupported(): Promise<boolean> {
-  if (typeof window === 'undefined') return false
-  if (!window.isSecureContext) return false
+  if (globalThis.globalThis === undefined) return false
+  if (!globalThis.isSecureContext) return false
   if (
-    !('Notification' in window) ||
+    !('Notification' in globalThis) ||
     !('serviceWorker' in navigator) ||
-    !('PushManager' in window)
+    !('PushManager' in globalThis)
   ) {
     return false
   }
@@ -166,11 +166,8 @@ async function isMessagingSupported(): Promise<boolean> {
   }
 }
 
-/**
- * Obtain an FCM registration token with diagnostic info on failure.
- */
-export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
-  if (typeof window === 'undefined' || !('Notification' in window)) {
+async function checkEnvironmentReady(): Promise<FcmTokenResult | null> {
+  if (typeof globalThis === 'undefined' || !('Notification' in globalThis)) {
     return { token: null, reason: 'unsupported', detail: 'Notifications API is unavailable' }
   }
   if (Notification.permission !== 'granted') {
@@ -180,16 +177,109 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
     return { token: null, reason: 'unsupported', detail: 'Firebase messaging is not supported' }
   }
 
-  try {
-    const missing = getMissingConfigFields()
-    if (missing.length > 0) {
-      const detail = `Missing Firebase environment variables: ${missing.join(', ')}`
-      // eslint-disable-next-line no-console
-      console.error(`FCM: ${detail}`)
-      return { token: null, reason: 'config-missing', detail }
-    }
+  const missing = getMissingConfigFields()
+  if (missing.length > 0) {
+    const detail = `Missing Firebase environment variables: ${missing.join(', ')}`
+    // eslint-disable-next-line no-console
+    console.error(`FCM: ${detail}`)
+    return { token: null, reason: 'config-missing', detail }
+  }
 
-    let registration = await ensureServiceWorker()
+  return null
+}
+
+async function performTokenFetch(
+  messaging: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  registration: ServiceWorkerRegistration,
+) {
+  const { getToken } = await import('firebase/messaging')
+  return await getToken(messaging, {
+    vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+    serviceWorkerRegistration: registration,
+  })
+}
+
+function extractErrorMessage(error: unknown): string {
+  return String(
+    (error as { code?: string; message?: string })?.code || (error as Error)?.message || '',
+  )
+}
+
+async function fetchTokenWithRetries(
+  messaging: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  initialRegistration: ServiceWorkerRegistration,
+): Promise<FcmTokenResult> {
+  let registration = initialRegistration
+  let lastErrorMessage = ''
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const token = await performTokenFetch(messaging, registration)
+
+      if (token) {
+        localStorage.setItem(TOKEN_CACHE_KEY, token)
+        return { token }
+      }
+
+      if (attempt === 0) {
+        await invalidateServiceWorkers()
+        const newReg = await ensureServiceWorker()
+        if (!newReg) {
+          return {
+            token: null,
+            reason: 'service-worker-unavailable',
+            detail: 'Service worker registration is unavailable after reset',
+          }
+        }
+        registration = newReg
+        continue
+      }
+
+      localStorage.removeItem(TOKEN_CACHE_KEY)
+      return {
+        token: null,
+        reason: 'token-empty',
+        detail: 'Firebase returned an empty registration token',
+      }
+    } catch (error) {
+      lastErrorMessage = extractErrorMessage(error)
+      const isCritical = [
+        'registration-token-not-registered',
+        'permission-denied',
+        'unregistered',
+      ].some((s) => lastErrorMessage.includes(s))
+
+      if (isCritical) {
+        // eslint-disable-next-line no-console
+        console.warn('FCM: Critical registration error, resetting service worker...')
+        await invalidateServiceWorkers()
+      }
+
+      if (attempt === 0 && isRetriableTokenError(lastErrorMessage)) {
+        await wait(250)
+        continue
+      }
+
+      throw error
+    }
+  }
+
+  return {
+    token: null,
+    reason: 'token-fetch-failed',
+    detail: lastErrorMessage || 'Unknown error while fetching FCM token',
+  }
+}
+
+/**
+ * Obtain an FCM registration token with diagnostic info on failure.
+ */
+export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
+  const envCheck = await checkEnvironmentReady()
+  if (envCheck) return envCheck
+
+  try {
+    const registration = await ensureServiceWorker()
     if (!registration) {
       return {
         token: null,
@@ -198,71 +288,10 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
       }
     }
 
-    const { getMessaging, getToken } = await import('firebase/messaging')
+    const { getMessaging } = await import('firebase/messaging')
     const messaging = getMessaging(await getApp())
 
-    let lastErrorMessage = ''
-
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      try {
-        const token = await getToken(messaging, {
-          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-          serviceWorkerRegistration: registration,
-        })
-
-        if (token) {
-          localStorage.setItem(TOKEN_CACHE_KEY, token)
-          return { token }
-        }
-
-        if (attempt === 0) {
-          await invalidateServiceWorkers()
-          registration = await ensureServiceWorker()
-          if (!registration) {
-            return {
-              token: null,
-              reason: 'service-worker-unavailable',
-              detail: 'Service worker registration is unavailable after reset',
-            }
-          }
-          continue
-        }
-
-        localStorage.removeItem(TOKEN_CACHE_KEY)
-        return {
-          token: null,
-          reason: 'token-empty',
-          detail: 'Firebase returned an empty registration token',
-        }
-      } catch (error) {
-        lastErrorMessage = String(
-          (error as { code?: string; message?: string })?.code || (error as Error)?.message || '',
-        )
-
-        if (
-          lastErrorMessage.includes('registration-token-not-registered') ||
-          lastErrorMessage.includes('permission-denied') ||
-          lastErrorMessage.includes('unregistered')
-        ) {
-          // eslint-disable-next-line no-console
-          console.warn('FCM: Critical registration error, resetting service worker...')
-          await invalidateServiceWorkers()
-        }
-
-        if (attempt === 0 && isRetriableTokenError(lastErrorMessage)) {
-          await wait(250)
-          continue
-        }
-
-        throw error
-      }
-    }
-
-    return {
-      token: null,
-      reason: 'token-fetch-failed',
-      detail: lastErrorMessage || 'Unknown error while fetching FCM token',
-    }
+    return await fetchTokenWithRetries(messaging, registration)
   } catch (error) {
     const errorCode = String(
       (error as { code?: string; message?: string })?.code || (error as Error)?.message || '',
@@ -285,7 +314,7 @@ export async function getFCMTokenDetails(): Promise<FcmTokenResult> {
  * Prefers service worker registration to ensure consistency with background alerts.
  */
 export async function showBrowserNotification(payload: MessagePayload): Promise<boolean> {
-  if (typeof window === 'undefined' || !('Notification' in window)) return false
+  if (typeof globalThis === 'undefined' || !('Notification' in globalThis)) return false
   if (Notification.permission !== 'granted') return false
 
   const title = payload.notification?.title || payload.data?.title || 'Queue update'

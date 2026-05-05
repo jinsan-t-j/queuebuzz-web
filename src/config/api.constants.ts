@@ -7,7 +7,7 @@
 const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
 const url = new URL(
   baseUrl,
-  typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
+  globalThis.globalThis === undefined ? 'http://localhost:3000' : globalThis.location.origin,
 )
 
 export const API_BASE_URL: string = baseUrl
@@ -19,9 +19,11 @@ export function buildApiUrl(path: string): string {
 }
 
 export const AUTH_ROUTES = {
-  SOCIAL_START: (provider: string, claimQueueId?: string): string => {
-    const url = `${API_ORIGIN_URL}/auth/social/${provider}/start`
-    return claimQueueId ? `${url}?claim_queue_id=${claimQueueId}` : url
+  SOCIAL_START: (provider: string, claimQueueId?: string, redirect?: string): string => {
+    const url = new URL(`${API_ORIGIN_URL}/auth/social/${provider}/start`)
+    if (claimQueueId) url.searchParams.set('claim_queue_id', claimQueueId)
+    if (redirect) url.searchParams.set('redirect', redirect)
+    return url.toString()
   },
 } as const
 
@@ -78,5 +80,13 @@ export const API_ROUTES = {
     CLEAR_ALL: '/queue/history',
     DETAIL: (id: string): string => `/queue/manage/${id}/history`,
     EXPORT_CSV: (id: string): string => `/queue/manage/${id}/history/export/csv`,
+  },
+  BILLING: {
+    PLANS: '/billing/plans',
+    CHECKOUT: '/billing/checkout',
+    CURRENT_PLAN: '/billing/current-plan',
+    SUBSCRIPTION: '/billing/subscription',
+    CANCEL_SUBSCRIPTION: '/billing/subscription/cancel',
+    UPDATE_PAYMENT_METHOD: '/billing/subscription/update-payment-method',
   },
 } as const

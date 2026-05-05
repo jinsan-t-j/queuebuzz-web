@@ -14,7 +14,7 @@ import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth.store'
 
 // 3. Third party imports
-import { LogOut, User } from 'lucide-vue-next'
+import { LogOut, User, Sun, Moon } from 'lucide-vue-next'
 import router from '@/router'
 
 // 4. Components imports
@@ -26,6 +26,8 @@ import LogoutConfirmationModal from '@/modules/app/auth/components/LogoutConfirm
 // 7. Emits
 
 // 8. Composable destructuring
+import { useTheme } from '@/composables/useTheme'
+const { theme, toggleTheme } = useTheme()
 const route = useRoute()
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
@@ -52,8 +54,8 @@ function handleLogout() {
 
 function confirmLogout() {
   isLogoutModalOpen.value = false
-  void logout()
-  void router.push({ name: 'home' })
+  logout()
+  router.push({ name: 'home' })
 }
 
 // 12. Lifecycle hooks
@@ -66,12 +68,19 @@ function confirmLogout() {
     </h1>
 
     <div class="flex items-center gap-6">
+      <button
+        class="rounded-input p-2 text-plum-muted transition-colors hover:bg-sand hover:text-plum"
+        aria-label="Toggle theme"
+        @click="toggleTheme"
+      >
+        <Sun v-if="theme === 'dark'" class="h-5 w-5" />
+        <Moon v-else class="h-5 w-5" />
+      </button>
+
       <HostNotificationCenter />
 
       <div class="flex items-center gap-2">
-        <div
-          class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-plum-faint"
-        >
+        <div class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-sand">
           <img
             v-if="user?.avatar || user?.profileImageUrl"
             :src="user.avatar || user.profileImageUrl"
@@ -83,7 +92,7 @@ function confirmLogout() {
         <span class="font-body text-sm font-medium text-plum">{{ userName }}</span>
       </div>
       <button
-        class="rounded-input p-2 text-plum-muted transition-colors hover:bg-plum-faint hover:text-plum"
+        class="rounded-input p-2 text-plum-muted transition-colors hover:bg-sand hover:text-plum"
         aria-label="Sign out"
         @click="handleLogout"
       >

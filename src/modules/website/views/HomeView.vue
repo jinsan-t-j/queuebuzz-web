@@ -79,7 +79,7 @@ const resumeLink = computed(() => {
 
   <div v-else class="min-h-screen bg-sand text-plum selection:bg-mint/30 overflow-x-hidden">
     <!-- Floating Orbs Background (Global Interactive Parallax) -->
-    <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
       <div
         class="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-mint/5 rounded-full blur-[120px] animate-blob transition-transform duration-1000 ease-out"
         :style="{ transform: `translateY(${scrollY * 0.04}px)` }"
@@ -99,7 +99,7 @@ const resumeLink = computed(() => {
     />
 
     <!-- Holi Background Atmosphere (Fixed Interactive Parallax) -->
-    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
       <div
         class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob transition-transform duration-700 ease-out"
         :style="{

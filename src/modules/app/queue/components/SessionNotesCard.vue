@@ -87,8 +87,8 @@ function startDrag(e: MouseEvent) {
 
   isDragging.value = true
   dragStart.value = { x: e.clientX - pos.value.x, y: e.clientY - pos.value.y }
-  window.addEventListener('mousemove', onDrag)
-  window.addEventListener('mouseup', endDrag)
+  globalThis.addEventListener('mousemove', onDrag)
+  globalThis.addEventListener('mouseup', endDrag)
 }
 
 function onDrag(e: MouseEvent) {
@@ -98,8 +98,34 @@ function onDrag(e: MouseEvent) {
 
 function endDrag() {
   isDragging.value = false
-  window.removeEventListener('mousemove', onDrag)
-  window.removeEventListener('mouseup', endDrag)
+  globalThis.removeEventListener('mousemove', onDrag)
+  globalThis.removeEventListener('mouseup', endDrag)
+}
+
+function startTouchDrag(e: TouchEvent) {
+  // Don't drag if clicking buttons or editor
+  if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('.tiptap'))
+    return
+
+  isDragging.value = true
+  const touch = e.touches[0]
+  dragStart.value = { x: touch.clientX - pos.value.x, y: touch.clientY - pos.value.y }
+  globalThis.addEventListener('touchmove', onTouchDrag, { passive: false })
+  globalThis.addEventListener('touchend', endTouchDrag)
+}
+
+function onTouchDrag(e: TouchEvent) {
+  if (!isDragging.value) return
+  // Prevent scrolling while dragging on mobile
+  e.preventDefault()
+  const touch = e.touches[0]
+  pos.value = { x: touch.clientX - dragStart.value.x, y: touch.clientY - dragStart.value.y }
+}
+
+function endTouchDrag() {
+  isDragging.value = false
+  globalThis.removeEventListener('touchmove', onTouchDrag)
+  globalThis.removeEventListener('touchend', endTouchDrag)
 }
 
 onBeforeUnmount(() => {
@@ -111,25 +137,32 @@ onBeforeUnmount(() => {
     }
   }
   editor.value?.destroy()
+  globalThis.removeEventListener('mousemove', onDrag)
+  globalThis.removeEventListener('mouseup', endDrag)
+  globalThis.removeEventListener('touchmove', onTouchDrag)
+  globalThis.removeEventListener('touchend', endTouchDrag)
 })
 </script>
 
 <template>
   <div
-    class="absolute z-50 bg-white rounded-[28px] border border-plum-faint shadow-[0_20px_50px_rgba(26,10,46,0.15)] p-4 flex flex-col gap-3 w-[320px] cursor-grab active:cursor-grabbing select-none"
+    class="absolute z-50 bg-white backdrop-blur-xl rounded-[28px] border border-plum-faint shadow-[0_20px_50px_rgba(26,10,46,0.15)] dark:shadow-none p-4 flex flex-col gap-3 w-[320px] cursor-grab active:cursor-grabbing select-none"
     :style="{ top: pos.y + 'px', left: pos.x + 'px' }"
     @mousedown="startDrag"
+    @touchstart="startTouchDrag"
   >
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-xl bg-sand flex items-center justify-center">
+        <div
+          class="w-7 h-7 rounded-xl bg-sand dark:bg-plum-faint/30 flex items-center justify-center"
+        >
           <BookOpenIcon class="w-4 h-4 text-plum" />
         </div>
         <h3 class="font-display font-bold text-plum text-sm">Session Notes</h3>
       </div>
       <button
-        class="p-1.5 hover:bg-sand rounded-full transition-colors text-plum-muted hover:text-danger"
+        class="p-1.5 hover:bg-sand dark:hover:bg-plum-faint/10 rounded-full transition-colors text-plum-muted hover:text-danger"
         @click.stop="closeNote"
         @mousedown.stop
       >
@@ -140,14 +173,14 @@ onBeforeUnmount(() => {
     <!-- Toolbar -->
     <div
       v-if="editor"
-      class="flex items-center gap-1 p-1 bg-sand/50 rounded-xl border border-plum-faint/50 cursor-default"
+      class="flex items-center gap-1 p-1 bg-sand/50 dark:bg-plum-faint/30 rounded-xl border border-plum-faint dark:border-plum-faint/50 cursor-default"
     >
       <button
         class="p-1.5 rounded-lg transition-colors border-0 cursor-pointer"
         :class="
           editor.isActive('bold')
             ? 'bg-plum text-sand'
-            : 'text-plum-muted hover:bg-plum-faint hover:text-plum'
+            : 'text-plum-muted hover:bg-plum-faint dark:hover:bg-plum-faint/20 hover:text-plum'
         "
         @click="editor.chain().focus().toggleBold().run()"
         @mousedown.stop
@@ -159,7 +192,7 @@ onBeforeUnmount(() => {
         :class="
           editor.isActive('italic')
             ? 'bg-plum text-sand'
-            : 'text-plum-muted hover:bg-plum-faint hover:text-plum'
+            : 'text-plum-muted hover:bg-plum-faint dark:hover:bg-plum-faint/20 hover:text-plum'
         "
         @click="editor.chain().focus().toggleItalic().run()"
         @mousedown.stop
@@ -172,7 +205,7 @@ onBeforeUnmount(() => {
         :class="
           editor.isActive('bulletList')
             ? 'bg-plum text-sand'
-            : 'text-plum-muted hover:bg-plum-faint hover:text-plum'
+            : 'text-plum-muted hover:bg-plum-faint dark:hover:bg-plum-faint/20 hover:text-plum'
         "
         @click="editor.chain().focus().toggleBulletList().run()"
         @mousedown.stop
@@ -183,7 +216,7 @@ onBeforeUnmount(() => {
 
     <!-- Editor Content -->
     <div
-      class="w-full bg-sand/20 border border-plum-faint rounded-[20px] p-3 transition-all min-h-[140px] max-h-[300px] overflow-y-auto focus-within:border-plum/30 focus-within:ring-2 focus-within:ring-plum/5 cursor-text"
+      class="w-full bg-sand/20 dark:bg-plum-faint/20 border border-plum-faint dark:border-plum-faint/50 rounded-[20px] p-3 transition-all min-h-[140px] max-h-[300px] overflow-y-auto focus-within:border-plum/30 focus-within:ring-2 focus-within:ring-plum/5 cursor-text"
       @mousedown.stop
     >
       <EditorContent :editor="editor" />
@@ -230,9 +263,17 @@ onBeforeUnmount(() => {
   padding-left: 1.25rem;
 }
 
+.dark .tiptap p.is-editor-empty:first-child::before {
+  color: var(--color-plum-muted);
+}
+
 .tiptap blockquote {
   border-left: 3px solid #e8e2f0;
   padding-left: 0.75rem;
   font-style: italic;
+}
+
+.dark .tiptap blockquote {
+  border-left-color: rgba(232, 226, 240, 0.2);
 }
 </style>

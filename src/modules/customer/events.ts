@@ -4,4 +4,5 @@ export const CUSTOMER_EVENTS = {
   POSITION_UPDATE: 'position_update',
   ENTRY_STATUS_CHANGED: 'entry_status_changed',
   PUSH_TOKEN_REFRESH_REQUIRED: 'push_token_refresh_required',
+  QUEUE_ENDED: 'queue_ended',
 } as const

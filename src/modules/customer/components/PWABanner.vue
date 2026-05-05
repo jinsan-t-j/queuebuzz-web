@@ -22,11 +22,12 @@ interface WindowWithMSStream extends Window {
 
 onMounted(() => {
   // 1. Detect device & PWA state
-  const ua = window.navigator.userAgent
-  isIOS.value = /iPad|iPhone|iPod/.test(ua) && !(window as unknown as WindowWithMSStream).MSStream
+  const ua = globalThis.navigator.userAgent
+  isIOS.value =
+    /iPad|iPhone|iPod/.test(ua) && !(globalThis as unknown as WindowWithMSStream).MSStream
   isStandalone.value =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as NavigatorWithStandalone).standalone === true
+    globalThis.matchMedia('(display-mode: standalone)').matches ||
+    (globalThis.navigator as NavigatorWithStandalone).standalone === true
 
   // 2. Check dismissal state
   const isDismissed = localStorage.getItem('qb_pwa_banner_dismissed') === 'true'

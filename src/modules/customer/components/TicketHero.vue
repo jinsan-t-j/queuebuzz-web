@@ -61,7 +61,7 @@ onMounted(async () => {
         <p class="font-body text-sm font-semibold uppercase tracking-[2.4px] text-plum-muted">
           Your Ticket
         </p>
-        <p class="mt-1 font-mono text-5xl font-bold leading-tight text-mint">
+        <p class="mt-1 font-mono text-5xl font-bold leading-tight text-mint-dark">
           {{ ticketNumber }}
         </p>
       </div>

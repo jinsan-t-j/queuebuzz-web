@@ -66,6 +66,7 @@ export async function fetchCurrentHost(options?: { skipLogout?: boolean }): Prom
 export async function authenticate(
   email: string,
   claimQueueId?: string,
+  redirect?: string,
 ): Promise<{
   message?: string
   method?: 'social' | 'magic-link'
@@ -79,7 +80,11 @@ export async function authenticate(
       provider?: 'google' | 'apple'
       redirectUrl?: string
     }>
-  >(API_ROUTES.HOST.LOGIN, { email, claim_queue_id: claimQueueId })
+  >(API_ROUTES.HOST.LOGIN, {
+    email,
+    claim_queue_id: claimQueueId,
+    redirect_url: redirect,
+  })
 
   return response.data
 }

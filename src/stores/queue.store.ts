@@ -16,6 +16,7 @@ import type {
   HistoryQueryResult,
 } from '@/modules/app/history/types'
 import { fetchHistory, fetchHistoryDetail } from '@/modules/app/history/actions/history.action'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import {
   getLiveQueue,
   getLiveQueueById,
@@ -245,7 +246,7 @@ export const useQueueStore = defineStore('queue', {
       // 4. Final List = Snapshot + (Historical entries NOT in snapshot)
       const historicalToKeep = terminalEntries.filter((e) => !snapshotIds.has(e.id))
 
-      this.entries = [...newEntries, ...historicalToKeep].sort((left, right) => {
+      this.entries = [...newEntries, ...historicalToKeep].toSorted((left, right) => {
         // Keep the sort by position if possible, otherwise by timestamp or ID
         const lp = left.position ?? 999999
         const rp = right.position ?? 999999
@@ -256,7 +257,7 @@ export const useQueueStore = defineStore('queue', {
     upsertEntry(entry: QueueEntry) {
       const index = this.entries.findIndex((current: QueueEntry) => current.id === entry.id)
       if (index === -1) {
-        this.entries = [...this.entries, entry].sort(
+        this.entries = [...this.entries, entry].toSorted(
           (left: QueueEntry, right: QueueEntry) =>
             (left.position ?? 9999) - (right.position ?? 9999),
         )
@@ -265,7 +266,7 @@ export const useQueueStore = defineStore('queue', {
 
       const nextEntries = [...this.entries]
       nextEntries[index] = entry
-      this.entries = nextEntries.sort(
+      this.entries = nextEntries.toSorted(
         (left: QueueEntry, right: QueueEntry) => (left.position ?? 9999) - (right.position ?? 9999),
       )
     },
@@ -312,10 +313,14 @@ export const useQueueStore = defineStore('queue', {
             }
           },
           queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
-            // Handle both envelope structure and flat structure
             const status = payload.data?.status
             if (status) {
               this.setQueueStatus(status)
+
+              // If queue is ended/expired, notify customer store to clear session
+              if (status === 'CLOSED' || status === 'EXPIRED') {
+                useCustomerStore().onGlobalQueueEnd()
+              }
             }
           },
         },
@@ -342,7 +347,7 @@ export const useQueueStore = defineStore('queue', {
           if (!id) return
 
           if (document.visibilityState === 'visible') {
-            void this.revalidate(id)
+            this.revalidate(id)
           } else if (document.visibilityState === 'hidden') {
             this.sseClient?.disconnect()
             this.publicSseClient?.disconnect()

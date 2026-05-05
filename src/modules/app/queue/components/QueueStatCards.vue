@@ -50,10 +50,10 @@ defineProps({
   <div class="flex gap-4">
     <!-- Waiting Now -->
     <div
-      class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      class="flex-1 rounded-card border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
     >
       <div class="flex items-center justify-between">
-        <p class="font-display text-sm font-bold text-plum/40">Waiting Now</p>
+        <p class="font-display text-sm font-bold text-plum-muted">Waiting Now</p>
         <HourglassIcon class="h-4 w-3 text-plum" />
       </div>
       <p class="mt-2 font-mono text-5xl font-bold leading-none text-plum">
@@ -62,15 +62,15 @@ defineProps({
     </div>
     <!-- Avg. Wait -->
     <div
-      class="flex-1 rounded-card border border-plum/5 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      class="flex-1 rounded-card border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
     >
       <div class="flex items-center justify-between">
-        <p class="font-display text-sm font-bold text-plum/40">Avg. Wait</p>
+        <p class="font-display text-sm font-bold text-plum-muted">Avg. Wait</p>
         <ClockWaitIcon class="h-4 w-3 text-plum" />
       </div>
       <div class="mt-2 flex items-baseline">
         <span class="font-mono text-5xl font-bold leading-none text-plum">{{ avgWaitTime }}</span>
-        <span class="ml-1 font-mono text-xl font-bold text-plum/40">m</span>
+        <span class="ml-1 font-mono text-xl font-bold text-plum-muted">m</span>
       </div>
     </div>
   </div>
