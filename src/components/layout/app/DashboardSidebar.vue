@@ -19,17 +19,18 @@ import { useRoute } from 'vue-router'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import { useLocalStorage, onKeyStroke } from '@vueuse/core'
 import {
-  LayoutGrid,
-  Users,
+  PanelsTopLeft,
+  LineSquiggle,
   History,
   Settings,
-  Sparkles,
-  ArrowRight,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-vue-next'
 
 const SidebarQueueControl = defineAsyncComponent(() => import('./SidebarQueueControl.vue'))
+const SidebarSubscriptionMiniCard = defineAsyncComponent(
+  () => import('./SidebarSubscriptionMiniCard.vue'),
+)
 const QueueStatusUpdateModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/QueueStatusUpdateModal.vue'),
 )
@@ -66,13 +67,13 @@ const navItems = [
   {
     name: 'Dashboard',
     to: '/dashboard',
-    icon: LayoutGrid,
+    icon: PanelsTopLeft,
     exact: true,
   },
   {
     name: 'Queue',
     to: '/dashboard/queue',
-    icon: Users,
+    icon: LineSquiggle,
     exact: true,
   },
   {
@@ -106,7 +107,7 @@ function isActive(item: NavItem) {
       <div
         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-mint text-on-mint shadow-lg dark:shadow-none"
       >
-        <LayoutGrid class="h-5 w-5 text-on-mint" />
+        <PanelsTopLeft class="h-5 w-5 text-on-mint" />
       </div>
       <span
         v-if="!isCollapsed"
@@ -156,29 +157,9 @@ function isActive(item: NavItem) {
       <SidebarQueueControl />
     </div>
 
-    <!-- Go Premium -->
-    <div v-if="!isCollapsed" class="p-4 transition-all duration-300">
-      <router-link
-        to="/premium"
-        class="group flex flex-col gap-4 rounded-3xl bg-white border border-plum-faint p-5 transition-all hover:border-mint"
-      >
-        <div class="flex items-center justify-between">
-          <div
-            class="flex h-10 w-10 items-center justify-center rounded-xl bg-sand transition-transform group-hover:scale-110"
-          >
-            <Sparkles class="h-5 w-5 text-mint-dark" />
-          </div>
-          <ArrowRight
-            class="h-4 w-4 text-plum-muted transition-transform group-hover:translate-x-1"
-          />
-        </div>
-        <div>
-          <p class="font-body text-[13px] font-black text-plum">Upgrade to Pro</p>
-          <p class="mt-1 font-body text-[11px] font-medium text-plum-muted">
-            Unlimited queues & more
-          </p>
-        </div>
-      </router-link>
+    <!-- Subscription / Upgrade -->
+    <div v-if="!isCollapsed" class="transition-all duration-300">
+      <SidebarSubscriptionMiniCard />
     </div>
 
     <!-- Floating Collapse Toggle -->

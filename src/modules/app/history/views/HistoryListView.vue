@@ -1,9 +1,5 @@
 <script setup lang="ts">
-/**
- * @view HistoryListView
- * @description List of past queues with searching, filtering, and pagination.
- */
-import { onMounted, watch, ref } from 'vue'
+import { onMounted, watch, ref, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHistory } from '../composables/useHistory'
 import {
@@ -15,7 +11,6 @@ import {
   ChevronDown as ChevronDownIcon,
   Check as CheckIcon,
   X as XIcon,
-  Sparkles as SparklesIcon,
 } from 'lucide-vue-next'
 
 import BaseCard from '@/components/base/BaseCard.vue'
@@ -23,6 +18,10 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import HistoryStatsOverview from '../components/HistoryStatsOverview.vue'
 import HistoryListTable from '../components/HistoryListTable.vue'
 import { onClickOutside } from '@vueuse/core'
+
+const HistoryUpgradeBanner = defineAsyncComponent(
+  () => import('../components/HistoryUpgradeBanner.vue'),
+)
 
 const router = useRouter()
 const {
@@ -105,31 +104,7 @@ function downloadCsv() {
 <template>
   <div class="px-6 md:px-8 space-y-8 pb-12">
     <!-- Pro Banner -->
-    <div
-      class="group relative overflow-hidden rounded-3xl bg-plum p-1 border border-plum-faint shadow-none"
-    >
-      <div class="relative flex flex-col md:flex-row items-center justify-between gap-6 px-8 py-5">
-        <div class="flex items-center gap-5 text-center md:text-left">
-          <div
-            class="hidden sm:flex w-12 h-12 rounded-2xl bg-sand/10 items-center justify-center border border-sand/20 group-hover:scale-105 transition-transform duration-300"
-          >
-            <SparklesIcon class="w-6 h-6 text-mint" />
-          </div>
-          <div>
-            <h3 class="font-display font-black text-sand text-lg">Unlock 12-Month Analytics</h3>
-            <p class="font-body text-sand/60 text-sm mt-0.5">
-              Upgrade to Pro to access your full session history and custom reports.
-            </p>
-          </div>
-        </div>
-        <BaseButton
-          variant="primary"
-          class="bg-mint text-on-mint hover:bg-mint/90 font-black px-8 h-12 border-0 shadow-none"
-        >
-          Upgrade for ₹499/mo
-        </BaseButton>
-      </div>
-    </div>
+    <HistoryUpgradeBanner />
 
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">

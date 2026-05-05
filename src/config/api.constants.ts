@@ -85,5 +85,8 @@ export const API_ROUTES = {
     PLANS: '/billing/plans',
     CHECKOUT: '/billing/checkout',
     CURRENT_PLAN: '/billing/current-plan',
+    SUBSCRIPTION: '/billing/subscription',
+    CANCEL_SUBSCRIPTION: '/billing/subscription/cancel',
+    UPDATE_PAYMENT_METHOD: '/billing/subscription/update-payment-method',
   },
 } as const

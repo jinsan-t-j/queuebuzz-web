@@ -18,13 +18,11 @@ const BaseImageCropper = defineAsyncComponent(
   () => import('@/components/base/BaseImageCropper.vue'),
 )
 
-const ClearQueueHistoryConfirmModal = defineAsyncComponent(
-  () => import('./ClearQueueHistoryConfirmModal.vue'),
+const SettingsSubscriptionSection = defineAsyncComponent(
+  () => import('./SettingsSubscriptionSection.vue'),
 )
-const DeleteAccountConfirmModal = defineAsyncComponent(
-  () => import('./DeleteAccountConfirmModal.vue'),
-)
-import router from '@/router'
+
+const SettingsDangerZone = defineAsyncComponent(() => import('./SettingsDangerZone.vue'))
 
 const settingsStore = useSettingsStore()
 const { userSettings, isLoading, isSaving, error } = storeToRefs(settingsStore)
@@ -49,7 +47,7 @@ const profileImageError = ref<string | null>(null)
 const bannerImageError = ref<string | null>(null)
 
 const MAX_IMAGE_SIZE = 1024 * 1024 * 5 // 5MB (allowed for input, resized to <1MB by cropper)
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ACCEPTED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 
 // Cropper state
 const isCropperOpen = ref(false)
@@ -59,10 +57,6 @@ const cropAspectRatio = computed(() => (cropType.value === 'profile' ? 1 : 16 / 
 const cropTitle = computed(() =>
   cropType.value === 'profile' ? 'Crop Profile Photo' : 'Crop Cover Banner',
 )
-
-// Modals state
-const showClearHistoryModal = ref(false)
-const showDeleteAccountModal = ref(false)
 
 // File input refs
 const profileFileInput = ref<HTMLInputElement | null>(null)
@@ -121,7 +115,7 @@ function readFileAsDataUrl(file: File): Promise<string> {
 }
 
 function validateImageFile(file: File, maxSize: number): string | null {
-  if (!ACCEPTED_TYPES.includes(file.type)) {
+  if (!ACCEPTED_TYPES.has(file.type)) {
     return 'Only JPEG, PNG, WebP, and GIF images are accepted.'
   }
   if (file.size > maxSize) {
@@ -248,19 +242,6 @@ async function handleSave() {
 
 function handleDiscard() {
   syncForm()
-}
-
-async function confirmClearHistory() {
-  await settingsStore.clearAllHistory()
-  showClearHistoryModal.value = false
-}
-
-async function confirmDeleteAccount() {
-  await settingsStore.deleteHostAccount()
-  showDeleteAccountModal.value = false
-  if (!error.value) {
-    router.push('/login')
-  }
 }
 </script>
 
@@ -544,40 +525,9 @@ async function confirmDeleteAccount() {
         </div>
       </BaseCard>
 
-      <!-- ═══ Section: Danger Zone ═══ -->
-      <div id="danger" class="rounded-[32px] border border-danger/20 bg-danger/5 p-8">
-        <h2 class="mb-6 font-display text-2xl font-bold text-danger-dark">Danger Zone</h2>
+      <SettingsSubscriptionSection />
 
-        <div class="flex flex-col gap-4">
-          <div
-            class="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm dark:shadow-none border border-danger/10"
-          >
-            <div>
-              <p class="font-body font-bold text-plum">Clear Queue History</p>
-              <p class="font-body text-sm text-plum-muted">
-                Wipe all past session records permanently.
-              </p>
-            </div>
-            <BaseButton variant="danger" size="sm" @click="showClearHistoryModal = true">
-              Clear All
-            </BaseButton>
-          </div>
-
-          <div
-            class="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm dark:shadow-none border border-danger/10"
-          >
-            <div>
-              <p class="font-body font-bold text-plum text-danger-dark">Delete Account</p>
-              <p class="font-body text-sm text-plum-muted">
-                Permanently remove your profile and all data.
-              </p>
-            </div>
-            <BaseButton variant="danger" size="sm" @click="showDeleteAccountModal = true">
-              Delete Me
-            </BaseButton>
-          </div>
-        </div>
-      </div>
+      <SettingsDangerZone />
     </template>
 
     <!-- Error State -->
@@ -601,20 +551,6 @@ async function confirmDeleteAccount() {
         </div>
       </div>
     </div>
-
-    <!-- Modals -->
-    <ClearQueueHistoryConfirmModal
-      :is-open="showClearHistoryModal"
-      :is-loading="isLoading"
-      @cancel="showClearHistoryModal = false"
-      @confirm="confirmClearHistory"
-    />
-    <DeleteAccountConfirmModal
-      :is-open="showDeleteAccountModal"
-      :is-loading="isLoading"
-      @cancel="showDeleteAccountModal = false"
-      @confirm="confirmDeleteAccount"
-    />
 
     <!-- Image Cropper Modal -->
     <BaseImageCropper

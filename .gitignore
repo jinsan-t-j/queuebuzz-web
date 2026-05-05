@@ -26,8 +26,8 @@ accessibility-results.json
 *.sln
 *.sw?
 .env
-.agent/*
-.lighthouseci/*
+.agent
+.lighthouseci
 .codex
 .agent
 .gitnexus

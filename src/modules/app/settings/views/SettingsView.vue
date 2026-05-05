@@ -5,9 +5,12 @@
  */
 
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+
 import SettingsForm from '@/modules/app/settings/components/SettingsForm.vue'
 import SettingsSidebar from '@/modules/app/settings/components/SettingsSidebar.vue'
 
+const route = useRoute()
 const activeSection = ref('profile')
 
 function scrollToSection(id: string) {
@@ -16,13 +19,12 @@ function scrollToSection(id: string) {
   const container = element?.closest('main')
 
   if (element && container) {
-    const yOffset = -24 // Small padding
+    const yOffset = -24
     const y = element.offsetTop + yOffset
     container.scrollTo({ top: y, behavior: 'smooth' })
   }
 }
 
-// Update active section on scroll
 onMounted(() => {
   const container = document.querySelector('main')
   const observer = new IntersectionObserver(
@@ -40,10 +42,16 @@ onMounted(() => {
     },
   )
 
-  ;['profile', 'queue', 'preferences', 'danger'].forEach((id) => {
+  ;['profile', 'queue', 'preferences', 'subscription', 'danger'].forEach((id) => {
     const el = document.getElementById(id)
     if (el) observer.observe(el)
   })
+
+  if (route.query.section) {
+    setTimeout(() => {
+      scrollToSection(String(route.query.section))
+    }, 100)
+  }
 })
 </script>
 
