@@ -160,6 +160,11 @@ watch(entryStatusKey, (newKey, oldKey) => {
     }
   }
 })
+function resetFilters() {
+  partySizeFilter.value = 'all'
+  sortMode.value = 'position'
+  isFilterMenuOpen.value = false
+}
 </script>
 
 <template>
@@ -229,11 +234,7 @@ watch(entryStatusKey, (newKey, oldKey) => {
             @update:sort-mode="sortMode = $event"
             @update:party-size-filter="partySizeFilter = $event"
             @close="isFilterMenuOpen = false"
-            @reset="
-              partySizeFilter = 'all'
-              sortMode = 'position'
-              isFilterMenuOpen = false
-            "
+            @reset="resetFilters"
           />
 
           <!-- Click Outside Overlay -->

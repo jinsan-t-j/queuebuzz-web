@@ -25,6 +25,10 @@ const navItems = [
   { id: 'subscription', label: 'Subscription', icon: CreditCard },
   { id: 'danger', label: 'Danger Zone', icon: AlertCircle },
 ]
+function handleNavigate(id: string) {
+  emit('navigate', id)
+  isMobileMenuOpen.value = false
+}
 </script>
 
 <template>
@@ -94,10 +98,7 @@ const navItems = [
                     ? 'border-mint bg-mint/5 ring-1 ring-mint/20'
                     : 'border-plum/5 bg-sand/50 hover:bg-sand',
                 ]"
-                @click="
-                  emit('navigate', item.id)
-                  isMobileMenuOpen = false
-                "
+                @click="handleNavigate(item.id)"
               >
                 <component
                   :is="item.icon"
