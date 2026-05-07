@@ -47,30 +47,32 @@ defineProps({
 </script>
 
 <template>
-  <div class="flex gap-4">
+  <div class="flex flex-col gap-3 sm:flex-row sm:gap-4">
     <!-- Waiting Now -->
     <div
-      class="flex-1 rounded-card border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
+      class="flex-1 rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
     >
       <div class="flex items-center justify-between">
-        <p class="font-display text-sm font-bold text-plum-muted">Waiting Now</p>
+        <p class="font-display text-xs font-bold text-plum-muted sm:text-sm">Waiting Now</p>
         <HourglassIcon class="h-4 w-3 text-plum" />
       </div>
-      <p class="mt-2 font-mono text-5xl font-bold leading-none text-plum">
+      <p class="mt-1 sm:mt-2 font-mono text-3xl sm:text-5xl font-bold leading-none text-plum">
         {{ String(waitingCount).padStart(2, '0') }}
       </p>
     </div>
     <!-- Avg. Wait -->
     <div
-      class="flex-1 rounded-card border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
+      class="flex-1 rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
     >
       <div class="flex items-center justify-between">
-        <p class="font-display text-sm font-bold text-plum-muted">Avg. Wait</p>
+        <p class="font-display text-xs font-bold text-plum-muted sm:text-sm">Avg. Wait</p>
         <ClockWaitIcon class="h-4 w-3 text-plum" />
       </div>
-      <div class="mt-2 flex items-baseline">
-        <span class="font-mono text-5xl font-bold leading-none text-plum">{{ avgWaitTime }}</span>
-        <span class="ml-1 font-mono text-xl font-bold text-plum-muted">m</span>
+      <div class="mt-1 sm:mt-2 flex items-baseline">
+        <span class="font-mono text-3xl sm:text-5xl font-bold leading-none text-plum">{{
+          avgWaitTime
+        }}</span>
+        <span class="ml-1 font-mono text-lg sm:text-xl font-bold text-plum-muted">m</span>
       </div>
     </div>
   </div>

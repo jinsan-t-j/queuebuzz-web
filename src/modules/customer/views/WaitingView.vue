@@ -170,7 +170,12 @@ onUnmounted(() => {
             @save-ticket="saveTicketAsImage"
           />
 
-          <WaitingStats :position="position" :ahead="ahead" :est-wait-min="estWaitMin" />
+          <WaitingStats
+            :position="position"
+            :ahead="ahead"
+            :est-wait-min="estWaitMin"
+            :manual-positioning="activeQueue?.manualPositioning"
+          />
         </div>
       </div>
 

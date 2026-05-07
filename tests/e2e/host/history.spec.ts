@@ -13,8 +13,10 @@ test.describe('Queue History', () => {
 
     await page.goto('/dashboard/queue/history')
 
-    await expect(page.getByRole('table').getByText('Morning Batch')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByRole('table').getByText('Evening Batch')).toBeVisible()
+    await expect(page.locator(':text("Morning Batch"):visible').first()).toBeVisible({
+      timeout: 5000,
+    })
+    await expect(page.locator(':text("Evening Batch"):visible').first()).toBeVisible()
   })
 
   test('should show empty state when no history', async ({ page, mockApi }) => {
@@ -22,14 +24,18 @@ test.describe('Queue History', () => {
 
     await page.goto('/dashboard/queue/history')
 
-    await expect(page.getByText('No history found').first()).toBeVisible({ timeout: 5000 })
+    await expect(page.locator(':text("No history found"):visible').first()).toBeVisible({
+      timeout: 5000,
+    })
   })
 
   test('should filter history via search input', async ({ page, mockApi }) => {
     await mockApi('/queue/history', makeHistoryList())
 
     await page.goto('/dashboard/queue/history')
-    await expect(page.getByRole('table').getByText('Morning Batch')).toBeVisible({ timeout: 5000 })
+    await expect(page.locator(':text("Morning Batch"):visible').first()).toBeVisible({
+      timeout: 5000,
+    })
 
     // Search
     const searchInput = page.locator('input[type="search"], input[placeholder*="Search"]').first()
@@ -42,13 +48,15 @@ test.describe('Queue History', () => {
 
   test('should navigate to history detail page', async ({ page, mockApi }) => {
     await mockApi('/queue/history', makeHistoryList(1))
-    await mockApi('/queue/history/h-1', makeHistoryDetail())
+    await mockApi('/queue/manage/h-1/history', makeHistoryDetail())
 
     await page.goto('/dashboard/queue/history')
-    await expect(page.getByRole('table').getByText('Morning Batch')).toBeVisible({ timeout: 5000 })
+    await expect(page.locator(':text("Morning Batch"):visible').first()).toBeVisible({
+      timeout: 5000,
+    })
 
     // Click on the entry row
-    await page.getByRole('table').getByText('Morning Batch').click()
+    await page.locator(':text("Morning Batch"):visible').first().click()
 
     // Should navigate to detail
     await expect(page).toHaveURL(/\/history\/h-1/, { timeout: 5000 })

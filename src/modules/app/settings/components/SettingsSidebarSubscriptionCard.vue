@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { fetchSubscription, type Subscription } from '../actions/billing.actions'
+
+import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
 
 const emit = defineEmits(['navigate'])
 
@@ -37,7 +38,7 @@ const statusColor = computed(() => {
   }
 
   const colorMap: Record<string, string> = {
-    active: 'bg-mint text-plum',
+    active: 'bg-mint text-[#1A0A2E]',
     in_grace: 'bg-orange-100 text-warning',
     cancelled: 'bg-red-100 text-danger',
     pending: 'bg-plum-faint text-plum-muted',

@@ -30,7 +30,7 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Run E2E tests
-        run: npx playwright test --project=chromium
+        run: npx playwright test --project=chromium --project="Mobile Chrome"
         env:
           VITE_FIREBASE_API_KEY: "mock-api-key"
           VITE_FIREBASE_PROJECT_ID: "mock-project-id"

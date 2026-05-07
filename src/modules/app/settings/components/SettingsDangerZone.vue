@@ -41,34 +41,47 @@ async function confirmDeleteAccount() {
 </script>
 
 <template>
-  <div id="danger" class="rounded-[32px] border border-danger/20 bg-danger/5 p-8">
-    <h2 class="mb-6 font-display text-2xl font-bold text-danger-dark">Danger Zone</h2>
+  <div
+    id="danger"
+    class="scroll-mt-32 rounded-[32px] border border-danger/20 bg-danger/5 p-5 sm:p-8"
+  >
+    <h2 class="mb-6 font-display text-xl sm:text-2xl font-bold text-danger-dark">Danger Zone</h2>
 
     <div class="flex flex-col gap-4">
       <div
-        class="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm dark:shadow-none border border-danger/10"
+        class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl bg-white p-5 shadow-sm dark:shadow-none border border-danger/10"
       >
-        <div>
+        <div class="flex-1">
           <p class="font-body font-bold text-plum">Clear Queue History</p>
           <p class="font-body text-sm text-plum-muted">
             Wipe all past session records permanently.
           </p>
         </div>
-        <BaseButton variant="danger" size="sm" @click="showClearHistoryModal = true">
+        <BaseButton
+          variant="danger"
+          size="sm"
+          class="w-full sm:w-auto"
+          @click="showClearHistoryModal = true"
+        >
           Clear All
         </BaseButton>
       </div>
 
       <div
-        class="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm dark:shadow-none border border-danger/10"
+        class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-2xl bg-white p-5 shadow-sm dark:shadow-none border border-danger/10"
       >
-        <div>
+        <div class="flex-1">
           <p class="font-body font-bold text-plum text-danger-dark">Delete Account</p>
           <p class="font-body text-sm text-plum-muted">
             Permanently remove your profile and all data.
           </p>
         </div>
-        <BaseButton variant="danger" size="sm" @click="showDeleteAccountModal = true">
+        <BaseButton
+          variant="danger"
+          size="sm"
+          class="w-full sm:w-auto"
+          @click="showDeleteAccountModal = true"
+        >
           Delete Me
         </BaseButton>
       </div>

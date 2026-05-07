@@ -23,6 +23,7 @@ const props = defineProps<{
   isOpen: boolean
   queue: QueueRecord | null
   isLoading?: boolean
+  manualPositioning?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -194,6 +195,7 @@ function selectSuggestion(suggestion: string) {
 
           <!-- Strict Calling Mode -->
           <div
+            v-if="!manualPositioning"
             class="rounded-card border border-plum/5 dark:border-plum-faint bg-white p-5 shadow-sm dark:shadow-none transition-all hover:border-plum/10 dark:hover:border-plum/20"
           >
             <div class="flex items-center justify-between">

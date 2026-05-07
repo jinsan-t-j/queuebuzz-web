@@ -1,10 +1,10 @@
-import { defineConfig, loadEnv } from 'vite'
-import esbuild from 'esbuild'
-import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
-import svgLoader from 'vite-svg-loader'
-import { fileURLToPath, URL } from 'node:url'
+import vue from '@vitejs/plugin-vue'
+import esbuild from 'esbuild'
 import path from 'node:path'
+import { fileURLToPath, URL } from 'node:url'
+import { defineConfig, loadEnv } from 'vite'
+import svgLoader from 'vite-svg-loader'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -171,7 +171,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       host: 'localhost',
-      port: parseInt(env.VITE_PORT) || 3000,
+      port: Number.parseInt(env.VITE_PORT) || 3000,
     },
     build: {
       sourcemap: false,
@@ -199,6 +199,48 @@ export default defineConfig(({ mode }) => {
           },
           entryFileNames: 'assets/[name]-[hash].js',
         },
+      },
+    },
+    ssgOptions: {
+      script: 'async',
+      formatting: 'minify',
+      dirStyle: 'nested',
+      includedRoutes(paths) {
+        // Pre-render the core landing pages
+        return ['/', '/support', '/login-or-signup']
+      },
+      async onPageRendered(route, html) {
+        const fs = await import('node:fs')
+        const path = await import('node:path')
+        const seoConfig = JSON.parse(
+          fs.readFileSync(path.resolve(__dirname, 'src/config/seo.constants.json'), 'utf-8'),
+        )
+
+        const normalizedRoute = '/' + route.replaceAll(/^\/|\/$/g, '')
+        const config = seoConfig[normalizedRoute] || seoConfig['/']
+
+        return html
+          .replace(/<title>.*?<\/title>/, `<title>${config.title}</title>`)
+          .replace(
+            /<meta name="description" content=".*?">/,
+            `<meta name="description" content="${config.description}">`,
+          )
+          .replace(
+            /<meta property="og:title" content=".*?">/,
+            `<meta property="og:title" content="${config.title}">`,
+          )
+          .replace(
+            /<meta property="og:description" content=".*?">/,
+            `<meta property="og:description" content="${config.description}">`,
+          )
+          .replace(
+            /<meta property="twitter:title" content=".*?">/,
+            `<meta property="twitter:title" content="${config.title}">`,
+          )
+          .replace(
+            /<meta property="twitter:description" content=".*?">/,
+            `<meta property="twitter:description" content="${config.description}">`,
+          )
       },
     },
   }

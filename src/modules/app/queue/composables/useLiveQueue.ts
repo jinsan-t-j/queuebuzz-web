@@ -5,6 +5,7 @@ import { useToast } from '@/composables/useToast'
 import { useQueueAnalysis } from './useQueueAnalysis'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 import type { LiveQueueGuestInput, UpdateQueuePayload } from '@/modules/app/queue/types'
+import { APP_BASE_URL } from '@/config/api.constants'
 
 type SearchEmitter = (value: string) => void
 
@@ -91,8 +92,7 @@ export function useLiveQueue() {
       },
     })
 
-    const base = globalThis.location.origin
-    return `${base}${route.fullPath}`
+    return `${APP_BASE_URL}${route.fullPath}`
   })
 
   // Actions

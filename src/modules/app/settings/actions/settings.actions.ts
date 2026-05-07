@@ -5,6 +5,8 @@ import type { UserTier } from '@/modules/app/auth/types'
 
 export interface UserSettings {
   name: string
+  business_name: string
+  address: string
   email: string
   phone: string | null
   tier: UserTier
@@ -47,7 +49,7 @@ export async function updateUserSettings(payload: Partial<UserSettings> | FormDa
  */
 export async function clearQueueHistory(): Promise<void> {
   const config = createApiRequestConfig({}, { withCredentials: true })
-  await apiClient.delete(API_ROUTES.HISTORY.CLEAR_ALL, config)
+  await apiClient.post(API_ROUTES.HISTORY.CLEAR_ALL, {}, config)
 }
 
 /**

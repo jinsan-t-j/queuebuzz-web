@@ -13,16 +13,16 @@ defineProps<{
 </script>
 
 <template>
-  <div class="flex items-center justify-between w-full">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between w-full">
     <div class="flex items-center gap-6">
       <div class="flex items-center gap-3">
-        <div class="relative flex h-3 w-3 items-center justify-center">
+        <div class="relative flex h-3 w-3 items-center justify-center shrink-0">
           <span
             v-if="streamState === 'connecting'"
             class="absolute inline-flex h-full w-full animate-ping rounded-full bg-warning opacity-75"
           />
           <span
-            class="relative inline-flex h-3 w-3 rounded-full transition-colors duration-300"
+            class="relative inline-flex h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full transition-colors duration-300"
             :class="
               streamState === 'open'
                 ? 'bg-mint'
@@ -32,7 +32,9 @@ defineProps<{
             "
           />
         </div>
-        <h1 class="font-display text-4xl font-bold text-plum leading-tight">
+        <h1
+          class="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-plum leading-tight truncate"
+        >
           {{ queueName }}
         </h1>
       </div>

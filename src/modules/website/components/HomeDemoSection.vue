@@ -108,7 +108,7 @@ const exportHovered = ref(false)
                     Live Queue
                   </p>
                   <span
-                    class="flex items-center gap-1.5 font-mono text-[10px] font-bold bg-plum text-mint px-2.5 py-1 rounded-full shadow-sm"
+                    class="flex items-center gap-1.5 font-mono text-[10px] font-bold bg-plum-deep text-mint px-2.5 py-1 rounded-full shadow-sm"
                   >
                     <span class="h-1.5 w-1.5 rounded-full bg-mint animate-pulse mr-0.5" />LIVE
                   </span>
@@ -121,7 +121,7 @@ const exportHovered = ref(false)
                     calledGuest === i
                       ? 'bg-mint-light border-mint scale-[1.02] shadow-lg shadow-mint/20'
                       : i === 0
-                        ? 'bg-plum text-white border-plum'
+                        ? 'bg-plum-deep text-white border-plum'
                         : 'bg-sand/50 border-plum-faint hover:bg-white hover:border-mint/30',
                   ]"
                   @click="callGuest(i)"
@@ -138,7 +138,7 @@ const exportHovered = ref(false)
                     <p
                       :class="[
                         'font-body text-sm font-bold leading-none truncate',
-                        i === 0 ? 'text-white' : 'text-plum',
+                        i === 0 ? 'text-pure-white' : 'text-plum',
                       ]"
                     >
                       {{ g.name }}
@@ -146,7 +146,7 @@ const exportHovered = ref(false)
                     <p
                       :class="[
                         'font-body text-[10px] mt-0.5',
-                        i === 0 ? 'text-white/60' : 'text-plum-soft',
+                        i === 0 ? 'text-pure-white/60' : 'text-plum-soft',
                       ]"
                     >
                       <Clock class="inline h-2.5 w-2.5 mr-0.5" />{{ g.wait }}

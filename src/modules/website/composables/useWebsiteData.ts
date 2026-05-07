@@ -1,31 +1,31 @@
-import { ref, onMounted, computed, onUnmounted } from 'vue'
 import {
-  Zap,
-  Layout,
   BarChart3,
-  ShieldCheck,
-  Smartphone,
-  Globe,
-  Layers,
-  Users,
-  Landmark as LandmarkIcon,
-  Wrench,
-  Coffee,
-  Car,
-  Utensils,
-  Scissors,
-  Ticket,
-  ShoppingBag,
-  Flame,
-  Moon,
-  Store,
-  Map,
-  Heart,
-  Flower2,
-  Sparkles,
-  Gift,
   Beer,
+  Car,
+  Coffee,
+  Flame,
+  Flower2,
+  Gift,
+  Globe,
+  Heart,
+  Landmark as LandmarkIcon,
+  Layers,
+  Layout,
+  Map,
+  Moon,
+  Scissors,
+  ShieldCheck,
+  ShoppingBag,
+  Smartphone,
+  Sparkles,
+  Store,
+  Ticket,
+  Users,
+  Utensils,
+  Wrench,
+  Zap,
 } from 'lucide-vue-next'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 export function useWebsiteData() {
   const isLoading = ref(false)
@@ -267,14 +267,19 @@ export function useWebsiteData() {
         },
       ]
     } catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : String(e)
+      let errorMessage = 'An unexpected error occurred'
+      if (e instanceof Error) {
+        errorMessage = e.message
+      } else if (typeof e === 'string') {
+        errorMessage = e
+      }
+      error.value = errorMessage
       return []
     } finally {
       isLoading.value = false
     }
   }
 
-  // --- LIFECYCLE ---
   onMounted(async () => {
     if (typeof globalThis === 'undefined') return
 

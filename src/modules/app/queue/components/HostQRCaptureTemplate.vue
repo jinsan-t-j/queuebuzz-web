@@ -3,8 +3,9 @@
  * Host QR Capture Template — optimized for high-quality off-screen rendering.
  * Used for QR code downloads in host module.
  */
+import { APP_BASE_URL } from '@/config/api.constants'
 import QRCode from 'qrcode'
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const props = defineProps<{
   queueName: string
@@ -13,7 +14,7 @@ const props = defineProps<{
 }>()
 
 const qrDataUrl = ref('')
-const qrValue = `https://queuebuzz.app/q/${props.slug}`
+const qrValue = `${APP_BASE_URL}/q/${props.slug}`
 
 onMounted(async () => {
   qrDataUrl.value = await QRCode.toDataURL(qrValue, {
@@ -66,7 +67,7 @@ onMounted(async () => {
       <div class="mt-12 flex items-center gap-2">
         <div class="w-1.5 h-1.5 rounded-full bg-mint animate-pulse" />
         <span class="font-body text-sm text-plum-muted font-bold tracking-widest uppercase">
-          queuebuzz.app
+          {{ APP_BASE_URL }}
         </span>
       </div>
     </div>

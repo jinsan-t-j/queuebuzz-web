@@ -2,7 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Sparkles as SparklesIcon } from 'lucide-vue-next'
-import { fetchSubscription, type Subscription } from '../../settings/actions/billing.actions'
+import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
 import { useBilling } from '@/modules/app/billing/composables/useBilling'
 import BaseButton from '@/components/base/BaseButton.vue'
 
@@ -52,9 +52,9 @@ function goToUpgrade() {
           <SparklesIcon class="w-6 h-6 text-mint" />
         </div>
         <div>
-          <h3 class="font-display font-black text-sand text-lg">Unlock Monthly Analytics</h3>
+          <h3 class="font-display font-black text-sand text-lg">Unlock More Analytics</h3>
           <p class="font-body text-sand/60 text-sm mt-0.5">
-            Upgrade to Pro to access your full session history and custom reports.
+            Upgrade to Pro to access your full session history and detailed reports.
           </p>
         </div>
       </div>

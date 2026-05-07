@@ -17,10 +17,14 @@ export const authGuard: NavigationGuardWithThis<undefined> = async (to) => {
   const { showToast } = useToast()
 
   if (!auth.isHydrated) {
-    await auth.initializeSession()
+    await auth.initializeSession({ skipLogout: true })
     if (auth.error) {
-      await auth.logout()
-      showToast(auth.error.message, { type: 'error' })
+      const is401 =
+        (auth.error as unknown as { response: { status: number } })?.response?.status === 401
+      auth.clearSession()
+      if (!is401) {
+        showToast(auth.error.message, { type: 'error' })
+      }
     }
     if (auth.isAuthenticated) {
       const queueStore = useQueueStore()

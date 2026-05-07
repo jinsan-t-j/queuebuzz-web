@@ -1,9 +1,9 @@
 export function toSnakeCase(str: string): string {
-  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+  return str.replaceAll(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
 }
 
 export function toCamelCase(str: string): string {
-  return str.replace(/_([a-z0-9])/g, (_, letter) => letter.toUpperCase())
+  return str.replaceAll(/_([a-z0-9])/g, (_, letter) => letter.toUpperCase())
 }
 
 export function keysToSnakeCase(obj: unknown): unknown {

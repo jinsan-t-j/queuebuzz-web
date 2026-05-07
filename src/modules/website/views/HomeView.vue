@@ -5,10 +5,16 @@
  * for faster page loading, better code-splitting, and maintainability.
  */
 import { onMounted, computed, defineAsyncComponent } from 'vue'
+import { useSeoMeta } from '@unhead/vue'
 import { storeToRefs } from 'pinia'
 import { useQueueStore } from '@/stores/queue.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useWebsiteData } from '@/modules/website/composables/useWebsiteData'
+
+import seoConfig from '@/config/seo.constants.json'
+
+useSeoMeta(seoConfig['/'])
+
 import PwaLauncher from '@/modules/website/components/PwaLauncher.vue'
 import HomeHeroSection from '@/modules/website/components/HomeHeroSection.vue'
 import HomeOsStrip from '@/modules/website/components/HomeOsStrip.vue'

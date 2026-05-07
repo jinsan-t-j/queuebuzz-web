@@ -9,26 +9,26 @@
 import { computed, ref } from 'vue'
 
 // 2. Router / Pinia imports
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth.store'
 
 // 3. Third party imports
-import { LogOut, User, Sun, Moon } from 'lucide-vue-next'
-import router from '@/router'
+import { Menu } from 'lucide-vue-next'
 
 // 4. Components imports
 import HostNotificationCenter from '@/components/layout/HostNotificationCenter.vue'
 import LogoutConfirmationModal from '@/modules/app/auth/components/LogoutConfirmationModal.vue'
+import DashboardUserMenu from '@/components/layout/app/DashboardUserMenu.vue'
 
 // 5. Props
 
 // 7. Emits
+const emit = defineEmits(['toggle-menu'])
 
 // 8. Composable destructuring
-import { useTheme } from '@/composables/useTheme'
-const { theme, toggleTheme } = useTheme()
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 const { user } = storeToRefs(authStore)
 const { logout } = authStore
@@ -62,47 +62,43 @@ function confirmLogout() {
 </script>
 
 <template>
-  <header class="flex h-16 items-center justify-between border-b border-plum-faint bg-white px-8">
-    <h1 class="font-display text-xl font-bold text-plum">
-      {{ pageTitle }}
-    </h1>
-
-    <div class="flex items-center gap-6">
+  <header
+    class="flex h-16 items-center justify-between border-b border-plum-faint bg-white px-4 md:px-8"
+  >
+    <div class="flex items-center gap-3">
+      <!-- Mobile Menu Toggle -->
       <button
-        class="rounded-input p-2 text-plum-muted transition-colors hover:bg-sand hover:text-plum"
-        aria-label="Toggle theme"
-        @click="toggleTheme"
+        class="rounded-xl p-2 text-plum-muted transition-colors hover:bg-sand hover:text-plum lg:hidden"
+        aria-label="Open menu"
+        @click="emit('toggle-menu')"
       >
-        <Sun v-if="theme === 'dark'" class="h-5 w-5" />
-        <Moon v-else class="h-5 w-5" />
+        <Menu class="h-6 w-6" />
       </button>
 
-      <HostNotificationCenter />
+      <h1 class="hidden sm:block font-display text-xl font-bold text-plum truncate">
+        {{ pageTitle }}
+      </h1>
+    </div>
 
-      <div class="flex items-center gap-2">
-        <div class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-sand">
-          <img
-            v-if="user?.avatar || user?.profileImageUrl"
-            :src="user.avatar || user.profileImageUrl"
-            :alt="userName"
-            class="h-full w-full object-cover"
-          />
-          <User v-else class="h-4 w-4 text-plum-muted" />
-        </div>
-        <span class="font-body text-sm font-medium text-plum">{{ userName }}</span>
+    <div class="flex items-center gap-2 sm:gap-4">
+      <!-- Actions Group -->
+      <div class="flex items-center gap-1 sm:gap-2 pr-2 sm:pr-4 border-r border-plum-faint">
+        <HostNotificationCenter />
       </div>
-      <button
-        class="rounded-input p-2 text-plum-muted transition-colors hover:bg-sand hover:text-plum"
-        aria-label="Sign out"
-        @click="handleLogout"
-      >
-        <LogOut class="h-5 w-5" />
-      </button>
+
+      <!-- User Menu Group -->
+      <DashboardUserMenu
+        :user-name="userName"
+        :user-email="user?.email"
+        :user-avatar="user?.avatar || user?.profileImageUrl"
+        @logout="handleLogout"
+      />
     </div>
 
     <LogoutConfirmationModal
       :is-open="isLogoutModalOpen"
       @cancel="isLogoutModalOpen = false"
+      @close="isLogoutModalOpen = false"
       @confirm="confirmLogout"
     />
   </header>

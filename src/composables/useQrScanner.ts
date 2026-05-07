@@ -10,6 +10,8 @@ interface QrCodeScanner {
   stop: () => Promise<void>
 }
 
+const DEFAULT_SCANNER_CONFIG = { fps: 10, qrbox: { width: 250, height: 250 } }
+
 /**
  * @composable useQrScanner
  * @description Manages the lifecycle of a QR code scanner using html5-qrcode.
@@ -25,7 +27,7 @@ export function useQrScanner() {
   async function startScanner(
     elementId: string,
     onResult: (text: string) => void,
-    config = { fps: 10, qrbox: { width: 250, height: 250 } },
+    config = DEFAULT_SCANNER_CONFIG,
   ) {
     try {
       if (scanner.value) {

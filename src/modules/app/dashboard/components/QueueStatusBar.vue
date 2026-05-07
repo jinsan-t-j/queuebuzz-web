@@ -40,10 +40,9 @@ defineEmits(['go-to-queue', 'start-queue'])
 
 <template>
   <div
-    :class="[
-      'group flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border px-6 py-4 transition-all duration-300 shadow-none',
-      isActive && !isLoading ? 'border-mint bg-mint-light' : 'border-plum-faint bg-white',
-    ]"
+    v-if="!isLoading"
+    class="group flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border px-4 sm:px-6 py-4 transition-all duration-300 shadow-none"
+    :class="isActive && !isLoading ? 'border-mint bg-mint-light' : 'border-plum-faint bg-white'"
   >
     <!-- Loading State -->
     <div v-if="isLoading" class="flex w-full items-center justify-between animate-pulse">
@@ -59,7 +58,7 @@ defineEmits(['go-to-queue', 'start-queue'])
 
     <!-- Content State -->
     <template v-else>
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-4 min-w-0">
         <!-- Lively Status Indicator -->
         <div class="relative flex h-10 w-10 shrink-0 items-center justify-center">
           <div
@@ -77,24 +76,26 @@ defineEmits(['go-to-queue', 'start-queue'])
         </div>
 
         <!-- Info -->
-        <div class="flex flex-col">
-          <div class="flex items-center gap-2">
+        <div class="flex flex-col min-w-0">
+          <div class="flex items-center gap-2 min-w-0">
             <span
               v-if="isActive"
-              class="inline-flex items-center rounded-full bg-plum px-2 py-0.5 font-body text-[10px] font-black uppercase tracking-wider text-sand"
+              class="inline-flex shrink-0 items-center rounded-full bg-plum px-2 py-0.5 font-body text-[10px] font-black uppercase tracking-wider text-sand"
             >
               Live
             </span>
-            <span class="font-display text-base font-black text-plum">
+            <span class="font-display text-sm font-black text-plum truncate sm:text-base">
               {{ isActive ? queueName : 'No active session' }}
             </span>
           </div>
-          <p v-if="isActive" class="mt-0.5 font-body text-[13px] text-plum">
-            Started <span class="font-black text-plum">{{ startedAt }}</span>
-            <span class="mx-2 opacity-30">|</span>
-            <span class="font-black text-mint-dark">{{ waitingCount }} customers</span> waiting
+          <p v-if="isActive" class="mt-0.5 font-body text-[12px] text-plum sm:text-[13px]">
+            <span class="hidden sm:inline">Started</span>
+            <span class="font-black text-plum">{{ startedAt }}</span>
+            <span class="mx-1.5 opacity-30">|</span>
+            <span class="font-black text-mint-dark">{{ waitingCount }}</span>
+            <span class="text-plum-muted sm:text-plum"> waiting</span>
           </p>
-          <p v-else class="mt-0.5 font-body text-[13px] text-plum-muted">
+          <p v-else class="mt-0.5 font-body text-[12px] text-plum-muted sm:text-[13px]">
             Ready to start your day? Launch a new queue.
           </p>
         </div>
@@ -104,10 +105,8 @@ defineEmits(['go-to-queue', 'start-queue'])
       <router-link
         :to="'/dashboard/queue'"
         :class="[
-          'inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 font-display text-sm font-black transition-all duration-300',
-          isActive
-            ? 'bg-plum text-sand hover:bg-mint hover:text-on-mint shadow-none'
-            : 'bg-plum text-sand hover:bg-mint hover:text-on-mint shadow-none',
+          'inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 font-display text-sm font-black transition-all duration-300 sm:w-auto sm:rounded-full sm:py-2.5',
+          'bg-plum text-sand hover:bg-mint hover:text-on-mint shadow-none',
         ]"
       >
         {{ isActive ? 'Manage Live' : 'Start Session' }}

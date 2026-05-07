@@ -11,38 +11,32 @@
  * @emits {save-ticket} - Emitted when QR is tapped for fullscreen.
  */
 
-// 1. Vue core imports
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
-// 3. Third-party composables
 import QRCode from 'qrcode'
 
+import { APP_BASE_URL } from '@/config/api.constants'
 import { Download } from 'lucide-vue-next'
 import LeaveConfirmationModal from './LeaveConfirmationModal.vue'
 
-// 6. Props
 const props = defineProps({
   ticketNumber: { type: String, default: 'Q-0042' },
   queueName: { type: String, default: 'Chai Point · Koramangala' },
   showLeaveButton: { type: Boolean, default: true },
 })
 
-// 7. Emits
 const emit = defineEmits(['leave-queue', 'save-ticket'])
 
-// 9. Reactive state
 const qrDataUrl = ref('')
 const isOpen = ref(false)
 
-// 11. Methods
 function confirmLeave() {
   isOpen.value = false
   emit('leave-queue')
 }
 
-// 12. Lifecycle hooks
 onMounted(async () => {
-  const qrValue = `https://queuebuzz.app/q/${props.queueName.toLowerCase().replace(/\s+/g, '-')}`
+  const qrValue = `${APP_BASE_URL}/q/${props.queueName.toLowerCase().replaceAll(/\s+/g, '-')}`
   qrDataUrl.value = await QRCode.toDataURL(qrValue, {
     width: 400,
     margin: 2,

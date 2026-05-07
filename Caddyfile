@@ -1,0 +1,15 @@
+{
+	# Global options to prevent Let's Encrypt attempts for .test
+	local_certs
+}
+
+http://queue.test {
+	tls internal
+	root * /Users/Shared/www/queuebuzz-web/dist
+	encode gzip
+	file_server
+	try_files {path} {path}/ /index.html
+	log {
+		output file caddy_access.log
+	}
+}

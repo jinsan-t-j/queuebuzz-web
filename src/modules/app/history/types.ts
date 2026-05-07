@@ -1,5 +1,5 @@
 export interface QueueHistoryItem {
-  id: number
+  id: string
   date: string
   name: string
   totalServed: number

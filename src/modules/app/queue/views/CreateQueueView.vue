@@ -118,8 +118,10 @@ onUnmounted(() => {
 
 <template>
   <!-- ═══ Create form (unmounted once queue is live) ═══ -->
-  <div v-if="!activeQueue" class="mx-auto max-w-[680px]">
-    <h1 class="font-display text-[40px] font-extrabold text-plum">Let's get started.</h1>
+  <div v-if="!activeQueue" class="mx-auto max-w-[680px] px-6 sm:px-0">
+    <h1 class="font-display text-3xl sm:text-[40px] font-extrabold text-plum">
+      Let's get started.
+    </h1>
 
     <CreateQueueForm :role="'host'" @queue-created="handleQueueCreated" />
   </div>

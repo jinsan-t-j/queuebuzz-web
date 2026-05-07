@@ -5,7 +5,7 @@ import {
   cancelSubscription,
   getPaymentMethodUpdateLink,
   type Subscription,
-} from '../actions/billing.actions'
+} from '@/modules/app/billing/actions/billing.actions'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 

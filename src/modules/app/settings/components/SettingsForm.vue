@@ -9,7 +9,6 @@ import { storeToRefs } from 'pinia'
 import { useSettingsStore } from '@/stores/settings.store'
 
 import BaseInput from '@/components/base/BaseInput.vue'
-import BaseButton from '@/components/base/BaseButton.vue'
 import BaseToggle from '@/components/base/BaseToggle.vue'
 import BaseSlider from '@/components/base/BaseSlider.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
@@ -24,12 +23,22 @@ const SettingsSubscriptionSection = defineAsyncComponent(
 
 const SettingsDangerZone = defineAsyncComponent(() => import('./SettingsDangerZone.vue'))
 
+const SettingsActionBar = defineAsyncComponent(() => import('./SettingsActionBar.vue'))
+
+import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
+
 const settingsStore = useSettingsStore()
 const { userSettings, isLoading, isSaving, error } = storeToRefs(settingsStore)
+
+const subscription = ref<Subscription | null>(null)
+const canCustomBranding = computed(() => subscription.value?.canCustomBranding ?? false)
+const isFetchingSub = ref(false)
 
 // Local form state
 const form = ref({
   name: '',
+  business_name: '',
+  address: '',
   phone: '',
   default_queue_name: '',
   avg_service_mins: 5,
@@ -66,9 +75,19 @@ const hasProfileImage = computed(() => !!profileImageUrl.value)
 const hasBannerImage = computed(() => !!bannerImageUrl.value)
 
 onMounted(async () => {
-  if (!userSettings.value) {
-    await settingsStore.fetchSettings()
+  isFetchingSub.value = true
+  try {
+    const [sub] = await Promise.all([
+      fetchSubscription(),
+      userSettings.value ? Promise.resolve() : settingsStore.fetchSettings(),
+    ])
+    subscription.value = sub
+  } catch {
+    // Silently fail or use a toast
+  } finally {
+    isFetchingSub.value = false
   }
+
   if (userSettings.value) {
     syncForm()
   }
@@ -89,6 +108,8 @@ function syncForm() {
   if (!userSettings.value) return
   form.value = {
     name: userSettings.value.name,
+    business_name: userSettings.value.business_name || '',
+    address: userSettings.value.address || '',
     phone: userSettings.value.phone || '',
     default_queue_name: userSettings.value.settings?.defaultQueueName || 'Main Queue',
     avg_service_mins: userSettings.value.settings?.avgServiceMins || 5,
@@ -100,6 +121,13 @@ function syncForm() {
   bannerImageUrl.value = userSettings.value.bannerImageUrl || null
   isDirty.value = false
 }
+
+const displayBannerUrl = computed(
+  () => bannerImageUrl.value || '/images/branding/default-banner.png',
+)
+const displayProfileUrl = computed(
+  () => profileImageUrl.value || '/images/branding/default-profile.png',
+)
 
 function onFieldChange() {
   isDirty.value = true
@@ -197,6 +225,8 @@ async function handleSave() {
 
   // 1. Basic Fields
   formData.append('name', form.value.name)
+  formData.append('business_name', form.value.business_name)
+  formData.append('address', form.value.address)
   formData.append('phone', form.value.phone || '')
 
   // 2. Settings (nested as JSON string)
@@ -253,15 +283,88 @@ function handleDiscard() {
     </div>
 
     <template v-else-if="userSettings">
-      <!-- ═══ Section: Profile & Branding ═══ -->
-      <BaseCard id="profile" class="overflow-hidden">
+      <!-- ═══ Section: My Profile ═══ -->
+      <BaseCard id="profile" class="scroll-mt-32 p-4 sm:p-8">
+        <h2 class="mb-6 sm:mb-8 font-display text-xl sm:text-2xl font-bold text-plum">
+          My Profile
+        </h2>
+
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <BaseInput
+            v-model="form.name"
+            label="Full Name"
+            placeholder=""
+            @update:model-value="onFieldChange"
+          />
+          <BaseInput
+            :model-value="userSettings.email"
+            label="Email Address"
+            :is-disabled="true"
+            helper="Email cannot be changed."
+          />
+          <BaseInput
+            v-model="form.phone"
+            label="Phone Number"
+            placeholder=""
+            @update:model-value="onFieldChange"
+          />
+        </div>
+      </BaseCard>
+
+      <!-- ═══ Section: Business Branding ═══ -->
+      <div v-if="!canCustomBranding && !isFetchingSub" class="mb-4">
+        <div
+          class="flex flex-col sm:flex-row items-center justify-between rounded-2xl bg-mint-light p-4 border border-mint/20 gap-4"
+        >
+          <div class="flex items-center gap-3">
+            <div
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-mint/10 text-plum"
+            >
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.382-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="font-display text-sm font-bold text-plum">Unlock Custom Branding</p>
+              <p class="font-body text-xs text-plum-muted">
+                Upgrade to Elite to set a custom business banner and appearance.
+              </p>
+            </div>
+          </div>
+          <router-link
+            to="/pricing"
+            class="w-full sm:w-auto px-6 py-2 bg-plum text-sand font-body text-xs font-bold rounded-xl hover:bg-plum/90 transition-colors"
+          >
+            Go Premium
+          </router-link>
+        </div>
+      </div>
+
+      <BaseCard
+        id="branding"
+        padding="none"
+        class="scroll-mt-32 overflow-hidden transition-all duration-300"
+        :class="{
+          'opacity-60 pointer-events-none grayscale-[0.5]': !canCustomBranding && !isFetchingSub,
+        }"
+      >
         <!-- Banner area (edge-to-edge, inside card border-radius) -->
-        <div class="group relative cursor-pointer" @click="bannerFileInput?.click()">
+        <div
+          class="group relative"
+          :class="{ 'cursor-pointer': canCustomBranding }"
+          @click="canCustomBranding && bannerFileInput?.click()"
+        >
           <!-- Banner Preview -->
-          <div v-if="hasBannerImage" class="relative aspect-[16/5] w-full">
-            <img :src="bannerImageUrl!" alt="Banner preview" class="h-full w-full object-cover" />
+          <div class="relative aspect-[16/5] w-full">
+            <img :src="displayBannerUrl" alt="Banner preview" class="h-full w-full object-cover" />
             <!-- Hover overlay -->
             <div
+              v-if="canCustomBranding"
               class="absolute inset-0 flex items-center justify-center bg-plum/0 transition-all duration-200 group-hover:bg-plum/40"
             >
               <div
@@ -279,9 +382,10 @@ function handleDiscard() {
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  Change
+                  {{ hasBannerImage ? 'Change' : 'Upload' }}
                 </button>
                 <button
+                  v-if="hasBannerImage"
                   class="flex items-center gap-1.5 rounded-full bg-danger/90 px-4 py-2 font-body text-xs font-semibold text-white shadow-sm dark:shadow-none backdrop-blur-sm transition-transform hover:scale-105"
                   @click.stop="removeBannerImage"
                 >
@@ -297,34 +401,6 @@ function handleDiscard() {
                 </button>
               </div>
             </div>
-          </div>
-
-          <!-- Banner empty state -->
-          <div
-            v-else
-            class="flex aspect-[16/5] w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-plum-faint/60 via-sand to-mint-light/30 transition-all duration-200 group-hover:from-plum-faint/80"
-          >
-            <div
-              class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/70 shadow-sm dark:shadow-none backdrop-blur-sm"
-            >
-              <svg
-                class="h-5 w-5 text-plum-muted"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="1.5"
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            </div>
-            <p class="font-body text-xs font-medium text-plum-muted">Add a cover banner</p>
-            <p class="font-body text-[10px] text-plum-muted">
-              16:5 · JPEG, PNG, WebP, GIF · Max 5MB
-            </p>
           </div>
 
           <p
@@ -343,34 +419,28 @@ function handleDiscard() {
           />
         </div>
 
-        <!-- Profile avatar + info — overlaps the banner bottom edge -->
-        <div class="relative px-8 pb-8">
-          <!-- Avatar row (pulled up to overlap banner) -->
-          <div class="flex items-end gap-5 -mt-10">
-            <!-- Uploadable avatar circle -->
+        <!-- Branding Details -->
+        <div class="relative px-5 sm:px-8 pb-8">
+          <!-- Logo overlapping banner -->
+          <div
+            class="flex flex-col sm:flex-row items-start sm:items-end gap-4 sm:gap-6 -mt-12 sm:-mt-16 mb-8 px-2 sm:px-0"
+          >
             <div
-              class="group/avatar relative h-20 w-20 shrink-0 cursor-pointer overflow-hidden rounded-full border-4 border-white dark:border-plum-faint bg-white shadow-lg dark:shadow-none transition-transform duration-200 hover:scale-105"
-              @click="profileFileInput?.click()"
+              class="group/avatar relative h-24 w-24 sm:h-32 sm:w-32 shrink-0 overflow-hidden rounded-2xl sm:rounded-3xl border-4 border-white dark:border-plum-faint bg-white shadow-xl transition-transform duration-200"
+              :class="{ 'cursor-pointer hover:scale-105': canCustomBranding }"
+              @click="canCustomBranding && profileFileInput?.click()"
             >
               <img
-                v-if="hasProfileImage"
-                :src="profileImageUrl!"
-                alt="Profile"
+                :src="displayProfileUrl"
+                alt="Business Logo"
                 class="h-full w-full object-cover"
               />
               <div
-                v-else
-                class="flex h-full w-full items-center justify-center bg-plum-faint font-display text-2xl font-bold text-plum"
-              >
-                {{ form.name?.charAt(0)?.toUpperCase() || '?' }}
-              </div>
-
-              <!-- Camera hover overlay -->
-              <div
-                class="absolute inset-0 flex items-center justify-center rounded-full bg-plum/0 transition-all duration-200 group-hover/avatar:bg-plum/50"
+                v-if="canCustomBranding"
+                class="absolute inset-0 flex items-center justify-center bg-plum/0 transition-all duration-200 group-hover/avatar:bg-plum/50"
               >
                 <svg
-                  class="h-5 w-5 text-white opacity-0 transition-opacity duration-200 group-hover/avatar:opacity-100"
+                  class="h-6 w-6 text-white opacity-0 transition-opacity duration-200 group-hover/avatar:opacity-100"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -391,24 +461,37 @@ function handleDiscard() {
               </div>
             </div>
 
-            <!-- Name + subtitle -->
-            <div class="mb-1 min-w-0 flex-1">
-              <p class="truncate font-display text-lg font-bold text-plum">
-                {{ form.name || 'Your Name' }}
-              </p>
+            <div class="mb-2">
+              <h3 class="font-display text-lg sm:text-xl font-bold text-plum">Business Logo</h3>
               <div class="flex items-center gap-3">
-                <p class="font-body text-xs text-plum-muted">
-                  Your public profile seen by customers
-                </p>
+                <p class="font-body text-xs text-plum-muted">Recommended: Square PNG/WebP</p>
                 <button
-                  v-if="hasProfileImage"
-                  class="font-body text-xs font-semibold text-danger-dark cursor-pointer transition-colors hover:text-danger-dark/80"
+                  v-if="hasProfileImage && canCustomBranding"
+                  type="button"
+                  class="font-body text-xs font-semibold text-danger cursor-pointer transition-colors hover:text-danger-dark"
                   @click.stop="removeProfileImage"
                 >
-                  Remove photo
+                  Remove logo
                 </button>
               </div>
             </div>
+          </div>
+
+          <div class="grid grid-cols-1 gap-6">
+            <BaseInput
+              v-model="form.business_name"
+              label="Business Name"
+              placeholder="e.g. Kalra Dental Clinic"
+              :disabled="!canCustomBranding"
+              @update:model-value="onFieldChange"
+            />
+            <BaseInput
+              v-model="form.address"
+              label="Business Address"
+              placeholder="e.g. 123, Park Avenue, Mumbai"
+              :disabled="!canCustomBranding"
+              @update:model-value="onFieldChange"
+            />
           </div>
 
           <p v-if="profileImageError" class="mt-2 font-body text-xs text-danger-dark">
@@ -422,37 +505,14 @@ function handleDiscard() {
             class="hidden"
             @change="handleProfileUpload"
           />
-
-          <!-- Divider -->
-          <div class="my-8 h-px bg-plum-faint" />
-
-          <!-- Form fields -->
-          <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <BaseInput
-              v-model="form.name"
-              label="Full Name"
-              placeholder="e.g. Dr. Rajan Kalra"
-              @update:model-value="onFieldChange"
-            />
-            <BaseInput
-              :model-value="userSettings.email"
-              label="Email Address"
-              disabled
-              helper="Email cannot be changed."
-            />
-            <BaseInput
-              v-model="form.phone"
-              label="Phone Number"
-              placeholder="+91 98765 43210"
-              @update:model-value="onFieldChange"
-            />
-          </div>
         </div>
       </BaseCard>
 
       <!-- ═══ Section: Queue Configuration ═══ -->
-      <BaseCard id="queue" class="p-8">
-        <h2 class="mb-8 font-display text-2xl font-bold text-plum">Queue Configuration</h2>
+      <BaseCard id="queue" class="scroll-mt-32 p-4 sm:p-8">
+        <h2 class="mb-6 sm:mb-8 font-display text-xl sm:text-2xl font-bold text-plum">
+          Queue Configuration
+        </h2>
 
         <div class="flex flex-col gap-8">
           <BaseInput
@@ -483,8 +543,10 @@ function handleDiscard() {
       </BaseCard>
 
       <!-- ═══ Section: Preferences & Notifications ═══ -->
-      <BaseCard id="preferences" class="p-8">
-        <h2 class="mb-8 font-display text-2xl font-bold text-plum">Preferences</h2>
+      <BaseCard id="preferences" class="scroll-mt-32 p-4 sm:p-8">
+        <h2 class="mb-6 sm:mb-8 font-display text-xl sm:text-2xl font-bold text-plum">
+          Preferences
+        </h2>
 
         <div class="divide-y divide-plum-faint">
           <div class="flex items-center justify-between py-4 first:pt-0">
@@ -539,18 +601,21 @@ function handleDiscard() {
     </div>
 
     <!-- Sticky Action Bar -->
-    <div
-      v-if="isDirty"
-      class="fixed bottom-0 left-0 right-0 z-50 border-t border-plum-faint bg-white/80 dark:bg-plum-soft/80 backdrop-blur-md px-6 py-4 md:left-64"
+    <Transition
+      enter-active-class="transition duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+      enter-from-class="translate-y-20 opacity-0"
+      enter-to-class="translate-y-0 opacity-100"
+      leave-active-class="transition duration-300 ease-in"
+      leave-from-class="translate-y-0 opacity-100"
+      leave-to-class="translate-y-20 opacity-0"
     >
-      <div class="mx-auto flex max-w-3xl items-center justify-between">
-        <p class="font-body text-sm font-medium text-plum">You have unsaved changes</p>
-        <div class="flex gap-4">
-          <BaseButton variant="ghost" @click="handleDiscard">Discard</BaseButton>
-          <BaseButton :is-loading="isSaving" @click="handleSave">Save Changes</BaseButton>
-        </div>
-      </div>
-    </div>
+      <SettingsActionBar
+        v-if="isDirty"
+        :is-saving="isSaving"
+        @discard="handleDiscard"
+        @save="handleSave"
+      />
+    </Transition>
 
     <!-- Image Cropper Modal -->
     <BaseImageCropper

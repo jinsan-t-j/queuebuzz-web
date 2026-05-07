@@ -21,6 +21,7 @@ import BaseTooltip from '@/components/base/BaseTooltip.vue'
 const props = defineProps<{
   isPaused: boolean
   strictMode?: boolean
+  manualPositioning?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -42,10 +43,10 @@ function handleTerminateClick() {
 
 <template>
   <div
-    class="flex flex-col gap-4 p-6 rounded-card border border-plum-faint bg-white shadow-sm dark:shadow-none"
+    class="flex flex-col gap-4 p-4 sm:p-6 rounded-card border border-plum-faint bg-white shadow-sm dark:shadow-none"
   >
-    <h3 class="font-display text-lg font-bold text-plum">Quick Actions</h3>
-    <div class="grid grid-cols-3 gap-3">
+    <h3 class="font-display text-base sm:text-lg font-bold text-plum">Quick Actions</h3>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
       <button
         class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand dark:bg-plum-faint/30 p-4 transition-all hover:bg-mint-light dark:hover:bg-plum-faint/60 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-sand dark:disabled:hover:bg-plum-faint/30"
         :disabled="isPaused"
@@ -117,6 +118,7 @@ function handleTerminateClick() {
       </button>
 
       <BaseTooltip
+        v-if="!manualPositioning"
         text="Strictly enforces the 'Call Next' action only after the previous guest has been marked as served."
       >
         <button

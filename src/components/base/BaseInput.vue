@@ -12,18 +12,8 @@
  * @emits {update:modelValue} - Emitted when the input value changes.
  */
 
-// 1. Vue core imports
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
-
-// 6. Props
 const props = defineProps({
   modelValue: {
     type: [String, Number],
@@ -51,41 +41,35 @@ const props = defineProps({
   },
   id: {
     type: String,
-    default: () => `input-${globalThis.crypto.randomUUID().split('-')[0]}`,
+    default: '',
   },
 })
 
-// 7. Emits
 const emit = defineEmits(['update:modelValue'])
 
-// 8. Composable destructuring
+const generatedId = useId()
 
-// 9. Reactive state
-
-// 10. Computed properties
+const actualId = computed(() => props.id || `input-${generatedId}`)
 const hasError = computed(() => !!props.error)
 
-// 11. Methods
 function handleInput(event) {
   emit('update:modelValue', event.target.value)
 }
-
-// 12. Lifecycle hooks
 </script>
 
 <template>
   <div class="flex flex-col gap-1.5">
-    <label v-if="label" :for="id" class="font-body text-sm font-medium text-plum">
+    <label v-if="label" :for="actualId" class="font-body text-sm font-medium text-plum">
       {{ label }}
     </label>
     <input
-      :id="id"
+      :id="actualId"
       :type="type"
       :value="modelValue"
       :placeholder="placeholder"
       :disabled="isDisabled"
       :class="[
-        'rounded-input border bg-white px-4 py-2.5 font-body text-sm text-plum outline-none transition-colors placeholder:text-plum-muted',
+        'rounded-input border bg-white px-4 py-3 sm:py-2.5 font-body text-base text-plum outline-none transition-colors placeholder:text-plum-muted',
         hasError
           ? 'border-danger focus:ring-2 focus:ring-danger/20'
           : 'border-plum-faint focus:border-mint focus:ring-2 focus:ring-mint/20',

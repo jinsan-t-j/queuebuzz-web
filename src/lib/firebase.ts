@@ -2,7 +2,7 @@
  * @lib firebase
  * @description Lazy Firebase initialization for FCM push notifications.
  */
-import type { FirebaseApp, FirebaseOptions } from 'firebase/app'
+import type { FirebaseApp } from 'firebase/app'
 import type { MessagePayload } from 'firebase/messaging'
 
 const CONFIG_HASH_KEY = 'fcm_config_hash'
@@ -38,10 +38,7 @@ async function getApp(): Promise<FirebaseApp> {
   const existingApp = getApps().find((a) => a.name === '[DEFAULT]')
 
   if (existingApp) {
-    if (
-      (existingApp.options as FirebaseOptions).projectId ===
-      import.meta.env.VITE_FIREBASE_PROJECT_ID
-    ) {
+    if (existingApp.options.projectId === import.meta.env.VITE_FIREBASE_PROJECT_ID) {
       return existingApp
     }
     await deleteApp(existingApp)
@@ -205,6 +202,28 @@ function extractErrorMessage(error: unknown): string {
   )
 }
 
+async function handleTokenFetchError(error: unknown, attempt: number): Promise<void> {
+  const lastErrorMessage = extractErrorMessage(error)
+  const isCritical = [
+    'registration-token-not-registered',
+    'permission-denied',
+    'unregistered',
+  ].some((s) => lastErrorMessage.includes(s))
+
+  if (isCritical) {
+    // eslint-disable-next-line no-console
+    console.warn('FCM: Critical registration error, resetting service worker...')
+    await invalidateServiceWorkers()
+  }
+
+  if (attempt === 0 && isRetriableTokenError(lastErrorMessage)) {
+    await wait(250)
+    return
+  }
+
+  throw error
+}
+
 async function fetchTokenWithRetries(
   messaging: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   initialRegistration: ServiceWorkerRegistration,
@@ -243,24 +262,7 @@ async function fetchTokenWithRetries(
       }
     } catch (error) {
       lastErrorMessage = extractErrorMessage(error)
-      const isCritical = [
-        'registration-token-not-registered',
-        'permission-denied',
-        'unregistered',
-      ].some((s) => lastErrorMessage.includes(s))
-
-      if (isCritical) {
-        // eslint-disable-next-line no-console
-        console.warn('FCM: Critical registration error, resetting service worker...')
-        await invalidateServiceWorkers()
-      }
-
-      if (attempt === 0 && isRetriableTokenError(lastErrorMessage)) {
-        await wait(250)
-        continue
-      }
-
-      throw error
+      await handleTokenFetchError(error, attempt)
     }
   }
 
@@ -324,7 +326,7 @@ export async function showBrowserNotification(payload: MessagePayload): Promise<
     badge: '/icons/badge-icon.png',
     tag: payload.data?.event || 'queue-buzz',
     vibrate: [200, 100, 200],
-    data: { ...(payload.data || {}), link: payload.data?.link || '/' },
+    data: { ...payload.data, link: payload.data?.link || '/' },
   }
 
   try {

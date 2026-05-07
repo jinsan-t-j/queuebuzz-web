@@ -1,6 +1,8 @@
-import { createApp } from 'vue'
+import { ViteSSG } from 'vite-ssg'
 import { createPinia } from 'pinia'
 import { VueQueryPlugin } from '@tanstack/vue-query'
+import { createHead as createClientHead } from '@unhead/vue/client'
+import { createHead as createServerHead } from '@unhead/vue/server'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 import '@/assets/styles/main.css'
@@ -13,31 +15,47 @@ import '@fontsource/dm-sans/700.css'
 import '@fontsource/geist-mono/400.css'
 import '@fontsource/geist-mono/600.css'
 
-import router from '@/router'
+import { routes } from '@/router'
 import App from '@/App.vue'
 import { initializeForegroundNotifications, showBrowserNotification } from '@/lib/firebase'
 
-const app = createApp(App)
-const pinia = createPinia()
-pinia.use(piniaPluginPersistedstate)
-
-app.use(pinia)
-app.use(VueQueryPlugin, {
-  queryClientConfig: {
-    defaultOptions: {
-      queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        refetchOnWindowFocus: false,
-      },
+export const createApp = ViteSSG(
+  App,
+  {
+    routes,
+    scrollBehavior() {
+      return { top: 0 }
     },
   },
-})
-app.use(router)
+  ({ app }) => {
+    const pinia = createPinia()
+    const isClient = !import.meta.env.SSR
+    const head = isClient ? createClientHead() : createServerHead()
 
-void initializeForegroundNotifications((payload) => {
-  if (document.visibilityState !== 'visible' || !document.hasFocus()) {
-    void showBrowserNotification(payload)
-  }
-})
+    if (isClient) {
+      pinia.use(piniaPluginPersistedstate)
+    }
 
-app.mount('#app')
+    app.use(pinia)
+    app.use(head)
+    app.config.globalProperties.$unhead = head
+    app.use(VueQueryPlugin, {
+      queryClientConfig: {
+        defaultOptions: {
+          queries: {
+            staleTime: 5 * 60 * 1000,
+            refetchOnWindowFocus: false,
+          },
+        },
+      },
+    })
+
+    if (isClient) {
+      void initializeForegroundNotifications((payload) => {
+        if (document.visibilityState !== 'visible' || !document.hasFocus()) {
+          void showBrowserNotification(payload)
+        }
+      })
+    }
+  },
+)

@@ -28,3 +28,23 @@ export async function fetchHistoryDetail(id: string): Promise<HistoryDetail> {
   )) as unknown as ApiSuccessResponse<HistoryDetail>
   return response.data
 }
+
+/**
+ * @action deleteHistory
+ * @description Deletes a single past queue.
+ */
+export async function deleteHistory(id: string): Promise<boolean> {
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  await apiClient.delete(API_ROUTES.HISTORY.DELETE(id), config)
+  return true
+}
+
+/**
+ * @action deleteHistoryBulk
+ * @description Deletes multiple past queues.
+ */
+export async function deleteHistoryBulk(ids: string[]): Promise<boolean> {
+  const config = createApiRequestConfig({ data: { ids } }, { withCredentials: true })
+  await apiClient.delete(API_ROUTES.HISTORY.DELETE_BULK, config)
+  return true
+}

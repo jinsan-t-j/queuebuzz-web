@@ -25,7 +25,11 @@ test.describe('Customer Join', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        headers: { 'Access-Control-Allow-Origin': '*' },
+        headers: {
+          'Access-Control-Allow-Origin':
+            route.request().headers().origin || 'http://localhost:4002',
+          'Access-Control-Allow-Credentials': 'true',
+        },
         body: JSON.stringify(makePublicQueue()),
       })
     })
@@ -39,12 +43,25 @@ test.describe('Customer Join', () => {
   test('should show not-found state for invalid queue', async ({ page }) => {
     await page.route('**/api/v1/queue/p/invalid-id**', async (route) => {
       if (route.request().method() === 'OPTIONS') {
-        return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*' } })
+        return route.fulfill({
+          status: 204,
+          headers: {
+            'Access-Control-Allow-Origin':
+              route.request().headers().origin || 'http://localhost:4002',
+            'Access-Control-Allow-Credentials': 'true',
+            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          },
+        })
       }
       await route.fulfill({
         status: 404,
         contentType: 'application/json',
-        headers: { 'Access-Control-Allow-Origin': '*' },
+        headers: {
+          'Access-Control-Allow-Origin':
+            route.request().headers().origin || 'http://localhost:4002',
+          'Access-Control-Allow-Credentials': 'true',
+        },
         body: JSON.stringify({ error: 'Queue not found' }),
       })
     })

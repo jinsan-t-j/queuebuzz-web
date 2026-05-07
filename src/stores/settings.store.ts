@@ -25,8 +25,8 @@ export const useSettingsStore = defineStore('settings', {
         const data = await fetchUserSettings()
         this.userSettings = data
         if (useAuthStore().user) {
-          useAuthStore().user!.name = data.name
-          useAuthStore().user!.tier = data.tier
+          useAuthStore().user.name = data.name
+          useAuthStore().user.tier = data.tier
         }
       } catch (err: unknown) {
         const error = err as { response?: { data?: { message?: string } }; message?: string }
@@ -53,8 +53,10 @@ export const useSettingsStore = defineStore('settings', {
 
     async clearAllHistory() {
       this.isLoading = true
+      const { showToast } = useToast()
       try {
         await clearQueueHistory()
+        showToast('All history records cleared')
       } catch (err: unknown) {
         const error = err as { response?: { data?: { message?: string } }; message?: string }
         this.error = error.response?.data?.message || error.message || 'Failed to clear history'

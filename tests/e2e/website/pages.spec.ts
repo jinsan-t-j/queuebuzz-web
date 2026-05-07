@@ -21,7 +21,12 @@ test.describe('Website — Home', () => {
     await page.goto('/')
 
     // Pricing link in nav
-    await expect(page.getByRole('navigation').getByRole('link', { name: 'Pricing' })).toBeVisible()
+    if (await page.locator('button[aria-label*="menu"], button:has(.lucide-menu)').isVisible()) {
+      await page.locator('button[aria-label*="menu"], button:has(.lucide-menu)').click()
+    }
+    await expect(
+      page.getByRole('link', { name: 'Pricing' }).filter({ visible: true }).first(),
+    ).toBeVisible()
   })
 })
 
@@ -32,8 +37,14 @@ test.describe('Website — Pricing', () => {
     // Page heading
     await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 5000 })
 
-    // Plan tier text
-    await expect(page.getByText(/Free|Starter|Premium|Pro/i).first()).toBeVisible()
+    // Plan tier text - wait for loading to finish
+    await expect(page.locator('.animate-pulse')).toHaveCount(0, { timeout: 10000 })
+    await expect(
+      page
+        .getByText(/Free|Starter|Premium|Pro|Elite/i)
+        .filter({ visible: true })
+        .first(),
+    ).toBeVisible({ timeout: 10000 })
   })
 })
 

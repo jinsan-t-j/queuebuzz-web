@@ -3,11 +3,11 @@
  * @description Composable for billing operations — plan fetching, transformation,
  * comparison data, checkout flow, and auth-gated redirects.
  */
+import { useAuthStore } from '@/stores/auth.store'
 import { computed, ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth.store'
-import * as billingActions from '../actions/billing.action'
-import type { BillingPlan } from '../actions/billing.action'
+import type { BillingPlan } from '../actions/billing.actions'
+import * as billingActions from '../actions/billing.actions'
 
 export interface PlanLimits {
   maxQueuesPerMonth: number
@@ -245,7 +245,7 @@ export function useBilling() {
     }
 
     if (plan.tier === 'enterprise') {
-      globalThis.location.href = 'mailto:sales@queuebuzz.com?subject=Enterprise%20Plan%20Inquiry'
+      globalThis.location.href = 'mailto:support@queuebuzz.com?subject=Enterprise%20Plan%20Inquiry'
       return
     }
 

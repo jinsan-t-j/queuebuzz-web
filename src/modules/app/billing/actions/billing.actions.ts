@@ -24,6 +24,20 @@ export interface CurrentPlanResponse {
   plan: BillingPlan
 }
 
+export interface Subscription {
+  planName: string
+  tier: string
+  status: string
+  billingCycle: string
+  currentPeriodEnd: string | null
+  cancelAtPeriodEnd: boolean
+  cardLast4: string | null
+  canCustomBranding: boolean
+  canExportData: boolean
+  canViewHistory: boolean
+  updatedAt: string
+}
+
 /**
  * Fetch available plans for a country.
  * Uses browser-level detection hints (timezone/language) for localized pricing.
@@ -77,4 +91,41 @@ export async function fetchCurrentPlan(): Promise<BillingPlan> {
   )) as unknown as ApiSuccessResponse<CurrentPlanResponse>
 
   return response.data.plan
+}
+
+/**
+ * Fetch current subscription details.
+ */
+export async function fetchSubscription(): Promise<Subscription | null> {
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  try {
+    const response = (await apiClient.get<ApiSuccessResponse<Subscription>>(
+      API_ROUTES.BILLING.SUBSCRIPTION,
+      config,
+    )) as unknown as ApiSuccessResponse<Subscription>
+    return response.data
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Cancels the host's subscription at end of billing period.
+ */
+export async function cancelSubscription(comment: string, feedback: string): Promise<void> {
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  await apiClient.post(API_ROUTES.BILLING.CANCEL_SUBSCRIPTION, { comment, feedback }, config)
+}
+
+/**
+ * Returns a Dodo-hosted link for updating payment method.
+ */
+export async function getPaymentMethodUpdateLink(returnUrl?: string): Promise<string> {
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  const response = (await apiClient.post<ApiSuccessResponse<{ paymentLink: string }>>(
+    API_ROUTES.BILLING.UPDATE_PAYMENT_METHOD,
+    { return_url: returnUrl || '' },
+    config,
+  )) as unknown as ApiSuccessResponse<{ paymentLink: string }>
+  return response.data.paymentLink
 }

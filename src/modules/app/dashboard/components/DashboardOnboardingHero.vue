@@ -30,24 +30,24 @@ const router = useRouter()
   <div class="flex flex-col gap-8">
     <!-- Welcome Hero -->
     <div
-      class="rounded-3xl border border-mint/20 bg-mint-light px-8 py-10 overflow-hidden relative"
+      class="rounded-3xl border border-mint/20 bg-mint-light px-6 py-8 sm:px-8 sm:py-10 overflow-hidden relative"
     >
       <!-- Decorative Background Element -->
       <div
-        class="absolute -right-12 -top-12 w-64 h-64 bg-mint/10 rounded-full blur-3xl pointer-events-none"
+        class="absolute -right-12 -top-12 w-48 h-48 sm:w-64 sm:h-64 bg-mint/10 rounded-full blur-3xl pointer-events-none"
       />
 
       <div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex flex-col gap-2">
-          <h1 class="font-display text-3xl font-black text-plum tracking-tight">
+          <h1 class="font-display text-2xl sm:text-3xl font-black text-plum tracking-tight">
             Welcome to QueueBuzz, {{ userName || 'Partner' }}!
           </h1>
-          <p class="max-w-xl font-body text-base text-plum-muted leading-relaxed">
+          <p class="max-w-xl font-body text-sm sm:text-base text-plum-muted leading-relaxed">
             You're just one step away from transforming your customer experience. Start your first
             session now or follow our guide to get fully set up.
           </p>
         </div>
-        <BaseButton class="group" size="lg" @click="emit('start-now')">
+        <BaseButton class="group w-full sm:w-auto" size="lg" @click="emit('start-now')">
           Start Your First Session
           <ArrowRight class="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
         </BaseButton>

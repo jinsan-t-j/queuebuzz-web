@@ -1,0 +1,14 @@
+{
+  "/": {
+    "title": "QueueBuzz — Zero Lines. Better Business.",
+    "description": "Stop managing crowds and start managing your business. Ditch the physical line and let your customers wander freely while you orchestrate the flow with absolute precision."
+  },
+  "/support": {
+    "title": "Support | QueueBuzz — Zero Lines, Better Business",
+    "description": "Get help with QueueBuzz. Contact our support team for any questions or issues with our queue management platform."
+  },
+  "/login-or-signup": {
+    "title": "Log in or sign up | QueueBuzz",
+    "description": "Access your QueueBuzz dashboard to manage your virtual queues and see business insights."
+  }
+}

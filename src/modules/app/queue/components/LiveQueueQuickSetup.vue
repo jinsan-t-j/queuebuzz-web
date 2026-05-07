@@ -40,7 +40,7 @@ const states = ref({
 })
 
 const browserPermission = ref(
-  typeof Notification !== 'undefined' ? Notification.permission : 'default',
+  typeof Notification === 'undefined' ? 'default' : Notification.permission,
 )
 
 // Logic Flags
