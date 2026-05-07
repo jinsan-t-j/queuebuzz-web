@@ -46,6 +46,13 @@ export default tseslint.config(
         },
       ],
       'vue/component-name-in-template-casing': ['error', 'PascalCase'],
+      'vue/no-restricted-syntax': [
+        'error',
+        {
+          selector: 'VOnExpression[body.length > 1]',
+          message: 'Multi-statement inline handlers are forbidden. Use a method instead.',
+        },
+      ],
       'vue/no-multiple-template-root': 'off',
       'vue/max-attributes-per-line': 'off',
       'no-console': 'warn',

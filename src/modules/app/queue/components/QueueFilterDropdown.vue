@@ -17,6 +17,11 @@ const emit = defineEmits<{
   (e: 'close'): void
   (e: 'reset'): void
 }>()
+
+function handleSort(mode: 'position' | 'size-asc' | 'size-desc') {
+  emit('update:sortMode', mode)
+  emit('close')
+}
 </script>
 
 <template>
@@ -37,10 +42,7 @@ const emit = defineEmits<{
             ? 'bg-plum-faint/50 text-plum font-bold'
             : 'text-plum-muted hover:bg-plum-faint/30 hover:text-plum'
         "
-        @click="
-          emit('update:sortMode', 'position')
-          emit('close')
-        "
+        @click="handleSort('position')"
       >
         <span>Default (Arrival)</span>
         <CheckIcon v-if="sortMode === 'position'" class="h-4 w-4 text-mint" />
@@ -52,10 +54,7 @@ const emit = defineEmits<{
             ? 'bg-plum-faint/50 text-plum font-bold'
             : 'text-plum-muted hover:bg-plum-faint/30 hover:text-plum'
         "
-        @click="
-          emit('update:sortMode', 'size-asc')
-          emit('close')
-        "
+        @click="handleSort('size-asc')"
       >
         <span>Size: Small to Large</span>
         <CheckIcon v-if="sortMode === 'size-asc'" class="h-4 w-4 text-mint" />
@@ -67,10 +66,7 @@ const emit = defineEmits<{
             ? 'bg-plum-faint/50 text-plum font-bold'
             : 'text-plum-muted hover:bg-plum-faint/30 hover:text-plum'
         "
-        @click="
-          emit('update:sortMode', 'size-desc')
-          emit('close')
-        "
+        @click="handleSort('size-desc')"
       >
         <span>Size: Large to Small</span>
         <CheckIcon v-if="sortMode === 'size-desc'" class="h-4 w-4 text-mint" />
