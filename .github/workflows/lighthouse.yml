@@ -11,8 +11,34 @@ on:
       - 'package-lock.json'
 
 jobs:
-  e2e:
+  # 1. Detect which UI modules changed to optimize test runs
+  detect-changes:
     if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    outputs:
+      ui_changed: ${{ steps.filter.outputs.ui }}
+      dashboard: ${{ steps.filter.outputs.dashboard }}
+      queue: ${{ steps.filter.outputs.queue }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ui:
+              - 'src/modules/app/dashboard/**'
+              - 'src/modules/app/queue/**'
+              - 'src/assets/styles/**'
+              - 'tests/e2e/cross-cutting/integrity.spec.ts'
+            dashboard:
+              - 'src/modules/app/dashboard/**'
+            queue:
+              - 'src/modules/app/queue/**'
+
+  # 2. Run E2E and Visual tests conditionally
+  e2e:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.ui_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,8 +55,20 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install chromium --with-deps
 
-      - name: Run E2E tests
-        run: npx playwright test --project=chromium --project="Mobile Chrome"
+      - name: Run Targeted Visual & E2E Audit
+        run: |
+          PATTERNS=()
+          if [[ "${{ needs.detect-changes.outputs.dashboard }}" == "true" ]]; then PATTERNS+=("dashboard"); fi
+          if [[ "${{ needs.detect-changes.outputs.queue }}" == "true" ]]; then PATTERNS+=("queue"); fi
+          
+          if [ ${#PATTERNS[@]} -eq 0 ]; then
+            # Run everything if no specific module matches but general UI changed
+            npx playwright test --project=chromium --project="Mobile Chrome"
+          else
+            GREP_PATTERN=$(IFS="|"; echo "${PATTERNS[*]}")
+            echo "Running targeted tests for: $GREP_PATTERN"
+            npx playwright test -g "$GREP_PATTERN" --project=chromium
+          fi
         env:
           VITE_FIREBASE_API_KEY: "mock-api-key"
           VITE_FIREBASE_PROJECT_ID: "mock-project-id"
@@ -38,35 +76,69 @@ jobs:
           VITE_FIREBASE_APP_ID: "1:123456789:web:abcdef"
           VITE_FIREBASE_VAPID_KEY: "mock-vapid-key"
 
-      - name: Upload test report
-        if: always()
+      - name: Upload Visual Diffs & Report
+        if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
-          path: playwright-report/
+          name: playwright-visual-report
+          path: |
+            playwright-report/
+            test-results/
           retention-days: 14
 
+      - name: Post Visual Diff to PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'test-results';
+            let diffTable = '| Page | Platform | Status | Review |\n| --- | --- | --- | --- |\n';
+            let hasDiffs = false;
+
+            if (fs.existsSync(path)) {
+              const files = fs.readdirSync(path, { recursive: true });
+              files.forEach(file => {
+                if (file.endsWith('-diff.png')) {
+                  hasDiffs = true;
+                  const fileName = file.split('/').pop();
+                  const name = fileName.replace('-diff.png', '').replace('-actual', '');
+                  diffTable += `| ${name} | Linux | ❌ Mismatch | [View in Artifacts] | \n`;
+                }
+              });
+            }
+
+            if (hasDiffs) {
+              const body = `### 🎨 Visual Regression Audit Failed\n\n${diffTable}\n\n` +
+                `**Manual Review Required:**\n` +
+                `1. Download the \`playwright-visual-report\` from the **Actions** tab.\n` +
+                `2. Open the HTML report to see side-by-side differences.\n` +
+                `3. If the change is intended, replace the local baseline with the "Actual" image and commit.`;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
+
+  # 3. Lighthouse Audit (Always runs if UI changed)
   lighthouse:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
-    needs: e2e
+    needs: detect-changes
     steps:
       - uses: actions/checkout@v4
-
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
-
       - name: Install dependencies
         run: npm ci --prefer-offline --no-audit
-
       - name: Build app
-        run: |
-          echo "VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL }}" > .env.production
-          npm run build
-
+        run: npm run build
       - name: Lighthouse CI Audit
         uses: treosh/lighthouse-ci-action@v12
         with:

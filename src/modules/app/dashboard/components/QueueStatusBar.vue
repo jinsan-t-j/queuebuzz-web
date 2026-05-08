@@ -10,7 +10,7 @@
  * @prop {Boolean} isLoading - Whether data is still fetching.
  */
 
-import { ArrowRight, Activity } from 'lucide-vue-next'
+import { Activity, ArrowRight } from 'lucide-vue-next'
 
 defineProps({
   queueName: {
@@ -89,7 +89,7 @@ defineEmits(['go-to-queue', 'start-queue'])
             </span>
           </div>
           <p v-if="isActive" class="mt-0.5 font-body text-[12px] text-plum sm:text-[13px]">
-            <span class="hidden sm:inline">Started</span>
+            <span class="hidden sm:inline">Started </span>
             <span class="font-black text-plum">{{ startedAt }}</span>
             <span class="mx-1.5 opacity-30">|</span>
             <span class="font-black text-mint-dark">{{ waitingCount }}</span>

@@ -139,6 +139,7 @@ onMounted(() => {
   <section id="hero" class="relative pt-15 pb-20 lg:pb-32 z-10 overflow-hidden">
     <!-- Section Local Splash: Orange Spill (Interactive Parallax) -->
     <div
+      aria-hidden="true"
       class="pointer-events-none absolute top-1/2 left-0 w-[600px] h-[500px] bg-orange-500/5 blur-[120px] animate-pulse transition-transform duration-500 ease-out"
       :style="{
         borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
@@ -226,6 +227,7 @@ onMounted(() => {
 
         <!-- Right Column: Liquid Glass "Fan" Stack + Micro-Particle Galaxy -->
         <div
+          aria-hidden="true"
           class="relative flex items-center justify-center h-[500px] lg:h-[750px] mt-12 lg:mt-0 lg:-mr-40 scale-[0.6] sm:scale-[0.8] lg:scale-110 origin-center transition-all duration-700"
         >
           <!-- Background Atmosphere Blobs -->

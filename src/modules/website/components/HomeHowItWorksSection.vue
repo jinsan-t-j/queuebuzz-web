@@ -9,6 +9,7 @@ defineProps<{ isVisible: boolean }>()
   <section id="how-it-works" class="py-16 lg:py-24 relative z-10 overflow-hidden">
     <!-- Section Local Splash: Pink Liquid Blob (Interactive Parallax) -->
     <div
+      aria-hidden="true"
       class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-pink-400/5 blur-[160px] animate-pulse transition-transform duration-500 ease-out"
     />
 

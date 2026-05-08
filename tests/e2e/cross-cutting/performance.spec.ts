@@ -41,6 +41,8 @@ function corsHeaders(origin = 'http://localhost:4002'): Record<string, string> {
 }
 
 test.describe('Lighthouse Performance Audit', () => {
+  test.describe.configure({ mode: 'serial' })
+
   let streamServer: httpNode.Server
   let streamPort: number
 
@@ -243,8 +245,6 @@ test.describe('Lighthouse Performance Audit', () => {
 
         await page.goto(`http://localhost:4002${pageRoute.path}`)
         await page.waitForTimeout(3000)
-
-        await client.send('Tracing.end')
 
         // Lighthouse audit
         await playAudit({

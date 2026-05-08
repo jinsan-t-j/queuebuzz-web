@@ -35,4 +35,3 @@ accessibility-results.json
 .claude
 CLAUDE.md
 AGENTS.md
-tests/e2e/cross-cutting/integrity.spec.ts-snapshots

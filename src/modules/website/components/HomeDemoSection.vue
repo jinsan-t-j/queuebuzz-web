@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
-import { ref } from 'vue'
-import { Zap, CheckCircle2, Clock, BarChart3, ArrowDownToLine, Lock } from 'lucide-vue-next'
-import { RouterLink } from 'vue-router'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import JoinViewPreview from '@/modules/website/components/JoinViewPreview.vue'
+import { ArrowDownToLine, BarChart3, CheckCircle2, Clock, Lock, Zap } from 'lucide-vue-next'
+import type { Component } from 'vue'
+import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
 
 defineProps<{
   activeTab: string
@@ -113,7 +113,7 @@ const exportHovered = ref(false)
                     <span class="h-1.5 w-1.5 rounded-full bg-mint animate-pulse mr-0.5" />LIVE
                   </span>
                 </div>
-                <div
+                <button
                   v-for="(g, i) in guests"
                   :key="g.ticket"
                   :class="[
@@ -124,7 +124,11 @@ const exportHovered = ref(false)
                         ? 'bg-plum-deep text-white border-plum'
                         : 'bg-sand/50 border-plum-faint hover:bg-white hover:border-mint/30',
                   ]"
+                  :tabindex="0"
+                  :aria-label="`Call guest ${g.name}`"
                   @click="callGuest(i)"
+                  @keydown.enter="callGuest(i)"
+                  @keydown.space.prevent="callGuest(i)"
                 >
                   <div
                     :class="[
@@ -166,7 +170,7 @@ const exportHovered = ref(false)
                     v-if="i === 0 && calledGuest !== 0"
                     class="h-4 w-4 text-mint flex-shrink-0"
                   />
-                </div>
+                </button>
                 <p class="text-center font-body text-[10px] text-plum-soft mt-3">
                   Tap a guest to call them ↑
                 </p>

@@ -95,6 +95,15 @@
     touch-action: manipulation;
     overflow-x: hidden;
   }
+
+  /* Ensure all interactive elements have correct cursor */
+  a, button, [role="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled, [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
 }
 
 /* ─────────────────────────────────────────────

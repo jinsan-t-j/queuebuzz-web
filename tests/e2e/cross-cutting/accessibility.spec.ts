@@ -78,6 +78,21 @@ test.describe('WCAG AA Compliance Audit', () => {
         // Wait for content
         await page.waitForLoadState('networkidle')
 
+        // Disable animations to prevent a11y failures due to transition states
+        await page.addStyleTag({
+          content: `
+            *, *::before, *::after {
+              animation-duration: 0s !important;
+              transition-duration: 0s !important;
+              animation-delay: 0s !important;
+              transition-delay: 0s !important;
+            }
+          `,
+        })
+
+        // Wait for potential client-side hydration and layout settle
+        await page.waitForTimeout(500)
+
         const axeBuilder = new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
           .disableRules(['heading-order'])

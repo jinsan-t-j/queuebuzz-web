@@ -6,17 +6,17 @@
  * Handles both active (populated) and empty (new account) states.
  */
 
-import { ref, computed, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRouter, useRoute } from 'vue-router'
 import { RefreshCw } from 'lucide-vue-next'
+import { storeToRefs } from 'pinia'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-import { useDashboardStore } from '@/stores/dashboard.store'
-import { useToast } from '@/composables/useToast'
 import { useRefresh } from '@/composables/useRefresh'
+import { useToast } from '@/composables/useToast'
+import { useDashboardStore } from '@/stores/dashboard.store'
 
-import QueueStatusBar from '../components/QueueStatusBar.vue'
 import DashboardStatCard from '../components/DashboardStatCard.vue'
+import QueueStatusBar from '../components/QueueStatusBar.vue'
 
 const emit = defineEmits([
   'go-to-queue',
