@@ -69,7 +69,10 @@ const STEPS_CONFIG = [
 ]
 
 const steps = computed(() =>
-  STEPS_CONFIG.map((s) => ({
+  STEPS_CONFIG.filter((s) => {
+    if (s.id === 'strict' && activeQueue.value?.manualPositioning) return false
+    return true
+  }).map((s) => ({
     ...s,
     isCompleted: s.check(),
     isDismissed: s.dismissed() && !s.check(),
@@ -82,8 +85,9 @@ const pendingSteps = computed(() => steps.value.filter((s) => !s.isCompleted && 
 const visibleSteps = computed(() => steps.value.filter((s) => !s.isDismissed))
 
 const progressPercent = computed(() => {
+  if (steps.value.length === 0) return 100
   const completed = steps.value.filter((s) => s.isCompleted || s.isDismissed).length
-  return (completed / STEPS_CONFIG.length) * 100
+  return (completed / steps.value.length) * 100
 })
 
 function loadPreferences() {
@@ -214,7 +218,9 @@ function skipTask() {
         <span
           class="font-body text-[11px] font-bold uppercase tracking-[2px] flex-1 text-mint dark:text-mint-dark"
         >
-          Queue Performance ({{ steps.filter((s) => s.isCompleted || s.isDismissed).length }}/2)
+          Queue Performance ({{ steps.filter((s) => s.isCompleted || s.isDismissed).length }}/{{
+            steps.length
+          }})
         </span>
 
         <component
