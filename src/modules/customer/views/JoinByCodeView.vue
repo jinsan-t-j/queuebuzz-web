@@ -7,10 +7,14 @@
 
 import { ref, computed, nextTick, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
+import { useToast } from '@/composables/useToast'
 
 // Lazy load heavy components
 const BaseQrScanner = defineAsyncComponent(() => import('@/components/base/BaseQrScanner.vue'))
+import ActiveSessionWarning from '@/modules/customer/components/ActiveSessionWarning.vue'
 
 import ArrowRightFilledIcon from '@/assets/icons/arrow-right-filled.svg?component'
 import QrCodeScanIcon from '@/assets/icons/qr-code-scan.svg?component'
@@ -19,6 +23,17 @@ import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 
 const router = useRouter()
 const { joinByCode, isLoading, error, clearError } = useCustomer()
+
+const { showToast } = useToast()
+const customerStore = useCustomerStore()
+const { entry: customerEntry } = storeToRefs(customerStore)
+
+async function handleLeaveQueue() {
+  const success = await customerStore.leaveQueue()
+  if (success) {
+    showToast('Previous session cleared.', { type: 'success' })
+  }
+}
 
 // State
 const codeChars = ref(['', '', '', '', '', ''])
@@ -131,6 +146,15 @@ function handleQrResult(result: string) {
 
     <!-- Content -->
     <div class="relative z-10 flex flex-col items-center">
+      <!-- Already in another queue warning -->
+      <ActiveSessionWarning
+        v-if="customerStore.isJoined"
+        class="w-full max-w-sm mb-12 animate-in fade-in slide-in-from-top-4"
+        :active-queue-id="customerEntry?.queueId"
+        :is-loading="isLoading"
+        @leave="handleLeaveQueue"
+      />
+
       <h1 class="font-display text-3xl font-black text-plum text-center leading-tight">
         Joining a queue?
       </h1>

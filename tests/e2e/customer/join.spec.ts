@@ -15,7 +15,9 @@ test.describe('Customer Join', () => {
     await page.goto('/q/q-123/join')
 
     // Queue name should be visible
-    await expect(page.locator('text=Morning Consultation')).toBeVisible({ timeout: 8000 })
+    await expect(page.getByRole('heading', { name: 'Morning Consultation' })).toBeVisible({
+      timeout: 8000,
+    })
   })
 
   test('should show loading skeleton initially', async ({ page }) => {
@@ -37,7 +39,7 @@ test.describe('Customer Join', () => {
     await page.goto('/q/q-123/join')
 
     // Loading skeleton
-    await expect(page.locator('text=Connecting to queue...')).toBeVisible()
+    await expect(page.getByText('Connecting to queue...')).toBeVisible()
   })
 
   test('should show not-found state for invalid queue', async ({ page }) => {
@@ -68,7 +70,7 @@ test.describe('Customer Join', () => {
 
     await page.goto('/q/invalid-id/join')
 
-    await expect(page.locator('text=Queue not found')).toBeVisible({ timeout: 5000 })
+    await expect(page.getByText('Queue not found')).toBeVisible({ timeout: 5000 })
     await expect(page.getByRole('button', { name: /Go to homepage/i })).toBeVisible()
   })
 })
