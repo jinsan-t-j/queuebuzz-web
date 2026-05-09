@@ -172,7 +172,7 @@ async function confirmDelete() {
     >
       <!-- Toolbar -->
       <div
-        class="flex flex-col lg:flex-row items-center justify-between gap-4 p-4 sm:p-5 border-b border-plum-faint bg-sand"
+        class="flex flex-col lg:flex-row items-center justify-between gap-3 p-3.5 sm:p-5 border-b border-plum-faint bg-sand"
       >
         <!-- Search -->
         <div class="relative w-full lg:w-[400px]">
@@ -215,7 +215,7 @@ async function confirmDelete() {
       <!-- Pagination -->
       <div
         v-if="totalPages > 1"
-        class="p-4 sm:p-5 bg-white border-t border-plum-faint flex flex-col sm:flex-row items-center justify-between gap-6"
+        class="p-4 sm:p-5 bg-white border-t border-plum-faint flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6"
       >
         <div class="font-body text-sm text-plum-muted text-center sm:text-left">
           Showing

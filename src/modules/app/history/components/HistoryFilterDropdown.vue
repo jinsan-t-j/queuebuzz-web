@@ -32,7 +32,7 @@ function selectFilter(value: string) {
 <template>
   <div ref="dropdownRef" class="w-full md:w-auto relative">
     <button
-      class="flex items-center gap-3 h-12 px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum hover:bg-white transition-all bg-white w-full md:w-[200px] justify-between shadow-none"
+      class="flex items-center gap-3 h-12 px-4 sm:px-6 rounded-2xl border border-plum-faint font-body text-sm text-plum hover:border-plum hover:bg-white transition-all bg-white w-full md:w-[200px] justify-between shadow-none"
       @click="isOpen = !isOpen"
     >
       <span class="flex items-center gap-2 font-black">

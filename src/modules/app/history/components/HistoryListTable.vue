@@ -268,19 +268,19 @@ function formatStatus(status?: string) {
         v-for="queue in items"
         v-else
         :key="queue.id"
-        class="p-5 transition-colors relative"
+        class="p-4 transition-colors relative"
         :class="[
           selectedIds.includes(queue.id) ? 'bg-mint-light/20' : '',
           canViewDetail ? 'active:bg-sand' : 'opacity-80',
         ]"
         @click="canViewDetail && emit('view-detail', queue.id)"
       >
-        <div class="flex justify-between items-start mb-3">
-          <div class="flex items-center gap-3">
+        <div class="flex justify-between items-start mb-2">
+          <div class="flex items-center gap-2.5">
             <button
               type="button"
               :aria-label="`Select queue ${queue.name}`"
-              class="w-6 h-6 rounded-lg border border-plum-faint flex items-center justify-center transition-all bg-white shadow-sm"
+              class="w-5 h-5 rounded-md border border-plum-faint flex items-center justify-center transition-all bg-white shadow-sm"
               :class="{ 'bg-mint border-mint': selectedIds.includes(queue.id) }"
               @click.stop="toggleSelection(queue.id)"
             >
@@ -295,51 +295,53 @@ function formatStatus(status?: string) {
             >
           </div>
           <div class="flex items-center gap-1.5">
-            <BaseBadge :variant="getStatusVariant(queue.status)" size="sm" class="font-black">
+            <BaseBadge
+              :variant="getStatusVariant(queue.status)"
+              size="sm"
+              class="font-black text-[10px] h-6"
+            >
               {{ formatStatus(queue.status) }}
             </BaseBadge>
             <button
-              class="p-2 text-plum-muted active:text-danger active:bg-danger/10 rounded-xl transition-colors"
+              class="p-1.5 text-plum-muted active:text-danger active:bg-danger/10 rounded-lg transition-colors"
               :aria-label="`Delete queue ${queue.name}`"
               title="Delete entry"
               @click.stop="emit('delete-single', queue.id)"
             >
-              <TrashIcon class="w-4 h-4" />
+              <TrashIcon class="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        <h4 class="font-body font-black text-lg text-plum mb-4 leading-tight">{{ queue.name }}</h4>
+        <h4 class="font-body font-black text-base text-plum mb-3 leading-tight">
+          {{ queue.name }}
+        </h4>
 
         <div class="flex items-center justify-between">
-          <div class="flex gap-6">
-            <div>
-              <p
-                class="font-body text-[9px] font-black uppercase tracking-widest text-plum-muted mb-1"
+          <div class="flex gap-4">
+            <div class="flex items-baseline gap-1.5">
+              <span
+                class="font-body text-[10px] font-black uppercase tracking-widest text-plum-muted"
               >
-                Served
-              </p>
-              <p
-                class="font-mono text-sm text-plum font-black bg-sand px-2 py-1 rounded-lg inline-block"
-              >
+                Served:
+              </span>
+              <span class="font-mono text-sm text-plum font-black">
                 {{ queue.totalServed }}
-              </p>
+              </span>
             </div>
-            <div>
-              <p
-                class="font-body text-[9px] font-black uppercase tracking-widest text-plum-muted mb-1"
+            <div class="flex items-baseline gap-1.5">
+              <span
+                class="font-body text-[10px] font-black uppercase tracking-widest text-plum-muted"
               >
-                Avg. Wait
-              </p>
-              <p
-                class="font-mono text-sm text-plum font-black bg-sand px-2 py-1 rounded-lg inline-block"
-              >
+                Wait:
+              </span>
+              <span class="font-mono text-sm text-plum font-black">
                 {{ queue.avgWait }}
-              </p>
+              </span>
             </div>
           </div>
 
-          <ArrowRightIcon v-if="canViewDetail" class="w-5 h-5 text-plum-muted/50" />
+          <ArrowRightIcon v-if="canViewDetail" class="w-4 h-4 text-plum-muted/50" />
         </div>
       </div>
     </div>

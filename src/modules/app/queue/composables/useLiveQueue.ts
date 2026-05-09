@@ -9,20 +9,20 @@ import { APP_BASE_URL } from '@/config/api.constants'
 
 type SearchEmitter = (value: string) => void
 
+// Shared UI-only modal state (outside the function to persist across callers)
+const showAddGuestModal = ref(false)
+const showStatusUpdateModal = ref(false)
+const statusUpdateMode = ref<'pause' | 'resume' | 'terminate'>('terminate')
+const showInfoModal = ref(false)
+const showSettingsModal = ref(false)
+const isNotesSaving = ref(false)
+const isTerminating = ref(false)
+
 export function useLiveQueue() {
   const store = useQueueStore()
   const router = useRouter()
   const { showToast } = useToast()
   const analysis = useQueueAnalysis()
-
-  // UI-only modal state
-  const showAddGuestModal = ref(false)
-  const showStatusUpdateModal = ref(false)
-  const statusUpdateMode = ref<'pause' | 'resume' | 'terminate'>('terminate')
-  const showInfoModal = ref(false)
-  const showSettingsModal = ref(false)
-  const isNotesSaving = ref(false)
-  const isTerminating = ref(false)
 
   // Simulated ping
   const pingMs = ref(42)
@@ -164,6 +164,7 @@ export function useLiveQueue() {
       const success = await store.terminate()
       if (success) {
         showToast('Queue terminated successfully.')
+        showStatusUpdateModal.value = false
         return true
       }
       isTerminating.value = false

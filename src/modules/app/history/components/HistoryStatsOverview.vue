@@ -23,7 +23,7 @@ defineProps<{
   >
     <!-- Total Sessions -->
     <BaseCard
-      class="min-w-[160px] flex-1 p-4 sm:p-6 border border-plum-faint shadow-none bg-white rounded-2xl sm:rounded-3xl"
+      class="min-w-[140px] flex-1 p-3.5 sm:p-6 border border-plum-faint shadow-none bg-white rounded-2xl sm:rounded-3xl"
     >
       <div v-if="isLoading" class="animate-pulse space-y-2">
         <div class="h-2.5 w-16 bg-sand rounded" />
@@ -43,7 +43,7 @@ defineProps<{
 
     <!-- Guests Served -->
     <BaseCard
-      class="min-w-[160px] flex-1 p-4 sm:p-6 border border-plum-faint shadow-none bg-white rounded-2xl sm:rounded-3xl"
+      class="min-w-[140px] flex-1 p-3.5 sm:p-6 border border-plum-faint shadow-none bg-white rounded-2xl sm:rounded-3xl"
     >
       <div v-if="isLoading" class="animate-pulse space-y-2">
         <div class="h-2.5 w-16 bg-sand rounded" />

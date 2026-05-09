@@ -47,7 +47,8 @@ const QueueStatusUpdateModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/QueueStatusUpdateModal.vue'),
 )
 
-const { showStatusUpdateModal, statusUpdateMode, handleStatusUpdateConfirm } = useLiveQueue()
+const { showStatusUpdateModal, statusUpdateMode, handleStatusUpdateConfirm, waitingCount } =
+  useLiveQueue()
 
 const route = useRoute()
 
@@ -210,6 +211,7 @@ function isActive(item: NavItem) {
     <QueueStatusUpdateModal
       :is-open="showStatusUpdateModal"
       :mode="statusUpdateMode"
+      :still-waiting-count="waitingCount"
       @confirm="handleStatusConfirm"
       @close="showStatusUpdateModal = false"
     />
