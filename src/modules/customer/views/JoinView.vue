@@ -7,18 +7,33 @@
 import { onBeforeMount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { storeToRefs } from 'pinia'
-import { useQueueStore } from '@/stores/queue.store'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
+import { useToast } from '@/composables/useToast'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
+import { useQueueStore } from '@/stores/queue.store'
+import { storeToRefs } from 'pinia'
 
-import JoinQueueForm from '@/modules/customer/components/JoinQueueForm.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
+import ActiveSessionWarning from '@/modules/customer/components/ActiveSessionWarning.vue'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import JoinQueueForm from '@/modules/customer/components/JoinQueueForm.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const { handleJoinQueue, isLoading } = useCustomer()
+const { isLoading, entry: customerEntry, handleJoinQueue } = useCustomer()
+
+const { showToast } = useToast()
+const customerStore = useCustomerStore()
+
+async function handleLeaveQueue() {
+  const success = await customerStore.leaveQueue()
+  if (success) {
+    // Re-initialize the target queue since leaveQueue clears the entire queue context
+    await queueStore.initializeQueueById(queueId)
+    showToast('Previous session cleared. You can now join this queue.', { type: 'success' })
+  }
+}
 
 const queueStore = useQueueStore()
 const {
@@ -32,6 +47,18 @@ const queueId = route.params.queueId as string
 
 onBeforeMount(async () => {
   await queueStore.initializeQueueById(queueId)
+
+  if (customerStore.isJoined && customerEntry.value?.queueId === queueId) {
+    const status = customerEntry.value.status
+    let routeName = 'customer-waiting'
+    if (status === 'CALLED') {
+      routeName = 'customer-called'
+    } else if (status === 'IDLE') {
+      routeName = 'customer-idle'
+    }
+
+    router.replace({ name: routeName, params: { queueId } })
+  }
 })
 
 function handleJoinByCode() {
@@ -78,7 +105,18 @@ function handleJoinByCode() {
         :banner-url="activeQueue.hostBannerImageUrl"
       />
 
+      <!-- Already in another queue warning -->
+      <ActiveSessionWarning
+        v-if="customerStore.isJoined && customerEntry?.queueId !== queueId"
+        class="px-6 mt-8"
+        :active-queue-id="customerEntry?.queueId"
+        :target-queue-name="activeQueue.name"
+        :is-loading="isLoading"
+        @leave="handleLeaveQueue"
+      />
+
       <JoinQueueForm
+        v-else
         :queue-name="activeQueue.name"
         :people-in-queue="waitingCount"
         :est-wait-min="avgWaitTime"

@@ -5,7 +5,7 @@
  */
 import { restrictActiveHostGuard } from '@/router/guards/restrictActiveHost.guard'
 import { restrictCustomerGuard } from '@/router/guards/restrictCustomer.guard'
-import type { RouteRecordRaw, RouteLocationNormalized } from 'vue-router'
+import type { RouteLocationNormalized, RouteRecordRaw } from 'vue-router'
 
 export const customerRoutes: RouteRecordRaw[] = [
   {
