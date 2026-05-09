@@ -10,8 +10,8 @@
  * @emits {page-change} - Emitted with page number on pagination.
  */
 
-import { ref, computed, watch } from 'vue'
 import { Search, X } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
 
 interface Entry {
   id: string

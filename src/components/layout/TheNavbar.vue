@@ -4,12 +4,12 @@
  * @description Public website navigation bar. Displays the QueueBuzz logo,
  * nav links, and a CTA button. Used once inside WebsiteLayout.
  */
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { Menu, X } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+
 import { useAuthStore } from '@/stores/auth.store'
 import { useQueueStore } from '@/stores/queue.store'
-
-import { Menu, X } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const queueStore = useQueueStore()

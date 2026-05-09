@@ -3,8 +3,8 @@
  * @component ProfileImageModal
  * @description Async modal to show enlarged host profile image.
  */
-import BaseModal from '@/components/base/BaseModal.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 
 defineProps<{
   isOpen: boolean

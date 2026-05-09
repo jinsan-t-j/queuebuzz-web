@@ -1,5 +1,6 @@
-import { test, expect } from '../fixtures/base.fixture'
 import AxeBuilder from '@axe-core/playwright'
+
+import { test, expect } from '../fixtures/base.fixture'
 import { makeDashboardResponse, makeActiveQueueDashboard } from '../fixtures/mocks/host.mock'
 
 /**

@@ -4,6 +4,7 @@
  * @description Floating action bar that appears when items are selected in the history list.
  */
 import { Check as CheckIcon } from 'lucide-vue-next'
+
 import BaseButton from '@/components/base/BaseButton.vue'
 
 defineProps<{

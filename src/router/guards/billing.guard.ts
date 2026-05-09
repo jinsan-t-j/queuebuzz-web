@@ -2,8 +2,9 @@
  * @guard billingGuard
  * @description Prevents access to premium features based on the host's current plan.
  */
-import { useAuthStore } from '@/stores/auth.store'
 import { useBilling } from '@/modules/app/billing/composables/useBilling'
+import { useAuthStore } from '@/stores/auth.store'
+
 import type { NavigationGuardWithThis } from 'vue-router'
 
 export const billingGuard: NavigationGuardWithThis<undefined> = async (to) => {

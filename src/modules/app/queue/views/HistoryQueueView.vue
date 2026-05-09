@@ -5,14 +5,14 @@
  * Uses Pinia for dummy backend logic and TanStack Vue Query for api state management, caching & debouncing.
  */
 
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { refDebounced, onClickOutside } from '@vueuse/core'
-import { useQueueStore } from '@/stores/queue.store'
+import { Search, ArrowUpDown, Filter, Download, X } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 import ChevronRightIcon from '@/assets/icons/chevron-right.svg?component'
-import { Search, ArrowUpDown, Filter, Download, X } from 'lucide-vue-next'
+import { useQueueStore } from '@/stores/queue.store'
 
 const router = useRouter()
 const queueStore = useQueueStore()

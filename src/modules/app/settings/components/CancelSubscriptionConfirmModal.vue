@@ -3,10 +3,11 @@
  * @component CancelSubscriptionConfirmModal
  * @description Dialog confirming subscription cancellation with reason/feedback inputs.
  */
-import { ref } from 'vue'
 import { AlertTriangle } from 'lucide-vue-next'
-import BaseModal from '@/components/base/BaseModal.vue'
+import { ref } from 'vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 
 defineProps<{
   isOpen: boolean

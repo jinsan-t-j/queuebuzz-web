@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+
+import { useToast } from '@/composables/useToast'
 import {
   fetchUserSettings,
   updateUserSettings,
@@ -6,8 +8,8 @@ import {
   deleteAccount,
   type UserSettings,
 } from '@/modules/app/settings/actions/settings.actions'
+
 import { useAuthStore } from './auth.store'
-import { useToast } from '@/composables/useToast'
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({

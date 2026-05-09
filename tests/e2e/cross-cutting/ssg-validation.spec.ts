@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+
 import seo from '../../../src/config/seo.constants.json' with { type: 'json' }
 
 test.describe('SSG & SEO Validation (No JS)', () => {

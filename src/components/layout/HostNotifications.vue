@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useNotificationStore } from '@/stores/notification.store'
 import { Bell, X, CheckCircle, AlertTriangle, Info, AlertOctagon } from 'lucide-vue-next'
+
+import { useNotificationStore } from '@/stores/notification.store'
 
 const store = useNotificationStore()
 

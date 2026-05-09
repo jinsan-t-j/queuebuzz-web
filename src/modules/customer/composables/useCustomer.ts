@@ -1,12 +1,13 @@
+import { storeToRefs } from 'pinia'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { useCustomerStore } from '@/modules/customer/stores/customer.store'
-import { useQueueStore } from '@/stores/queue.store'
+
 import { useCapture } from '@/composables/useCapture'
-import * as CustomerActions from '@/modules/customer/actions/customer.action'
-import type { JoinQueuePayload } from '@/modules/customer/types'
 import { useToast } from '@/composables/useToast'
+import * as CustomerActions from '@/modules/customer/actions/customer.action'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
+import type { JoinQueuePayload } from '@/modules/customer/types'
+import { useQueueStore } from '@/stores/queue.store'
 
 export function useCustomer() {
   const store = useCustomerStore()

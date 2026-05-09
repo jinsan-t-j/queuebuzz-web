@@ -10,13 +10,15 @@
  * @emits {confirm} - Action confirmed.
  * @emits {close} - Modal closed without action.
  */
-import BaseModal from '@/components/base/BaseModal.vue'
-import BaseButton from '@/components/base/BaseButton.vue'
+import { computed } from 'vue'
+
+import CloseCircleIcon from '@/assets/icons/close-circle.svg?component'
 import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
 import PlayIcon from '@/assets/icons/play.svg?component'
-import CloseCircleIcon from '@/assets/icons/close-circle.svg?component'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
+
 import type { Component } from 'vue'
-import { computed } from 'vue'
 
 const props = defineProps({
   isOpen: { type: Boolean, required: true },

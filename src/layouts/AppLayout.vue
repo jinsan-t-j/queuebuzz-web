@@ -6,12 +6,12 @@
  */
 
 import { defineAsyncComponent, watchEffect, onUnmounted, ref } from 'vue'
-import { useTheme } from '@/composables/useTheme'
 
+import BasePullToRefresh from '@/components/base/BasePullToRefresh.vue'
 import DashboardSidebar from '@/components/layout/app/DashboardSidebar.vue'
 import DashboardTopbar from '@/components/layout/app/DashboardTopbar.vue'
-import BasePullToRefresh from '@/components/base/BasePullToRefresh.vue'
 import { useRefresh } from '@/composables/useRefresh'
+import { useTheme } from '@/composables/useTheme'
 
 const { theme } = useTheme()
 

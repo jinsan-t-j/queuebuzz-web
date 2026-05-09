@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useNotificationStore } from '@/stores/notification.store'
+import { formatDistanceToNow } from 'date-fns'
 import {
   Bell,
   X,
@@ -11,7 +10,9 @@ import {
   Trash2,
   Clock,
 } from 'lucide-vue-next'
-import { formatDistanceToNow } from 'date-fns'
+import { ref, watch } from 'vue'
+
+import { useNotificationStore } from '@/stores/notification.store'
 
 const store = useNotificationStore()
 const isOpen = ref(false)

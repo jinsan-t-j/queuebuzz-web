@@ -5,21 +5,21 @@
  * Supports partial fill, searching, and error states.
  */
 
+import { storeToRefs } from 'pinia'
 import { ref, computed, nextTick, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { useCustomerStore } from '@/modules/customer/stores/customer.store'
-import { useCustomer } from '@/modules/customer/composables/useCustomer'
+
+import ArrowRightFilledIcon from '@/assets/icons/arrow-right-filled.svg?component'
+import ErrorCircleOutlineIcon from '@/assets/icons/error-circle-outline.svg?component'
+import QrCodeScanIcon from '@/assets/icons/qr-code-scan.svg?component'
+import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import { useToast } from '@/composables/useToast'
+import ActiveSessionWarning from '@/modules/customer/components/ActiveSessionWarning.vue'
+import { useCustomer } from '@/modules/customer/composables/useCustomer'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 
 // Lazy load heavy components
 const BaseQrScanner = defineAsyncComponent(() => import('@/components/base/BaseQrScanner.vue'))
-import ActiveSessionWarning from '@/modules/customer/components/ActiveSessionWarning.vue'
-
-import ArrowRightFilledIcon from '@/assets/icons/arrow-right-filled.svg?component'
-import QrCodeScanIcon from '@/assets/icons/qr-code-scan.svg?component'
-import ErrorCircleOutlineIcon from '@/assets/icons/error-circle-outline.svg?component'
-import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 
 const router = useRouter()
 const { joinByCode, isLoading, error, clearError } = useCustomer()

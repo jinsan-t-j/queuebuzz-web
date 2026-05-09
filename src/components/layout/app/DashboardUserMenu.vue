@@ -4,7 +4,6 @@
  * @description A unified user profile dropdown for the topbar.
  * Consolidates profile info, settings links, and logout action.
  */
-import { useTheme } from '@/composables/useTheme'
 import {
   ChevronDown,
   HelpCircle,
@@ -17,6 +16,8 @@ import {
   UserCircle,
 } from 'lucide-vue-next'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+
+import { useTheme } from '@/composables/useTheme'
 
 const props = defineProps({
   userName: {

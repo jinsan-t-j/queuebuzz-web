@@ -1,22 +1,14 @@
 import { defineStore } from 'pinia'
 
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
+import { getFCMTokenDetails } from '@/lib/firebase'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
-import type {
-  QueueEntry,
-  QueueRecord,
-  QueueSseEnvelopeMap,
-  QueueStatusEventData,
-  AddQueueEntryPayload,
-  UpdateQueuePayload,
-} from '@/modules/app/queue/types'
+import { fetchHistory, fetchHistoryDetail } from '@/modules/app/history/actions/history.action'
 import type {
   HistoryDetail,
   HistoryQueryParams,
   HistoryQueryResult,
 } from '@/modules/app/history/types'
-import { fetchHistory, fetchHistoryDetail } from '@/modules/app/history/actions/history.action'
-import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import {
   getLiveQueue,
   getLiveQueueById,
@@ -31,7 +23,6 @@ import {
   unregisterHostFCM as apiUnregisterHostFCM,
   claimQueue as apiClaimQueue,
 } from '@/modules/app/queue/actions/queue.action'
-import { normalizeLiveQueueEntries, normalizeQueueEntry } from '@/modules/app/queue/transforms'
 import {
   QUEUE_ERROR_REASONS,
   QUEUE_STATUS,
@@ -39,10 +30,20 @@ import {
   type QueueStatus,
   type QueueEntryStatus,
 } from '@/modules/app/queue/constants'
-import { useNotificationStore } from './notification.store'
-import { useDashboardStore } from './dashboard.store'
-import { getFCMTokenDetails } from '@/lib/firebase'
+import { normalizeLiveQueueEntries, normalizeQueueEntry } from '@/modules/app/queue/transforms'
+import type {
+  QueueEntry,
+  QueueRecord,
+  QueueSseEnvelopeMap,
+  QueueStatusEventData,
+  AddQueueEntryPayload,
+  UpdateQueuePayload,
+} from '@/modules/app/queue/types'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { ApiError, getErrorMessage } from '@/utils/api-response'
+
+import { useDashboardStore } from './dashboard.store'
+import { useNotificationStore } from './notification.store'
 
 let visibilityHandler: (() => void) | null = null
 

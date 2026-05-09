@@ -1,5 +1,5 @@
-import { test, expect } from '../fixtures/base.fixture'
 import seo from '../../../src/config/seo.constants.json' with { type: 'json' }
+import { test, expect } from '../fixtures/base.fixture'
 
 /**
  * @file ssg-validation.spec.ts

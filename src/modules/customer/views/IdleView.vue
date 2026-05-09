@@ -6,22 +6,22 @@
  */
 
 // 1. Vue core imports
+import { storeToRefs } from 'pinia'
 import { ref, computed, watch, onBeforeMount, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
 
 // 4. Composables
+import { useToast } from '@/composables/useToast'
+import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import GracePeriodCard from '@/modules/customer/components/GracePeriodCard.vue'
+import TicketHero from '@/modules/customer/components/TicketHero.vue'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useQueueStore } from '@/stores/queue.store'
-import { useToast } from '@/composables/useToast'
 
 // 5. Component imports
-import TicketHero from '@/modules/customer/components/TicketHero.vue'
-import GracePeriodCard from '@/modules/customer/components/GracePeriodCard.vue'
 
 import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
-import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 
 const router = useRouter()
 const { showToast } = useToast()

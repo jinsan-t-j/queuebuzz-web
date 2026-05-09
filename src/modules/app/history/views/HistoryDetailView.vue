@@ -3,13 +3,6 @@
  * @view HistoryDetailView
  * @description Detailed audit of a past queue session featuring rich timelines and performance insights.
  */
-import { ref, computed, onBeforeMount } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useHistory } from '../composables/useHistory'
-import BaseCard from '@/components/base/BaseCard.vue'
-import BaseBadge from '@/components/base/BaseBadge.vue'
-import BaseButton from '@/components/base/BaseButton.vue'
-import HistoryDetailTimeline from '../components/HistoryDetailTimeline.vue'
 import {
   ArrowLeft as ArrowLeftIcon,
   Download as DownloadIcon,
@@ -22,6 +15,16 @@ import {
   SparklesIcon,
   QuoteIcon,
 } from 'lucide-vue-next'
+import { ref, computed, onBeforeMount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+import BaseBadge from '@/components/base/BaseBadge.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseCard from '@/components/base/BaseCard.vue'
+
+import HistoryDetailTimeline from '../components/HistoryDetailTimeline.vue'
+import { useHistory } from '../composables/useHistory'
+
 import type { HistoryDetail } from '../types'
 
 const route = useRoute()

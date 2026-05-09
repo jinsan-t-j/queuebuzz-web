@@ -9,8 +9,8 @@
 import { ref, defineAsyncComponent, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
-import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import { useToast } from '@/composables/useToast'
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 import ClaimConflictModal from '../components/ClaimConflictModal.vue'
 

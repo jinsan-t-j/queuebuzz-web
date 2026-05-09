@@ -5,10 +5,11 @@
  * Uses html5-qrcode for detection.
  */
 
-import { onMounted, onUnmounted, ref } from 'vue'
-import { useQrScanner } from '@/composables/useQrScanner'
 import { X, CameraOff, Sparkles } from 'lucide-vue-next'
+import { onMounted, onUnmounted, ref } from 'vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
+import { useQrScanner } from '@/composables/useQrScanner'
 
 defineProps({
   title: { type: String, default: 'Scan QR Code' },

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, defineAsyncComponent } from 'vue'
 import { User, Layers, Bell, AlertCircle, CreditCard, Settings, ChevronDown } from 'lucide-vue-next'
+import { ref, defineAsyncComponent } from 'vue'
 
 const props = defineProps({
   activeSection: {

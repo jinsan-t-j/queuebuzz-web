@@ -3,9 +3,10 @@
  * @component AddGuestModal
  * @description Modal for hosts to manually add guests to the queue.
  */
-import { ref, computed } from 'vue'
 import { useForm, useField } from 'vee-validate'
+import { ref, computed } from 'vue'
 import * as yup from 'yup'
+
 import CloseXIcon from '@/assets/icons/close-x.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'

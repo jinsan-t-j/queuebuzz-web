@@ -4,6 +4,7 @@
  * @description Presentational component for displaying error states in the dashboard.
  */
 import { AlertCircle } from 'lucide-vue-next'
+
 import BaseButton from '@/components/base/BaseButton.vue'
 
 defineProps<{

@@ -1,4 +1,5 @@
 import type { QueueEntryStatus, QueueStatus } from './constants'
+
 export interface QueueConfig {
   name: string
 }

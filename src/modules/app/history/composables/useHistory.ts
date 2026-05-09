@@ -1,5 +1,7 @@
 import { ref } from 'vue'
+
 import type { QueueHistoryItem } from '@/modules/app/history/types'
+
 import {
   fetchHistory,
   fetchHistoryDetail,

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports, no-console */
-const { chromium } = require('playwright');
 const path = require('path');
+
+const { chromium } = require('playwright');
 
 const BASE_URL = 'http://localhost:4002';
 

@@ -5,7 +5,6 @@
  * and provides a CTA to upgrade. Based on PricingView but focused on paid tiers.
  */
 
-import { ref, onMounted, computed, onUnmounted } from 'vue'
 import {
   Sparkles,
   Layers,
@@ -15,11 +14,13 @@ import {
   Palette,
   Loader2,
 } from 'lucide-vue-next'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useBilling } from '@/modules/app/billing/composables/useBilling'
+
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 import { useToast } from '@/composables/useToast'
+import { useBilling } from '@/modules/app/billing/composables/useBilling'
 
 const {
   isLoading,

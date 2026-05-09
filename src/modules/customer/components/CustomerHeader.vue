@@ -5,7 +5,9 @@
  * Shows banner (if exists) and profile image with enlargement capability.
  */
 import { ref } from 'vue'
+
 import BaseAvatar from '@/components/base/BaseAvatar.vue'
+
 import ProfileImageModal from './ProfileImageModal.vue'
 
 defineProps<{

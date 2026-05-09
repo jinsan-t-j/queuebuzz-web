@@ -10,14 +10,14 @@
  * @emits {close} - Emitted when modal is dismissed.
  */
 
-import { ref, onMounted, watch } from 'vue'
 import QRCode from 'qrcode'
+import { ref, onMounted, watch } from 'vue'
 
-import BaseModal from '@/components/base/BaseModal.vue'
-import BaseButton from '@/components/base/BaseButton.vue'
 import CloseIcon from '@/assets/icons/close-x.svg?component'
 import DownloadIcon from '@/assets/icons/download-arrow.svg?component'
 import QrGridIcon from '@/assets/icons/qr-grid.svg?component'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 
 const props = defineProps({
   isOpen: {

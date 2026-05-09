@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import {
   CheckCircleIcon,
   SparklesIcon,
@@ -9,7 +7,10 @@ import {
   BellRingIcon,
   ShieldCheckIcon,
 } from 'lucide-vue-next'
+import { ref, computed, onMounted, watch } from 'vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 /**
  * @component LiveQueueQuickSetup

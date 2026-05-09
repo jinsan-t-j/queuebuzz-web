@@ -1,6 +1,8 @@
+import { defineStore } from 'pinia'
+
 import { fetchCurrentHost, logoutHost } from '@/modules/app/auth/actions/auth.actions'
 import type { AuthUser } from '@/modules/app/auth/types'
-import { defineStore } from 'pinia'
+
 import { useDashboardStore } from './dashboard.store'
 
 export const useAuthStore = defineStore('auth', {

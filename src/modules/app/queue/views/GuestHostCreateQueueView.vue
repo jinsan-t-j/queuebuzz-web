@@ -10,6 +10,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import CreateQueueForm from '@/modules/app/queue/components/CreateQueueForm.vue'
+
 import QueueCreatedModal from '../components/QueueCreatedModal.vue'
 
 const router = useRouter()

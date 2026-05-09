@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+
 import { fetchDashboard as apiFetch } from '@/modules/app/dashboard/actions/dashboard.actions'
 import type { DashboardData } from '@/modules/app/dashboard/types'
 import { getErrorMessage } from '@/utils/api-response'

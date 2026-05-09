@@ -3,14 +3,16 @@
  * @component HistoryListTable
  * @description Renders the history list with selection and deletion support.
  */
-import { computed } from 'vue'
 import {
   ArrowRight as ArrowRightIcon,
   Inbox as InboxIcon,
   Trash2 as TrashIcon,
   Check as CheckIcon,
 } from 'lucide-vue-next'
+import { computed } from 'vue'
+
 import BaseBadge from '@/components/base/BaseBadge.vue'
+
 import type { QueueHistoryItem } from '../types'
 
 const props = defineProps({

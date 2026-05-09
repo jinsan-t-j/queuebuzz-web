@@ -3,8 +3,8 @@
  * @component PwaLauncher
  * @description Simplified app launcher for users running QueueBuzz in PWA mode.
  */
-import BaseButton from '@/components/base/BaseButton.vue'
 import QueueBuzzLogoBg from '@/assets/icons/queuebuzz-logo-bg.svg?component'
+import BaseButton from '@/components/base/BaseButton.vue'
 </script>
 
 <template>

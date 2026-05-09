@@ -6,20 +6,19 @@
  */
 
 // 1. Vue core imports
-import { computed, ref } from 'vue'
-
-// 2. Router / Pinia imports
-import { useRoute, useRouter } from 'vue-router'
+import { Menu } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+
+import DashboardUserMenu from '@/components/layout/app/DashboardUserMenu.vue'
+import HostNotificationCenter from '@/components/layout/HostNotificationCenter.vue'
+import LogoutConfirmationModal from '@/modules/app/auth/components/LogoutConfirmationModal.vue'
 import { useAuthStore } from '@/stores/auth.store'
 
 // 3. Third party imports
-import { Menu } from 'lucide-vue-next'
 
 // 4. Components imports
-import HostNotificationCenter from '@/components/layout/HostNotificationCenter.vue'
-import LogoutConfirmationModal from '@/modules/app/auth/components/LogoutConfirmationModal.vue'
-import DashboardUserMenu from '@/components/layout/app/DashboardUserMenu.vue'
 
 // 5. Props
 

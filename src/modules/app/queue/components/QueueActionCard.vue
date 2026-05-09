@@ -10,12 +10,13 @@
  * @emits {terminate} - "Terminate Queue" clicked.
  */
 
+import { PenLineIcon } from 'lucide-vue-next'
+
 import CloseCircleIcon from '@/assets/icons/close-circle.svg?component'
 import navSettingsIcon from '@/assets/icons/nav-settings.svg?component'
-import PlusIcon from '@/assets/icons/plus.svg?component'
 import PauseCircleIcon from '@/assets/icons/pause-circle.svg?component'
 import PlayIcon from '@/assets/icons/play.svg?component'
-import { PenLineIcon } from 'lucide-vue-next'
+import PlusIcon from '@/assets/icons/plus.svg?component'
 import BaseTooltip from '@/components/base/BaseTooltip.vue'
 
 const props = defineProps<{

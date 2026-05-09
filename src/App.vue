@@ -5,13 +5,12 @@
  * Layout is determined by the route definition, not by this component.
  */
 
-import { onMounted, defineAsyncComponent, computed } from 'vue'
 import { useSeoMeta } from '@unhead/vue'
-import { useToast } from '@/composables/useToast'
-
-import seoConfig from '@/config/seo.constants.json'
-
+import { onMounted, defineAsyncComponent, computed } from 'vue'
 import { useRoute } from 'vue-router'
+
+import { useToast } from '@/composables/useToast'
+import seoConfig from '@/config/seo.constants.json'
 
 const route = useRoute()
 const currentSeo = computed(() => {

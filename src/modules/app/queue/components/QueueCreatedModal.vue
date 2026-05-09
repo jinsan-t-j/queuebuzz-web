@@ -10,7 +10,6 @@
  */
 
 import { ref } from 'vue'
-
 import { useRouter } from 'vue-router'
 
 import CheckCircleIcon from '@/assets/icons/check-circle.svg?component'

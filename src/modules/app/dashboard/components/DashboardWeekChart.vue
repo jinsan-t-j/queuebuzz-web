@@ -9,9 +9,10 @@
  */
 
 import { ref, computed } from 'vue'
+
+import BarChartEmptyIcon from '@/assets/icons/bar-chart-empty.svg?component'
 import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import BaseTooltip from '@/components/base/BaseTooltip.vue'
-import BarChartEmptyIcon from '@/assets/icons/bar-chart-empty.svg?component'
 
 interface WeekData {
   day: string

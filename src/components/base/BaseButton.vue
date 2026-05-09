@@ -2,7 +2,6 @@
 /**
  * @component BaseButton
  * @description Reusable button with variant, size, and loading support.
- * Maps to QueueBuzz design system colours and radii.
  *
  * @prop {String} variant - Visual style: 'primary' | 'secondary' | 'danger' | 'ghost'
  * @prop {String} size - Button size: 'sm' | 'md' | 'lg'
@@ -11,19 +10,9 @@
  * @emits {click} - Emitted when button is clicked and not disabled.
  */
 
-// 1. Vue core imports
+import { Loader2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
-import { Loader2 } from 'lucide-vue-next'
-
-// 6. Props
 const props = withDefaults(
   defineProps<{
     variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline'
@@ -39,14 +28,8 @@ const props = withDefaults(
   },
 )
 
-// 7. Emits
 const emit = defineEmits(['click'])
 
-// 8. Composable destructuring
-
-// 9. Reactive state
-
-// 10. Computed properties
 const variantClasses = computed(() => {
   const map = {
     primary: 'bg-mint text-on-mint hover:bg-mint-dark',
@@ -69,14 +52,11 @@ const sizeClasses = computed(() => {
 
 const isButtonDisabled = computed(() => props.isLoading || props.isDisabled)
 
-// 11. Methods
 function handleClick(event: MouseEvent) {
   if (!isButtonDisabled.value) {
     emit('click', event)
   }
 }
-
-// 12. Lifecycle hooks
 </script>
 
 <template>

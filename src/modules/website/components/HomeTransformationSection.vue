@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
+
+import type { Component } from 'vue'
 
 defineProps<{
   upgradeData: { chaos: string; calm: string; icon: Component; delay: string }[]

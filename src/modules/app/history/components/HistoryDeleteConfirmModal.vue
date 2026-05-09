@@ -4,8 +4,9 @@
  * @description Confirmation modal for deleting queue history (single or bulk).
  */
 import { Trash2 as TrashIcon } from 'lucide-vue-next'
-import BaseModal from '@/components/base/BaseModal.vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 
 defineProps<{
   isOpen: boolean

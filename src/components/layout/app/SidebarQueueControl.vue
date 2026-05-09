@@ -4,10 +4,11 @@
  * @description Quick controls for the active queue in the sidebar.
  * Shows status (Running/Paused), a timer if paused, and actions to pause/resume/terminate.
  */
-import { computed } from 'vue'
 import { useNow } from '@vueuse/core'
-import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import { PauseCircle, PlayCircle, LogOut } from 'lucide-vue-next'
+import { computed } from 'vue'
+
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 const {
   activeQueue,

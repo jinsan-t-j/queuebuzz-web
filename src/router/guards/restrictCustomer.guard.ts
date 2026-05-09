@@ -4,6 +4,7 @@
  * before entering join or waiting flows.
  */
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
+
 import type { NavigationGuardWithThis } from 'vue-router'
 
 export const restrictCustomerGuard: NavigationGuardWithThis<undefined> = async () => {

@@ -5,11 +5,12 @@
  * but already has an active queue on their account.
  * Requires user to type 'confirm' as a safety measure.
  */
+import { AlertCircleIcon } from 'lucide-vue-next'
 import { ref, computed, watch } from 'vue'
-import BaseModal from '@/components/base/BaseModal.vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
-import { AlertCircleIcon } from 'lucide-vue-next'
+import BaseModal from '@/components/base/BaseModal.vue'
 
 const props = defineProps<{
   isOpen: boolean

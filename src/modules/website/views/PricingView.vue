@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
 import {
   CheckCircle2,
   Sparkles,
@@ -12,15 +11,17 @@ import {
   Palette,
   Loader2,
 } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseCard from '@/components/base/BaseCard.vue'
+import { useToast } from '@/composables/useToast'
 import {
   useBilling,
   comparisonFeatures,
   formatComparisonValue,
 } from '@/modules/app/billing/composables/useBilling'
-import BaseButton from '@/components/base/BaseButton.vue'
-import BaseCard from '@/components/base/BaseCard.vue'
-import { useToast } from '@/composables/useToast'
 
 const {
   isLoading,

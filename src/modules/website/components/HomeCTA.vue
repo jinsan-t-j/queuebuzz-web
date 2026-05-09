@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { ArrowRight, Sparkles } from 'lucide-vue-next'
-import { useWebsiteData } from '@/modules/website/composables/useWebsiteData'
+import { ref, onMounted } from 'vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
+import { useWebsiteData } from '@/modules/website/composables/useWebsiteData'
 
 const { observeElement } = useWebsiteData()
 const sectionRef = ref<HTMLElement | null>(null)

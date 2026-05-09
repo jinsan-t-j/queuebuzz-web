@@ -3,11 +3,13 @@
  * @description Vue Router instance with all route groups and global guards.
  * Title updates are handled via the afterEach hook.
  */
+import { useHead } from '@unhead/vue'
 import { createRouter, createWebHistory, createMemoryHistory } from 'vue-router'
-import { websiteRoutes } from '@/router/routes/website.routes'
+
+import { anoymousHostRoutes } from '@/router/routes/anonymous_host.routes'
 import { appRoutes } from '@/router/routes/app.routes'
 import { customerRoutes } from '@/router/routes/customer.routes'
-import { anoymousHostRoutes } from '@/router/routes/anonymous_host.routes'
+import { websiteRoutes } from '@/router/routes/website.routes'
 
 export const routes = [
   ...websiteRoutes,
@@ -24,8 +26,6 @@ const router = createRouter({
   },
   routes,
 })
-
-import { useHead } from '@unhead/vue'
 
 /**
  * @description Updates the document title based on route meta after every navigation.

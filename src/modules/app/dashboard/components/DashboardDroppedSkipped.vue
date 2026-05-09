@@ -8,8 +8,9 @@
  */
 
 import { computed, ref } from 'vue'
-import BasePillSelector from '@/components/base/BasePillSelector.vue'
+
 import WavesEmptyIcon from '@/assets/icons/waves-empty.svg?component'
+import BasePillSelector from '@/components/base/BasePillSelector.vue'
 
 interface HeatmapCell {
   hour: number

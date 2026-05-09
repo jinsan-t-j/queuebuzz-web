@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Layers, QrCode, Zap } from 'lucide-vue-next'
+
 import BaseBadge from '@/components/base/BaseBadge.vue'
 
 defineProps<{ isVisible: boolean }>()

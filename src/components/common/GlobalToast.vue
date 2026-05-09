@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useToast } from '@/composables/useToast'
 import CheckIcon from '@/assets/icons/check-circle.svg?component'
 import XIcon from '@/assets/icons/close-x.svg?component'
+import { useToast } from '@/composables/useToast'
 
 const { isVisible, message, type } = useToast()
 </script>

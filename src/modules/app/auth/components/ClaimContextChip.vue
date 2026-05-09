@@ -6,6 +6,7 @@
  */
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+
 import { getLiveQueueById } from '@/modules/app/queue/actions/queue.action'
 
 const route = useRoute()

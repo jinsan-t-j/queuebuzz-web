@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { onMounted, watch, ref, defineAsyncComponent } from 'vue'
-import { useRouter } from 'vue-router'
-import { useHistory } from '../composables/useHistory'
 import {
   Search as SearchIcon,
   Download as DownloadIcon,
@@ -9,12 +6,16 @@ import {
   ChevronRight as ChevronRightIcon,
   X as XIcon,
 } from 'lucide-vue-next'
+import { onMounted, watch, ref, defineAsyncComponent } from 'vue'
+import { useRouter } from 'vue-router'
 
-import BaseCard from '@/components/base/BaseCard.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
-import HistoryStatsOverview from '../components/HistoryStatsOverview.vue'
-import HistoryListTable from '../components/HistoryListTable.vue'
+import BaseCard from '@/components/base/BaseCard.vue'
+
 import { fetchSubscription, type Subscription } from '../../billing/actions/billing.actions'
+import HistoryListTable from '../components/HistoryListTable.vue'
+import HistoryStatsOverview from '../components/HistoryStatsOverview.vue'
+import { useHistory } from '../composables/useHistory'
 
 const HistoryUpgradeBanner = defineAsyncComponent(
   () => import('../components/HistoryUpgradeBanner.vue'),

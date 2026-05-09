@@ -14,10 +14,10 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 // 4. Local composables
+import ClockWarningOrangeIcon from '@/assets/icons/clock-warning-orange.svg?component'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 
 // 5. Component imports
-import ClockWarningOrangeIcon from '@/assets/icons/clock-warning-orange.svg?component'
 
 // 6. Props
 const props = defineProps({

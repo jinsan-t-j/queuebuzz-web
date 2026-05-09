@@ -1,9 +1,9 @@
-import { ViteSSG } from 'vite-ssg'
-import { createPinia } from 'pinia'
 import { VueQueryPlugin } from '@tanstack/vue-query'
 import { createHead as createClientHead } from '@unhead/vue/client'
 import { createHead as createServerHead } from '@unhead/vue/server'
+import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import { ViteSSG } from 'vite-ssg'
 
 import '@/assets/styles/main.css'
 
@@ -15,9 +15,9 @@ import '@fontsource/dm-sans/700.css'
 import '@fontsource/geist-mono/400.css'
 import '@fontsource/geist-mono/600.css'
 
-import { routes } from '@/router'
 import App from '@/App.vue'
 import { initializeForegroundNotifications, showBrowserNotification } from '@/lib/firebase'
+import { routes } from '@/router'
 
 export const createApp = ViteSSG(
   App,

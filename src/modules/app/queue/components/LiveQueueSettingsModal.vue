@@ -4,20 +4,20 @@
  * @description Modal for updating active queue settings.
  * Includes Queue Name and Avg. Service Time.
  */
-import { ref, computed, watch } from 'vue'
 import { useForm, useField } from 'vee-validate'
+import { ref, computed, watch } from 'vue'
 import * as yup from 'yup'
-import type { QueueRecord } from '@/modules/app/queue/types'
 
-import BaseButton from '@/components/base/BaseButton.vue'
-import BaseSlider from '@/components/base/BaseSlider.vue'
-import BaseToggle from '@/components/base/BaseToggle.vue'
-import navSettingsIcon from '@/assets/icons/nav-settings.svg?component'
-import CloseIcon from '@/assets/icons/close-x.svg?component'
 import TimeIcon from '@/assets/icons/clock-time.svg?component'
+import CloseIcon from '@/assets/icons/close-x.svg?component'
+import navSettingsIcon from '@/assets/icons/nav-settings.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
+import BaseButton from '@/components/base/BaseButton.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
+import BaseSlider from '@/components/base/BaseSlider.vue'
+import BaseToggle from '@/components/base/BaseToggle.vue'
+import type { QueueRecord } from '@/modules/app/queue/types'
 
 const props = defineProps<{
   isOpen: boolean
