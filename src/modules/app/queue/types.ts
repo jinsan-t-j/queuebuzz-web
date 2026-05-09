@@ -12,6 +12,7 @@ export interface QueueRecord {
   status: QueueStatus
   allowPartyJoining: boolean
   maxPartySize: number
+  manualPositioning: boolean
   strictQueueMode: boolean
   collectEmails: boolean
   recoveryEmail?: string

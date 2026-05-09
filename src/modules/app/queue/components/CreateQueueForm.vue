@@ -1,20 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useForm, useField } from 'vee-validate'
-import * as yup from 'yup'
-import { useClipboard, useDebounceFn } from '@vueuse/core'
-import { useQueueStore } from '@/stores/queue.store'
-import { useAuthStore } from '@/stores/auth.store'
-import { useDashboardStore } from '@/stores/dashboard.store'
-import { useSettingsStore } from '@/stores/settings.store'
-import { storeToRefs } from 'pinia'
-import { useToast } from '@/composables/useToast'
-import { createQueue, checkSlugAvailability } from '@/modules/app/queue/actions/queue.action'
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
 import BaseToggle from '@/components/base/BaseToggle.vue'
+import { useToast } from '@/composables/useToast'
+import { APP_BASE_URL } from '@/config/api.constants'
+import { checkSlugAvailability, createQueue } from '@/modules/app/queue/actions/queue.action'
+import { useAuthStore } from '@/stores/auth.store'
+import { useDashboardStore } from '@/stores/dashboard.store'
+import { useQueueStore } from '@/stores/queue.store'
+import { useSettingsStore } from '@/stores/settings.store'
+import { useClipboard, useDebounceFn } from '@vueuse/core'
+import { storeToRefs } from 'pinia'
+import { useField, useForm } from 'vee-validate'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import * as yup from 'yup'
 
 const props = defineProps({
   role: {
@@ -45,6 +46,8 @@ onMounted(async () => {
       collectEmails.value = userSettings.value.settings?.collectEmails ?? false
     }
   }
+
+  queueNameInput.value?.focus()
 })
 
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
@@ -63,6 +66,7 @@ const schema = computed(() => {
       then: (schema) => schema.required('Limit is required').min(1).max(50),
       otherwise: (schema) => schema.notRequired(),
     }),
+    manualPositioning: yup.boolean().default(false),
     collectEmails: yup.boolean().default(false),
   }
 
@@ -89,6 +93,7 @@ const { handleSubmit, errors, setFieldError } = useForm({
     serviceTime: 5,
     allowPartyJoining: false,
     maxPartySize: 5,
+    manualPositioning: false,
     slug: null,
     collectEmails: false,
   },
@@ -99,8 +104,11 @@ const { value: queueName } = useField<string | null>('queueName')
 const { value: serviceTime } = useField<number>('serviceTime')
 const { value: allowPartyJoining } = useField<boolean>('allowPartyJoining')
 const { value: maxPartySize } = useField<number>('maxPartySize')
+const { value: manualPositioning } = useField<boolean>('manualPositioning')
 const { value: slug } = useField<string | null>('slug')
 const { value: collectEmails } = useField<boolean>('collectEmails')
+
+const queueNameInput = ref<HTMLInputElement | null>(null)
 
 function selectSuggestion(suggestion) {
   queueName.value = suggestion
@@ -141,6 +149,7 @@ const onSubmit = handleSubmit(async (values) => {
       slug: values.slug,
       allowPartyJoining: values.allowPartyJoining,
       maxPartySize: values.allowPartyJoining ? Number(values.maxPartySize) : 1,
+      manualPositioning: values.manualPositioning,
       collectEmails: values.collectEmails,
     }
     const queue = await createQueue(payload)
@@ -172,26 +181,31 @@ const { copy: copyToClipboard } = useClipboard()
 const isSlugCopied = ref(false)
 
 function copyCustomLink() {
-  const customLink = `https://queuebuzz.com/${slug.value}`
+  const customLink = `${APP_BASE_URL}/${slug.value}`
   copyToClipboard(customLink)
   isSlugCopied.value = true
   setTimeout(() => (isSlugCopied.value = false), 2000)
 }
+
+const windowHost = globalThis.window === undefined ? '' : globalThis.location.host + '/'
 </script>
 
 <template>
   <form @submit.prevent="onSubmit">
     <div class="mt-8 flex flex-col gap-5">
       <!-- ═══ Card 1: Queue Name ═══ -->
-      <div class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none">
+      <div
+        class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
+      >
         <label for="queueName" class="mb-3 block font-body text-sm font-medium text-plum-muted">
           Queue Name
         </label>
         <input
           id="queueName"
+          ref="queueNameInput"
           v-model="queueName"
-          placeholder=" What are people queuing for?"
-          class="mb-2 w-full border-none bg-transparent font-display text-[22px] font-semibold text-plum placeholder:text-plum/20 outline-none"
+          placeholder="What are people queuing for?"
+          class="mb-2 w-full border-none bg-transparent font-display text-base sm:text-xl font-semibold text-plum placeholder:text-plum-muted/30 outline-none"
           :class="{
             'placeholder:text-red-500/50 text-red-500': errors.queueName,
             'text-plum': !errors.queueName,
@@ -216,10 +230,13 @@ function copyCustomLink() {
 
       <!-- ═══ Card 2: Service Time ═══ -->
       <div
-        class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none relative"
+        class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none relative"
       >
-        <label for="serviceTime" class="block font-body text-sm font-medium text-plum-muted">
-          How long does it typically take to serve one guest?
+        <label
+          for="serviceTime"
+          class="block font-body text-xs sm:text-sm font-medium text-plum-muted leading-relaxed"
+        >
+          How many minutes on average does it take to serve one guest?
         </label>
 
         <div class="mt-8 flex flex-col gap-4 relative">
@@ -253,18 +270,29 @@ function copyCustomLink() {
             </div>
           </div>
         </div>
+        <p class="mt-4 font-body text-xs text-plum-muted">
+          This will help us estimate the wait times more accurately.
+        </p>
       </div>
 
       <!-- ═══ Card 3: Party Settings ═══ -->
-      <div class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none">
-        <div class="flex items-center justify-between">
-          <div>
+      <div
+        class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
             <label
               for="allowPartyJoining"
-              class="block font-body text-sm font-medium text-plum-muted"
+              class="block font-body text-sm font-medium text-plum-muted leading-snug"
             >
-              Would you like guests to be able to bring others with them?
+              Would you like to allow guests to book together as a group?
             </label>
+            <p class="font-body text-xs text-plum-muted mt-1 leading-relaxed">
+              This would allow guests to reserve spots for themselves and their entire party.
+            </p>
+            <div v-if="errors.allowPartyJoining" class="mt-1 font-body text-sm text-red-500">
+              {{ errors.allowPartyJoining }}
+            </div>
           </div>
           <BaseToggle
             id="allowPartyJoining"
@@ -279,9 +307,9 @@ function copyCustomLink() {
         >
           <label
             for="maxPartySize"
-            class="block font-body text-sm font-medium text-plum-muted mb-6"
+            class="block font-body text-sm font-medium text-plum-muted leading-snug mb-4"
           >
-            How many people are allowed including guest?
+            What is the maximum number of guests allowed in each group?
           </label>
 
           <div class="flex flex-wrap gap-2">
@@ -307,7 +335,7 @@ function copyCustomLink() {
                 type="number"
                 min="1"
                 max="50"
-                class="w-16 h-9 rounded-xl border border-plum-faint bg-sand text-center font-body text-sm text-plum focus:border-plum outline-none"
+                class="w-16 h-9 rounded-xl border border-plum-faint bg-sand text-center font-body text-base text-plum focus:border-plum outline-none"
               />
             </div>
           </div>
@@ -317,52 +345,89 @@ function copyCustomLink() {
         </div>
       </div>
 
+      <div
+        class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <label
+              for="manualPositioning"
+              class="block font-body text-sm font-medium text-plum-muted leading-snug"
+            >
+              Would you like to control each guest’s position in the queue?
+            </label>
+            <p class="font-body text-xs text-plum-muted mt-1 leading-relaxed">
+              This will disable automatic position assignment for guests while ensuring they only
+              see “You’re on the list” instead of a position number.
+            </p>
+          </div>
+          <BaseToggle
+            id="manualPositioning"
+            v-model="manualPositioning"
+            aria-label="Toggle manual positioning"
+          />
+        </div>
+      </div>
+
       <!-- ═══ Card 3: Host vs Guest Version ═══ -->
       <template v-if="role === 'host'">
-        <div class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none">
+        <div
+          class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
+        >
           <label for="slug" class="mb-3 block font-body text-sm font-medium text-plum-muted">
-            Queue Link
+            Queue Link (Optional)
           </label>
           <div
-            class="inline-flex items-center bg-sand border border-sand-dark w-full p-3 rounded-xl transition-colors focus-within:border-plum/30"
+            class="flex items-center bg-sand border border-sand-light w-full p-1.5 sm:p-2 rounded-xl transition-colors focus-within:border-plum/30 gap-2"
           >
-            <span class="font-body text-[18px] text-plum hidden sm:inline">queuebuzz.com/</span>
-            <input
-              id="slug"
-              v-model="slug"
-              placeholder="eenie-meenie"
-              class="w-full border-none bg-transparent font-display text-[18px] text-plum placeholder:text-plum/30 font-body outline-none"
-            />
-            <div class="mx-2 flex h-5 w-5 shrink-0 items-center justify-center">
-              <SpinnerLoadingIcon v-if="isCheckingSlug" class="h-4 w-4 animate-spin text-plum/50" />
-              <VerifiedCheckIcon v-else-if="slug && !errors.slug" class="h-4 w-4 text-mint" />
+            <div class="flex items-center flex-1 px-2">
+              <span class="font-body text-sm sm:text-[18px] text-plum hidden sm:inline">{{
+                windowHost
+              }}</span>
+              <input
+                id="slug"
+                v-model="slug"
+                placeholder="your-queue-name"
+                class="w-full border-none bg-transparent font-display text-base sm:text-[18px] text-plum placeholder:text-plum/30 font-body outline-none"
+              />
+              <div class="mx-2 flex h-5 w-5 shrink-0 items-center justify-center">
+                <SpinnerLoadingIcon
+                  v-if="isCheckingSlug"
+                  class="h-4 w-4 animate-spin text-plum/50"
+                />
+                <VerifiedCheckIcon v-else-if="slug && !errors.slug" class="h-4 w-4 text-mint" />
+              </div>
             </div>
             <button
               type="button"
-              class="inline-flex items-center text-center gap-2 rounded-xl bg-mint px-4 py-2 font-body text-base font-medium text-on-mint cursor-pointer transition-colors hover:bg-mint-dark min-w-[100px] justify-center"
+              class="inline-flex items-center justify-center gap-2 rounded-xl bg-mint h-10 sm:h-auto px-3 sm:px-4 sm:py-2 font-body text-sm font-medium text-on-mint cursor-pointer transition-colors hover:bg-mint-dark sm:min-w-[80px]"
               @click="copyCustomLink"
             >
-              <CopyCodeIcon v-if="!isSlugCopied" class="h-[17px] w-[14px] text-on-mint" />
-              {{ isSlugCopied ? 'Copied!' : 'Copy' }}
+              <CopyCodeIcon v-if="!isSlugCopied" class="h-3.5 w-3.5 text-on-mint" />
+              <VerifiedCheckIcon v-else class="h-3.5 w-3.5 text-on-mint" />
+              <span class="hidden sm:inline">
+                {{ isSlugCopied ? 'Copied' : 'Copy' }}
+              </span>
             </button>
           </div>
           <div v-if="errors.slug" class="mt-2 font-body text-sm text-red-500">
             {{ errors.slug }}
           </div>
-          <p class="mt-4 font-body text-sm text-plum-muted">
-            This is the address people use to find your queue. If empty, we’ll use a random version.
-          </p>
         </div>
 
         <!-- ═══ Card 4: Guest Settings ═══ -->
-        <div class="rounded-card border border-plum-faint bg-white p-6 shadow-sm dark:shadow-none">
-          <div class="flex items-center justify-between">
-            <div>
-              <label for="collectEmails" class="font-body font-semibold text-plum"
-                >Collect guest emails</label
+        <div
+          class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <label
+                for="collectEmails"
+                class="font-body text-sm font-medium text-plum-muted leading-snug"
+                >Would you like to collect email addresses from guests?</label
               >
-              <p class="font-body text-sm text-plum-muted mt-0.5">
-                Require guests to provide an email address when they join.
+              <p class="font-body text-xs text-plum-muted mt-0.5 leading-relaxed">
+                If yes, guests will be required to provide an email address when joining the queue.
               </p>
             </div>
             <BaseToggle
@@ -378,10 +443,10 @@ function copyCustomLink() {
     </div>
 
     <!-- ═══ Action row ═══ -->
-    <div class="mt-8 flex items-center justify-between">
+    <div class="mt-8 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4">
       <button
         type="button"
-        class="font-body text-base font-semibold text-plum-muted transition-colors hover:text-plum cursor-pointer"
+        class="font-body text-sm font-semibold text-plum-muted transition-colors hover:text-plum cursor-pointer w-full sm:w-auto py-2"
         @click="handleCancel"
       >
         Cancel
@@ -389,10 +454,10 @@ function copyCustomLink() {
       <button
         type="submit"
         :disabled="isSubmitting || isCheckingSlug"
-        class="rounded-input bg-mint px-8 py-3 font-body text-lg font-medium text-on-mint shadow-[0_4px_14px_rgba(0,229,160,0.40)] transition-transform hover:bg-mint-dark active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[160px]"
+        class="rounded-input bg-mint px-6 py-2.5 font-body text-base font-semibold text-on-mint shadow-[0_4px_12px_rgba(0,229,160,0.30)] transition-all hover:bg-mint-dark active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center sm:min-w-[140px] w-full sm:w-auto"
       >
-        <SpinnerLoadingIcon v-if="isSubmitting" class="mr-2 h-5 w-5 animate-spin text-on-mint" />
-        {{ isSubmitting ? 'Opening...' : 'Open Queue →' }}
+        <SpinnerLoadingIcon v-if="isSubmitting" class="mr-2 h-4 w-4 animate-spin text-on-mint" />
+        {{ isSubmitting ? 'Opening' : 'Open Queue' }}
       </button>
     </div>
 

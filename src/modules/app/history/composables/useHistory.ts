@@ -1,6 +1,11 @@
 import { ref } from 'vue'
 import type { QueueHistoryItem } from '@/modules/app/history/types'
-import { fetchHistory, fetchHistoryDetail } from '../actions/history.action'
+import {
+  fetchHistory,
+  fetchHistoryDetail,
+  deleteHistory,
+  deleteHistoryBulk,
+} from '../actions/history.action'
 
 export function useHistory() {
   const isLoading = ref(false)
@@ -75,6 +80,36 @@ export function useHistory() {
     }
   }
 
+  async function deleteHistoryItem(id: string) {
+    isLoading.value = true
+    error.value = null
+    try {
+      await deleteHistory(id)
+      await fetchHistoryData()
+      return true
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to delete history item'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function deleteHistoryItems(ids: string[]) {
+    isLoading.value = true
+    error.value = null
+    try {
+      await deleteHistoryBulk(ids)
+      await fetchHistoryData()
+      return true
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to delete selected items'
+      return false
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     isLoading,
     error,
@@ -89,5 +124,7 @@ export function useHistory() {
     fetchHistoryDetail: fetchHistoryDetailData,
     handleFilterChange,
     goToPage,
+    deleteHistoryItem,
+    deleteHistoryItems,
   }
 }

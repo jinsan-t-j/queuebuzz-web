@@ -86,6 +86,7 @@ defineProps<{
 
           <!-- High-Fidelity Dashboard Mockup -->
           <div
+            aria-hidden="true"
             class="relative mt-12 lg:mt-0 lg:absolute lg:top-[10%] lg:right-[-15%] w-full lg:w-[85%] h-[500px] lg:h-[95%] bg-white/40 backdrop-blur-3xl rounded-[32px] lg:rounded-[48px] border border-white/60 shadow-[0_40px_80px_rgba(26,10,46,0.15)] transition-all duration-700 group-hover:rotate-0 rotate-0 lg:rotate-[-4deg] group-hover:scale-105 overflow-hidden flex scale-90 lg:scale-100 origin-top lg:origin-center"
           >
             <!-- Mini Sidebar -->

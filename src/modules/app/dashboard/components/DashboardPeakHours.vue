@@ -57,8 +57,8 @@ const processedData = computed(() => {
   <div
     class="rounded-xl border border-plum-faint bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
   >
-    <div class="flex items-center justify-between">
-      <h4 class="font-body text-sm font-bold uppercase tracking-[0.7px] text-plum-muted">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <h4 class="font-body text-xs font-bold uppercase tracking-[0.7px] text-plum-muted sm:text-sm">
         Peak Hours
       </h4>
 
@@ -67,12 +67,13 @@ const processedData = computed(() => {
         :options="timeframes"
         :is-loading="isLoading"
         :skeleton-count="3"
+        class="w-full sm:w-auto"
         @update:model-value="setTimeframe"
       />
     </div>
 
     <!-- Loading skeleton -->
-    <div v-if="isLoading" class="mt-4 flex items-end gap-1 px-1 h-[84px]">
+    <div v-if="isLoading" class="mt-4 flex items-end gap-[1px] h-[84px] sm:gap-1">
       <div
         v-for="i in 24"
         :key="i"
@@ -96,7 +97,7 @@ const processedData = computed(() => {
 
     <!-- Chart -->
     <div v-else class="mt-4">
-      <div class="flex items-end gap-px h-20">
+      <div class="flex items-end gap-[1px] h-20 sm:gap-px">
         <div
           v-for="item in processedData"
           :key="item.hour"
@@ -111,9 +112,9 @@ const processedData = computed(() => {
 
       <!-- Hour labels -->
       <div class="mt-2 flex justify-between">
-        <span class="font-mono text-sm text-plum-muted">12 AM</span>
-        <span class="font-mono text-sm text-plum-muted">12 PM</span>
-        <span class="font-mono text-sm text-plum-muted">11 PM</span>
+        <span class="font-mono text-[10px] text-plum-muted sm:text-sm">12 AM</span>
+        <span class="font-mono text-[10px] text-plum-muted sm:text-sm">12 PM</span>
+        <span class="font-mono text-[10px] text-plum-muted sm:text-sm">11 PM</span>
       </div>
     </div>
   </div>

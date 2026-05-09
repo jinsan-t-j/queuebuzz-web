@@ -42,22 +42,22 @@ function getNotificationDetails(payload) {
 }
 
 // Activate immediately without waiting for open tabs to close
-self.addEventListener('install', () => {
-  self.skipWaiting()
+globalThis.addEventListener('install', () => {
+  globalThis.skipWaiting()
 })
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim())
+globalThis.addEventListener('activate', (event) => {
+  event.waitUntil(globalThis.clients.claim())
 })
 
-self.addEventListener('notificationclick', (event) => {
+globalThis.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
   const link = event.notification.data?.link || '/'
 
   event.waitUntil(
     globalThis.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      const targetUrl = new URL(link, self.location.origin)
+      const targetUrl = new URL(link, globalThis.location.origin)
 
       for (const client of clients) {
         if (!('focus' in client)) continue

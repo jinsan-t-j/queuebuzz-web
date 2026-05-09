@@ -5,7 +5,9 @@
  * Follows a premium digital pass aesthetic (Apple Wallet style).
  */
 import QRCode from 'qrcode'
-import { ref, onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
+
+import { APP_BASE_URL } from '@/config/api.constants'
 
 defineProps<{
   ticketNumber: string
@@ -108,7 +110,7 @@ onMounted(async () => {
       <!-- Platform Footer -->
       <div class="bg-plum/5 px-10 py-8 flex items-center justify-between">
         <span class="font-display text-base font-bold text-plum/50">QueueBuzz</span>
-        <span class="font-body text-sm font-bold text-plum/30">queuebuzz.app</span>
+        <span class="font-body text-sm font-bold text-plum/30">{{ APP_BASE_URL }}</span>
       </div>
     </div>
   </div>

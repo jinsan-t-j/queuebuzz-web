@@ -27,12 +27,12 @@ const emit = defineEmits(['step-click'])
   <div class="rounded-xl border border-plum-faint bg-white p-6 shadow-none">
     <h3 class="font-body text-lg font-black text-plum">Quick Setup</h3>
 
-    <div class="mt-6 flex flex-col gap-4">
+    <div class="mt-6 flex flex-col gap-3">
       <button
         v-for="(step, idx) in steps"
         :key="idx"
         :class="[
-          'flex items-center gap-4 rounded-lg px-4 py-3.5 text-left transition-all',
+          'flex items-center gap-3 rounded-xl px-3.5 py-3 text-left transition-all sm:gap-4 sm:px-4 sm:py-3.5',
           step.isDone
             ? 'bg-mint/5 opacity-80'
             : idx === 0 || steps[idx - 1]?.isDone

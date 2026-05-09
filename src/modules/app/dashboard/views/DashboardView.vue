@@ -6,16 +6,17 @@
  * Handles both active (populated) and empty (new account) states.
  */
 
-import { ref, computed, onMounted, onBeforeUnmount, defineAsyncComponent, watch } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRouter, useRoute } from 'vue-router'
 import { RefreshCw } from 'lucide-vue-next'
+import { storeToRefs } from 'pinia'
+import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-import { useDashboardStore } from '@/stores/dashboard.store'
+import { useRefresh } from '@/composables/useRefresh'
 import { useToast } from '@/composables/useToast'
+import { useDashboardStore } from '@/stores/dashboard.store'
 
-import QueueStatusBar from '../components/QueueStatusBar.vue'
 import DashboardStatCard from '../components/DashboardStatCard.vue'
+import QueueStatusBar from '../components/QueueStatusBar.vue'
 
 const emit = defineEmits([
   'go-to-queue',
@@ -191,6 +192,11 @@ async function loadDashboard() {
   await dashboardStore.fetchDashboard({ force: true })
 }
 
+const { onRefresh } = useRefresh()
+onRefresh(async () => {
+  await dashboardStore.fetchDashboard({ force: true, silent: true })
+})
+
 function retry() {
   if (isLoading.value || isRefreshing.value) return
   dashboardStore.fetchDashboard({ force: true, silent: true })
@@ -257,6 +263,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  onRefresh(null)
   clearGreetingTimer()
   document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
@@ -282,12 +289,12 @@ onBeforeUnmount(() => {
       <!-- Greeting + Active State Content -->
       <template v-if="!isNewAccount || isLoading">
         <!-- Header Section -->
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div v-if="!isNewAccount">
-            <h2 class="font-display text-2xl font-bold text-plum">
+            <h2 class="font-display text-xl font-bold text-plum sm:text-2xl">
               {{ isLoading ? 'Loading...' : greeting }}
             </h2>
-            <p v-if="!isLoading" class="font-body text-xs text-plum-muted">
+            <p v-if="!isLoading" class="font-body text-[10px] text-plum-muted sm:text-xs">
               {{ dateString }}
             </p>
           </div>
@@ -295,7 +302,7 @@ onBeforeUnmount(() => {
           <button
             v-if="!isLoading"
             :disabled="isRefreshing"
-            class="flex items-center gap-2 rounded-lg border border-plum-faint bg-white px-3 py-1.5 font-body text-[11px] font-bold uppercase tracking-widest text-plum-muted transition-all hover:border-plum hover:text-plum shadow-sm dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
+            class="hidden sm:flex items-center justify-center gap-2 rounded-xl border border-plum-faint bg-white px-3 py-1.5 font-body text-sm font-bold uppercase tracking-widest text-plum-muted transition-all hover:border-plum hover:text-plum shadow-sm dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
             @click="retry"
           >
             <RefreshCw class="h-3 w-3 opacity-60" :class="{ 'animate-spin': isRefreshing }" />
@@ -304,7 +311,7 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- Stats Row -->
-        <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           <DashboardStatCard
             :value="isNewAccount ? '—' : String(stats.servedToday ?? '—')"
             label="Served Today"

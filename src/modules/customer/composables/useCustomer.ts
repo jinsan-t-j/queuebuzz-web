@@ -106,7 +106,11 @@ export function useCustomer() {
     error,
     getDisplayTicketNumber: (value = entry.value) => store.getDisplayTicketNumber(value),
     isJoined: computed(() => !!entry.value),
-    ahead: computed(() => (position.value != null ? Math.max(0, position.value - 1) : null)),
+    ahead: computed(() =>
+      position.value !== null && position.value !== undefined
+        ? Math.max(0, position.value - 1)
+        : null,
+    ),
     estWaitMin: computed(() => {
       const pos = position.value
       if (pos == null) return null

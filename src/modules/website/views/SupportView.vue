@@ -1,9 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useSeoMeta } from '@unhead/vue'
 import { Mail, MessageSquare, ShieldCheck, Sparkles, Send } from 'lucide-vue-next'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
+
+import seoConfig from '@/config/seo.constants.json'
+
+useSeoMeta(seoConfig['/support'])
 
 const formData = ref({
   name: '',

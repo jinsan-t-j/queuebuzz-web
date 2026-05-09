@@ -39,7 +39,7 @@ export async function logoutHost(): Promise<{ message: string }> {
   return await apiClient.post(
     API_ROUTES.HOST.LOGOUT,
     undefined,
-    createApiRequestConfig({}, { withCredentials: true }),
+    createApiRequestConfig({}, { withCredentials: true, skipLogout: true }),
   )
 }
 

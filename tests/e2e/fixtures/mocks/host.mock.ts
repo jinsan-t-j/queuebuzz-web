@@ -4,10 +4,10 @@
  * Single source of truth — change shape once, all tests update.
  */
 
-export function makeDashboardResponse(overrides: Record<string, unknown> = {}) {
+export function makeDashboardResponse<T extends Record<string, unknown>>(overrides: T = {} as T) {
   return {
     data: {
-      active_queue: null,
+      active_queue: null as unknown,
       stats: { servedToday: 0, avgWait: '0m', peakWait: 0, skipped: 0 },
       hasHistory: false,
       greeting: { name: 'Dr. Rajan' },
@@ -127,4 +127,74 @@ export function makeLiveQueueEntries() {
       { id: 'e-3', ticket_no: 103, name: 'Chetan S.', status: 'waiting', position: 3 },
     ],
   }
+}
+
+export function makeBillingPlans() {
+  return [
+    {
+      id: 'plan-free',
+      slug: 'free',
+      tier: 'free',
+      name: 'Free',
+      description: 'Perfect for solo operators and small experiments.',
+      price: 0,
+      currency: 'INR',
+      currencySymbol: '₹',
+      billingCycle: 'monthly',
+      isFree: true,
+      limits: {
+        maxQueuesPerMonth: 1,
+        maxGuestsPerQueue: 10,
+        queueExpiryHours: 24,
+        historyAccess: false,
+        historyRetentionDays: 0,
+        canExport: false,
+        customBranding: false,
+      },
+    },
+    {
+      id: 'plan-starter',
+      slug: 'starter',
+      tier: 'starter',
+      name: 'Starter',
+      description: 'Everything you need to run a professional queue.',
+      price: 49900,
+      currency: 'INR',
+      currencySymbol: '₹',
+      billingCycle: 'monthly',
+      isFree: false,
+      discountPercent: 0,
+      limits: {
+        maxQueuesPerMonth: 5,
+        maxGuestsPerQueue: 50,
+        queueExpiryHours: 48,
+        historyAccess: true,
+        historyRetentionDays: 7,
+        canExport: false,
+        customBranding: false,
+      },
+    },
+    {
+      id: 'plan-premium',
+      slug: 'premium',
+      tier: 'premium',
+      name: 'Premium',
+      description: 'The ultimate tool for busy businesses and clinics.',
+      price: 99900,
+      currency: 'INR',
+      currencySymbol: '₹',
+      billingCycle: 'monthly',
+      isFree: false,
+      discountPercent: 0,
+      limits: {
+        maxQueuesPerMonth: -1,
+        maxGuestsPerQueue: -1,
+        queueExpiryHours: -1,
+        historyAccess: true,
+        historyRetentionDays: -1,
+        canExport: true,
+        customBranding: true,
+      },
+    },
+  ]
 }

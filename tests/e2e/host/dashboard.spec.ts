@@ -59,7 +59,8 @@ test.describe('Dashboard', () => {
         return route.fulfill({
           status: 204,
           headers: {
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin':
+              route.request().headers().origin || 'http://localhost:4002',
             'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             'Access-Control-Allow-Credentials': 'true',
@@ -69,7 +70,11 @@ test.describe('Dashboard', () => {
       await route.fulfill({
         status: 500,
         contentType: 'application/json',
-        headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Credentials': 'true' },
+        headers: {
+          'Access-Control-Allow-Origin':
+            route.request().headers().origin || 'http://localhost:4002',
+          'Access-Control-Allow-Credentials': 'true',
+        },
         body: JSON.stringify({ error: 'Server error', success: false }),
       })
     })

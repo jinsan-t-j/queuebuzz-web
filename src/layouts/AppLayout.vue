@@ -5,11 +5,13 @@
  * Only rendered after the auth guard confirms a valid session.
  */
 
-import { defineAsyncComponent, watchEffect, onUnmounted } from 'vue'
+import { defineAsyncComponent, watchEffect, onUnmounted, ref } from 'vue'
 import { useTheme } from '@/composables/useTheme'
 
 import DashboardSidebar from '@/components/layout/app/DashboardSidebar.vue'
 import DashboardTopbar from '@/components/layout/app/DashboardTopbar.vue'
+import BasePullToRefresh from '@/components/base/BasePullToRefresh.vue'
+import { useRefresh } from '@/composables/useRefresh'
 
 const { theme } = useTheme()
 
@@ -35,18 +37,32 @@ const HostNotifications = defineAsyncComponent(
 )
 
 const showMaintenanceBanner = import.meta.env.VITE_SHOW_MAINTENANCE_BANNER === 'true'
+
+const isMobileMenuOpen = ref(false)
+
+function toggleMobileMenu() {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+const { isRefreshing, triggerRefresh, hasRefreshHandler } = useRefresh()
 </script>
 
 <template>
   <div class="flex flex-col h-screen overflow-hidden bg-sand">
     <SystemAlertBanner v-if="showMaintenanceBanner" />
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-1 overflow-hidden relative">
       <HostNotifications />
-      <DashboardSidebar />
+      <DashboardSidebar :is-mobile-open="isMobileMenuOpen" @close="isMobileMenuOpen = false" />
       <div class="flex flex-1 flex-col overflow-hidden">
-        <DashboardTopbar />
-        <main class="flex-1 overflow-y-auto p-8 bg-sand">
-          <router-view />
+        <DashboardTopbar @toggle-menu="toggleMobileMenu" />
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-sand">
+          <BasePullToRefresh
+            :is-refreshing="isRefreshing"
+            :disabled="!hasRefreshHandler"
+            @refresh="triggerRefresh"
+          >
+            <router-view />
+          </BasePullToRefresh>
         </main>
       </div>
     </div>

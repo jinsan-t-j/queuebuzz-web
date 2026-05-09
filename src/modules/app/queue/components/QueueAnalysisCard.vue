@@ -34,21 +34,23 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
     class="flex flex-1 flex-col rounded-card border border-plum/5 dark:border-plum-faint bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:shadow-none"
   >
     <!-- Header -->
-    <div class="px-8 py-6">
-      <h3 class="font-display text-xl font-bold text-plum">Queue Analysis</h3>
+    <div class="px-6 py-4 sm:px-8 sm:py-6 border-b border-plum/5 sm:border-none">
+      <h3 class="font-display text-lg sm:text-xl font-bold text-plum">Queue Analysis</h3>
     </div>
 
     <!-- Stats row -->
     <div
-      class="mx-8 rounded-card border border-plum/5 dark:border-plum-faint bg-plum/[0.02] dark:bg-plum-faint/10 p-8"
+      class="mx-4 sm:mx-8 mt-6 sm:mt-0 rounded-card border border-plum/5 dark:border-plum-faint bg-plum/[0.02] dark:bg-plum-faint/10 p-6 sm:p-8"
     >
-      <div class="flex">
+      <div class="flex flex-col gap-6 sm:flex-row sm:gap-0">
         <!-- Served Today -->
         <div class="flex-1">
-          <p class="font-body text-sm font-bold uppercase tracking-[1.1px] text-plum/40">
+          <p class="font-body text-xs sm:text-sm font-bold uppercase tracking-[1.1px] text-plum/40">
             Served Today
           </p>
-          <p class="mt-2 font-mono text-[60px] font-bold leading-none tracking-tight text-plum">
+          <p
+            class="mt-1 sm:mt-2 font-mono text-[48px] sm:text-[60px] font-bold leading-none tracking-tight text-plum"
+          >
             {{ servedToday }}
           </p>
           <span
@@ -77,15 +79,17 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
           </span>
         </div>
         <!-- Completion Rate -->
-        <div class="flex flex-col border-l border-plum/10 pl-8">
-          <p class="font-body text-sm font-bold uppercase tracking-[1.1px] text-plum/40">
+        <div
+          class="flex flex-col border-t sm:border-t-0 sm:border-l border-plum/10 pt-6 sm:pt-0 sm:pl-8"
+        >
+          <p class="font-body text-xs sm:text-sm font-bold uppercase tracking-[1.1px] text-plum/40">
             Completion Rate
           </p>
-          <div class="mt-2 flex items-baseline">
-            <span class="font-mono text-4xl font-bold leading-10 text-plum">{{
+          <div class="mt-1 sm:mt-2 flex items-baseline">
+            <span class="font-mono text-3xl sm:text-4xl font-bold leading-10 text-plum">{{
               completionRate
             }}</span>
-            <span class="font-mono text-xl font-bold text-plum/40">%</span>
+            <span class="font-mono text-lg sm:text-xl font-bold text-plum/40">%</span>
           </div>
         </div>
       </div>
@@ -119,11 +123,11 @@ const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
     </div>
 
     <!-- Labels -->
-    <div class="flex gap-3 px-8 pb-8">
+    <div class="flex gap-2 sm:gap-3 px-6 sm:px-8 pb-6 sm:pb-8">
       <span
         v-for="label in chartLabels"
         :key="label"
-        class="flex-1 text-center font-mono text-sm font-bold uppercase tracking-[1px] text-plum/30"
+        class="flex-1 text-center font-mono text-[10px] sm:text-sm font-bold uppercase tracking-[1px] text-plum/30"
       >
         {{ label }}
       </span>

@@ -26,7 +26,11 @@ test.describe('Settings', () => {
     await page.waitForLoadState('networkidle')
 
     // Danger zone section
-    const dangerText = page.getByText(/Danger Zone|Clear Queue History|Delete Account/i).first()
+    const dangerText = page
+      .getByText(/Danger Zone|Clear Queue History|Delete Account/i)
+      .filter({ visible: true })
+      .first()
+    await dangerText.scrollIntoViewIfNeeded()
     await expect(dangerText).toBeVisible({ timeout: 5000 })
   })
 

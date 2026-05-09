@@ -13,7 +13,7 @@ export const websiteRoutes: RouteRecordRaw[] = [
         path: '',
         name: 'home',
         component: () => import('@/modules/website/views/HomeView.vue'),
-        meta: { title: 'QueueBuzz — feels like a breeze' },
+        meta: { title: 'QueueBuzz — Zero Lines. Better Business.' },
       },
       {
         path: 'pricing',
@@ -43,7 +43,7 @@ export const websiteRoutes: RouteRecordRaw[] = [
         path: 'support',
         name: 'support',
         component: () => import('@/modules/website/views/SupportView.vue'),
-        meta: { title: 'Support — QueueBuzz' },
+        meta: { title: 'Support | QueueBuzz — Zero Lines, Better Business' },
       },
     ],
   },

@@ -15,7 +15,7 @@ export const appRoutes: RouteRecordRaw[] = [
         path: '',
         name: 'login',
         component: () => import('@/modules/app/auth/views/LoginView.vue'),
-        meta: { title: 'Sign In — QueueBuzz' },
+        meta: { title: 'Log in or sign up | QueueBuzz' },
       },
     ],
   },

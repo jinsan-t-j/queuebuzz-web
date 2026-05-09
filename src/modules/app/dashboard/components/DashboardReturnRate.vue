@@ -147,8 +147,10 @@ const dayLabels = computed(() => {
         ]"
       >
         <!-- Day vs Return Rate -->
-        <div class="flex items-center justify-between pb-2 mb-2">
-          <h4 class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted">
+        <div class="flex flex-col gap-4 pb-2 mb-2 sm:flex-row sm:items-center sm:justify-between">
+          <h4
+            class="font-body text-xs font-semibold uppercase tracking-[0.7px] text-plum-muted sm:text-sm"
+          >
             Day vs. Return Rate
           </h4>
 
@@ -157,6 +159,7 @@ const dayLabels = computed(() => {
             :options="timeframes"
             :is-loading="isLoading"
             :skeleton-count="3"
+            class="w-full sm:w-auto"
             @update:model-value="setTimeframe"
           />
         </div>
@@ -218,7 +221,7 @@ const dayLabels = computed(() => {
             <span
               v-for="label in dayLabels"
               :key="label"
-              class="font-mono text-sm uppercase text-plum-muted"
+              class="font-mono text-[10px] uppercase text-plum-muted sm:text-sm"
             >
               {{ label }}
             </span>
@@ -229,7 +232,9 @@ const dayLabels = computed(() => {
         <div class="my-6 border-t border-plum-faint" />
 
         <!-- Queues vs Return Rate -->
-        <h4 class="font-body text-sm font-semibold uppercase tracking-[0.7px] text-plum-muted">
+        <h4
+          class="font-body text-xs font-semibold uppercase tracking-[0.7px] text-plum-muted sm:text-sm"
+        >
           Queues vs. Return Rate
         </h4>
 
@@ -238,23 +243,25 @@ const dayLabels = computed(() => {
             <div
               v-for="(item, idx) in displayedQueues"
               :key="item.label + idx"
-              class="flex items-center gap-3"
+              class="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3"
             >
               <span
-                class="w-24 shrink-0 font-body text-xs font-semibold text-plum-muted truncate"
+                class="font-body text-[11px] font-semibold text-plum-muted truncate sm:w-24 sm:shrink-0 sm:text-xs"
                 :title="item.label"
               >
                 {{ item.label || 'Unnamed Queue' }}
               </span>
-              <div class="flex-1 h-4 rounded-full bg-plum-faint/50 overflow-hidden">
-                <div
-                  class="h-full rounded-full bg-mint transition-all duration-700"
-                  :style="{ width: `${item.rate}%` }"
-                />
+              <div class="flex flex-1 items-center gap-3">
+                <div class="flex-1 h-3 rounded-full bg-plum-faint/50 overflow-hidden sm:h-4">
+                  <div
+                    class="h-full rounded-full bg-mint transition-all duration-700"
+                    :style="{ width: `${item.rate}%` }"
+                  />
+                </div>
+                <span class="w-8 text-right font-mono text-xs font-bold text-plum sm:text-sm">
+                  {{ Math.round(item.rate || 0) }}%
+                </span>
               </div>
-              <span class="w-8 text-right font-mono text-sm font-bold text-plum">
-                {{ Math.round(item.rate || 0) }}%
-              </span>
             </div>
 
             <!-- Show more / less button -->

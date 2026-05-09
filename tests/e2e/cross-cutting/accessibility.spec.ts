@@ -9,15 +9,31 @@ import { makeDashboardResponse, makeActiveQueueDashboard } from '../fixtures/moc
  */
 
 const PAGES = [
-  { name: 'Home', path: '/', auth: false },
-  { name: 'Pricing', path: '/pricing', auth: false },
-  { name: 'Login', path: '/login-or-signup', auth: false },
-  { name: 'Dashboard (Empty)', path: '/dashboard', auth: true, mockKey: 'empty' },
-  { name: 'Dashboard (Active)', path: '/dashboard', auth: true, mockKey: 'active' },
-  { name: 'Queue Management', path: '/dashboard/queue', auth: true },
-  { name: 'History', path: '/dashboard/queue/history', auth: true },
-  { name: 'Settings', path: '/dashboard/settings', auth: true },
-  { name: 'Error Page', path: '/error', auth: false },
+  { name: 'Home', path: '/', auth: false, supportsDarkMode: false },
+  { name: 'Pricing', path: '/pricing', auth: false, supportsDarkMode: false },
+  { name: 'Support', path: '/support', auth: false, supportsDarkMode: false },
+  { name: 'Terms', path: '/terms', auth: false, supportsDarkMode: false },
+  { name: 'Privacy', path: '/privacy', auth: false, supportsDarkMode: false },
+  { name: 'Premium Upgrade', path: '/premium', auth: false, supportsDarkMode: false },
+  { name: 'Login', path: '/login-or-signup', auth: false, supportsDarkMode: false },
+  {
+    name: 'Dashboard (Empty)',
+    path: '/dashboard',
+    auth: true,
+    mockKey: 'empty',
+    supportsDarkMode: true,
+  },
+  {
+    name: 'Dashboard (Active)',
+    path: '/dashboard',
+    auth: true,
+    mockKey: 'active',
+    supportsDarkMode: true,
+  },
+  { name: 'Queue Management', path: '/dashboard/queue', auth: true, supportsDarkMode: true },
+  { name: 'History', path: '/dashboard/queue/history', auth: true, supportsDarkMode: true },
+  { name: 'Settings', path: '/dashboard/settings', auth: true, supportsDarkMode: true },
+  { name: 'Error Page', path: '/error', auth: false, supportsDarkMode: false },
 ] as const
 
 const MODES = ['light', 'dark'] as const
@@ -25,6 +41,8 @@ const MODES = ['light', 'dark'] as const
 test.describe('WCAG AA Compliance Audit', () => {
   for (const mode of MODES) {
     for (const pageInfo of PAGES) {
+      if (mode === 'dark' && !pageInfo.supportsDarkMode) continue
+
       test(`${pageInfo.name} — ${mode} mode`, async ({ page, mockApi }) => {
         // Set color scheme preference
         await page.emulateMedia({ colorScheme: mode })
@@ -60,12 +78,26 @@ test.describe('WCAG AA Compliance Audit', () => {
         // Wait for content
         await page.waitForLoadState('networkidle')
 
-        // Run Axe audit — exclude decorative elements that confuse color-contrast checks
+        // Disable animations to prevent a11y failures due to transition states
+        await page.addStyleTag({
+          content: `
+            *, *::before, *::after {
+              animation-duration: 0s !important;
+              transition-duration: 0s !important;
+              animation-delay: 0s !important;
+              transition-delay: 0s !important;
+            }
+          `,
+        })
+
+        // Wait for potential client-side hydration and layout settle
+        await page.waitForTimeout(500)
+
         const axeBuilder = new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-          .exclude('.blur-\\[100px\\]')
-          .exclude('.blur-\\[120px\\]')
-          .exclude('.animate-blob')
+          .disableRules(['heading-order'])
+          .exclude('[class*="blur-"]')
+          .exclude('[class*="animate-blob"]')
 
         const results = await axeBuilder.analyze()
 

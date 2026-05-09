@@ -128,6 +128,8 @@ async function confirmDisableStrictMode() {
 }
 
 function handleToggleStrictMode() {
+  if (activeQueue.value?.manualPositioning) return
+
   if (activeQueue.value?.strictQueueMode) {
     showDisableStrictModal.value = true
   } else {
@@ -170,6 +172,7 @@ function handleToggleStrictMode() {
             :is-loading="isLoading"
             :is-refreshing="isRefreshing"
             :strict-queue-mode="activeQueue?.strictQueueMode"
+            :manual-positioning="activeQueue?.manualPositioning"
             :avg-service-mins="activeQueue?.avgServiceMins || 2"
             :show-party-size="activeQueue?.allowPartyJoining"
             @call-next="handleCallNext"
@@ -193,6 +196,7 @@ function handleToggleStrictMode() {
               <QueueActionCard
                 :is-paused="isPaused"
                 :strict-mode="activeQueue?.strictQueueMode"
+                :manual-positioning="activeQueue?.manualPositioning"
                 @add-guest="showAddGuestModal = true"
                 @update-status="openStatusModal"
                 @open-settings="showSettingsModal = true"
@@ -222,11 +226,9 @@ function handleToggleStrictMode() {
         </div>
       </div>
 
-      <!-- Optional Footer Slot (e.g. for Guest Login nudge) -->
       <slot name="footer" />
     </div>
 
-    <!-- Modals (Centrally managed by the layout) -->
     <QueueStatusUpdateModal
       :is-open="showStatusUpdateModal"
       :mode="statusUpdateMode"
@@ -255,14 +257,15 @@ function handleToggleStrictMode() {
       v-if="activeQueue"
       :is-open="showSettingsModal"
       :queue="activeQueue"
+      :manual-positioning="activeQueue?.manualPositioning"
       @close="showSettingsModal = false"
       @submit="handleUpdateSettings"
     />
 
     <LiveQueueQuickSetup />
 
-    <!-- Disable Strict Mode Confirmation Modal -->
     <DisableStrictModeModal
+      v-if="!activeQueue?.manualPositioning"
       :is-open="showDisableStrictModal"
       @close="showDisableStrictModal = false"
       @confirm="confirmDisableStrictMode"

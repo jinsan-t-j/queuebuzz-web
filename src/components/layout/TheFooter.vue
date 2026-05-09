@@ -59,9 +59,9 @@ onUnmounted(() => {
         >
           <!-- Product -->
           <div>
-            <h3 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+            <h2 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Product
-            </h3>
+            </h2>
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
               <li>
                 <router-link
@@ -89,9 +89,9 @@ onUnmounted(() => {
 
           <!-- Support -->
           <div>
-            <h3 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+            <h2 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Support
-            </h3>
+            </h2>
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
               <li>
                 <router-link
@@ -112,9 +112,9 @@ onUnmounted(() => {
 
           <!-- Legal -->
           <div class="col-span-2 sm:col-span-1">
-            <h3 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+            <h2 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Legal
-            </h3>
+            </h2>
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
               <li>
                 <router-link

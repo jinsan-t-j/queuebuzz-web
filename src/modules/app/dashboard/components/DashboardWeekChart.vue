@@ -159,10 +159,10 @@ function getBarClass(item: WeekData): string {
     </div>
 
     <!-- Chart -->
-    <div v-else class="mt-8 flex gap-4">
+    <div class="mt-8 flex gap-2 sm:gap-4">
       <!-- Y Axis -->
       <div
-        class="flex flex-col justify-between h-44 text-[10px] font-mono text-plum-muted/50 text-right w-6 pb-2 select-none"
+        class="flex flex-col justify-between h-44 text-[9px] font-mono text-plum-muted/50 text-right w-4 pb-2 select-none sm:w-6 sm:text-[10px]"
       >
         <span v-for="tick in yAxisTicks" :key="tick">{{ tick }}</span>
       </div>
@@ -178,7 +178,7 @@ function getBarClass(item: WeekData): string {
         </div>
 
         <!-- Bars -->
-        <div class="relative flex items-end justify-between gap-3 h-44 z-10">
+        <div class="relative flex items-end justify-between gap-1.5 h-44 z-10 sm:gap-3">
           <div
             v-for="(item, index) in processedData"
             :key="`${item.day}-${index}`"
@@ -203,7 +203,7 @@ function getBarClass(item: WeekData): string {
         </div>
 
         <!-- Day labels -->
-        <div class="mt-3 flex justify-between gap-3">
+        <div class="mt-3 flex justify-between gap-1.5 sm:gap-3">
           <span
             v-for="(item, index) in processedData"
             :key="`${item.day}-${index}`"

@@ -16,7 +16,7 @@ onMounted(() => {
   <section id="final-cta" ref="sectionRef" class="py-24 lg:py-40 relative overflow-hidden">
     <div class="container mx-auto px-6 relative z-10">
       <div
-        class="relative bg-plum rounded-[32px] md:rounded-[48px] lg:rounded-[64px] p-8 md:p-16 lg:p-24 text-center overflow-hidden shadow-[0_60px_100px_-20px_rgba(26,10,46,0.4)]"
+        class="relative bg-plum-deep rounded-[32px] md:rounded-[48px] lg:rounded-[64px] p-8 md:p-16 lg:p-24 text-center overflow-hidden shadow-[0_60px_100px_-20px_rgba(26,10,46,0.4)]"
       >
         <!-- Inner Atmosphere: Golden/Orange Glow -->
         <div
@@ -37,7 +37,7 @@ onMounted(() => {
           </div>
 
           <h2
-            class="font-display text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[0.95] md:leading-[0.9] tracking-tighter mb-8"
+            class="font-display text-4xl md:text-6xl lg:text-7xl font-black text-pure-white leading-[0.95] md:leading-[0.9] tracking-tighter mb-8"
           >
             Ditch the line. <br />
             <span class="text-mint">Claim your calm.</span>
@@ -68,7 +68,7 @@ onMounted(() => {
               <BaseButton
                 variant="ghost"
                 size="lg"
-                class="h-16 md:h-20 px-8 md:px-12 text-base md:text-xl text-white border-2 border-white/10 hover:bg-white/5 w-full"
+                class="h-16 md:h-20 px-8 md:px-12 text-base md:text-xl text-pure-white border-2 border-white/10 hover:bg-white/5 w-full"
               >
                 See Pricing
               </BaseButton>

@@ -31,7 +31,7 @@
 </script>
 
 <template>
-  <div class="min-h-screen">
+  <main class="min-h-screen">
     <router-view />
-  </div>
+  </main>
 </template>

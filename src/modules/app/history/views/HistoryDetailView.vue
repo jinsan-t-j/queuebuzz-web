@@ -123,7 +123,7 @@ function formatStatus(status: string) {
     <div v-if="queueDetail" class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="space-y-2">
         <div class="flex items-center gap-3">
-          <h1 class="font-display font-black text-3xl text-plum tracking-tight">
+          <h1 class="font-display font-black text-2xl sm:text-3xl text-plum tracking-tight">
             {{ queueDetail.queueName }}
           </h1>
           <BaseBadge :variant="getQueueStatusVariant(queueDetail.status)" class="font-black">{{

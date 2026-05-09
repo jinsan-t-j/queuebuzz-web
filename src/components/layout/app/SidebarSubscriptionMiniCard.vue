@@ -2,10 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Sparkles, ArrowRight, CreditCard } from 'lucide-vue-next'
-import {
-  fetchSubscription,
-  type Subscription,
-} from '@/modules/app/settings/actions/billing.actions'
+import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
 
 const router = useRouter()
 const subscription = ref<Subscription | null>(null)
@@ -34,7 +31,7 @@ const statusLabel = computed(() => {
 const statusClass = computed(() => {
   const sub = subscription.value
   if (sub?.cancelAtPeriodEnd) return 'text-warning'
-  return 'text-mint'
+  return 'text-mint-dark'
 })
 
 onMounted(async () => {
@@ -67,7 +64,7 @@ function handleAction() {
           <component
             :is="hasActiveSubscription ? CreditCard : Sparkles"
             class="h-5 w-5"
-            :class="hasActiveSubscription ? 'text-plum' : 'text-mint'"
+            :class="hasActiveSubscription ? 'text-plum' : 'text-mint-dark'"
           />
         </div>
         <ArrowRight

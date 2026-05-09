@@ -9,6 +9,7 @@ export interface CreateQueuePayload {
   slug?: string
   allowPartyJoining: boolean
   maxPartySize: number
+  manualPositioning: boolean
   collectEmails?: boolean
 }
 

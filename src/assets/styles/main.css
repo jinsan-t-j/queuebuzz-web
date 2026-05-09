@@ -19,6 +19,7 @@
   --color-sand: #F9F8F6;
   --color-sand-dark: #E8E2F0;
   --color-plum: #1A0A2E;
+  --color-plum-deep: #1A0A2E;
   --color-plum-soft: #2D1B4E;
   --color-plum-soft-2: #3D2B5E;
   --color-plum-muted: #64557B; /* Darkened from #7B6B95 for 4.5:1 contrast on sand */
@@ -65,12 +66,13 @@
     --color-sand: #0a0a0a;
     --color-white: #161616;
     --color-plum: #ededed;
-    --color-plum-muted: #a1a1a1;
+    --color-plum-deep: #0a0a0a;
+    --color-plum-muted: #b3b3b3;
     --color-plum-faint: #262626;
-    --color-plum-soft: #ededed;
+    --color-plum-soft: #d1d1d1;
     --color-mint: #00E5A0;
     --color-mint-light: rgba(0, 229, 160, 0.15);
-    --color-mint-dark: #00B87A;
+    --color-mint-dark: #00E5A0;
     --color-on-mint: #0a0a0a;
     --color-ash-border: #262626;
     --color-ash: #161616;
@@ -89,6 +91,18 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+
+  /* Ensure all interactive elements have correct cursor */
+  a, button, [role="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled, [aria-disabled="true"] {
+    cursor: not-allowed;
   }
 }
 

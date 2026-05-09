@@ -27,7 +27,7 @@ if npx sonar; then
 
     # 5. Process with jq and save the lean audit to .scannerwork
     if [ -f "$SCAN_DIR/sonar-report.json" ]; then
-        jq '[.issues[] | select(.severity == "CRITICAL" or .severity == "BLOCKER" or .severity == "MAJOR") | {file: .component, line: .line, issue: .message, severity: .severity}]' "$SCAN_DIR/sonar-report.json" > "$SCAN_DIR/sonar-lean-audit.json"
+        jq '[.issues[] | select(.severity == "CRITICAL" or .severity == "BLOCKER" or .severity == "MAJOR" or .severity == "MINOR" or .severity == "INFO") | {file: .component, line: .line, issue: .message, severity: .severity}]' "$SCAN_DIR/sonar-report.json" > "$SCAN_DIR/sonar-lean-audit.json"
         
         echo "📄 Done. Reports saved to $SCAN_DIR/"
         echo "   - Full: $SCAN_DIR/sonar-report.json"

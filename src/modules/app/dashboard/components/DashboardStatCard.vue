@@ -37,12 +37,14 @@ withDefaults(
 
     <!-- Content -->
     <template v-else>
-      <p class="font-body text-[11px] font-black uppercase tracking-widest text-plum-muted">
+      <p
+        class="font-body text-[10px] font-black uppercase tracking-widest text-plum-muted sm:text-xs"
+      >
         {{ label }}
       </p>
       <p
         :class="[
-          'mt-1 font-display text-2xl font-black tracking-tight transition-colors',
+          'mt-1 font-display text-xl font-black tracking-tight transition-colors sm:text-2xl',
           accent === 'mint' ? 'text-mint-dark' : 'text-plum',
         ]"
       >

@@ -4,7 +4,7 @@
  * @description Host account settings page with category sidebar navigation.
  */
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 import SettingsForm from '@/modules/app/settings/components/SettingsForm.vue'
@@ -16,7 +16,7 @@ const activeSection = ref('profile')
 function scrollToSection(id: string) {
   activeSection.value = id
   const element = document.getElementById(id)
-  const container = element?.closest('main')
+  const container = document.querySelector('main')
 
   if (element && container) {
     const yOffset = -24
@@ -25,8 +25,31 @@ function scrollToSection(id: string) {
   }
 }
 
+watch(
+  () => route.query.section,
+  (newSection) => {
+    if (newSection) {
+      scrollToSection(String(newSection))
+    }
+  },
+)
+
 onMounted(() => {
   const container = document.querySelector('main')
+  if (!container) return
+
+  // Track scroll for active selection reset
+  const handleScroll = () => {
+    if (container.scrollTop < 40) {
+      activeSection.value = 'profile'
+    }
+  }
+  container.addEventListener('scroll', handleScroll)
+
+  onUnmounted(() => {
+    container.removeEventListener('scroll', handleScroll)
+  })
+
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -42,7 +65,7 @@ onMounted(() => {
     },
   )
 
-  ;['profile', 'queue', 'preferences', 'subscription', 'danger'].forEach((id) => {
+  ;['profile', 'branding', 'queue', 'preferences', 'subscription', 'danger'].forEach((id) => {
     const el = document.getElementById(id)
     if (el) observer.observe(el)
   })
@@ -50,14 +73,14 @@ onMounted(() => {
   if (route.query.section) {
     setTimeout(() => {
       scrollToSection(String(route.query.section))
-    }, 100)
+    }, 150)
   }
 })
 </script>
 
 <template>
-  <div class="mx-auto max-w-[1200px] px-8 pb-24">
-    <div class="flex flex-col gap-12 pt-10 lg:flex-row">
+  <div class="mx-auto max-w-[1200px] px-4 sm:px-8 pb-34 md:pb-24">
+    <div class="flex flex-col gap-8 sm:gap-12 pt-6 sm:pt-10 lg:flex-row">
       <!-- ═══ Sidebar Navigation ═══ -->
       <SettingsSidebar :active-section="activeSection" @navigate="scrollToSection" />
 

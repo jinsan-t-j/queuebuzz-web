@@ -4,23 +4,21 @@
  */
 
 // Base URL mapped from Vite env variables
-const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
-const url = new URL(
-  baseUrl,
-  globalThis.globalThis === undefined ? 'http://localhost:3000' : globalThis.location.origin,
-)
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1'
 
-export const API_BASE_URL: string = baseUrl
-export const API_ORIGIN_URL: string = url.origin
-export const API_BASE_PATH: string = url.pathname.replace(/\/$/, '')
+const PORT = import.meta.env.VITE_PORT || 3000
+export const APP_BASE_URL = import.meta.env.SSR
+  ? `http://localhost:${PORT}`
+  : globalThis.location.origin
 
 export function buildApiUrl(path: string): string {
-  return new URL(`${API_BASE_PATH}${path}`, API_ORIGIN_URL).toString()
+  return new URL(`${API_BASE_URL}${path}`).toString()
 }
 
+const apiOrigin = new URL(API_BASE_URL).origin
 export const AUTH_ROUTES = {
   SOCIAL_START: (provider: string, claimQueueId?: string, redirect?: string): string => {
-    const url = new URL(`${API_ORIGIN_URL}/auth/social/${provider}/start`)
+    const url = new URL(`${apiOrigin}/auth/social/${provider}/start`)
     if (claimQueueId) url.searchParams.set('claim_queue_id', claimQueueId)
     if (redirect) url.searchParams.set('redirect', redirect)
     return url.toString()
@@ -77,7 +75,9 @@ export const API_ROUTES = {
   },
   HISTORY: {
     LIST: '/queue/history',
-    CLEAR_ALL: '/queue/history',
+    CLEAR_ALL: '/queue/history/clear',
+    DELETE_BULK: '/queue/history',
+    DELETE: (id: string): string => `/queue/history/${id}`,
     DETAIL: (id: string): string => `/queue/manage/${id}/history`,
     EXPORT_CSV: (id: string): string => `/queue/manage/${id}/history/export/csv`,
   },

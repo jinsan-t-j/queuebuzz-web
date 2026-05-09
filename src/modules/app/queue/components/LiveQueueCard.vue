@@ -4,7 +4,7 @@
  * @description Live queue card with search bar, guest entries list,
  * "Call Next Guest" button, and optional "Terminate Queue" button.
  */
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, defineAsyncComponent } from 'vue'
 import { useToast } from '@/composables/useToast'
 import type { QueueEntry } from '../types'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
@@ -31,6 +31,7 @@ const props = defineProps<{
   isRefreshing?: boolean
   strictQueueMode?: boolean
   showPartySize?: boolean
+  manualPositioning?: boolean
 }>()
 
 // 7. Emits
@@ -41,12 +42,17 @@ const emit = defineEmits<{
   (e: 'serve-guest', id: string): void
 }>()
 
+const QueueFilterDropdown = defineAsyncComponent(() => import('./QueueFilterDropdown.vue'))
+
 // 9. Reactive state
 const selectedEntry = ref<QueueEntry | null>(null)
 const isDetailsModalOpen = ref(false)
 const isHistoryExpanded = ref(false)
 const { showToast } = useToast()
 const recoveredIds = ref(new Set<string>())
+const sortMode = ref<'position' | 'size-asc' | 'size-desc'>('position')
+const partySizeFilter = ref<number | 'all'>('all')
+const isFilterMenuOpen = ref(false)
 
 // 10. Computed properties
 const hasActiveCalledEntry = computed(() =>
@@ -55,6 +61,32 @@ const hasActiveCalledEntry = computed(() =>
 const totalCount = computed(
   () => (props.activeEntries?.length || 0) + (props.servedEntries?.length || 0),
 )
+const availablePartySizes = computed(() => {
+  const sizes = new Set(props.activeEntries.map((e) => e.partySize).filter((s): s is number => !!s))
+  return Array.from(sizes).sort((a, b) => a - b)
+})
+
+const sortedActiveEntries = computed(() => {
+  let entries = [...(props.activeEntries || [])]
+
+  // 1. Filtering
+  if (props.showPartySize && partySizeFilter.value !== 'all') {
+    entries = entries.filter((e) => e.partySize === partySizeFilter.value)
+  }
+
+  // 2. Sorting
+  return entries.sort((a, b) => {
+    if (sortMode.value === 'size-asc') {
+      const diff = (a.partySize || 1) - (b.partySize || 1)
+      if (diff !== 0) return diff
+    } else if (sortMode.value === 'size-desc') {
+      const diff = (b.partySize || 1) - (a.partySize || 1)
+      if (diff !== 0) return diff
+    }
+    // Fallback to arrival order
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  })
+})
 const nextCallDisabled = computed(() => {
   if (props.isLoading || props.isRefreshing || props.isPaused) return true
   if (props.strictQueueMode && hasActiveCalledEntry.value) return true
@@ -128,6 +160,11 @@ watch(entryStatusKey, (newKey, oldKey) => {
     }
   }
 })
+function resetFilters() {
+  partySizeFilter.value = 'all'
+  sortMode.value = 'position'
+  isFilterMenuOpen.value = false
+}
 </script>
 
 <template>
@@ -135,17 +172,76 @@ watch(entryStatusKey, (newKey, oldKey) => {
     class="max-h-[580px] flex flex-1 flex-col rounded-card border border-plum-faint bg-white shadow-sm dark:shadow-none"
   >
     <!-- Header -->
-    <div class="border-b border-plum-faint bg-plum-faint/10 px-6 py-4">
+    <div class="border-b border-plum-faint bg-plum-faint/10 px-4 py-3 sm:px-6 sm:py-4">
       <div class="flex items-center gap-3">
         <div
-          class="flex flex-1 items-center gap-0 rounded-input border border-plum-faint bg-plum-faint/10 px-4 py-2"
+          class="flex flex-1 items-center gap-0 rounded-input border border-plum-faint bg-plum-faint/10 px-3 py-1.5 sm:px-4 sm:py-2"
         >
           <SearchIcon class="h-[10px] w-[10px] text-plum-muted" />
           <input
             :value="searchQuery"
             placeholder="Search ..."
-            class="ml-2 w-full border-none bg-transparent font-body text-sm font-medium text-plum placeholder:text-plum-muted tracking-wider focus:outline-none"
+            class="ml-2 w-full border-none bg-transparent font-body text-xs sm:text-sm font-medium text-plum placeholder:text-plum-muted tracking-wider focus:outline-none"
             @input="emit('search', ($event.target as HTMLInputElement).value)"
+          />
+        </div>
+        <!-- Sort by party size toggle (only when party sizes are enabled) -->
+        <!-- Sort & Filter (only when party sizes are enabled) -->
+        <div v-if="showPartySize" class="relative">
+          <button
+            type="button"
+            class="flex items-center gap-2 rounded-input border px-3 py-1.5 sm:py-2 font-body text-xs font-semibold transition-all cursor-pointer whitespace-nowrap"
+            :class="
+              sortMode !== 'position' || partySizeFilter !== 'all'
+                ? 'border-plum bg-plum text-sand shadow-md'
+                : 'border-plum-faint text-plum-muted hover:border-plum hover:text-plum'
+            "
+            @click="isFilterMenuOpen = !isFilterMenuOpen"
+          >
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+              />
+            </svg>
+            <span class="hidden sm:inline">{{
+              partySizeFilter === 'all' ? 'Filter' : `Size: ${partySizeFilter}`
+            }}</span>
+            <svg
+              class="h-3 w-3 transition-transform duration-200"
+              :class="{ 'rotate-180': isFilterMenuOpen }"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <QueueFilterDropdown
+            v-if="isFilterMenuOpen"
+            :sort-mode="sortMode"
+            :party-size-filter="partySizeFilter"
+            :available-party-sizes="availablePartySizes"
+            @update:sort-mode="sortMode = $event"
+            @update:party-size-filter="partySizeFilter = $event"
+            @close="isFilterMenuOpen = false"
+            @reset="resetFilters"
+          />
+
+          <!-- Click Outside Overlay -->
+          <div
+            v-if="isFilterMenuOpen"
+            class="fixed inset-0 z-40"
+            @click="isFilterMenuOpen = false"
           />
         </div>
       </div>
@@ -184,9 +280,9 @@ watch(entryStatusKey, (newKey, oldKey) => {
       <!-- Case 4: Populated List -->
       <template v-else>
         <div
-          v-for="entry in activeEntries"
+          v-for="entry in sortedActiveEntries"
           :key="entry.id"
-          class="group flex cursor-pointer items-center rounded-2xl border px-4 py-4 transition-all duration-300 hover:shadow-md dark:hover:shadow-none"
+          class="group flex cursor-pointer items-center rounded-2xl border px-3 py-3 sm:px-4 sm:py-4 transition-all duration-300 hover:shadow-md dark:hover:shadow-none"
           :class="[
             entry.status === ENTRY_STATUS.CALLED
               ? 'border-2 border-mint shadow-[0_8px_32px_-8px_rgba(0,229,160,0.4)] dark:shadow-none bg-mint/5 dark:bg-mint/10 animate-status-pulse'
@@ -201,9 +297,9 @@ watch(entryStatusKey, (newKey, oldKey) => {
           ]"
           @click="openDetails(entry)"
         >
-          <div class="flex items-center gap-4 min-w-0 flex-1">
+          <div class="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
             <span
-              class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl font-mono text-lg font-bold transition-all duration-300"
+              class="flex h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-xl font-mono text-base sm:text-lg font-bold transition-all duration-300"
               :class="
                 entry.status === ENTRY_STATUS.CALLED
                   ? 'bg-plum dark:bg-mint text-mint dark:text-on-mint'
@@ -254,8 +350,26 @@ watch(entryStatusKey, (newKey, oldKey) => {
                 </BaseTooltip>
               </div>
               <p class="font-body text-sm text-plum-muted truncate">
-                <template v-if="showPartySize && entry.partySize > 1">
-                  P-{{ entry.partySize }} •
+                <template v-if="showPartySize && entry.partySize">
+                  <span
+                    class="inline-flex items-center gap-0.5 rounded-lg px-1.5 py-0.5 font-mono text-xs font-bold"
+                    :class="
+                      sortMode !== 'position'
+                        ? 'bg-plum-soft/15 text-plum'
+                        : 'bg-plum-faint/60 text-plum-muted'
+                    "
+                  >
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    {{ entry.partySize }}
+                  </span>
+                  •
                 </template>
                 <span
                   :class="[
@@ -359,9 +473,9 @@ watch(entryStatusKey, (newKey, oldKey) => {
     </div>
 
     <!-- Action buttons -->
-    <div class="border-t border-plum-faint p-4">
+    <div v-if="!manualPositioning" class="border-t border-plum-faint p-4">
       <button
-        class="flex w-full items-center justify-center gap-3 rounded-2xl px-8 py-4 font-body text-lg font-bold transition-all active:scale-[0.98] cursor-pointer"
+        class="flex w-full items-center justify-center gap-3 rounded-2xl px-6 py-3.5 sm:px-8 sm:py-4 font-body text-base sm:text-lg font-bold transition-all active:scale-[0.98] cursor-pointer"
         :disabled="nextCallDisabled"
         :class="
           !nextCallDisabled

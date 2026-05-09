@@ -31,7 +31,7 @@ const DEFAULT_RETRY_DELAYS_MS = [1000, 2000, 5000, 10000]
 const CONTENT_TYPE_EVENT_STREAM = 'text/event-stream'
 
 function normalizeChunk(value: string): string {
-  return value.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  return value.replaceAll('\r\n', '\n').replaceAll('\r', '\n')
 }
 
 function parseField(line: string): { field: string; value: string } {

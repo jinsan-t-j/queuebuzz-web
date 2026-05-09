@@ -39,7 +39,7 @@ const isFilled = computed(() => codeEntered.value.length === 6)
 function handleInput(index: number, e: Event) {
   const input = e.target as HTMLInputElement
   const val = input.value
-    .replace(/[^a-zA-Z0-9]/g, '')
+    .replaceAll(/[^a-zA-Z0-9]/g, '')
     .toUpperCase()
     .slice(-1)
 
@@ -59,7 +59,7 @@ function handleKeydown(index: number, e: KeyboardEvent) {
 function handlePaste(e: ClipboardEvent) {
   const pasteData = e.clipboardData?.getData('text') || ''
   const cleanData = pasteData
-    .replace(/[^a-zA-Z0-9]/g, '')
+    .replaceAll(/[^a-zA-Z0-9]/g, '')
     .toUpperCase()
     .slice(0, 6)
 

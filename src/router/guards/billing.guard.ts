@@ -34,6 +34,4 @@ export const billingGuard: NavigationGuardWithThis<undefined> = async (to) => {
       },
     }
   }
-
-  return
 }

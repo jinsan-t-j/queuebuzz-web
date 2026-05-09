@@ -8,8 +8,13 @@
  * - Console error logging for debugging
  * - Clean localStorage/sessionStorage between tests
  */
-import { test as base, expect } from '@playwright/test'
-import { makeHostProfile, makeBillingPlan } from './mocks/host.mock'
+import { test as base } from '@playwright/test'
+import {
+  makeHostProfile,
+  makeBillingPlan,
+  makeDashboardResponse,
+  makeBillingPlans,
+} from './mocks/host.mock'
 
 type MockApiFn = (route: string, data: unknown, status?: number) => Promise<void>
 
@@ -18,7 +23,7 @@ export const test = base.extend<{
 }>({
   mockApi: async ({ page }, use) => {
     const mockFunc: MockApiFn = async (route, data, status = 200) => {
-      const pattern = new RegExp('.*\\/api.*' + route.replace(/\//g, '\\/'))
+      const pattern = new RegExp(String.raw`.*\/api.*` + route.replaceAll('/', String.raw`\/`))
 
       await page.route(pattern, async (routeObj) => {
         const origin = routeObj.request().headers().origin || '*'
@@ -53,10 +58,15 @@ export const test = base.extend<{
       }
     })
 
-    // Clean state between tests
+    // Clean state and set mock auth between tests
     await page.addInitScript(() => {
       globalThis.localStorage.clear()
       globalThis.sessionStorage.clear()
+
+      // Inject mock session
+      globalThis.localStorage.setItem('auth_token', 'mock-token-123')
+      globalThis.localStorage.setItem('user_role', 'host')
+      globalThis.localStorage.setItem('has_seen_onboarding', 'true')
     })
 
     // Global API interceptor for bootstrap endpoints
@@ -93,7 +103,21 @@ export const test = base.extend<{
 
       // Bootstrap: billing plans (pricing page)
       if (url.includes('/billing/plans')) {
-        return fulfillJson(route, [], origin)
+        return fulfillJson(route, makeBillingPlans(), origin)
+      }
+
+      // Bootstrap: billing subscription
+      if (url.includes('/billing/subscription')) {
+        return fulfillJson(
+          route,
+          { status: 'active', canViewHistory: true, canExportData: true },
+          origin,
+        )
+      }
+
+      // Bootstrap: queue dashboard
+      if (url.includes('/queue/dashboard')) {
+        return fulfillJson(route, makeDashboardResponse(), origin)
       }
 
       // Catch queue endpoints to prevent CORS leaks
@@ -102,7 +126,10 @@ export const test = base.extend<{
       }
 
       // Customer entry (exact path only, not sub-routes like /recover-session)
-      if (url.match(/\/customer\/entry$/) || url.match(/\/customer\/entry\?/)) {
+      if (
+        new RegExp(/\/customer\/entry$/).exec(url) ||
+        new RegExp(/\/customer\/entry\?/).exec(url)
+      ) {
         return fulfillJson(route, null, origin)
       }
 
@@ -118,8 +145,6 @@ export const test = base.extend<{
     await use(page)
   },
 })
-
-export { expect }
 
 function corsHeaders(origin: string): Record<string, string> {
   return {
@@ -143,3 +168,5 @@ async function fulfillJson(
     body: JSON.stringify({ data, success: status < 400 }),
   })
 }
+
+export { expect } from '@playwright/test'

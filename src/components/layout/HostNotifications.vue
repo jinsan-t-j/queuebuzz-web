@@ -27,7 +27,9 @@ const iconColors = {
 </script>
 
 <template>
-  <div class="fixed top-6 right-6 z-[100] flex flex-col gap-3 w-[360px] pointer-events-none">
+  <div
+    class="fixed top-4 right-4 z-[100] flex flex-col gap-3 w-[calc(100%-32px)] sm:w-[360px] pointer-events-none"
+  >
     <TransitionGroup
       enter-active-class="transform transition ease-out duration-500"
       enter-from-class="translate-x-full opacity-0 scale-95"

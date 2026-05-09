@@ -26,7 +26,7 @@ const emit = defineEmits<{
 
 function handleInput(e: Event) {
   const target = e.target as HTMLInputElement
-  emit('update:modelValue', parseInt(target.value))
+  emit('update:modelValue', Number.parseInt(target.value, 10))
 }
 </script>
 
