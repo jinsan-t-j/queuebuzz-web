@@ -6,7 +6,7 @@
  */
 
 import { storeToRefs } from 'pinia'
-import { ref, computed, nextTick, onMounted, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import ArrowRightFilledIcon from '@/assets/icons/arrow-right-filled.svg?component'
@@ -93,7 +93,7 @@ async function findQueue() {
   if (!isFilled.value || isLoading.value) return
 
   const result = await joinByCode(codeEntered.value)
-  if (!result || !result.found) {
+  if (!result) {
     triggerError()
   }
 }

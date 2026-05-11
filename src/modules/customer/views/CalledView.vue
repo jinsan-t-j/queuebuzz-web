@@ -6,7 +6,7 @@
  */
 
 import { storeToRefs } from 'pinia'
-import { ref, watch, computed, onBeforeMount, onUnmounted } from 'vue'
+import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
@@ -115,7 +115,7 @@ onBeforeMount(async () => {
   // 3. Ensure queue context is available for estWaitMin calculation
   const queueId = router.currentRoute.value.params.queueId as string
   if (queueId) {
-    await queueStore.initializeQueueById(queueId)
+    await queueStore.IntializeQueueByIdOrCode(queueId)
   }
 
   if (entry.value?.id) {

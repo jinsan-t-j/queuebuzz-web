@@ -33,14 +33,3 @@ export interface JoinQueuePayload extends JoinQueueFormPayload {
 export interface MutationResult {
   success: boolean
 }
-
-export interface JoinByCodeResult {
-  found: boolean
-  queueName?: string
-  queueId?: string
-}
-
-export interface JoinByCodeResponse {
-  queueId: string
-  queueName: string
-}

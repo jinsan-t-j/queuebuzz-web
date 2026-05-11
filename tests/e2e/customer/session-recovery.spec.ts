@@ -19,14 +19,14 @@ test.describe('Customer Session Recovery & Redirection', () => {
       status: 'ACTIVE',
       joinCode: 'STALL2',
     })
-    // Mock the join code resolution
-    await mockApi(`/customer/entry/join-by-code/CLNC01`, {
+    // Mock the join code resolution with specific codes
+    await mockApi('/queue/p/find?code=CLNC01', {
       success: true,
-      data: { queueId: ACTIVE_QUEUE_ID, joinCode: 'CLNC01' },
+      data: { queue_id: ACTIVE_QUEUE_ID, queue_name: 'Active Clinic' },
     })
-    await mockApi(`/customer/entry/join-by-code/STALL2`, {
+    await mockApi('/queue/p/find?code=STALL2', {
       success: true,
-      data: { queueId: OTHER_QUEUE_ID, joinCode: 'STALL2' },
+      data: { queue_id: OTHER_QUEUE_ID, queue_name: 'Other Stall' },
     })
   })
 
@@ -59,10 +59,9 @@ test.describe('Customer Session Recovery & Redirection', () => {
     await page.goto(`/q/${OTHER_QUEUE_ID}/join`)
 
     // Fill code for the OTHER queue
-    const firstInput = page.locator('input[aria-label="Code character 1"]')
-    await expect(firstInput).toBeVisible()
-    await firstInput.focus()
-    await page.keyboard.type('STALL2')
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible()
+    await codeInput.fill('STALL2')
 
     await page.getByRole('button', { name: 'Verify code' }).click()
 
@@ -83,17 +82,16 @@ test.describe('Customer Session Recovery & Redirection', () => {
     await page.goto(`/q/${OTHER_QUEUE_ID}/join`)
 
     // Fill code for the OTHER queue
-    const firstInput = page.locator('input[aria-label="Code character 1"]')
-    await expect(firstInput).toBeVisible()
-    await firstInput.focus()
-    await page.keyboard.type('STALL2')
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible()
+    await codeInput.fill('STALL2')
     await page.getByRole('button', { name: 'Verify code' }).click()
 
     // Click "Leave Current Queue"
     await page.getByRole('button', { name: /leave current queue/i }).click()
 
     // Warning should disappear and join form should be visible
-    await expect(page.getByText(/already in a queue/i)).not.toBeVisible()
+    await expect(page.locator('text=Already in a queue')).not.toBeVisible()
     await expect(page.getByRole('button', { name: /join the queue/i })).toBeVisible()
   })
 
@@ -116,7 +114,7 @@ test.describe('Customer Session Recovery & Redirection', () => {
 
     // Should be redirected to the join page and show warning
     await expect(page).toHaveURL(new RegExp(`/q/${OTHER_QUEUE_ID}/join`))
-    await expect(page.getByText(/already in a queue/i).first()).toBeVisible({ timeout: 10000 })
+    await expect(page.locator('text=Already in a queue').first()).toBeVisible({ timeout: 10000 })
     await expect(page.getByRole('button', { name: /leave current queue/i })).toBeVisible()
   })
 })

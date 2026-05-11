@@ -10,5 +10,21 @@
   "/login-or-signup": {
     "title": "Log in or sign up | QueueBuzz",
     "description": "Access your QueueBuzz dashboard to manage your virtual queues and see business insights."
+  },
+  "/dashboard": {
+    "title": "Dashboard | QueueBuzz",
+    "description": "Manage your business queues in real-time."
+  },
+  "/dashboard/queue": {
+    "title": "Queue Management | QueueBuzz",
+    "description": "Create and manage your live virtual queues."
+  },
+  "/dashboard/queue/history": {
+    "title": "Queue History | QueueBuzz",
+    "description": "View and export your past queue performance."
+  },
+  "/dashboard/settings": {
+    "title": "Account Settings | QueueBuzz",
+    "description": "Configure your profile and notification preferences."
   }
 }

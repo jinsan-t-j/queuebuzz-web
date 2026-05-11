@@ -58,7 +58,7 @@ onBeforeMount(async () => {
   }
 
   customerStore.setEntry(entry)
-  await queueStore.initializeQueueById(queueId)
+  await queueStore.IntializeQueueByIdOrCode(queueId)
 
   await router.replace(routeForStatus(queueId, entry.status))
   isLoading.value = false

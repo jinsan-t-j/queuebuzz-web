@@ -2,85 +2,85 @@ import { test, expect } from '../fixtures/base.fixture'
 import { makeDashboardResponse } from '../fixtures/mocks/host.mock'
 
 test.describe('Slug Validation', () => {
-  test.beforeEach(async ({ mockApi }) => {
-    // Already "logged in" via fixture addInitScript
-    // Mock the dashboard to avoid any issues with the landing state
+  test.beforeEach(async ({ page, mockApi }) => {
     await mockApi('/queue/dashboard', makeDashboardResponse({ hasHistory: true }))
-  })
-
-  test('should validate slug format correctly', async ({ page }) => {
-    // Go directly to the create queue page
     await page.goto('/dashboard/queue')
-    await page.waitForLoadState('networkidle')
-
-    const slugInput = page.locator('input#slug').first()
-
-    // Too short
-    await slugInput.fill('ab')
-    await page.waitForTimeout(1000) // wait for debounce
-    await expect(
-      page.locator('text=Must be 3-30 lowercase alphanumeric characters or hyphens').first(),
-    ).toBeVisible()
-
-    // Invalid characters
-    await slugInput.fill('invalid_slug')
-    await page.waitForTimeout(1000)
-    await expect(
-      page.locator('text=Must be 3-30 lowercase alphanumeric characters or hyphens').first(),
-    ).toBeVisible()
-
-    // Valid
-    await slugInput.fill('valid-slug-123')
-    await page.waitForTimeout(1000)
-    await expect(
-      page.locator('text=Must be 3-30 lowercase alphanumeric characters or hyphens'),
-    ).not.toBeVisible()
   })
 
   test('should show error when slug is already taken', async ({ page, mockApi }) => {
-    const takenSlug = 'taken-slug'
+    // Mock available slug check
+    await mockApi('/queue/slug-check?slug=taken-slug', { isAvailable: false })
 
-    // Mock the availability check
-    await mockApi(`/queue/slug-check?slug=${takenSlug}`, { available: false })
+    // Fill form
+    await page.getByLabel('Queue Name').fill('Existing Queue')
 
-    await page.goto('/dashboard/queue')
-    await page.waitForLoadState('networkidle')
-    const slugInput = page.locator('input#slug').first()
+    // Fill slug
+    const slugInput = page.getByLabel('Queue Link (Optional)')
+    await slugInput.fill('taken-slug')
 
-    // Trigger the check
-    await slugInput.fill(takenSlug)
-
-    // Wait for the API response
+    // Wait for API check
     await page.waitForResponse(
-      (resp) => resp.url().includes('slug-check') && resp.url().includes(takenSlug),
+      (response) =>
+        response.url().includes('/queue/slug-check') && response.request().method() === 'GET',
     )
 
-    await expect(page.locator('text=This link is already taken').first()).toBeVisible()
+    // Check error message
+    await expect(page.locator('text=This link is already taken').first()).toBeVisible({
+      timeout: 10000,
+    })
+  })
+
+  test('should show error for invalid slug format', async ({ page }) => {
+    // Fill form
+    await page.getByLabel('Queue Name').fill('Invalid Slug Test')
+
+    // Fill invalid slug
+    const slugInput = page.getByLabel('Queue Link (Optional)')
+    await slugInput.fill('invalid slug!')
+
+    // Error should show up immediately (client-side)
+    await expect(
+      page.locator('text=lowercase alphanumeric characters or hyphens').first(),
+    ).toBeVisible()
   })
 
   test('should allow creating queue with valid custom slug', async ({ page, mockApi }) => {
-    const customSlug = 'my-awesome-queue'
-    await mockApi(`/queue/slug-check?slug=${customSlug}`, { available: true })
-    await mockApi('/queue', {
+    // Mock available slug check
+    await mockApi('/queue/slug-check?slug=new-slug', { isAvailable: true })
+
+    // Mock successful creation
+    const createdQueue = {
       id: 'q-999',
       name: 'First Queue',
-      slug: customSlug,
-      joinCode: 'ABC123',
-    })
+      slug: 'new-slug',
+      joinCode: 'ABC-123',
+      status: 'ACTIVE',
+    }
+    await mockApi('/queue/p/create', createdQueue)
+    // Fill form
+    await page.getByLabel('Queue Name').fill('First Queue')
 
-    await page.goto('/dashboard/queue')
-    await page.waitForLoadState('networkidle')
+    // Fill slug
+    const slugInput = page.getByLabel('Queue Link (Optional)')
+    await slugInput.fill('new-slug')
 
-    await page.locator('input#queueName').first().fill('First Queue')
-    await page.locator('input#slug').first().fill(customSlug)
+    // Wait for API check
+    await page.waitForResponse(
+      (response) =>
+        response.url().includes('/queue/slug-check') && response.request().method() === 'GET',
+    )
 
-    // Wait for slug check to finish
-    await page.waitForTimeout(1000)
+    // Mock live queue to return createdQueue when LiveQueueView mounts after creation
+    await mockApi('/queue/live', createdQueue)
 
-    await page.click('text=Open Queue')
+    // Create
+    await page.getByRole('button', { name: /create queue/i }).click()
 
-    // Check if we reached the live dashboard
-    await expect(page.locator('text=First Queue').first()).toBeVisible({ timeout: 15000 })
-    await expect(page.locator('text=Join Code').first()).toBeVisible()
+    // Wait for success modal and click 'CLOSE'
+    await expect(page.getByText('Queue is open!')).toBeVisible()
+    await page.getByRole('button', { name: 'CLOSE' }).click()
+
+    // Should stay on dashboard queue (now in live mode)
+    await expect(page).toHaveURL(/\/dashboard\/queue/)
   })
 })

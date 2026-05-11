@@ -291,10 +291,17 @@ onBeforeUnmount(() => {
         <!-- Header Section -->
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div v-if="!isNewAccount">
-            <h2 class="font-display text-xl font-bold text-plum sm:text-2xl">
+            <h2
+              data-testid="greeting-header"
+              class="font-display text-xl font-bold text-plum sm:text-2xl"
+            >
               {{ isLoading ? 'Loading...' : greeting }}
             </h2>
-            <p v-if="!isLoading" class="font-body text-[10px] text-plum-muted sm:text-xs">
+            <p
+              v-if="!isLoading"
+              data-testid="current-date"
+              class="font-body text-[10px] text-plum-muted sm:text-xs"
+            >
               {{ dateString }}
             </p>
           </div>

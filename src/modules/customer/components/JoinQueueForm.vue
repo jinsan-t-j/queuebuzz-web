@@ -164,6 +164,7 @@ const handleJoin = handleSubmit(async (values) => {
       </div>
       <div class="flex-1">
         <input
+          id="guest-name"
           v-model="displayName"
           type="text"
           placeholder="What should we call you?"

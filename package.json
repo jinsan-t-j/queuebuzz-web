@@ -13,7 +13,7 @@
     "serve:dist": "caddy start --config Caddyfile",
     "serve:stop": "caddy stop",
     "lighthouse": "npm run build && lhci autorun",
-    "test:e2e": "playwright test",
+    "test:e2e": "node scripts/test-e2e.js",
     "test:ui": "playwright test --ui",
     "test:a11y": "playwright test tests/e2e/accessibility.spec.ts",
     "sonar:audit": "./scripts/sonar-audit.sh",

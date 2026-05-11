@@ -466,7 +466,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
         class="rounded-input bg-mint px-6 py-2.5 font-body text-base font-semibold text-on-mint shadow-[0_4px_12px_rgba(0,229,160,0.30)] transition-all hover:bg-mint-dark active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center sm:min-w-[140px] w-full sm:w-auto"
       >
         <SpinnerLoadingIcon v-if="isSubmitting" class="mr-2 h-4 w-4 animate-spin text-on-mint" />
-        {{ isSubmitting ? 'Opening' : 'Open Queue' }}
+        {{ isSubmitting ? 'Creating...' : 'Create Queue' }}
       </button>
     </div>
 

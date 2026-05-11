@@ -7,7 +7,7 @@
 
 // 1. Vue core imports
 import { storeToRefs } from 'pinia'
-import { ref, computed, watch, onBeforeMount, onUnmounted } from 'vue'
+import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 // 4. Composables
@@ -77,7 +77,7 @@ onBeforeMount(async () => {
 
   const queueId = router.currentRoute.value.params.queueId as string
   if (queueId) {
-    await queueStore.initializeQueueById(queueId)
+    await queueStore.IntializeQueueByIdOrCode(queueId)
   }
 
   connectEvents(entry.value!.id)

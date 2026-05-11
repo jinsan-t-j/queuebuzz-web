@@ -1,7 +1,11 @@
 import AxeBuilder from '@axe-core/playwright'
 
 import { test, expect } from '../fixtures/base.fixture'
-import { makeDashboardResponse, makeActiveQueueDashboard } from '../fixtures/mocks/host.mock'
+import {
+  makeDashboardResponse,
+  makeActiveQueueDashboard,
+  makeHostProfile,
+} from '../fixtures/mocks/host.mock'
 
 /**
  * @spec Accessibility Audit (WCAG AA)
@@ -55,9 +59,16 @@ test.describe('WCAG AA Compliance Audit', () => {
           } else {
             await mockApi('/queue/dashboard', makeDashboardResponse())
           }
+          await mockApi('/host/me', makeHostProfile())
+          await mockApi('/billing/subscription', { data: { plan: { tier: 'premium' } } })
           await mockApi('/queue/manage/q-123/live', { data: [] })
-          await mockApi('/queue/history', { data: { data: [], total_pages: 0, total_count: 0 } })
-          await mockApi('/host/settings', { data: {} })
+          await mockApi('/api/v1/queue/history', {
+            data: [],
+            totalCount: 0,
+            totalPages: 0,
+            summary: { totalSessions: 0, totalServed: 0, avgSessionLength: '0m' },
+          })
+          await mockApi('/host/settings', {})
         }
 
         // Navigate fresh
@@ -79,6 +90,9 @@ test.describe('WCAG AA Compliance Audit', () => {
         // Wait for content
         await page.waitForLoadState('networkidle')
 
+        // Wait for title to be set (unhead/vue update)
+        await expect(page).toHaveTitle(/./, { timeout: 10000 })
+
         // Disable animations to prevent a11y failures due to transition states
         await page.addStyleTag({
           content: `
@@ -92,7 +106,7 @@ test.describe('WCAG AA Compliance Audit', () => {
         })
 
         // Wait for potential client-side hydration and layout settle
-        await page.waitForTimeout(500)
+        await page.waitForTimeout(1000)
 
         const axeBuilder = new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])

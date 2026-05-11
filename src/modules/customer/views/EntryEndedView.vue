@@ -5,7 +5,7 @@
  */
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeMount } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 // Icons
 import ArrowRightIcon from '@/assets/icons/arrow-right.svg?component'
@@ -31,7 +31,7 @@ const { activeQueue } = storeToRefs(queueStore)
 onBeforeMount(async () => {
   const queueId = route.params.queueId as string
   if (queueId) {
-    await queueStore.initializeQueueById(queueId)
+    await queueStore.IntializeQueueByIdOrCode(queueId)
   }
 })
 

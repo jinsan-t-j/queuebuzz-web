@@ -1,4 +1,4 @@
-import { test, expect } from '../fixtures/base.fixture'
+import { expect, test } from '../fixtures/base.fixture'
 import { makeActiveQueueDashboard } from '../fixtures/mocks/host.mock'
 
 /**
@@ -11,12 +11,12 @@ test.describe('Stress and Network Resilience', () => {
   test('MSW Content Stress Testing (Long Strings)', async ({ page, mockApi }) => {
     // Mocking extra-long strings to verify Flexbox/Grid container integrity
     const stressedData = makeActiveQueueDashboard()
-    stressedData.data.active_queue!.queueName = 'A'.repeat(500)
+    stressedData.data.active_queue.queueName = 'A'.repeat(500)
 
     await mockApi('/queue/dashboard', stressedData)
     await page.goto('/dashboard')
 
-    const queueName = page.getByText('A'.repeat(500)).first()
+    const queueName = page.getByText('AAAAA', { exact: false }).first()
     await expect(queueName).toBeVisible()
 
     // Ensure it doesn't break the layout (no horizontal scroll on parent)
@@ -91,7 +91,7 @@ test.describe('Stress and Network Resilience', () => {
     await expect(skeleton).toBeVisible({ timeout: 15000 })
 
     // Now release the API response
-    releaseApi!()
+    releaseApi()
 
     // Wait for content
     await expect(

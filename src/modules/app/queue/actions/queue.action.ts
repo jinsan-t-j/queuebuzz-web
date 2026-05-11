@@ -155,3 +155,19 @@ export async function claimQueue(queueId?: string): Promise<{ message: string }>
   )) as unknown as ApiSuccessResponse<{ message: string }>
   return response.data
 }
+
+export async function findQueueByIdOrSlugOrCode(id?: string, code?: string): Promise<QueueRecord> {
+  const config = createApiRequestConfig({}, { skipLogout: true })
+  let url = API_ROUTES.QUEUE.FIND_QUEUE()
+  const queryParams = new URLSearchParams()
+  if (id) queryParams.append('id', id)
+  if (code) queryParams.append('code', code)
+  url += `?${queryParams.toString()}`
+
+  const response = (await apiClient.get<ApiSuccessResponse<QueueRecord>>(
+    url,
+    config,
+  )) as unknown as ApiSuccessResponse<QueueRecord>
+
+  return response.data
+}

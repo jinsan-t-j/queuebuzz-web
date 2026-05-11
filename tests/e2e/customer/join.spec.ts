@@ -11,26 +11,25 @@ test.describe('Customer Join', () => {
       status: 'ACTIVE',
       joinCode: 'CLNC01',
     })
-    await mockApi('/customer/entry/recover-session', { status: 404, data: null })
+    await mockApi('/customer/entry/recover-session', null, 404)
   })
 
   test('should render join page with queue info', async ({ page, mockApi }) => {
-    await mockApi(`/customer/entry/join-by-code/CLNC01`, {
+    await mockApi('/queue/p/find?code=CLNC01', {
       success: true,
-      data: { queueId: ACTIVE_QUEUE_ID, joinCode: 'CLNC01' },
+      data: { queueId: ACTIVE_QUEUE_ID, queueName: 'Morning Clinic' },
     })
 
     await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
 
     // Wait for the join code prompt to appear
-    const firstInput = page.locator('input[aria-label="Code character 1"]')
-    await expect(firstInput).toBeVisible({ timeout: 10000 })
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible({ timeout: 15000 })
 
     // Fill join code
-    await firstInput.focus()
-    await page.keyboard.type('CLNC01')
+    await codeInput.fill('CLNC01')
 
-    await page.getByRole('button', { name: 'Verify code' }).click()
+    await page.getByRole('button', { name: /Verify code/i }).click()
 
     // Queue name should be visible after verification
     await expect(page.getByText('Morning Clinic').first()).toBeVisible({
@@ -64,39 +63,72 @@ test.describe('Customer Join', () => {
   })
 
   test('should handle join form submission', async ({ page, mockApi }) => {
-    await mockApi(`/customer/entry/join-by-code/CLNC01`, {
+    await mockApi('/queue/p/find?code=CLNC01', {
       success: true,
-      data: { queueId: ACTIVE_QUEUE_ID, joinCode: 'CLNC01' },
-    })
-    await mockApi('/customer/entry', {
-      success: true,
-      data: { id: 'entry-123', ticketNo: 'A-001', status: 'WAITING' },
+      data: { queueId: ACTIVE_QUEUE_ID, queueName: 'Morning Clinic' },
     })
 
     await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
 
-    // Verify code
-    const firstInput = page.locator('input[aria-label="Code character 1"]')
-    await expect(firstInput).toBeVisible()
-    await firstInput.focus()
-    await page.keyboard.type('CLNC01')
-    await page.getByRole('button', { name: 'Verify code' }).click()
+    // Fill join code (modal uses single input)
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible({ timeout: 10000 })
+    await codeInput.fill('CLNC01')
+
+    await mockApi('/queue/p/find', {
+      success: true,
+      data: { queueId: ACTIVE_QUEUE_ID, queueName: 'Morning Clinic' },
+    })
+    await page.getByRole('button', { name: /Verify code/i }).click()
+    await page.waitForResponse((response) => response.url().includes('/queue/p/find'))
 
     // Fill form
     await page.fill('#guest-name', 'John Doe')
+    await mockApi(`/customer/entry/join/${ACTIVE_QUEUE_ID}`, {
+      id: 'e1',
+      ticketNo: 48,
+      status: 'WAITING',
+    })
     await page.click('button:has-text("Join the Queue")')
+    await page.waitForResponse(
+      (response) =>
+        response.url().includes('/customer/entry/join') && response.request().method() === 'POST',
+    )
 
     // Redirect to waiting room
     await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/waiting`))
   })
 
   test('should show not-found state for invalid queue', async ({ page, mockApi }) => {
-    await mockApi('/queue/p/invalid-q/live', {
-      status: 404,
-      body: { error: 'not found' },
-    })
+    await mockApi('/queue/p/invalid-q/live', null, 404)
 
     await page.goto('/q/invalid-q/join')
     await expect(page.locator('text=Queue not found')).toBeVisible()
+  })
+
+  test('should handle join by code grid (JoinByCodeView)', async ({ page, mockApi }) => {
+    await page.goto('/join')
+    await page.waitForLoadState('networkidle')
+
+    // Verify code entry (multi-input grid)
+    const firstInput = page.locator('input[aria-label="Code character 1"]')
+    await expect(firstInput).toBeVisible({ timeout: 10000 })
+
+    // Fill each character
+    const code = 'ABC123'
+    for (let i = 0; i < 6; i++) {
+      await page.locator(`input[aria-label="Code character ${i + 1}"]`).fill(code[i])
+    }
+
+    await mockApi('/queue/p/find', {
+      queueId: ACTIVE_QUEUE_ID,
+      queueName: 'Main Clinic',
+    })
+
+    // Auto-submits on last character usually, or verify button
+    await page.getByRole('button', { name: /Join|Verify/i }).click()
+
+    // Should lead to the queue join screen
+    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/join`))
   })
 })

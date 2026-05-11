@@ -21,7 +21,7 @@ export const customerRoutes: RouteRecordRaw[] = [
         }),
       },
       {
-        path: ':code?',
+        path: 'join/:code?',
         name: 'customer-join',
         beforeEnter: restrictCustomerGuard,
         component: () => import('@/modules/customer/views/JoinView.vue'),

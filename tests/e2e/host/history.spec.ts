@@ -9,7 +9,7 @@ import { makeHistoryList, makeHistoryDetail } from '../fixtures/mocks/host.mock'
 
 test.describe('Queue History', () => {
   test('should render history list with entries', async ({ page, mockApi }) => {
-    await mockApi('/queue/history', makeHistoryList())
+    await mockApi('/api/v1/queue/history', makeHistoryList())
 
     await page.goto('/dashboard/queue/history')
 
@@ -20,7 +20,14 @@ test.describe('Queue History', () => {
   })
 
   test('should show empty state when no history', async ({ page, mockApi }) => {
-    await mockApi('/queue/history', { data: { data: [], total_pages: 0, total_count: 0 } })
+    await mockApi('/api/v1/queue/history', {
+      data: {
+        data: [],
+        totalCount: 0,
+        totalPages: 0,
+        summary: { totalSessions: 0, totalServed: 0, avgSessionLength: '0m' },
+      },
+    })
 
     await page.goto('/dashboard/queue/history')
 
@@ -30,7 +37,7 @@ test.describe('Queue History', () => {
   })
 
   test('should filter history via search input', async ({ page, mockApi }) => {
-    await mockApi('/queue/history', makeHistoryList())
+    await mockApi('/api/v1/queue/history', makeHistoryList())
 
     await page.goto('/dashboard/queue/history')
     await expect(page.locator(':text("Morning Batch"):visible').first()).toBeVisible({
@@ -47,8 +54,8 @@ test.describe('Queue History', () => {
   })
 
   test('should navigate to history detail page', async ({ page, mockApi }) => {
-    await mockApi('/queue/history', makeHistoryList(1))
-    await mockApi('/queue/manage/h-1/history', makeHistoryDetail())
+    await mockApi('/api/v1/queue/history', makeHistoryList(1))
+    await mockApi('/api/v1/queue/manage/h-1/history', makeHistoryDetail())
 
     await page.goto('/dashboard/queue/history')
     await expect(page.locator(':text("Morning Batch"):visible').first()).toBeVisible({
@@ -59,6 +66,6 @@ test.describe('Queue History', () => {
     await page.locator(':text("Morning Batch"):visible').first().click()
 
     // Should navigate to detail
-    await expect(page).toHaveURL(/\/history\/h-1/, { timeout: 5000 })
+    await expect(page).toHaveURL(/\/dashboard\/queue\/history\/h-1/, { timeout: 10000 })
   })
 })

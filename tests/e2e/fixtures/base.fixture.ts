@@ -8,7 +8,7 @@
  * - Console error logging for debugging
  * - Clean localStorage/sessionStorage between tests
  */
-import { test as base } from '@playwright/test'
+import { test as base, type Route } from '@playwright/test'
 
 import {
   makeHostProfile,
@@ -24,28 +24,14 @@ export const test = base.extend<{
 }>({
   mockApi: async ({ page }, use) => {
     const mockFunc: MockApiFn = async (route, data, status = 200) => {
-      const pattern = new RegExp(String.raw`.*\/api.*` + route.replaceAll('/', String.raw`\/`))
+      await page.route(
+        (url) => url.pathname.includes(route) || url.href.includes(route),
+        async (routeObj) => {
+          const origin = routeObj.request().headers().origin || '*'
 
-      await page.route(pattern, async (routeObj) => {
-        const origin = routeObj.request().headers().origin || '*'
-
-        if (routeObj.request().method() === 'OPTIONS') {
-          return routeObj.fulfill({
-            status: 204,
-            headers: corsHeaders(origin),
-          })
-        }
-
-        const body =
-          data && (data as Record<string, unknown>).data ? data : { data, success: status < 400 }
-
-        await routeObj.fulfill({
-          status,
-          contentType: 'application/json',
-          headers: corsHeaders(origin),
-          body: JSON.stringify(body),
-        })
-      })
+          await fulfillJson(routeObj, data, origin, status)
+        },
+      )
     }
     await use(mockFunc)
   },
@@ -135,16 +121,13 @@ export const test = base.extend<{
         return fulfillJson(route, makeDashboardResponse(), origin)
       }
 
-      // Catch queue endpoints to prevent CORS leaks
-      if (url.includes('/queue/active') || url.includes('/queue/live')) {
+      // Catch queue endpoints (legacy only, use exact anchors where possible)
+      if (url.endsWith('/queue/active') || url.endsWith('/queue/live')) {
         return fulfillJson(route, null, origin)
       }
 
-      // Customer entry (exact path only, not sub-routes like /recover-session)
-      if (
-        new RegExp(/\/customer\/entry$/).exec(url) ||
-        new RegExp(/\/customer\/entry\?/).exec(url)
-      ) {
+      // Customer entry (exact path only)
+      if (url.endsWith('/customer/entry')) {
         return fulfillJson(route, null, origin)
       }
 
@@ -175,15 +158,12 @@ function corsHeaders(origin: string): Record<string, string> {
   }
 }
 
-async function fulfillJson(
-  route: Parameters<Parameters<(typeof import('@playwright/test').Page)['route']>[1]>[0],
-  data: unknown,
-  origin: string,
-  status = 200,
-) {
+async function fulfillJson(route: Route, data: unknown, origin: string, status = 200) {
   // Prevent double-wrapping if the data already follows the { data, success } pattern
-  const isAlreadyWrapped = data && typeof data === 'object' && 'success' in data && 'data' in data
-  const responseBody = isAlreadyWrapped ? data : { data, success: status < 400 }
+  const isAlreadyWrapped = data && typeof data === 'object' && ('data' in data || 'success' in data)
+  const responseBody = isAlreadyWrapped
+    ? { success: status < 400, ...(data as object) }
+    : { data, success: status < 400 }
 
   await route.fulfill({
     status,
@@ -193,4 +173,4 @@ async function fulfillJson(
   })
 }
 
-export { expect } from '@playwright/test'
+export { expect, type Page, type Route } from '@playwright/test'

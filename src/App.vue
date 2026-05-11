@@ -5,7 +5,7 @@
  * Layout is determined by the route definition, not by this component.
  */
 
-import { useSeoMeta } from '@unhead/vue'
+import { useSeoMeta, useHead } from '@unhead/vue'
 import { onMounted, defineAsyncComponent, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -16,6 +16,10 @@ const route = useRoute()
 const currentSeo = computed(() => {
   const path = route.path.replace(/\/$/, '') || '/'
   return seoConfig[path as keyof typeof seoConfig] || seoConfig['/']
+})
+
+useHead({
+  htmlAttrs: { lang: 'en' },
 })
 
 useSeoMeta({

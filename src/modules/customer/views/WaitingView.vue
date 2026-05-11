@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { ref, computed, onBeforeMount, onMounted, onUnmounted, watch } from 'vue'
+import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
@@ -106,7 +106,7 @@ onBeforeMount(async () => {
   // 3. Ensure queue context is available for estWaitMin calculation
   const queueId = router.currentRoute.value.params.queueId as string
   if (queueId) {
-    await queueStore.initializeQueueById(queueId)
+    await queueStore.IntializeQueueByIdOrCode(queueId)
   }
 
   // 4. Ensure SSE stream is active

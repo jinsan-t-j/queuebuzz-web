@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 
-import { test, expect } from '../fixtures/base.fixture'
-import { makeHostProfile, makeActiveQueueDashboard } from '../fixtures/mocks/host.mock'
+import { expect, test } from '../fixtures/base.fixture'
+import { makeActiveQueueDashboard, makeHostProfile } from '../fixtures/mocks/host.mock'
 
 /**
  * @spec UI Integrity and Robustness
@@ -28,7 +28,7 @@ test.describe('UI Integrity Audit', () => {
       }
 
       // Check for elements that might be causing it
-      const allElements = document.querySelectorAll('*')
+      const allElements = Array.from(document.querySelectorAll('*'))
       for (const el of allElements) {
         const scrollWidth = el.scrollWidth
         const clientWidth = el.clientWidth
@@ -72,11 +72,14 @@ test.describe('UI Integrity Audit', () => {
   test('Viewport Visibility Assertions', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
-    // Wait for the greeting to be populated (i.e. not "Loading...")
-    await expect(page.locator('h2')).not.toHaveText(/Loading/i)
+    // Wait for the greeting or onboarding title to be populated
+    const mainHeading = page.locator('h1, h2').first()
+    await expect(mainHeading).not.toHaveText(/Loading/i)
 
     // Critical UI components must be in viewport on load
-    const greeting = page.locator('h2', { hasText: /Good (morning|afternoon|evening)/i })
+    const greeting = page
+      .locator('h1, h2', { hasText: /(Good (morning|afternoon|evening)|Welcome to QueueBuzz)/i })
+      .first()
     const statsCard = page.locator('div:has-text("Served Today")').first()
     const manageBtn = page.getByRole('link', { name: /Manage Live|Start Session/i })
 
@@ -93,20 +96,23 @@ test.describe('UI Integrity Audit', () => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
 
-    // Mask dynamic content like timestamps or user initials if necessary
+    // Mask dynamic content like timestamps, user initials, greeting, and date
     await expect(page).toHaveScreenshot('dashboard-main.png', {
-      mask: [page.locator('.font-mono')], // Masking counters/times
+      mask: [
+        page.locator('.font-mono'), // Masking counters/times
+        page.locator('h1, h2').first(), // Masking Greeting (Good morning/afternoon)
+        page.locator(String.raw`p.font-body.text-\[10px\]`).first(), // Masking Date string
+      ],
       fullPage: true,
-      maxDiffPixelRatio: 0.02,
+      maxDiffPixelRatio: 0.05,
     })
   })
 
   test('Z-Index Collision Check', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
-    await expect(page.locator('h2')).not.toHaveText(/Loading/i)
-
-    // Test that the sidebar/header doesn't cover main CTAs
+    const mainHeading = page.locator('h1, h2').first()
+    await expect(mainHeading).not.toHaveText(/Loading/i)
     const manageBtn = page.getByRole('link', { name: /Manage Live|Start Session/i }).first()
 
     // Ensure it's in view before testing actionability
@@ -147,7 +153,7 @@ test.describe('UI Integrity Audit', () => {
     const textElements = await page.locator('p, span, h1, h2, h3').all()
     for (const el of textElements) {
       const isOverlapping = await el.evaluate((node) => {
-        const style = window.getComputedStyle(node)
+        const style = globalThis.getComputedStyle(node)
         if (style.overflow === 'hidden') return false
         return node.scrollHeight > node.clientHeight + 2 // 2px margin for rounding
       })

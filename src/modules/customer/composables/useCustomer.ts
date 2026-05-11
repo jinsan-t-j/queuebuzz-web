@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router'
 
 import { useCapture } from '@/composables/useCapture'
 import { useToast } from '@/composables/useToast'
-import * as CustomerActions from '@/modules/customer/actions/customer.action'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import type { JoinQueuePayload } from '@/modules/customer/types'
 import { useQueueStore } from '@/stores/queue.store'
@@ -28,14 +27,17 @@ export function useCustomer() {
     return result
   }
 
-  async function handleJoinByCode(code: string) {
+  async function handleJoinByCode(code?: string, targetQueue?: string) {
     store.isLoading = true
     store.error = null
     try {
-      const result = await CustomerActions.joinByCode(code)
-      if (result.found && result.queueId) {
+      const result = await queueStore.fetchQueueByIdOrSlugOrCode(targetQueue, code)
+      if (result?.id) {
         store.error = null
-        router.push({ name: 'customer-join', params: { queueId: result.queueId } })
+        router.push({
+          name: 'customer-join',
+          params: { queueId: result.slug ?? result.id, code: result.joinCode },
+        })
         return result
       }
       store.error = 'Invalid join code. Please try again.'

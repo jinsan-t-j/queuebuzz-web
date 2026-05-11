@@ -37,7 +37,7 @@ onBeforeMount(async () => {
 
   const queueId = router.currentRoute.value.params.queueId as string
   if (queueId) {
-    await queueStore.initializeQueueById(queueId)
+    await queueStore.IntializeQueueByIdOrCode(queueId)
   }
 
   disconnectEvents()

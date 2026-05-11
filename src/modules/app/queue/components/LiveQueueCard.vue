@@ -4,7 +4,7 @@
  * @description Live queue card with search bar, guest entries list,
  * "Call Next Guest" button, and optional "Terminate Queue" button.
  */
-import { ref, computed, onMounted, onUnmounted, watch, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
@@ -497,7 +497,6 @@ function resetFilters() {
         <template v-else-if="strictQueueMode && hasActiveCalledEntry">
           Serve current guest first
         </template>
-        <template v-else-if="activeEntries.length === 0">No guests waiting in line</template>
       </p>
     </div>
 
