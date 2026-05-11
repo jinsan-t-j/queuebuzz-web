@@ -3,15 +3,15 @@
  * @component SettingsForm
  * @description Refactored Host settings form using settingsStore and Base components.
  */
-import { ref, onMounted, computed, defineAsyncComponent, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 
-import { useSettingsStore } from '@/stores/settings.store'
-
-import BaseInput from '@/components/base/BaseInput.vue'
-import BaseToggle from '@/components/base/BaseToggle.vue'
-import BaseSlider from '@/components/base/BaseSlider.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseSlider from '@/components/base/BaseSlider.vue'
+import BaseToggle from '@/components/base/BaseToggle.vue'
+import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
+import { useSettingsStore } from '@/stores/settings.store'
 
 const BaseImageCropper = defineAsyncComponent(
   () => import('@/components/base/BaseImageCropper.vue'),
@@ -25,8 +25,6 @@ const SettingsDangerZone = defineAsyncComponent(() => import('./SettingsDangerZo
 
 const SettingsActionBar = defineAsyncComponent(() => import('./SettingsActionBar.vue'))
 
-import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
-
 const settingsStore = useSettingsStore()
 const { userSettings, isLoading, isSaving, error } = storeToRefs(settingsStore)
 
@@ -34,7 +32,6 @@ const subscription = ref<Subscription | null>(null)
 const canCustomBranding = computed(() => subscription.value?.canCustomBranding ?? false)
 const isFetchingSub = ref(false)
 
-// Local form state
 const form = ref({
   name: '',
   business_name: '',
@@ -270,8 +267,19 @@ async function handleSave() {
   isDirty.value = false
 }
 
-function handleDiscard() {
+async function handleDiscard() {
   syncForm()
+}
+
+async function refreshSubscription() {
+  isFetchingSub.value = true
+  try {
+    subscription.value = await fetchSubscription()
+  } catch {
+    // Silently fail
+  } finally {
+    isFetchingSub.value = false
+  }
 }
 </script>
 
@@ -587,7 +595,11 @@ function handleDiscard() {
         </div>
       </BaseCard>
 
-      <SettingsSubscriptionSection />
+      <SettingsSubscriptionSection
+        :subscription="subscription"
+        :is-loading="isFetchingSub"
+        @refresh="refreshSubscription"
+      />
 
       <SettingsDangerZone />
     </template>

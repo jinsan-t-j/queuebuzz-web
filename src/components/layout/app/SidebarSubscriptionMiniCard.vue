@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { Sparkles, ArrowRight, CreditCard } from 'lucide-vue-next'
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Sparkles, ArrowRight, CreditCard } from 'lucide-vue-next'
+
 import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
 
 const router = useRouter()

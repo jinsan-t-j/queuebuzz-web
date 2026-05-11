@@ -5,18 +5,21 @@
  * Layout is determined by the route definition, not by this component.
  */
 
+import { useSeoMeta, useHead } from '@unhead/vue'
 import { onMounted, defineAsyncComponent, computed } from 'vue'
-import { useSeoMeta } from '@unhead/vue'
-import { useToast } from '@/composables/useToast'
-
-import seoConfig from '@/config/seo.constants.json'
-
 import { useRoute } from 'vue-router'
+
+import { useToast } from '@/composables/useToast'
+import seoConfig from '@/config/seo.constants.json'
 
 const route = useRoute()
 const currentSeo = computed(() => {
   const path = route.path.replace(/\/$/, '') || '/'
   return seoConfig[path as keyof typeof seoConfig] || seoConfig['/']
+})
+
+useHead({
+  htmlAttrs: { lang: 'en' },
 })
 
 useSeoMeta({

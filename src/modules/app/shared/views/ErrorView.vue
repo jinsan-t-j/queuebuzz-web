@@ -5,8 +5,9 @@
  * Standardized with QueueBuzz UI (Sand background, white card, plum text).
  */
 import { computed } from 'vue'
-import BaseButton from '@/components/base/BaseButton.vue'
+
 import QueueBuzzLogoBg from '@/assets/icons/queuebuzz-logo-bg.svg?component'
+import BaseButton from '@/components/base/BaseButton.vue'
 
 interface Props {
   title?: string

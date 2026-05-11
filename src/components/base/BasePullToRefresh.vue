@@ -7,8 +7,8 @@
  * @prop {Boolean} isRefreshing - Current refreshing state (manual control if needed).
  * @emits {refresh} - Emitted when pull distance exceeds threshold.
  */
-import { ref, onMounted, onUnmounted } from 'vue'
 import { RefreshCw } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   isRefreshing: {

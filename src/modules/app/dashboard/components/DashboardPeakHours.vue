@@ -9,8 +9,9 @@
  */
 
 import { computed, ref } from 'vue'
-import BasePillSelector from '@/components/base/BasePillSelector.vue'
+
 import PeakEmptyIcon from '@/assets/icons/peak-empty.svg?component'
+import BasePillSelector from '@/components/base/BasePillSelector.vue'
 
 interface PeakData {
   hour: string

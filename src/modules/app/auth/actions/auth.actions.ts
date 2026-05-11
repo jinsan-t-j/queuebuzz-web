@@ -1,5 +1,5 @@
-import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
+import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import type { AuthUser } from '@/modules/app/auth/types'
 import { ApiSuccessResponse } from '@/types/app'
 

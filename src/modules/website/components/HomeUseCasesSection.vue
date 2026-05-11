@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { Component } from 'vue'
 import { ArrowRight } from 'lucide-vue-next'
+import { ref } from 'vue'
+
 import BaseCard from '@/components/base/BaseCard.vue'
+
+import type { Component } from 'vue'
 
 defineProps<{
   useCases: { title: string; description: string; icon: Component }[]

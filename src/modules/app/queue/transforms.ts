@@ -1,5 +1,5 @@
-import type { QueueEntry } from '@/modules/app/queue/types'
 import type { QueueEntryStatus } from '@/modules/app/queue/constants'
+import type { QueueEntry } from '@/modules/app/queue/types'
 
 export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
   return {

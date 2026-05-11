@@ -5,18 +5,20 @@
  * Allows hosts to see guest details and take actions like Call, Serve, or Skip.
  */
 import { computed } from 'vue'
-import type { QueueEntry } from '../types'
-import BaseButton from '@/components/base/BaseButton.vue'
+
+import PartyIcon from '@/assets/icons/add-person.svg?component'
+import CallNextIcon from '@/assets/icons/call-next.svg?component'
+import CheckIcon from '@/assets/icons/check-mint.svg?component'
+import ClockTimeIcon from '@/assets/icons/clock-time.svg?component'
+import CloseXIcon from '@/assets/icons/close-x.svg?component'
 import BaseBadge from '@/components/base/BaseBadge.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 
 // Icons
-import CloseXIcon from '@/assets/icons/close-x.svg?component'
-import CallNextIcon from '@/assets/icons/call-next.svg?component'
-import ClockTimeIcon from '@/assets/icons/clock-time.svg?component'
-import PartyIcon from '@/assets/icons/add-person.svg?component'
-import CheckIcon from '@/assets/icons/check-mint.svg?component'
+
+import type { QueueEntry } from '../types'
 
 const props = defineProps<{
   entry: QueueEntry

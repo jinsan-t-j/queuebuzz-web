@@ -6,30 +6,24 @@
  */
 
 // 1. Vue core imports
-import { ref, computed } from 'vue'
 
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
 import { useMutation } from '@tanstack/vue-query'
-import { authenticate } from '@/modules/app/auth/actions/auth.actions'
-import { useToast } from '@/composables/useToast'
-import { getErrorMessage } from '@/utils/api-response'
+import { computed, ref } from 'vue'
+
 // 5. Component imports
-import ClockWarningOrangeIcon from '@/assets/icons/clock-warning-orange.svg?component'
+import ArrowRightMutedIcon from '@/assets/icons/arrow-right-muted.svg?component'
+import ArrowRightIcon from '@/assets/icons/arrow-right.svg?component'
 import CheckCircleIcon from '@/assets/icons/check-circle.svg?component'
 import CheckMintIcon from '@/assets/icons/check-mint.svg?component'
-import ArrowRightIcon from '@/assets/icons/arrow-right.svg?component'
-import ArrowRightMutedIcon from '@/assets/icons/arrow-right-muted.svg?component'
+import ClockWarningOrangeIcon from '@/assets/icons/clock-warning-orange.svg?component'
 import ErrorCircleIcon from '@/assets/icons/error-circle.svg?component'
 import LockIcon from '@/assets/icons/lock.svg?component'
 import WarningTriangleIcon from '@/assets/icons/warning-triangle.svg?component'
-
+import { useToast } from '@/composables/useToast'
+import { authenticate } from '@/modules/app/auth/actions/auth.actions'
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
+import { getErrorMessage } from '@/utils/api-response'
 
-// 6. Props
 const props = defineProps({
   reason: {
     type: String,
@@ -40,14 +34,8 @@ const props = defineProps({
     default: '',
   },
 })
-
-// 7. Emits
-// const emit = defineEmits(['send-sign-in-link', 'update:email'])
-
-// 8. Composable destructuring
 const { showToast } = useToast()
 
-// 9. Reactive state
 const localEmail = ref(props.email)
 
 const { mutate: mutateAuth, isPending } = useMutation({
@@ -74,7 +62,6 @@ const features = ref([
   'Priority SMS notifications',
 ])
 
-// 10. Computed properties
 const config = computed(() => {
   switch (props.reason) {
     case QUEUE_ERROR_REASONS.TERMINATED:
@@ -134,7 +121,6 @@ const config = computed(() => {
   }
 })
 
-// 11. Methods
 function handleSendLink() {
   if (!localEmail.value) {
     showToast('Please enter your email address', { type: 'error' })
@@ -149,8 +135,6 @@ function handleSendLink() {
 
   mutateAuth(localEmail.value)
 }
-
-// 12. Lifecycle hooks
 </script>
 
 <template>

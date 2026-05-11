@@ -5,19 +5,19 @@
  * Shows ticket number prominently with QR option and I'm Here CTA.
  */
 
-import { ref, watch, computed, onBeforeMount, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
+import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
+import { useToast } from '@/composables/useToast'
+import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useQueueStore } from '@/stores/queue.store'
-import { useToast } from '@/composables/useToast'
-import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
 
-import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
-import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import EntryQrModal from '../components/EntryQrModal.vue'
-import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
+import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
 
 defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'service-finished'])
 const router = useRouter()
@@ -115,7 +115,7 @@ onBeforeMount(async () => {
   // 3. Ensure queue context is available for estWaitMin calculation
   const queueId = router.currentRoute.value.params.queueId as string
   if (queueId) {
-    await queueStore.initializeQueueById(queueId)
+    await queueStore.IntializeQueueByIdOrCode(queueId)
   }
 
   if (entry.value?.id) {

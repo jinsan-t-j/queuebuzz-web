@@ -1,48 +1,50 @@
 import { defineStore } from 'pinia'
 
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
+import { getFCMTokenDetails } from '@/lib/firebase'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
-import type {
-  QueueEntry,
-  QueueRecord,
-  QueueSseEnvelopeMap,
-  QueueStatusEventData,
-  AddQueueEntryPayload,
-  UpdateQueuePayload,
-} from '@/modules/app/queue/types'
+import { fetchHistory, fetchHistoryDetail } from '@/modules/app/history/actions/history.action'
 import type {
   HistoryDetail,
   HistoryQueryParams,
   HistoryQueryResult,
 } from '@/modules/app/history/types'
-import { fetchHistory, fetchHistoryDetail } from '@/modules/app/history/actions/history.action'
-import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import {
+  addQueueEntry as apiAddQueueEntry,
+  callEntry as apiCallEntry,
+  claimQueue as apiClaimQueue,
+  registerHostFCM as apiRegisterHostFCM,
+  serveGuest as apiServeGuest,
+  unregisterHostFCM as apiUnregisterHostFCM,
+  updateQueue as apiUpdateQueue,
+  findQueueByIdOrSlugOrCode,
   getLiveQueue,
   getLiveQueueById,
   pauseQueue,
   resumeQueue,
   terminateQueue,
-  addQueueEntry as apiAddQueueEntry,
-  callEntry as apiCallEntry,
-  updateQueue as apiUpdateQueue,
-  serveGuest as apiServeGuest,
-  registerHostFCM as apiRegisterHostFCM,
-  unregisterHostFCM as apiUnregisterHostFCM,
-  claimQueue as apiClaimQueue,
 } from '@/modules/app/queue/actions/queue.action'
-import { normalizeLiveQueueEntries, normalizeQueueEntry } from '@/modules/app/queue/transforms'
 import {
+  ENTRY_STATUS,
   QUEUE_ERROR_REASONS,
   QUEUE_STATUS,
-  ENTRY_STATUS,
-  type QueueStatus,
   type QueueEntryStatus,
+  type QueueStatus,
 } from '@/modules/app/queue/constants'
-import { useNotificationStore } from './notification.store'
-import { useDashboardStore } from './dashboard.store'
-import { getFCMTokenDetails } from '@/lib/firebase'
+import { normalizeLiveQueueEntries, normalizeQueueEntry } from '@/modules/app/queue/transforms'
+import type {
+  AddQueueEntryPayload,
+  QueueEntry,
+  QueueRecord,
+  QueueSseEnvelopeMap,
+  QueueStatusEventData,
+  UpdateQueuePayload,
+} from '@/modules/app/queue/types'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { ApiError, getErrorMessage } from '@/utils/api-response'
+
+import { useDashboardStore } from './dashboard.store'
+import { useNotificationStore } from './notification.store'
 
 let visibilityHandler: (() => void) | null = null
 
@@ -199,11 +201,13 @@ export const useQueueStore = defineStore('queue', {
       return queue
     },
 
-    async initializeQueueById(id: string, silent = false) {
+    async IntializeQueueByIdOrCode(id?: string, code?: string, silent = false) {
       if (!silent) this.isLoading = true
       try {
-        await this.fetchQueueById(id, silent)
-        this.connectToPublicEvents(id)
+        const queue = await this.fetchQueueByIdOrSlugOrCode(id, code)
+        if (queue) {
+          this.connectToPublicEvents(queue.id)
+        }
         return !!this.activeQueue
       } finally {
         this.isLoading = false
@@ -219,7 +223,6 @@ export const useQueueStore = defineStore('queue', {
         return
       }
 
-      // If missing from memory (e.g. on page refresh), fetch it directly by the ID from the URL
       const queue = await this.fetchQueueById(id)
       if (queue) {
         this.connectToEvents(queue.id)
@@ -301,7 +304,7 @@ export const useQueueStore = defineStore('queue', {
           }
 
           if (this.error) {
-            this.clearQueue()
+            this.clearQueue(true)
           }
         },
         events: {
@@ -659,12 +662,14 @@ export const useQueueStore = defineStore('queue', {
       this.hostFcmToken = null
     },
 
-    clearQueue() {
+    clearQueue(keepError = false) {
       this.disconnectLiveUpdates()
       this.activeQueue = null
       this.entries = []
       this.isLoading = false
-      this.error = null
+      if (!keepError) {
+        this.error = null
+      }
       this.streamState = 'idle'
       this.sseClient = null
       this.connectedQueueId = null
@@ -700,6 +705,35 @@ export const useQueueStore = defineStore('queue', {
       } catch (e: unknown) {
         this.error = getErrorMessage(e, 'Failed to fetch queue detail')
         throw e
+      } finally {
+        this.isLoading = false
+      }
+    },
+
+    async fetchQueueByIdOrSlugOrCode(id?: string, code?: string) {
+      this.isLoading = true
+      this.error = null
+      try {
+        const result = await findQueueByIdOrSlugOrCode(id, code)
+        if (result) {
+          this.setActiveQueue(result)
+          return result
+        }
+        return null
+      } catch (e: unknown) {
+        const error = e as ApiError
+        if (error.response?.status === 404) {
+          this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
+        } else if (error.response?.status === 401) {
+          this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
+        } else if (error.response?.status === 403) {
+          this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
+        } else if (error.response?.status === 410) {
+          this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
+        } else {
+          this.error = error.response?.data?.message || QUEUE_ERROR_REASONS.UNKNOWN
+        }
+        return null
       } finally {
         this.isLoading = false
       }

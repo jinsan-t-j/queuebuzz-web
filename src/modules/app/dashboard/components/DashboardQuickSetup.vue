@@ -9,6 +9,7 @@
  */
 
 import { Check, ChevronRight, Lock } from 'lucide-vue-next'
+
 import type { SetupStep } from '../types'
 
 withDefaults(

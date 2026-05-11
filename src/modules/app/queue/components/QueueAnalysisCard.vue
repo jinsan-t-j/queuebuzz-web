@@ -11,6 +11,7 @@
  * @prop {Array} chartBars - Data values for the activity bar chart.
  */
 import { computed } from 'vue'
+
 import TrendUpIcon from '@/assets/icons/trend-up.svg?component'
 
 interface Props {

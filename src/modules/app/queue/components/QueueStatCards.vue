@@ -18,8 +18,8 @@
 // 4. Local composables
 
 // 5. Component imports
-import HourglassIcon from '@/assets/icons/hourglass.svg?component'
 import ClockWaitIcon from '@/assets/icons/clock-wait.svg?component'
+import HourglassIcon from '@/assets/icons/hourglass.svg?component'
 
 // 6. Props
 defineProps({

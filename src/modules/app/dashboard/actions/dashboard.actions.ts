@@ -1,5 +1,5 @@
-import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
+import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import type { DashboardData } from '@/modules/app/dashboard/types'
 import type { ApiSuccessResponse } from '@/types/app'
 

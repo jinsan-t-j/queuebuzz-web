@@ -11,12 +11,12 @@
  * @emits {save-ticket} - Emitted when QR is tapped for fullscreen.
  */
 
+import { Download } from 'lucide-vue-next'
+import QRCode from 'qrcode'
 import { onMounted, ref } from 'vue'
 
-import QRCode from 'qrcode'
-
 import { APP_BASE_URL } from '@/config/api.constants'
-import { Download } from 'lucide-vue-next'
+
 import LeaveConfirmationModal from './LeaveConfirmationModal.vue'
 
 const props = defineProps({

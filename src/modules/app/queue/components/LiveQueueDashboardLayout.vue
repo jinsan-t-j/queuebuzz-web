@@ -5,12 +5,13 @@
  * Uses useLiveQueue composable directly for state and actions.
  */
 import { ref, defineAsyncComponent } from 'vue'
+
+import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
+import LiveSyncLoader from '@/modules/app/queue/components/LiveSyncLoader.vue'
+import LiveSyncStatus from '@/modules/app/queue/components/LiveSyncStatus.vue'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 // Critical path — renders immediately
-import LiveSyncLoader from '@/modules/app/queue/components/LiveSyncLoader.vue'
-import LiveSyncStatus from '@/modules/app/queue/components/LiveSyncStatus.vue'
-import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 
 defineProps<{
   showToastLayer?: boolean
@@ -189,6 +190,7 @@ function handleToggleStrictMode() {
             <ShareCodeCard
               :join-code="activeQueue?.joinCode"
               :share-url="queueUrl"
+              title="Queue URL"
               @show-qr="showInfoModal = true"
             />
 

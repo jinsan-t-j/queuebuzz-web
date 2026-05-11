@@ -5,11 +5,14 @@
  * quick actions, and setup progress tracking.
  */
 
-import { useRouter } from 'vue-router'
 import { ArrowRight, RefreshCw, AlertCircle } from 'lucide-vue-next'
-import type { QuickSetup } from '../types'
+import { useRouter } from 'vue-router'
+
 import BaseButton from '@/components/base/BaseButton.vue'
+
 import DashboardQuickSetup from './DashboardQuickSetup.vue'
+
+import type { QuickSetup } from '../types'
 
 defineProps<{
   userName?: string

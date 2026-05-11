@@ -1,4 +1,4 @@
-import { test, expect } from '../fixtures/base.fixture'
+import { expect, test } from '../fixtures/base.fixture'
 import { makeDashboardResponse, makeHostProfile } from '../fixtures/mocks/host.mock'
 
 /**
@@ -103,7 +103,7 @@ test.describe('Mobile Device Specifics', () => {
     await nameInput.waitFor({ state: 'visible' })
 
     // Scroll to the bottom of the form
-    const submitBtn = page.getByRole('button', { name: /Open Queue/i })
+    const submitBtn = page.getByRole('button', { name: /Create Queue/i })
     await submitBtn.scrollIntoViewIfNeeded()
 
     // Focus an input that would typically be obscured by a keyboard
@@ -112,8 +112,13 @@ test.describe('Mobile Device Specifics', () => {
     await slugInput.focus()
 
     // Simulate keyboard showing up by shrinking the viewport height
-    const originalSize = page.viewportSize()
-    await page.setViewportSize({ ...originalSize, height: Math.floor(originalSize.height / 2) })
+    const viewport = page.viewportSize()
+    if (!viewport) throw new Error('Viewport size not found')
+
+    const width = viewport.width
+    const height = Math.floor(viewport.height / 2)
+
+    await page.setViewportSize({ width, height })
 
     // Input should still be in viewport or scrolled into view
     // Give it a moment to react to viewport change
@@ -123,7 +128,7 @@ test.describe('Mobile Device Specifics', () => {
     await expect(slugInput).toBeInViewport()
 
     // Restore
-    await page.setViewportSize(originalSize)
+    await page.setViewportSize({ width: viewport.width, height: viewport.height })
   })
 
   test('Safe Area Inset Awareness', async ({ page }) => {

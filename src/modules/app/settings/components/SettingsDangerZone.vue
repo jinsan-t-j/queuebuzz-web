@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
-import { useSettingsStore } from '@/stores/settings.store'
+
 import BaseButton from '@/components/base/BaseButton.vue'
+import { useSettingsStore } from '@/stores/settings.store'
 
 const ClearQueueHistoryConfirmModal = defineAsyncComponent(
   () => import('./ClearQueueHistoryConfirmModal.vue'),

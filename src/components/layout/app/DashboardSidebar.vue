@@ -15,10 +15,6 @@
  * @emits {close} - User clicked to close the sidebar on mobile.
  */
 
-import { defineAsyncComponent, watch } from 'vue'
-import type { Component } from 'vue'
-import { useRoute } from 'vue-router'
-import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 import { useLocalStorage, onKeyStroke } from '@vueuse/core'
 import {
   PanelsTopLeft,
@@ -29,6 +25,12 @@ import {
   ChevronRight,
   X,
 } from 'lucide-vue-next'
+import { defineAsyncComponent, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
+import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
+
+import type { Component } from 'vue'
 
 defineProps({
   isMobileOpen: {

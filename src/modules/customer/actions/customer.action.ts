@@ -1,13 +1,8 @@
-import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
-import type {
-  JoinQueuePayload,
-  MutationResult,
-  JoinByCodeResult,
-  JoinByCodeResponse,
-  Entry,
-} from '../types'
+import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { ApiSuccessResponse } from '@/types/app'
+
+import type { Entry, JoinQueuePayload, MutationResult } from '../types'
 
 /**
  * Customer actions for queue interaction.
@@ -23,6 +18,7 @@ export async function joinQueue(queueId: string, payload: JoinQueuePayload): Pro
     party_size: payload.partySize || 1,
     notification_enabled: payload.notificationEnabled,
     fcm_token: payload.fcmToken,
+    join_code: payload.code,
   }
 
   const response = (await apiClient.post<ApiSuccessResponse<Entry>>(
@@ -99,6 +95,19 @@ export async function recoverGuestSession(): Promise<Entry | null> {
   }
 }
 
+export async function recoverGuestSessionByToken(token: string): Promise<Entry | null> {
+  const config = createApiRequestConfig({}, { withCredentials: true, skipLogout: true })
+  try {
+    const response = (await apiClient.get<ApiSuccessResponse<Entry>>(
+      `${API_ROUTES.CUSTOMER.RECOVER_SESSION_BY_TOKEN}?token=${encodeURIComponent(token)}`,
+      config,
+    )) as unknown as ApiSuccessResponse<Entry>
+    return response.data || null
+  } catch {
+    return null
+  }
+}
+
 export async function submitRating(rating: number): Promise<MutationResult> {
   const config = createApiRequestConfig({}, { withCredentials: true })
   try {
@@ -127,29 +136,5 @@ export async function updateEntry(payload: {
     return { success: true }
   } catch {
     return { success: false }
-  }
-}
-
-export async function joinByCode(code: string): Promise<JoinByCodeResult> {
-  const config = createApiRequestConfig()
-  try {
-    const response = (await apiClient.get<ApiSuccessResponse<JoinByCodeResponse>>(
-      API_ROUTES.CUSTOMER.JOIN_BY_CODE(code),
-      config,
-    )) as unknown as ApiSuccessResponse<JoinByCodeResponse>
-
-    const data = response.data
-
-    if (!data?.queueId) {
-      return { found: false }
-    }
-
-    return {
-      found: true,
-      queueName: data.queueName,
-      queueId: data.queueId,
-    }
-  } catch {
-    return { found: false }
   }
 }

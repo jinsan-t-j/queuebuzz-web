@@ -4,6 +4,7 @@ import prettier from 'eslint-config-prettier'
 import tseslint from 'typescript-eslint'
 import vueParser from 'vue-eslint-parser'
 import globals from 'globals'
+import importX from 'eslint-plugin-import-x'
 
 export default tseslint.config(
   {
@@ -14,6 +15,9 @@ export default tseslint.config(
   ...vue.configs['flat/recommended'],
   prettier,
   {
+    plugins: {
+      'import-x': importX,
+    },
     languageOptions: {
       parser: vueParser,
       parserOptions: {
@@ -27,6 +31,37 @@ export default tseslint.config(
       },
     },
     rules: {
+      'import-x/order': [
+        'error',
+        {
+          groups: [
+            'builtin',
+            'external',
+            'internal',
+            'parent',
+            'sibling',
+            'index',
+            'object',
+            'type',
+          ],
+          pathGroups: [
+            {
+              pattern: '@/**',
+              group: 'internal',
+              position: 'after',
+            },
+          ],
+          pathGroupsExcludedImportTypes: ['builtin'],
+          alphabetize: {
+            order: 'asc',
+            caseInsensitive: true,
+          },
+          'newlines-between': 'always',
+        },
+      ],
+      'import-x/first': 'error',
+      'import-x/newline-after-import': 'error',
+      'import-x/no-duplicates': 'error',
       'vue/component-api-style': ['error', ['script-setup']],
       'vue/define-macros-order': ['error', { order: ['defineProps', 'defineEmits'] }],
       'vue/no-v-html': 'error',

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { Quote } from 'lucide-vue-next'
+import { ref, onMounted } from 'vue'
+
 import { useWebsiteData } from '@/modules/website/composables/useWebsiteData'
 
 const { testimonials, scrollY, observeElement } = useWebsiteData()

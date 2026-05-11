@@ -10,8 +10,9 @@
  */
 
 import { computed, ref } from 'vue'
-import BasePillSelector from '@/components/base/BasePillSelector.vue'
+
 import MountainEmptyIcon from '@/assets/icons/mountain-empty.svg?component'
+import BasePillSelector from '@/components/base/BasePillSelector.vue'
 
 interface ChartData {
   day: string

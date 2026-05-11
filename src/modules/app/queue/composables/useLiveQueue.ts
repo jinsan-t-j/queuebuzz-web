@@ -1,11 +1,13 @@
-import { ref, computed, onScopeDispose, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useQueueStore } from '@/stores/queue.store'
+import { computed, onMounted, onScopeDispose, ref } from 'vue'
+
 import { useToast } from '@/composables/useToast'
-import { useQueueAnalysis } from './useQueueAnalysis'
+import { APP_BASE_URL } from '@/config/api.constants'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 import type { LiveQueueGuestInput, UpdateQueuePayload } from '@/modules/app/queue/types'
-import { APP_BASE_URL } from '@/config/api.constants'
+import router from '@/router'
+import { useQueueStore } from '@/stores/queue.store'
+
+import { useQueueAnalysis } from './useQueueAnalysis'
 
 type SearchEmitter = (value: string) => void
 
@@ -20,7 +22,6 @@ const isTerminating = ref(false)
 
 export function useLiveQueue() {
   const store = useQueueStore()
-  const router = useRouter()
   const { showToast } = useToast()
   const analysis = useQueueAnalysis()
 
@@ -87,7 +88,7 @@ export function useLiveQueue() {
     const route = router.resolve({
       name: 'customer-join',
       params: {
-        queueId: store.activeQueue.id,
+        queueId: store.activeQueue.slug || store.activeQueue.id,
         code: store.activeQueue.joinCode,
       },
     })

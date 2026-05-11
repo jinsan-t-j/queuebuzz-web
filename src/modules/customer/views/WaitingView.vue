@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import { ref, computed, onBeforeMount, onMounted, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useQueueStore } from '@/stores/queue.store'
-import { useToast } from '@/composables/useToast'
 import { storeToRefs } from 'pinia'
+import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
-import TicketHero from '@/modules/customer/components/TicketHero.vue'
-import WaitingStats from '@/modules/customer/components/WaitingStats.vue'
-import WaitingProgress from '@/modules/customer/components/WaitingProgress.vue'
-import WaitingAdUnit from '@/modules/customer/components/WaitingAdUnit.vue'
-import TicketSaveBar from '@/modules/customer/components/TicketSaveBar.vue'
-import CustomerSettingsModal from '@/modules/customer/components/CustomerSettingsModal.vue'
+import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
 import BaseCard from '@/components/base/BaseCard.vue'
+import { useToast } from '@/composables/useToast'
+import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import CustomerSettingsModal from '@/modules/customer/components/CustomerSettingsModal.vue'
 import PWABanner from '@/modules/customer/components/PWABanner.vue'
 import TicketCaptureTemplate from '@/modules/customer/components/TicketCaptureTemplate.vue'
-import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import TicketHero from '@/modules/customer/components/TicketHero.vue'
+import TicketSaveBar from '@/modules/customer/components/TicketSaveBar.vue'
+import WaitingAdUnit from '@/modules/customer/components/WaitingAdUnit.vue'
+import WaitingProgress from '@/modules/customer/components/WaitingProgress.vue'
+import WaitingStats from '@/modules/customer/components/WaitingStats.vue'
+import { useQueueStore } from '@/stores/queue.store'
 
 import { useCustomer } from '../composables/useCustomer'
-import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -106,7 +106,7 @@ onBeforeMount(async () => {
   // 3. Ensure queue context is available for estWaitMin calculation
   const queueId = router.currentRoute.value.params.queueId as string
   if (queueId) {
-    await queueStore.initializeQueueById(queueId)
+    await queueStore.IntializeQueueByIdOrCode(queueId)
   }
 
   // 4. Ensure SSE stream is active

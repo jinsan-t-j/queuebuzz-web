@@ -16,6 +16,7 @@
  */
 
 import { Loader2 } from 'lucide-vue-next'
+
 import CalendarDateIcon from '@/assets/icons/calendar-date.svg?component'
 import ClockTimeIcon from '@/assets/icons/clock-time.svg?component'
 import DownloadArrowIcon from '@/assets/icons/download-arrow.svg?component'

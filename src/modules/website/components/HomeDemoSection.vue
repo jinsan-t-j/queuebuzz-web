@@ -1,12 +1,14 @@
 <script setup lang="ts">
+import { ArrowDownToLine, BarChart3, CheckCircle2, Clock, Lock, Zap } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { RouterLink } from 'vue-router'
+
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import JoinViewPreview from '@/modules/website/components/JoinViewPreview.vue'
-import { ArrowDownToLine, BarChart3, CheckCircle2, Clock, Lock, Zap } from 'lucide-vue-next'
+
 import type { Component } from 'vue'
-import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
 
 defineProps<{
   activeTab: string

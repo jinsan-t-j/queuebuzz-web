@@ -1,14 +1,16 @@
 import { defineStore } from 'pinia'
-import { useQueueStore } from '@/stores/queue.store'
+
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
 import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
+import * as CustomerActions from '@/modules/customer/actions/customer.action'
+import type { Entry, JoinQueuePayload } from '@/modules/customer/types'
 import router from '@/router'
 import { useNotificationStore } from '@/stores/notification.store'
-import type { Entry, JoinQueuePayload } from '@/modules/customer/types'
-import * as CustomerActions from '@/modules/customer/actions/customer.action'
-import { CUSTOMER_EVENTS } from '../events'
+import { useQueueStore } from '@/stores/queue.store'
 import { ApiError } from '@/utils/api-response'
 import { formatTicketNumber } from '@/utils/format'
+
+import { CUSTOMER_EVENTS } from '../events'
 
 const CUSTOMER_FCM_TOKEN_KEY = 'queuebuzz_customer_fcm_token'
 

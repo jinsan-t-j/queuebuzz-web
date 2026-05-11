@@ -15,20 +15,13 @@
  */
 
 // 1. Vue core imports
-import { ref } from 'vue'
 import DOMPurify from 'dompurify'
-
-// 2. Router / Pinia imports
-
-// 3. Third-party composables
-
-// 4. Local composables
-
-// 5. Component imports
 import { CopyIcon, CheckIcon } from 'lucide-vue-next'
-import CheckMintIcon from '@/assets/icons/check-mint.svg?component'
-import ArrowRightIcon from '@/assets/icons/arrow-right.svg?component'
+import { ref } from 'vue'
+
 import ArrowRightMutedIcon from '@/assets/icons/arrow-right-muted.svg?component'
+import ArrowRightIcon from '@/assets/icons/arrow-right.svg?component'
+import CheckMintIcon from '@/assets/icons/check-mint.svg?component'
 
 // 6. Props
 const props = defineProps({

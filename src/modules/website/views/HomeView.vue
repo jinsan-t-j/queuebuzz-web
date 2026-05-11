@@ -4,29 +4,28 @@
  * @description Landing page for QueueBuzz — composed from isolated section components
  * for faster page loading, better code-splitting, and maintainability.
  */
-import { onMounted, computed, defineAsyncComponent } from 'vue'
 import { useSeoMeta } from '@unhead/vue'
 import { storeToRefs } from 'pinia'
-import { useQueueStore } from '@/stores/queue.store'
-import { useAuthStore } from '@/stores/auth.store'
-import { useWebsiteData } from '@/modules/website/composables/useWebsiteData'
+import { onMounted, computed, defineAsyncComponent } from 'vue'
 
 import seoConfig from '@/config/seo.constants.json'
+import HomeCTA from '@/modules/website/components/HomeCTA.vue'
+import HomeDemoSection from '@/modules/website/components/HomeDemoSection.vue'
+import HomeFaqSection from '@/modules/website/components/HomeFaqSection.vue'
+import HomeFeaturesSection from '@/modules/website/components/HomeFeaturesSection.vue'
+import HomeHeroSection from '@/modules/website/components/HomeHeroSection.vue'
+import HomeHowItWorksSection from '@/modules/website/components/HomeHowItWorksSection.vue'
+import HomeImpactSection from '@/modules/website/components/HomeImpactSection.vue'
+import HomeOsStrip from '@/modules/website/components/HomeOsStrip.vue'
+import HomeTestimonials from '@/modules/website/components/HomeTestimonials.vue'
+import HomeTransformationSection from '@/modules/website/components/HomeTransformationSection.vue'
+import HomeUseCasesSection from '@/modules/website/components/HomeUseCasesSection.vue'
+import PwaLauncher from '@/modules/website/components/PwaLauncher.vue'
+import { useWebsiteData } from '@/modules/website/composables/useWebsiteData'
+import { useAuthStore } from '@/stores/auth.store'
+import { useQueueStore } from '@/stores/queue.store'
 
 useSeoMeta(seoConfig['/'])
-
-import PwaLauncher from '@/modules/website/components/PwaLauncher.vue'
-import HomeHeroSection from '@/modules/website/components/HomeHeroSection.vue'
-import HomeOsStrip from '@/modules/website/components/HomeOsStrip.vue'
-import HomeFeaturesSection from '@/modules/website/components/HomeFeaturesSection.vue'
-import HomeHowItWorksSection from '@/modules/website/components/HomeHowItWorksSection.vue'
-import HomeDemoSection from '@/modules/website/components/HomeDemoSection.vue'
-import HomeUseCasesSection from '@/modules/website/components/HomeUseCasesSection.vue'
-import HomeTransformationSection from '@/modules/website/components/HomeTransformationSection.vue'
-import HomeImpactSection from '@/modules/website/components/HomeImpactSection.vue'
-import HomeFaqSection from '@/modules/website/components/HomeFaqSection.vue'
-import HomeTestimonials from '@/modules/website/components/HomeTestimonials.vue'
-import HomeCTA from '@/modules/website/components/HomeCTA.vue'
 
 const ActiveQueueBanner = defineAsyncComponent(() => import('../components/ActiveQueueBanner.vue'))
 const queueStore = useQueueStore()

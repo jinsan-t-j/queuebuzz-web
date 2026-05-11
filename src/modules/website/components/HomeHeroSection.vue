@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import type { Component } from 'vue'
 import {
   ArrowRight,
   ShieldCheck,
@@ -19,8 +17,12 @@ import {
   Timer,
   Wifi,
 } from 'lucide-vue-next'
-import BaseButton from '@/components/base/BaseButton.vue'
+import { ref, onMounted } from 'vue'
+
 import BaseBadge from '@/components/base/BaseBadge.vue'
+import BaseButton from '@/components/base/BaseButton.vue'
+
+import type { Component } from 'vue'
 
 defineProps<{
   heroBadge: string

@@ -8,8 +8,9 @@
  * @emits {copy-link} - "Copy Link" clicked.
  * @emits {show-qr} - "Show QR" clicked.
  */
-import { ref } from 'vue'
 import { useClipboard } from '@vueuse/core'
+import { ref } from 'vue'
+
 import CopyLinkIcon from '@/assets/icons/copy-link.svg?component'
 import ShowQrIcon from '@/assets/icons/show-qr.svg?component'
 

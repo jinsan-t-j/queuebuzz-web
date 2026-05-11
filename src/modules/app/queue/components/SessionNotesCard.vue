@@ -4,7 +4,9 @@
  * @description Draggable sticky note for host observations.
  * Uses TipTap for rich text editing and auto-saves with debounce.
  */
-import { ref, watch, onBeforeUnmount } from 'vue'
+import Placeholder from '@tiptap/extension-placeholder'
+import StarterKit from '@tiptap/starter-kit'
+import { useEditor, EditorContent } from '@tiptap/vue-3'
 import {
   BookOpenIcon,
   Loader2Icon,
@@ -14,9 +16,7 @@ import {
   ItalicIcon,
   ListIcon,
 } from 'lucide-vue-next'
-import { useEditor, EditorContent } from '@tiptap/vue-3'
-import StarterKit from '@tiptap/starter-kit'
-import Placeholder from '@tiptap/extension-placeholder'
+import { ref, watch, onBeforeUnmount } from 'vue'
 
 const props = defineProps<{
   initialNotes?: string

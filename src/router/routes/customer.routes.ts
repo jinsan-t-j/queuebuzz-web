@@ -5,6 +5,7 @@
  */
 import { restrictActiveHostGuard } from '@/router/guards/restrictActiveHost.guard'
 import { restrictCustomerGuard } from '@/router/guards/restrictCustomer.guard'
+
 import type { RouteLocationNormalized, RouteRecordRaw } from 'vue-router'
 
 export const customerRoutes: RouteRecordRaw[] = [
@@ -12,6 +13,13 @@ export const customerRoutes: RouteRecordRaw[] = [
     path: '/q/:queueId',
     component: () => import('@/layouts/CustomerLayout.vue'),
     children: [
+      {
+        path: '',
+        redirect: (to) => ({
+          name: 'customer-join',
+          params: { queueId: to.params.queueId },
+        }),
+      },
       {
         path: 'join/:code?',
         name: 'customer-join',
@@ -24,6 +32,12 @@ export const customerRoutes: RouteRecordRaw[] = [
         name: 'customer-waiting',
         component: () => import('@/modules/customer/views/WaitingView.vue'),
         meta: { title: 'Your Position' },
+      },
+      {
+        path: 'recover',
+        name: 'customer-recover-by-token',
+        component: () => import('@/modules/customer/views/RecoverView.vue'),
+        meta: { title: 'Recover Session' },
       },
       {
         path: 'idle',

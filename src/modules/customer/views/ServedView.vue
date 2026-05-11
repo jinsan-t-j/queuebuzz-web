@@ -5,17 +5,16 @@
  * Shows ticket summary, celebration confetti, and rating prompt.
  */
 
+import { storeToRefs } from 'pinia'
 import { computed, onBeforeMount, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
 
+import ConfettiPartyIcon from '@/assets/icons/confetti-party.svg?component'
+import BaseBadge from '@/components/base/BaseBadge.vue'
+import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { useQueueStore } from '@/stores/queue.store'
-
-import BaseBadge from '@/components/base/BaseBadge.vue'
-import ConfettiPartyIcon from '@/assets/icons/confetti-party.svg?component'
-import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 
 const { resetCustomerSession } = useCustomerStore()
 const { entry, disconnectEvents, getDisplayTicketNumber } = useCustomer()
@@ -38,7 +37,7 @@ onBeforeMount(async () => {
 
   const queueId = router.currentRoute.value.params.queueId as string
   if (queueId) {
-    await queueStore.initializeQueueById(queueId)
+    await queueStore.IntializeQueueByIdOrCode(queueId)
   }
 
   disconnectEvents()

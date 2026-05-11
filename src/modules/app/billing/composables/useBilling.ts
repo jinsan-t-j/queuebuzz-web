@@ -3,11 +3,14 @@
  * @description Composable for billing operations — plan fetching, transformation,
  * comparison data, checkout flow, and auth-gated redirects.
  */
-import { useAuthStore } from '@/stores/auth.store'
 import { computed, ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
-import type { BillingPlan } from '../actions/billing.actions'
+
+import { useAuthStore } from '@/stores/auth.store'
+
 import * as billingActions from '../actions/billing.actions'
+
+import type { BillingPlan } from '../actions/billing.actions'
 
 export interface PlanLimits {
   maxQueuesPerMonth: number

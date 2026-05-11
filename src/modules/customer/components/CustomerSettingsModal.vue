@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { watch, onMounted } from 'vue'
 import { useForm } from 'vee-validate'
+import { watch, onMounted } from 'vue'
 import * as yup from 'yup'
-import { useCustomerStore } from '@/modules/customer/stores/customer.store'
-import { useCustomer } from '@/modules/customer/composables/useCustomer'
-import BaseInput from '@/components/base/BaseInput.vue'
+
+import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import { useToast } from '@/composables/useToast'
-import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
+import { useCustomer } from '@/modules/customer/composables/useCustomer'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 
 defineProps<{
   isOpen: boolean

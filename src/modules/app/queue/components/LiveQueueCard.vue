@@ -4,21 +4,23 @@
  * @description Live queue card with search bar, guest entries list,
  * "Call Next Guest" button, and optional "Terminate Queue" button.
  */
-import { ref, computed, onMounted, onUnmounted, watch, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+
+import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
+import CallNextIcon from '@/assets/icons/call-next.svg?component'
+import CheckIcon from '@/assets/icons/check-circle.svg?component'
+import SearchIcon from '@/assets/icons/search.svg?component'
+import ShieldCheckIcon from '@/assets/icons/shield-verified.svg?component'
+import BaseTooltip from '@/components/base/BaseTooltip.vue'
 import { useToast } from '@/composables/useToast'
-import type { QueueEntry } from '../types'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 
 // Icons
-import SearchIcon from '@/assets/icons/search.svg?component'
-import CallNextIcon from '@/assets/icons/call-next.svg?component'
-import ShieldCheckIcon from '@/assets/icons/shield-verified.svg?component'
-import CheckIcon from '@/assets/icons/check-circle.svg?component'
-import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 
 // Components
 import EntryDetailsModal from './EntryDetailsModal.vue'
-import BaseTooltip from '@/components/base/BaseTooltip.vue'
+
+import type { QueueEntry } from '../types'
 
 // 6. Props
 const props = defineProps<{
@@ -495,7 +497,6 @@ function resetFilters() {
         <template v-else-if="strictQueueMode && hasActiveCalledEntry">
           Serve current guest first
         </template>
-        <template v-else-if="activeEntries.length === 0">No guests waiting in line</template>
       </p>
     </div>
 

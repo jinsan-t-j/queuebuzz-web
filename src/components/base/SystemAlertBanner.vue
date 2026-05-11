@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { AlertCircle, X } from 'lucide-vue-next'
+import { ref } from 'vue'
 
 const alertMessage = import.meta.env.VITE_MAINTENANCE_MESSAGE || ''
 const isVisible = ref(import.meta.env.VITE_SHOW_MAINTENANCE_BANNER === 'true')

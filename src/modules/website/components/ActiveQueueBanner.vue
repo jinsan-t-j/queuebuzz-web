@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
 import { X as XIcon } from 'lucide-vue-next'
+import { ref } from 'vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
 
 defineProps<{

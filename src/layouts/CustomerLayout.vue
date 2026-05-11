@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { defineAsyncComponent, onMounted } from 'vue'
-import CustomerNavbar from '@/components/layout/customer/CustomerNavbar.vue'
+
 import CustomerFooter from '@/components/layout/customer/CustomerFooter.vue'
+import CustomerNavbar from '@/components/layout/customer/CustomerNavbar.vue'
 
 onMounted(() => {
   // Customer module is light-only

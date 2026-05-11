@@ -3,19 +3,18 @@
  * @component EntryEndedView
  * @description View shown when a customer's queue session ends (left, skipped, or queue closed).
  */
-import { computed, onBeforeMount } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { useQueueStore } from '@/stores/queue.store'
+import { computed, onBeforeMount } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 // Icons
+import ArrowRightIcon from '@/assets/icons/arrow-right.svg?component'
 import CheckCircleIcon from '@/assets/icons/check-circle.svg?component'
 import ErrorCircleIcon from '@/assets/icons/error-circle.svg?component'
 import WarningTriangleIcon from '@/assets/icons/warning-triangle.svg?component'
-import ArrowRightIcon from '@/assets/icons/arrow-right.svg?component'
-
 import BaseButton from '@/components/base/BaseButton.vue'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import { useQueueStore } from '@/stores/queue.store'
 
 const props = defineProps({
   reason: {
@@ -32,7 +31,7 @@ const { activeQueue } = storeToRefs(queueStore)
 onBeforeMount(async () => {
   const queueId = route.params.queueId as string
   if (queueId) {
-    await queueStore.initializeQueueById(queueId)
+    await queueStore.IntializeQueueByIdOrCode(queueId)
   }
 })
 

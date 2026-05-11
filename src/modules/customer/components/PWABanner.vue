@@ -5,8 +5,8 @@
  * as it is required for push notifications in Safari.
  * Hidden if in standalone mode or dismissed by user.
  */
-import { ref, onMounted, computed } from 'vue'
 import { X, Share } from 'lucide-vue-next'
+import { ref, onMounted, computed } from 'vue'
 
 interface NavigatorWithStandalone extends Navigator {
   standalone?: boolean

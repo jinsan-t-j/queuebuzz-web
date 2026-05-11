@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { Sparkles as SparklesIcon } from 'lucide-vue-next'
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Sparkles as SparklesIcon } from 'lucide-vue-next'
+
+import BaseButton from '@/components/base/BaseButton.vue'
 import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
 import { useBilling } from '@/modules/app/billing/composables/useBilling'
-import BaseButton from '@/components/base/BaseButton.vue'
 
 const router = useRouter()
 const { gridPlans, fetchPlans } = useBilling()

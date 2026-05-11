@@ -7,8 +7,9 @@
  *
  * Reusable: can be dropped into any context that needs a live brand preview.
  */
-import { ref } from 'vue'
 import { Clock, Upload, UserCircle2 } from 'lucide-vue-next'
+import { ref } from 'vue'
+
 import BaseImageCropper from '@/components/base/BaseImageCropper.vue'
 
 const bannerPreview = ref<string | null>(null)

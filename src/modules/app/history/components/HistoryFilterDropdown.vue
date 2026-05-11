@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 import {
   Filter as FilterIcon,
   ChevronDown as ChevronDownIcon,
   Check as CheckIcon,
 } from 'lucide-vue-next'
-import { onClickOutside } from '@vueuse/core'
+import { ref } from 'vue'
 
 defineProps<{
   activeFilter: string

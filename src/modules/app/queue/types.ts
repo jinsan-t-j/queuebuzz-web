@@ -1,4 +1,5 @@
 import type { QueueEntryStatus, QueueStatus } from './constants'
+
 export interface QueueConfig {
   name: string
 }
@@ -15,7 +16,6 @@ export interface QueueRecord {
   manualPositioning: boolean
   strictQueueMode: boolean
   collectEmails: boolean
-  recoveryEmail?: string
   hostProfileImageUrl?: string
   hostBannerImageUrl?: string
   createdAt?: string

@@ -4,8 +4,9 @@
  * @description Dialog confirming the permanent deletion of queue history.
  */
 import { AlertTriangle } from 'lucide-vue-next'
-import BaseModal from '@/components/base/BaseModal.vue'
+
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 
 defineProps<{
   isOpen: boolean

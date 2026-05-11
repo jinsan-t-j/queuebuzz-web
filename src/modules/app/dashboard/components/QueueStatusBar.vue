@@ -40,7 +40,6 @@ defineEmits(['go-to-queue', 'start-queue'])
 
 <template>
   <div
-    v-if="!isLoading"
     class="group flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border px-4 sm:px-6 py-4 transition-all duration-300 shadow-none"
     :class="isActive && !isLoading ? 'border-mint bg-mint-light' : 'border-plum-faint bg-white'"
   >
@@ -103,6 +102,7 @@ defineEmits(['go-to-queue', 'start-queue'])
 
       <!-- Remodified Action Button -->
       <router-link
+        id="start-session-link"
         :to="'/dashboard/queue'"
         :class="[
           'inline-flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 font-display text-sm font-black transition-all duration-300 sm:w-auto sm:rounded-full sm:py-2.5',

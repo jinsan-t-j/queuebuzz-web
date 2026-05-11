@@ -41,6 +41,7 @@ export const API_ROUTES = {
     CHECK_SLUG: '/queue/slug-check',
     DASHBOARD: '/queue/dashboard',
     GET_LIVE_QUEUE: '/queue/live',
+    FIND_QUEUE: () => `/queue/p/find`,
     // Public / Guest
     GET_LIVE_QUEUE_BY_ID: (id: string): string => `/queue/p/${id}/live`,
     PUBLIC_EVENTS: (id: string): string => `/queue/p/${id}/events`,
@@ -59,7 +60,6 @@ export const API_ROUTES = {
   },
   CUSTOMER: {
     JOIN_QUEUE_BY_ID: (id: string): string => `/customer/entry/join/${id}`,
-    JOIN_BY_CODE: (code: string): string => `/customer/entry/join-by-code/${code}`,
     GET_ENTRY: () => `/customer/entry`,
     ENTRY_EVENTS: () => `/customer/entry/events`,
     CONFIRM_STILL_HERE: () => `/customer/entry/confirm`,
@@ -67,6 +67,7 @@ export const API_ROUTES = {
     FINISH_SERVICE: () => `/customer/entry/finish`,
     LEAVE_GUEST: '/customer/entry/leave',
     RECOVER_SESSION: '/customer/entry/recover-session',
+    RECOVER_SESSION_BY_TOKEN: '/customer/entry/recover-by-token',
     SUBMIT_RATING: () => `/customer/entry/rating`,
     UPDATE_ENTRY: '/customer/entry/update',
   },

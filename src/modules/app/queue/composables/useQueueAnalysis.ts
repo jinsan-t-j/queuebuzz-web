@@ -1,8 +1,8 @@
 import { computed } from 'vue'
 
-import { useQueueStore } from '@/stores/queue.store'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 import type { TrendSummary } from '@/modules/app/queue/types'
+import { useQueueStore } from '@/stores/queue.store'
 
 function buildHourlyBoundaries(now: Date): { labels: string[]; boundaries: Date[] } {
   const labels: string[] = []

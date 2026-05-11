@@ -1,7 +1,8 @@
-import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
-import type { HistoryDetail, HistoryQueryParams, HistoryQueryResult } from '../types'
+import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import type { ApiSuccessResponse } from '@/types/app'
+
+import type { HistoryDetail, HistoryQueryParams, HistoryQueryResult } from '../types'
 
 /**
  * @action fetchHistory

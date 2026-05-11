@@ -4,9 +4,10 @@
  * or Customer views) if they already have an active queue session.
  * Redirects them back to their respective management view.
  */
+import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth.store'
 import { useQueueStore } from '@/stores/queue.store'
-import { useToast } from '@/composables/useToast'
+
 import type { NavigationGuardWithThis } from 'vue-router'
 
 export const restrictActiveHostGuard: NavigationGuardWithThis<undefined> = async () => {

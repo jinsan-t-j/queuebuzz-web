@@ -1,20 +1,27 @@
 <script setup lang="ts">
-import { onMounted, watch, ref, defineAsyncComponent } from 'vue'
-import { useRouter } from 'vue-router'
-import { useHistory } from '../composables/useHistory'
+import { useSeoMeta } from '@unhead/vue'
 import {
-  Search as SearchIcon,
-  Download as DownloadIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  Download as DownloadIcon,
+  Search as SearchIcon,
   X as XIcon,
 } from 'lucide-vue-next'
+import { defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
-import BaseCard from '@/components/base/BaseCard.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
-import HistoryStatsOverview from '../components/HistoryStatsOverview.vue'
-import HistoryListTable from '../components/HistoryListTable.vue'
+import BaseCard from '@/components/base/BaseCard.vue'
+
 import { fetchSubscription, type Subscription } from '../../billing/actions/billing.actions'
+import HistoryListTable from '../components/HistoryListTable.vue'
+import HistoryStatsOverview from '../components/HistoryStatsOverview.vue'
+import { useHistory } from '../composables/useHistory'
+
+useSeoMeta({
+  title: 'Queue History | QueueBuzz',
+  description: 'View and export your past queue performance.',
+})
 
 const HistoryUpgradeBanner = defineAsyncComponent(
   () => import('../components/HistoryUpgradeBanner.vue'),
@@ -68,8 +75,7 @@ const filters = [
 ]
 
 onMounted(async () => {
-  fetchHistory()
-  subscription.value = await fetchSubscription()
+  await Promise.all([fetchHistory(), fetchSubscription().then((s) => (subscription.value = s))])
 })
 
 // Search Debounce

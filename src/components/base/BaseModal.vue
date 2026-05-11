@@ -3,8 +3,8 @@
  * @component BaseModal
  * @description Accessible presentational modal with v-if lazy-rendering, focus trapping, and scroll locking.
  */
-import { ref, watch, onUnmounted, nextTick } from 'vue'
 import { useScrollLock } from '@vueuse/core'
+import { ref, watch, onUnmounted, nextTick } from 'vue'
 
 const props = defineProps<{
   isOpen: boolean

@@ -5,8 +5,9 @@
  */
 import { defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
-import LoginForm from '@/modules/app/auth/components/LoginForm.vue'
+
 import QueueBuzzLogoBg from '@/assets/icons/queuebuzz-logo-bg.svg?component'
+import LoginForm from '@/modules/app/auth/components/LoginForm.vue'
 
 const route = useRoute()
 

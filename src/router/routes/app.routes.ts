@@ -4,6 +4,7 @@
  */
 import { authGuard } from '@/router/guards/auth.guard'
 import { billingGuard } from '@/router/guards/billing.guard'
+
 import type { RouteRecordRaw } from 'vue-router'
 
 export const appRoutes: RouteRecordRaw[] = [

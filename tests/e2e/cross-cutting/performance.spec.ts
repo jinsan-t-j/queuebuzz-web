@@ -1,7 +1,9 @@
-import { test, chromium } from '@playwright/test'
-import { playAudit } from 'playwright-lighthouse'
 import * as httpNode from 'node:http'
 import * as net from 'node:net'
+
+import { test, chromium } from '@playwright/test'
+import { playAudit } from 'playwright-lighthouse'
+
 import {
   makeActiveQueueDashboard,
   makeDashboardResponse,

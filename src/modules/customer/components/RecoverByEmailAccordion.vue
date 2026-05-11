@@ -8,10 +8,10 @@
  */
 
 // 1. Vue core imports
+import { ChevronDown } from 'lucide-vue-next'
 import { ref } from 'vue'
 
 // 5. Component imports
-import { ChevronDown } from 'lucide-vue-next'
 
 // 7. Emits
 const emit = defineEmits(['submit-email'])

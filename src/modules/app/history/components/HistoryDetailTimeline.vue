@@ -3,7 +3,6 @@
  * @component HistoryDetailTimeline
  * @description Renders an interleaved session timeline with collapsible groups for arrivals.
  */
-import { ref } from 'vue'
 import {
   PlusCircleIcon,
   BellIcon,
@@ -14,6 +13,7 @@ import {
   ActivityIcon,
   FileTextIcon,
 } from 'lucide-vue-next'
+import { ref } from 'vue'
 
 interface SubEvent {
   ticketNo: string
