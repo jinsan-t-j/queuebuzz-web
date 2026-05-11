@@ -82,8 +82,13 @@ test.describe('Customer Session Recovery & Redirection', () => {
     await page.getByRole('button', { name: /leave current queue/i }).click()
     await leavePromise
 
-    // 3. Assertion: Warning should disappear and Join form should be visible
+    // 3. Assertion: Warning should disappear and Code Prompt should be visible
     await expect(page.getByText(/already in a queue/i)).not.toBeVisible()
+
+    // Type code to reach the form
+    await page.getByPlaceholder('Enter 6-digit code').fill('CLNC01')
+    await page.getByRole('button', { name: 'Verify Code' }).click()
+
     await expect(page.getByRole('button', { name: /join the queue/i })).toBeVisible()
   })
 
@@ -102,5 +107,47 @@ test.describe('Customer Session Recovery & Redirection', () => {
     const warning = page.locator('text=Already in a queue').first()
     await expect(warning).toBeVisible({ timeout: 10000 })
     await expect(page.getByRole('button', { name: /view active ticket/i })).toBeVisible()
+  })
+
+  test('should recover from email token link and redirect to the joined queue', async ({
+    page,
+    mockApi,
+  }) => {
+    await mockApi(
+      `/queue/p/${ACTIVE_QUEUE_ID}/live`,
+      makePublicQueue({ id: ACTIVE_QUEUE_ID, name: 'Recovery Clinic' }),
+    )
+    await mockApi(
+      '/customer/entry/recover-by-token',
+      makeEntryStatus('waiting', {
+        queueId: ACTIVE_QUEUE_ID,
+        id: 'entry-recovery-1',
+      }),
+    )
+
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}/recover?token=test-token`)
+
+    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/waiting`))
+    await expect(page.getByRole('heading', { name: 'Recovery Clinic' }).first()).toBeVisible()
+  })
+
+  test('should show a recovery error when the token is missing or invalid', async ({
+    page,
+    mockApi,
+  }) => {
+    await mockApi(
+      `/queue/p/${ACTIVE_QUEUE_ID}/live`,
+      makePublicQueue({ id: ACTIVE_QUEUE_ID, name: 'Recovery Clinic' }),
+    )
+    await mockApi('/customer/entry/recover-by-token', { message: 'expired' }, 401)
+
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}/recover?token=expired-token`)
+    await expect(page.getByText('Session recovery failed')).toBeVisible()
+    await expect(
+      page.getByText('This recovery link is invalid or has already been used.'),
+    ).toBeVisible()
+
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}/recover`)
+    await expect(page.getByText('Missing recovery token.')).toBeVisible()
   })
 })

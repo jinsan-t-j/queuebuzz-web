@@ -14,7 +14,11 @@ test.describe('Customer Join', () => {
 
     await page.goto('/q/q-123/join')
 
-    // Queue name should be visible
+    // Enter join code first
+    await page.getByPlaceholder('Enter 6-digit code').fill('CLNC01')
+    await page.getByRole('button', { name: 'Verify Code' }).click()
+
+    // Queue name should be visible after verification
     await expect(page.getByRole('heading', { name: 'Morning Consultation' })).toBeVisible({
       timeout: 8000,
     })
