@@ -67,6 +67,7 @@ export const API_ROUTES = {
     FINISH_SERVICE: () => `/customer/entry/finish`,
     LEAVE_GUEST: '/customer/entry/leave',
     RECOVER_SESSION: '/customer/entry/recover-session',
+    RECOVER_SESSION_BY_TOKEN: '/customer/entry/recover-by-token',
     SUBMIT_RATING: () => `/customer/entry/rating`,
     UPDATE_ENTRY: '/customer/entry/update',
   },

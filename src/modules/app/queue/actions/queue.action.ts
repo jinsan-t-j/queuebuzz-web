@@ -1,7 +1,10 @@
-import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
-import type { QueueRecord, QueueEntry, AddQueueEntryPayload, UpdateQueuePayload } from '../types'
+import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { ApiSuccessResponse } from '@/types/app'
+
+import { isReservedSlug, isValidSlug } from '../utils/validation'
+
+import type { AddQueueEntryPayload, QueueEntry, QueueRecord, UpdateQueuePayload } from '../types'
 
 export interface CreateQueuePayload {
   name: string
@@ -38,12 +41,33 @@ export async function updateQueue(id: string, payload: UpdateQueuePayload): Prom
 }
 
 export async function checkSlugAvailability(slug: string): Promise<boolean> {
-  const config = createApiRequestConfig()
-  const response = (await apiClient.get<ApiSuccessResponse<CheckSlugAvailabilityResponse>>(
-    `${API_ROUTES.QUEUE.CHECK_SLUG}?slug=${encodeURIComponent(slug)}`,
-    config,
-  )) as unknown as ApiSuccessResponse<CheckSlugAvailabilityResponse>
-  return response.data.isAvailable
+  const trimmedSlug = slug.trim().toLowerCase()
+  if (!trimmedSlug) return true
+
+  if (!isValidSlug(trimmedSlug)) {
+    throw new Error(
+      'invalid slug format: must be 3-30 lowercase alphanumeric characters or hyphens',
+    )
+  }
+
+  if (isReservedSlug(trimmedSlug)) {
+    return false
+  }
+
+  try {
+    const config = createApiRequestConfig({}, { withCredentials: true, skipLogout: true })
+    const response = (await apiClient.get<ApiSuccessResponse<CheckSlugAvailabilityResponse>>(
+      `${API_ROUTES.QUEUE.CHECK_SLUG}?slug=${encodeURIComponent(trimmedSlug)}`,
+      config,
+    )) as unknown as ApiSuccessResponse<CheckSlugAvailabilityResponse>
+    return response.data.isAvailable
+  } catch (err) {
+    const error = err as { response?: { status?: number; data?: { error?: string } } }
+    if (error.response?.status === 400 && error.response.data?.error) {
+      throw new Error(error.response.data.error, { cause: err })
+    }
+    throw err
+  }
 }
 
 export async function getLiveQueue(options?: { skipLogout?: boolean }): Promise<QueueRecord> {

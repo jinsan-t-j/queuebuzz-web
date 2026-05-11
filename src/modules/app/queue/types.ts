@@ -16,7 +16,6 @@ export interface QueueRecord {
   manualPositioning: boolean
   strictQueueMode: boolean
   collectEmails: boolean
-  recoveryEmail?: string
   hostProfileImageUrl?: string
   hostBannerImageUrl?: string
   createdAt?: string

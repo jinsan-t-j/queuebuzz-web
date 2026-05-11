@@ -1,5 +1,7 @@
-import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
+import { apiClient, createApiRequestConfig } from '@/lib/axios'
+import { ApiSuccessResponse } from '@/types/app'
+
 import type {
   JoinQueuePayload,
   MutationResult,
@@ -7,7 +9,6 @@ import type {
   JoinByCodeResponse,
   Entry,
 } from '../types'
-import { ApiSuccessResponse } from '@/types/app'
 
 /**
  * Customer actions for queue interaction.
@@ -23,6 +24,7 @@ export async function joinQueue(queueId: string, payload: JoinQueuePayload): Pro
     party_size: payload.partySize || 1,
     notification_enabled: payload.notificationEnabled,
     fcm_token: payload.fcmToken,
+    join_code: payload.code,
   }
 
   const response = (await apiClient.post<ApiSuccessResponse<Entry>>(
@@ -91,6 +93,19 @@ export async function recoverGuestSession(): Promise<Entry | null> {
   try {
     const response = (await apiClient.get<ApiSuccessResponse<Entry>>(
       API_ROUTES.CUSTOMER.RECOVER_SESSION,
+      config,
+    )) as unknown as ApiSuccessResponse<Entry>
+    return response.data || null
+  } catch {
+    return null
+  }
+}
+
+export async function recoverGuestSessionByToken(token: string): Promise<Entry | null> {
+  const config = createApiRequestConfig({}, { withCredentials: true, skipLogout: true })
+  try {
+    const response = (await apiClient.get<ApiSuccessResponse<Entry>>(
+      `${API_ROUTES.CUSTOMER.RECOVER_SESSION_BY_TOKEN}?token=${encodeURIComponent(token)}`,
       config,
     )) as unknown as ApiSuccessResponse<Entry>
     return response.data || null

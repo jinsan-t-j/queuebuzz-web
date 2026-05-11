@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import { useClipboard, useDebounceFn } from '@vueuse/core'
+import { storeToRefs } from 'pinia'
+import { useField, useForm } from 'vee-validate'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import * as yup from 'yup'
+
 import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
@@ -6,16 +13,11 @@ import BaseToggle from '@/components/base/BaseToggle.vue'
 import { useToast } from '@/composables/useToast'
 import { APP_BASE_URL } from '@/config/api.constants'
 import { checkSlugAvailability, createQueue } from '@/modules/app/queue/actions/queue.action'
+import { SLUG_REGEX } from '@/modules/app/queue/utils/validation'
 import { useAuthStore } from '@/stores/auth.store'
 import { useDashboardStore } from '@/stores/dashboard.store'
 import { useQueueStore } from '@/stores/queue.store'
 import { useSettingsStore } from '@/stores/settings.store'
-import { useClipboard, useDebounceFn } from '@vueuse/core'
-import { storeToRefs } from 'pinia'
-import { useField, useForm } from 'vee-validate'
-import { computed, onMounted, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import * as yup from 'yup'
 
 const props = defineProps({
   role: {
@@ -73,13 +75,10 @@ const schema = computed(() => {
   if (props.role === 'host') {
     return yup.object({
       ...baseSchema,
-      slug: yup
-        .string()
-        .nullable()
-        .matches(/^[a-z0-9-]+$/, {
-          excludeEmptyString: true,
-          message: 'Only lowercase letters, numbers, and hyphens allowed',
-        }),
+      slug: yup.string().nullable().matches(SLUG_REGEX, {
+        excludeEmptyString: true,
+        message: 'Must be 3-30 lowercase alphanumeric characters or hyphens',
+      }),
     })
   } else {
     return yup.object(baseSchema)
@@ -122,6 +121,15 @@ const checkSlug = useDebounceFn(async (currentSlug) => {
     const isAvailable = await checkSlugAvailability(currentSlug)
     if (!isAvailable) {
       setFieldError('slug', 'This link is already taken')
+    } else {
+      setFieldError('slug', undefined)
+    }
+  } catch (err) {
+    const error = err as Error
+    if (error.message.includes('invalid slug format')) {
+      setFieldError('slug', 'Must be 3-30 lowercase alphanumeric characters or hyphens')
+    } else {
+      setFieldError('slug', error.message)
     }
   } finally {
     isCheckingSlug.value = false
@@ -187,7 +195,7 @@ function copyCustomLink() {
   setTimeout(() => (isSlugCopied.value = false), 2000)
 }
 
-const windowHost = globalThis.window === undefined ? '' : globalThis.location.host + '/'
+const windowHost = globalThis.window === undefined ? '' : globalThis.location.host
 </script>
 
 <template>
@@ -234,7 +242,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
       >
         <label
           for="serviceTime"
-          class="block font-body text-xs sm:text-sm font-medium text-plum-muted leading-relaxed"
+          class="block font-body text-sm font-medium text-plum-muted leading-snug mb-4"
         >
           How many minutes on average does it take to serve one guest?
         </label>
@@ -327,7 +335,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
             >
               {{ size }}
             </button>
-            <div class="flex items-center gap-2 ml-2">
+            <div class="flex items-center gap-2">
               <span class="text-sm text-plum-muted font-body">Custom:</span>
               <input
                 id="maxPartySize"
@@ -372,23 +380,24 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
       <!-- ═══ Card 3: Host vs Guest Version ═══ -->
       <template v-if="role === 'host'">
         <div
-          class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
+          class="rounded-card border border-plu m-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
         >
           <label for="slug" class="mb-3 block font-body text-sm font-medium text-plum-muted">
             Queue Link (Optional)
           </label>
-          <div
-            class="flex items-center bg-sand border border-sand-light w-full p-1.5 sm:p-2 rounded-xl transition-colors focus-within:border-plum/30 gap-2"
-          >
-            <div class="flex items-center flex-1 px-2">
-              <span class="font-body text-sm sm:text-[18px] text-plum hidden sm:inline">{{
-                windowHost
-              }}</span>
+          <div class="flex flex-col sm:flex-row gap-3 sm:gap-2">
+            <div
+              class="flex items-center flex-1 min-w-0 bg-sand border border-sand-light p-1.5 sm:p-2 rounded-xl transition-colors focus-within:border-plum/30 gap-1 px-3"
+            >
+              <span
+                class="font-body text-sm sm:text-[18px] text-plum-muted shrink-0 whitespace-nowrap"
+                >{{ windowHost + '/q/' }}</span
+              >
               <input
                 id="slug"
                 v-model="slug"
                 placeholder="your-queue-name"
-                class="w-full border-none bg-transparent font-display text-base sm:text-[18px] text-plum placeholder:text-plum/30 font-body outline-none"
+                class="flex-1 min-w-0 border-none bg-transparent font-body text-base sm:text-[18px] text-plum placeholder:text-plum-muted/30 focus:ring-0 outline-none p-0"
               />
               <div class="mx-2 flex h-5 w-5 shrink-0 items-center justify-center">
                 <SpinnerLoadingIcon
@@ -400,12 +409,12 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
             </div>
             <button
               type="button"
-              class="inline-flex items-center justify-center gap-2 rounded-xl bg-mint h-10 sm:h-auto px-3 sm:px-4 sm:py-2 font-body text-sm font-medium text-on-mint cursor-pointer transition-colors hover:bg-mint-dark sm:min-w-[80px]"
+              class="inline-flex items-center justify-center gap-2 rounded-xl bg-plum-soft h-11 sm:h-auto px-4 py-2.5 sm:py-2 font-body text-sm font-medium text-sand cursor-pointer transition-colors hover:bg-plum-soft w-full sm:w-auto sm:min-w-[100px] shrink-0"
               @click="copyCustomLink"
             >
-              <CopyCodeIcon v-if="!isSlugCopied" class="h-3.5 w-3.5 text-on-mint" />
-              <VerifiedCheckIcon v-else class="h-3.5 w-3.5 text-on-mint" />
-              <span class="hidden sm:inline">
+              <CopyCodeIcon v-if="!isSlugCopied" class="h-3.5 w-3.5 text-sand" />
+              <VerifiedCheckIcon v-else class="h-3.5 w-3.5 text-sand" />
+              <span>
                 {{ isSlugCopied ? 'Copied' : 'Copy' }}
               </span>
             </button>

@@ -4,51 +4,60 @@
  * @description Customer-facing queue join page.
  */
 
-import { onBeforeMount } from 'vue'
+import { storeToRefs } from 'pinia'
+import { computed, defineAsyncComponent, onBeforeMount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { useCustomer } from '@/modules/customer/composables/useCustomer'
-import { useToast } from '@/composables/useToast'
-import { useCustomerStore } from '@/modules/customer/stores/customer.store'
-import { useQueueStore } from '@/stores/queue.store'
-import { storeToRefs } from 'pinia'
-
 import BaseButton from '@/components/base/BaseButton.vue'
-import ActiveSessionWarning from '@/modules/customer/components/ActiveSessionWarning.vue'
+import { useToast } from '@/composables/useToast'
+import { joinByCode as verifyJoinCode } from '@/modules/customer/actions/customer.action'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
-import JoinQueueForm from '@/modules/customer/components/JoinQueueForm.vue'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
+import type { JoinQueueFormPayload, JoinQueuePayload } from '@/modules/customer/types'
+import { useQueueStore } from '@/stores/queue.store'
+
+const ActiveSessionWarning = defineAsyncComponent(
+  () => import('@/modules/customer/components/ActiveSessionWarning.vue'),
+)
+const JoinCodeModal = defineAsyncComponent(
+  () => import('@/modules/customer/components/JoinCodeModal.vue'),
+)
+const JoinQueueForm = defineAsyncComponent(
+  () => import('@/modules/customer/components/JoinQueueForm.vue'),
+)
 
 const route = useRoute()
 const router = useRouter()
 
-const { isLoading, entry: customerEntry, handleJoinQueue } = useCustomer()
-
 const { showToast } = useToast()
 const customerStore = useCustomerStore()
-
-async function handleLeaveQueue() {
-  const success = await customerStore.leaveQueue()
-  if (success) {
-    // Re-initialize the target queue since leaveQueue clears the entire queue context
-    await queueStore.initializeQueueById(queueId)
-    showToast('Previous session cleared. You can now join this queue.', { type: 'success' })
-  }
-}
-
 const queueStore = useQueueStore()
-const {
-  activeQueue,
-  waitingCount,
-  avgWaitTime,
-  isLoading: queueIsLoading,
-} = storeToRefs(queueStore)
 
-const queueId = route.params.queueId as string
+const queueCodeInput = ref('')
+const queueCodeError = ref('')
+const isCodePromptOpen = ref(false)
+const isVerifyingCode = ref(false)
+const resolvedQueueId = ref<string | null>(null)
 
-onBeforeMount(async () => {
-  await queueStore.initializeQueueById(queueId)
+const queueRouteKey = computed(() => {
+  const value = route.params.queueId
+  return Array.isArray(value) ? value[0] : value?.toString() || ''
+})
+const routeCode = computed(() => {
+  const value = route.params.code
+  const raw = Array.isArray(value) ? value[0] : value?.toString() || ''
+  return raw.trim()
+})
 
-  if (customerStore.isJoined && customerEntry.value?.queueId === queueId) {
+const { entry: customerEntry, isLoading } = storeToRefs(customerStore)
+
+async function initializeQueue(queueId: string) {
+  const success = await queueStore.initializeQueueById(queueId)
+  if (!success || !queueStore.activeQueue) {
+    return false
+  }
+
+  if (customerStore.isJoined && customerEntry.value?.queueId === queueStore.activeQueue.id) {
     const status = customerEntry.value.status
     let routeName = 'customer-waiting'
     if (status === 'CALLED') {
@@ -57,12 +66,97 @@ onBeforeMount(async () => {
       routeName = 'customer-idle'
     }
 
-    router.replace({ name: routeName, params: { queueId } })
+    router.replace({ name: routeName, params: { queueId: queueStore.activeQueue.id } })
   }
+
+  return true
+}
+
+async function resolveQueueCode(code: string) {
+  const normalizedCode = code.trim().toUpperCase()
+  if (!normalizedCode) {
+    queueCodeError.value = 'Enter the join code to continue.'
+    isCodePromptOpen.value = true
+    return false
+  }
+
+  isVerifyingCode.value = true
+  queueCodeError.value = ''
+  try {
+    const result = await verifyJoinCode(normalizedCode)
+    if (!result.found || !result.queueId) {
+      queueCodeError.value = 'Invalid join code. Please try again.'
+      isCodePromptOpen.value = true
+      return false
+    }
+
+    resolvedQueueId.value = result.queueId
+    queueCodeInput.value = normalizedCode
+
+    const loaded = await initializeQueue(result.queueId)
+    if (!loaded) {
+      queueCodeError.value = 'This queue is no longer available.'
+      isCodePromptOpen.value = true
+      return false
+    }
+
+    isCodePromptOpen.value = false
+    return true
+  } finally {
+    isVerifyingCode.value = false
+  }
+}
+
+async function handleCodeSubmit(code: string) {
+  queueCodeInput.value = code
+  await resolveQueueCode(code)
+}
+
+async function handleLeaveQueue() {
+  const success = await customerStore.leaveQueue()
+  if (success) {
+    // Re-initialize the target queue since leaveQueue clears the entire queue context
+    const queueId = queueStore.activeQueue?.id || resolvedQueueId.value || queueRouteKey.value
+    if (queueId) {
+      await queueStore.initializeQueueById(queueId)
+    }
+    showToast('Previous session cleared. You can now join this queue.', { type: 'success' })
+  }
+}
+
+const {
+  activeQueue,
+  waitingCount,
+  avgWaitTime,
+  isLoading: queueIsLoading,
+} = storeToRefs(queueStore)
+
+const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
+  const targetQueueId = queueId || resolvedQueueId.value || activeQueue.value?.id
+  if (!targetQueueId) return null
+
+  const joinPayload: JoinQueuePayload = { ...payload, code: queueCodeInput.value }
+
+  const result = await customerStore.joinQueue(targetQueueId, joinPayload)
+  if (result) {
+    router.push({ name: 'customer-waiting', params: { queueId: targetQueueId } })
+  } else {
+    showToast(customerStore.error ?? 'Failed to join queue', { type: 'error' })
+  }
+  return result
+}
+
+onBeforeMount(async () => {
+  if (!routeCode.value) {
+    isCodePromptOpen.value = true
+    return
+  }
+
+  await resolveQueueCode(routeCode.value)
 })
 
 function handleJoinByCode() {
-  router.push({ name: 'customer-join-by-code' })
+  isCodePromptOpen.value = true
 }
 </script>
 
@@ -77,7 +171,7 @@ function handleJoinByCode() {
     />
 
     <div
-      v-if="queueIsLoading"
+      v-if="queueIsLoading || isVerifyingCode"
       class="flex flex-col items-center px-6 py-12 flex-1 animate-in fade-in"
     >
       <!-- Skeleton Header (LCP Target) -->
@@ -107,7 +201,7 @@ function handleJoinByCode() {
 
       <!-- Already in another queue warning -->
       <ActiveSessionWarning
-        v-if="customerStore.isJoined && customerEntry?.queueId !== queueId"
+        v-if="customerStore.isJoined && customerEntry?.queueId !== activeQueue.id"
         class="px-6 mt-8"
         :active-queue-id="customerEntry?.queueId"
         :target-queue-name="activeQueue.name"
@@ -124,12 +218,11 @@ function handleJoinByCode() {
         :max-allowed-party-size="activeQueue.maxPartySize"
         :is-loading="isLoading"
         :collect-emails="activeQueue.collectEmails"
-        @join-queue="(payload) => handleJoinQueue(activeQueue.id, payload)"
+        @join-queue="(payload) => joinQueue(activeQueue.id, payload)"
         @go-to-join-by-code="handleJoinByCode"
       />
     </template>
 
-    <!-- Error or Not Found -->
     <div v-else class="flex flex-col items-center justify-center p-12 gap-4 flex-1">
       <div class="w-12 h-12 rounded-2xl bg-plum-faint flex items-center justify-center">
         <svg class="w-6 h-6 text-plum-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -141,11 +234,20 @@ function handleJoinByCode() {
           />
         </svg>
       </div>
-      <p class="font-display font-bold text-lg text-plum">Queue not found</p>
+      <p class="font-display font-bold text-lg text-plum">Queue access locked</p>
       <p class="font-body text-sm text-plum-muted text-center max-w-[280px]">
-        This queue might have ended or the link is incorrect.
+        Enter the join code to open this queue.
       </p>
-      <BaseButton variant="ghost" class="mt-4" @click="router.push('/')">Go to homepage</BaseButton>
+      <BaseButton variant="ghost" class="mt-4" @click="handleJoinByCode">Enter code</BaseButton>
     </div>
+
+    <JoinCodeModal
+      :is-open="isCodePromptOpen"
+      :is-loading="isVerifyingCode"
+      :error="queueCodeError"
+      :initial-code="queueCodeInput"
+      @submit="handleCodeSubmit"
+      @close="isCodePromptOpen = true"
+    />
   </div>
 </template>

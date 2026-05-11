@@ -1,7 +1,7 @@
-import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import { API_ROUTES } from '@/config/api.constants'
-import type { ApiSuccessResponse } from '@/types/app'
+import { apiClient, createApiRequestConfig } from '@/lib/axios'
 import type { UserTier } from '@/modules/app/auth/types'
+import type { ApiSuccessResponse } from '@/types/app'
 
 export interface UserSettings {
   name: string

@@ -4,20 +4,20 @@
  * @description QR code display modal with premium aesthetics.
  * Shows a generated QR code and download/share actions.
  */
-import { ref, computed, watch } from 'vue'
 import { useShare } from '@vueuse/core'
 import QRCode from 'qrcode'
-import BaseModal from '@/components/base/BaseModal.vue'
-import BaseButton from '@/components/base/BaseButton.vue'
-import HostQRCaptureTemplate from './HostQRCaptureTemplate.vue'
-import { useCapture } from '@/composables/useCapture'
+import { computed, ref, watch } from 'vue'
 
 // Icons
-import CloseXIcon from '@/assets/icons/close-x.svg?component'
 import CheckCircleIcon from '@/assets/icons/check-circle.svg?component'
-import DownloadIcon from '@/assets/icons/download-arrow.svg?component'
-import ShareIcon from '@/assets/icons/share.svg?component'
+import CloseXIcon from '@/assets/icons/close-x.svg?component'
 import CopyIcon from '@/assets/icons/copy.svg?component'
+import DownloadIcon from '@/assets/icons/download-arrow.svg?component'
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
+import { useCapture } from '@/composables/useCapture'
+
+import HostQRCaptureTemplate from './HostQRCaptureTemplate.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -99,7 +99,11 @@ watch(
   <BaseModal :is-open="isOpen" @close="emit('close')">
     <div class="relative w-full overflow-hidden p-8 text-center">
       <!-- Hidden Capture Template -->
-      <HostQRCaptureTemplate :queue-name="queueName" :join-code="joinCode" :slug="slug" />
+      <HostQRCaptureTemplate
+        :queue-name="queueName"
+        :join-code="joinCode"
+        :queue-url="currentQueueUrl"
+      />
 
       <!-- Gradient background glow -->
       <div class="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-mint/5 blur-[100px]" />
@@ -152,7 +156,7 @@ watch(
             class="absolute inset-0 flex items-center justify-center bg-white/20 dark:bg-black/20 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px] cursor-pointer"
           >
             <div
-              class="rounded-full bg-white dark:bg-plum-soft p-3 shadow-lg dark:shadow-none"
+              class="rounded-full bg-white p-3 shadow-lg dark:shadow-none"
               @click="handleDownload"
             >
               <DownloadIcon v-if="!isCapturing" class="h-6 w-6 text-plum" />
@@ -174,7 +178,7 @@ watch(
               {{ currentJoinCode }}
             </span>
             <button
-              class="flex h-8 w-8 items-center justify-center rounded-xl bg-white dark:bg-plum-soft text-plum/40 shadow-sm dark:shadow-none transition-all hover:bg-plum hover:text-white dark:hover:bg-plum-faint dark:hover:text-plum active:scale-95 cursor-pointer"
+              class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-plum/40 shadow-sm dark:shadow-none transition-all hover:bg-plum hover:text-white dark:hover:bg-plum-faint dark:hover:text-plum active:scale-95 cursor-pointer"
               @click="handleShare"
             >
               <CopyIcon v-if="!copied" class="h-3.5 w-3.5" />
@@ -189,19 +193,17 @@ watch(
             variant="primary"
             :is-loading="isCapturing"
             class="w-full py-5 text-lg font-bold shadow-xl dark:shadow-none shadow-mint/20 active:scale-95 transition-all"
-            @click="handleDownload"
+            @click="handleShare"
           >
-            <DownloadIcon v-if="!isCapturing" class="mr-2 h-5 w-5" />
-            {{ isCapturing ? 'GENERATING...' : 'DOWNLOAD QR' }}
+            {{ copied ? 'URL COPIED!' : 'SHARE JOIN LINK' }}
           </BaseButton>
 
           <BaseButton
             variant="ghost"
             class="w-full h-14 text-plum/60 hover:text-plum font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2"
-            @click="handleShare"
+            @click="emit('close')"
           >
-            <ShareIcon class="h-4 w-4" />
-            {{ copied ? 'URL COPIED!' : 'SHARE JOIN LINK' }}
+            CLOSE
           </BaseButton>
         </div>
       </div>

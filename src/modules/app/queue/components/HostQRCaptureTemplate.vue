@@ -3,21 +3,21 @@
  * Host QR Capture Template — optimized for high-quality off-screen rendering.
  * Used for QR code downloads in host module.
  */
-import { APP_BASE_URL } from '@/config/api.constants'
 import QRCode from 'qrcode'
 import { onMounted, ref } from 'vue'
+
+import { APP_BASE_URL } from '@/config/api.constants'
 
 const props = defineProps<{
   queueName: string
   joinCode: string
-  slug?: string
+  queueUrl: string
 }>()
 
 const qrDataUrl = ref('')
-const qrValue = `${APP_BASE_URL}/q/${props.slug}`
 
 onMounted(async () => {
-  qrDataUrl.value = await QRCode.toDataURL(qrValue, {
+  qrDataUrl.value = await QRCode.toDataURL(props.queueUrl, {
     width: 600,
     margin: 2,
     color: { dark: '#1A0A2E', light: '#FFFFFF' },

@@ -1,40 +1,36 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
+
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseCard from '@/components/base/BaseCard.vue'
 import {
-  fetchSubscription,
   cancelSubscription,
   getPaymentMethodUpdateLink,
   type Subscription,
 } from '@/modules/app/billing/actions/billing.actions'
-import BaseCard from '@/components/base/BaseCard.vue'
-import BaseButton from '@/components/base/BaseButton.vue'
+
+const props = defineProps<{
+  subscription: Subscription | null
+  isLoading?: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'refresh'): void
+}>()
 
 const CancelSubscriptionConfirmModal = defineAsyncComponent(
   () => import('./CancelSubscriptionConfirmModal.vue'),
 )
 
-const subscription = ref<Subscription | null>(null)
-const isSubLoading = ref(false)
+const SettingsFreeTierCard = defineAsyncComponent(() => import('./SettingsFreeTierCard.vue'))
+
 const isCancelling = ref(false)
 const isUpdatingPayment = ref(false)
 const showCancelSubModal = ref(false)
 
-onMounted(() => {
-  loadSubscription()
-})
-
-async function loadSubscription() {
-  isSubLoading.value = true
-  try {
-    subscription.value = await fetchSubscription()
-  } finally {
-    isSubLoading.value = false
-  }
-}
-
 const subscriptionStatusLabel = computed(() => {
-  if (!subscription.value) return ''
-  if (subscription.value.status === 'active' && subscription.value.cancelAtPeriodEnd) {
+  if (!props.subscription) return ''
+  if (props.subscription.status === 'active' && props.subscription.cancelAtPeriodEnd) {
     return 'Cancelling'
   }
   const statusMap: Record<string, string> = {
@@ -43,12 +39,12 @@ const subscriptionStatusLabel = computed(() => {
     cancelled: 'Cancelled',
     pending: 'Pending',
   }
-  return statusMap[subscription.value.status] || subscription.value.status
+  return statusMap[props.subscription.status] || props.subscription.status
 })
 
 const subscriptionStatusColor = computed(() => {
-  if (!subscription.value) return ''
-  if (subscription.value.status === 'active' && subscription.value.cancelAtPeriodEnd) {
+  if (!props.subscription) return ''
+  if (props.subscription.status === 'active' && props.subscription.cancelAtPeriodEnd) {
     return 'bg-orange-100 text-warning'
   }
   const colorMap: Record<string, string> = {
@@ -57,7 +53,7 @@ const subscriptionStatusColor = computed(() => {
     cancelled: 'bg-red-100 text-danger',
     pending: 'bg-plum-faint text-plum-muted',
   }
-  return colorMap[subscription.value.status] || 'bg-plum-faint text-plum-muted'
+  return colorMap[props.subscription.status] || 'bg-plum-faint text-plum-muted'
 })
 
 function formatDate(dateStr: string | null): string {
@@ -74,7 +70,7 @@ async function confirmCancelSubscription(data: { comment: string; feedback: stri
   try {
     await cancelSubscription(data.comment, data.feedback)
     showCancelSubModal.value = false
-    await loadSubscription()
+    emit('refresh')
   } finally {
     isCancelling.value = false
   }
@@ -166,8 +162,11 @@ async function handleUpdatePaymentMethod() {
       </div>
     </BaseCard>
 
+    <!-- Free Tier Placeholder -->
+    <SettingsFreeTierCard v-else-if="!isLoading" />
+
     <!-- Subscription loading skeleton -->
-    <BaseCard v-else-if="isSubLoading" id="subscription" class="p-8">
+    <BaseCard v-else id="subscription" class="p-8">
       <div class="h-6 w-40 animate-pulse rounded-lg bg-plum-faint mb-6" />
       <div class="space-y-3">
         <div class="h-10 animate-pulse rounded-2xl bg-plum-faint" />

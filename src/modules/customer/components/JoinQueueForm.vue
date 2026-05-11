@@ -10,18 +10,14 @@
  * @emits {join-queue} - Emitted with { name, buzzEnabled, email } payload.
  */
 
-// 1. Vue core imports
+import { AtSign, ChevronDown, Info, User } from 'lucide-vue-next'
+import { useField, useForm } from 'vee-validate'
 import { ref } from 'vue'
-
-// 3. Third-party imports
-import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 
-// 5. Component imports
-import BaseToggle from '@/components/base/BaseToggle.vue'
-import ClockFilledIcon from '@/assets/icons/clock-filled.svg?component'
 import ArrowRightBoldIcon from '@/assets/icons/arrow-right-bold.svg?component'
-import { User, AtSign, ChevronDown, Info } from 'lucide-vue-next'
+import ClockFilledIcon from '@/assets/icons/clock-filled.svg?component'
+import BaseToggle from '@/components/base/BaseToggle.vue'
 
 // 6. Props
 const props = defineProps({
@@ -339,7 +335,7 @@ const handleJoin = handleSubmit(async (values) => {
             v-model="email"
             type="email"
             placeholder="your@email.com"
-            class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none min-h-[48px]"
+            class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none min-h-[32px]"
           />
         </div>
         <p v-if="emailError" class="mt-1 font-body text-sm text-danger">{{ emailError }}</p>
