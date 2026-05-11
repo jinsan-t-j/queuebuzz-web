@@ -79,21 +79,30 @@ test.describe('Customer Join', () => {
       id: ACTIVE_QUEUE_ID,
       name: 'Morning Clinic',
     })
-    await page.getByRole('button', { name: /Verify code/i }).click()
-    await page.waitForResponse((response) => response.url().includes('/queue/p/find'))
+    await Promise.all([
+      page.waitForResponse((response) => response.url().includes('/queue/p/find')),
+      page.getByRole('button', { name: /Verify code/i }).click(),
+    ])
 
     // Fill form
     await page.fill('#guest-name', 'John Doe')
+
+    // Uncheck "Buzz me" to avoid Notification.requestPermission() hang
+    await page.getByLabel(/Toggle haptic vibration buzz notifications/i).click()
+
     await mockApi(`/customer/entry/join/${ACTIVE_QUEUE_ID}`, {
       id: 'e1',
       ticketNo: 48,
       status: 'WAITING',
     })
-    await page.click('button:has-text("Join the Queue")')
-    await page.waitForResponse(
-      (response) =>
-        response.url().includes('/customer/entry/join') && response.request().method() === 'POST',
-    )
+
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().includes('/customer/entry/join') && response.request().method() === 'POST',
+      ),
+      page.click('button:has-text("Join the Queue")'),
+    ])
 
     // Redirect to waiting room
     await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/waiting`))
