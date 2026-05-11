@@ -10,6 +10,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 import BaseButton from '@/components/base/BaseButton.vue'
 import { useToast } from '@/composables/useToast'
+import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
 import { joinByCode as verifyJoinCode } from '@/modules/customer/actions/customer.action'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
@@ -147,6 +148,16 @@ const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
 }
 
 onBeforeMount(async () => {
+  // If we have a queueId in the URL, try to initialize it to check for existing session
+  if (queueRouteKey.value) {
+    await initializeQueue(queueRouteKey.value)
+  }
+
+  // If initialization failed with 404, don't show the prompt
+  if (customerStore.error === QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND) {
+    return
+  }
+
   if (!routeCode.value) {
     isCodePromptOpen.value = true
     return

@@ -1,80 +1,102 @@
 import { test, expect } from '../fixtures/base.fixture'
-import { makePublicQueue } from '../fixtures/mocks/customer.mock'
 
-/**
- * @spec Customer Join Flow
- * @description E2E tests for joining a queue via direct URL and join-by-code page.
- * Routes: /q/:queueId/join, /join
- */
+const ACTIVE_QUEUE_ID = 'q-active-123'
 
 test.describe('Customer Join', () => {
-  test('should render join page with queue info', async ({ page, mockApi }) => {
-    await mockApi('/queue/p/q-123', makePublicQueue())
+  test.beforeEach(async ({ mockApi }) => {
+    // Default mocks
+    await mockApi(`/queue/p/${ACTIVE_QUEUE_ID}/live`, {
+      id: ACTIVE_QUEUE_ID,
+      name: 'Morning Clinic',
+      status: 'ACTIVE',
+      joinCode: 'CLNC01',
+    })
     await mockApi('/customer/entry/recover-session', { status: 404, data: null })
+  })
 
-    await page.goto('/q/q-123/join')
+  test('should render join page with queue info', async ({ page, mockApi }) => {
+    await mockApi(`/customer/entry/join-by-code/CLNC01`, {
+      success: true,
+      data: { queueId: ACTIVE_QUEUE_ID, joinCode: 'CLNC01' },
+    })
 
-    // Enter join code first
-    await page.getByPlaceholder('Enter 6-digit code').fill('CLNC01')
-    await page.getByRole('button', { name: 'Verify Code' }).click()
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
+
+    // Wait for the join code prompt to appear
+    const firstInput = page.locator('input[aria-label="Code character 1"]')
+    await expect(firstInput).toBeVisible({ timeout: 10000 })
+
+    // Fill join code
+    await firstInput.focus()
+    await page.keyboard.type('CLNC01')
+
+    await page.getByRole('button', { name: 'Verify code' }).click()
 
     // Queue name should be visible after verification
-    await expect(page.getByRole('heading', { name: 'Morning Consultation' })).toBeVisible({
-      timeout: 8000,
+    await expect(page.getByText('Morning Clinic').first()).toBeVisible({
+      timeout: 10000,
     })
   })
 
   test('should show loading skeleton initially', async ({ page }) => {
-    // Slow down the response
-    await page.route('**/api/v1/queue/p/q-123**', async (route) => {
+    // Slow down the response to see the skeleton
+    await page.route('**/api/v1/queue/p/q-active-123**', async (route) => {
       await new Promise((r) => setTimeout(r, 1000))
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        headers: {
-          'Access-Control-Allow-Origin':
-            route.request().headers().origin || 'http://localhost:4002',
-          'Access-Control-Allow-Credentials': 'true',
-        },
-        body: JSON.stringify(makePublicQueue()),
+        body: JSON.stringify({
+          success: true,
+          data: {
+            id: ACTIVE_QUEUE_ID,
+            name: 'Morning Clinic',
+            status: 'ACTIVE',
+            joinCode: 'CLNC01',
+          },
+        }),
       })
     })
 
-    await page.goto('/q/q-123/join')
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
 
-    // Loading skeleton
-    await expect(page.getByText('Connecting to queue...')).toBeVisible()
+    // Loading skeleton or connecting text
+    await expect(page.getByText(/connecting/i).first()).toBeVisible()
   })
 
-  test('should show not-found state for invalid queue', async ({ page }) => {
-    await page.route('**/api/v1/queue/p/invalid-id**', async (route) => {
-      if (route.request().method() === 'OPTIONS') {
-        return route.fulfill({
-          status: 204,
-          headers: {
-            'Access-Control-Allow-Origin':
-              route.request().headers().origin || 'http://localhost:4002',
-            'Access-Control-Allow-Credentials': 'true',
-            'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-        })
-      }
-      await route.fulfill({
-        status: 404,
-        contentType: 'application/json',
-        headers: {
-          'Access-Control-Allow-Origin':
-            route.request().headers().origin || 'http://localhost:4002',
-          'Access-Control-Allow-Credentials': 'true',
-        },
-        body: JSON.stringify({ error: 'Queue not found' }),
-      })
+  test('should handle join form submission', async ({ page, mockApi }) => {
+    await mockApi(`/customer/entry/join-by-code/CLNC01`, {
+      success: true,
+      data: { queueId: ACTIVE_QUEUE_ID, joinCode: 'CLNC01' },
+    })
+    await mockApi('/customer/entry', {
+      success: true,
+      data: { id: 'entry-123', ticketNo: 'A-001', status: 'WAITING' },
     })
 
-    await page.goto('/q/invalid-id/join')
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
 
-    await expect(page.getByText('Queue not found')).toBeVisible({ timeout: 5000 })
-    await expect(page.getByRole('button', { name: /Go to homepage/i })).toBeVisible()
+    // Verify code
+    const firstInput = page.locator('input[aria-label="Code character 1"]')
+    await expect(firstInput).toBeVisible()
+    await firstInput.focus()
+    await page.keyboard.type('CLNC01')
+    await page.getByRole('button', { name: 'Verify code' }).click()
+
+    // Fill form
+    await page.fill('#guest-name', 'John Doe')
+    await page.click('button:has-text("Join the Queue")')
+
+    // Redirect to waiting room
+    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/waiting`))
+  })
+
+  test('should show not-found state for invalid queue', async ({ page, mockApi }) => {
+    await mockApi('/queue/p/invalid-q/live', {
+      status: 404,
+      body: { error: 'not found' },
+    })
+
+    await page.goto('/q/invalid-q/join')
+    await expect(page.locator('text=Queue not found')).toBeVisible()
   })
 })

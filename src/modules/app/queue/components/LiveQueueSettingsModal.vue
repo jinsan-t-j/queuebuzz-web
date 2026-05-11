@@ -128,12 +128,15 @@ function selectSuggestion(suggestion: string) {
           <div
             class="rounded-card border border-plum/5 dark:border-plum-faint bg-white p-5 shadow-sm dark:shadow-none transition-all hover:border-plum/10 dark:hover:border-plum/20"
           >
-            <label for="queueName" class="mb-3 block font-body text-sm font-semibold text-plum/50">
+            <label
+              for="editQueueName"
+              class="mb-3 block font-body text-sm font-semibold text-plum/50"
+            >
               Queue Name
             </label>
             <div class="relative">
               <input
-                id="queueName"
+                id="editQueueName"
                 v-model="queueName"
                 placeholder="What are people queuing for?"
                 class="mb-2 w-full border-b border-plum/5 bg-transparent py-2 font-display text-xl font-semibold text-plum placeholder:text-plum/20 outline-none focus:border-mint transition-colors"

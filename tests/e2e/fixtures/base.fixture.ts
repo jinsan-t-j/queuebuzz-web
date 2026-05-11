@@ -59,6 +59,20 @@ export const test = base.extend<{
       }
     })
 
+    // Log API requests for debugging
+    page.on('request', (req) => {
+      if (req.url().includes('/api/v1')) {
+        // eslint-disable-next-line no-console
+        console.log(`[API Request] ${req.method()} ${req.url()}`)
+      }
+    })
+    page.on('response', (res) => {
+      if (res.url().includes('/api/v1')) {
+        // eslint-disable-next-line no-console
+        console.log(`[API Response] ${res.status()} ${res.url()}`)
+      }
+    })
+
     // Clean state and set mock auth between tests
     await page.addInitScript(() => {
       globalThis.localStorage.clear()
@@ -139,6 +153,11 @@ export const test = base.extend<{
         return fulfillJson(route, { message: 'OK' }, origin)
       }
 
+      // Auth refresh
+      if (url.includes('/auth/refresh/token')) {
+        return fulfillJson(route, { message: 'OK' }, origin)
+      }
+
       // Let test-specific mocks take precedence
       await route.continue()
     })
@@ -162,11 +181,15 @@ async function fulfillJson(
   origin: string,
   status = 200,
 ) {
+  // Prevent double-wrapping if the data already follows the { data, success } pattern
+  const isAlreadyWrapped = data && typeof data === 'object' && 'success' in data && 'data' in data
+  const responseBody = isAlreadyWrapped ? data : { data, success: status < 400 }
+
   await route.fulfill({
     status,
     contentType: 'application/json',
     headers: corsHeaders(origin),
-    body: JSON.stringify({ data, success: status < 400 }),
+    body: JSON.stringify(responseBody),
   })
 }
 
