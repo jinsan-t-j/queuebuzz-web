@@ -15,9 +15,9 @@ test.describe('Customer Join', () => {
   })
 
   test('should render join page with queue info', async ({ page, mockApi }) => {
-    await mockApi('/queue/p/find?code=CLNC01', {
-      success: true,
-      data: { queueId: ACTIVE_QUEUE_ID, queueName: 'Morning Clinic' },
+    await mockApi('/queue/p/find', {
+      id: ACTIVE_QUEUE_ID,
+      name: 'Morning Clinic',
     })
 
     await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
@@ -39,7 +39,7 @@ test.describe('Customer Join', () => {
 
   test('should show loading skeleton initially', async ({ page }) => {
     // Slow down the response to see the skeleton
-    await page.route('**/api/v1/queue/p/q-active-123**', async (route) => {
+    await page.route('**/api/v1/queue/p/find**', async (route) => {
       await new Promise((r) => setTimeout(r, 1000))
       await route.fulfill({
         status: 200,
@@ -63,9 +63,9 @@ test.describe('Customer Join', () => {
   })
 
   test('should handle join form submission', async ({ page, mockApi }) => {
-    await mockApi('/queue/p/find?code=CLNC01', {
-      success: true,
-      data: { queueId: ACTIVE_QUEUE_ID, queueName: 'Morning Clinic' },
+    await mockApi('/queue/p/find', {
+      id: ACTIVE_QUEUE_ID,
+      name: 'Morning Clinic',
     })
 
     await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
@@ -76,8 +76,8 @@ test.describe('Customer Join', () => {
     await codeInput.fill('CLNC01')
 
     await mockApi('/queue/p/find', {
-      success: true,
-      data: { queueId: ACTIVE_QUEUE_ID, queueName: 'Morning Clinic' },
+      id: ACTIVE_QUEUE_ID,
+      name: 'Morning Clinic',
     })
     await page.getByRole('button', { name: /Verify code/i }).click()
     await page.waitForResponse((response) => response.url().includes('/queue/p/find'))
@@ -100,7 +100,7 @@ test.describe('Customer Join', () => {
   })
 
   test('should show not-found state for invalid queue', async ({ page, mockApi }) => {
-    await mockApi('/queue/p/invalid-q/live', null, 404)
+    await mockApi('/queue/p/find?id=invalid-q', null, 404)
 
     await page.goto('/q/invalid-q/join')
     await expect(page.locator('text=Queue not found')).toBeVisible()
@@ -121,8 +121,8 @@ test.describe('Customer Join', () => {
     }
 
     await mockApi('/queue/p/find', {
-      queueId: ACTIVE_QUEUE_ID,
-      queueName: 'Main Clinic',
+      id: ACTIVE_QUEUE_ID,
+      name: 'Main Clinic',
     })
 
     // Auto-submits on last character usually, or verify button

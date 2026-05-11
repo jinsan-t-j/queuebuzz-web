@@ -19,14 +19,23 @@ test.describe('Customer Session Recovery & Redirection', () => {
       status: 'ACTIVE',
       joinCode: 'STALL2',
     })
-    // Mock the join code resolution with specific codes
+    // Mock the join code resolution
     await mockApi('/queue/p/find?code=CLNC01', {
-      success: true,
-      data: { queue_id: ACTIVE_QUEUE_ID, queue_name: 'Active Clinic' },
+      id: ACTIVE_QUEUE_ID,
+      name: 'Active Clinic',
     })
     await mockApi('/queue/p/find?code=STALL2', {
-      success: true,
-      data: { queue_id: OTHER_QUEUE_ID, queue_name: 'Other Stall' },
+      id: OTHER_QUEUE_ID,
+      name: 'Other Stall',
+    })
+    // Mock the ID resolution (initial load)
+    await mockApi(`/queue/p/find?id=${ACTIVE_QUEUE_ID}`, {
+      id: ACTIVE_QUEUE_ID,
+      name: 'Active Clinic',
+    })
+    await mockApi(`/queue/p/find?id=${OTHER_QUEUE_ID}`, {
+      id: OTHER_QUEUE_ID,
+      name: 'Other Stall',
     })
   })
 
