@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { useClipboard, useDebounceFn } from '@vueuse/core'
+import { MapPin } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { useField, useForm } from 'vee-validate'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import * as yup from 'yup'
 
@@ -12,8 +13,11 @@ import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
 import BaseToggle from '@/components/base/BaseToggle.vue'
 import { useToast } from '@/composables/useToast'
 import { APP_BASE_URL } from '@/config/api.constants'
+import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
 import { checkSlugAvailability, createQueue } from '@/modules/app/queue/actions/queue.action'
+import MapPreviewCard from '@/modules/app/queue/components/MapPreviewCard.vue'
 import { SLUG_REGEX } from '@/modules/app/queue/utils/validation'
+import { useLocation } from '@/modules/customer/composables/useLocation'
 import { useAuthStore } from '@/stores/auth.store'
 import { useDashboardStore } from '@/stores/dashboard.store'
 import { useQueueStore } from '@/stores/queue.store'
@@ -29,6 +33,8 @@ const props = defineProps({
 
 const emit = defineEmits(['queue-created'])
 
+const subscription = ref<Subscription | null>(null)
+
 const { showToast } = useToast()
 
 const router = useRouter()
@@ -39,6 +45,9 @@ const { userSettings } = storeToRefs(settingsStore)
 
 onMounted(async () => {
   if (props.role === 'host') {
+    fetchSubscription().then((sub) => {
+      subscription.value = sub
+    })
     if (!userSettings.value) {
       await settingsStore.fetchSettings()
     }
@@ -70,6 +79,24 @@ const schema = computed(() => {
     }),
     manualPositioning: yup.boolean().default(false),
     collectEmails: yup.boolean().default(false),
+    isGeoLocked: yup.boolean().default(false),
+    latitude: yup
+      .number()
+      .nullable()
+      .when('isGeoLocked', {
+        is: true,
+        then: (schema) => schema.required('Latitude is required'),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+    longitude: yup
+      .number()
+      .nullable()
+      .when('isGeoLocked', {
+        is: true,
+        then: (schema) => schema.required('Longitude is required'),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+    geoRadiusMeters: yup.number().default(100),
   }
 
   if (props.role === 'host') {
@@ -95,6 +122,10 @@ const { handleSubmit, errors, setFieldError } = useForm({
     manualPositioning: false,
     slug: null,
     collectEmails: false,
+    isGeoLocked: false,
+    latitude: null,
+    longitude: null,
+    geoRadiusMeters: 100,
   },
 })
 
@@ -106,6 +137,10 @@ const { value: maxPartySize } = useField<number>('maxPartySize')
 const { value: manualPositioning } = useField<boolean>('manualPositioning')
 const { value: slug } = useField<string | null>('slug')
 const { value: collectEmails } = useField<boolean>('collectEmails')
+const { value: isGeoLocked } = useField<boolean>('isGeoLocked')
+const { value: latitude } = useField<number | null>('latitude')
+const { value: longitude } = useField<number | null>('longitude')
+const { value: geoRadiusMeters } = useField<number>('geoRadiusMeters')
 
 const queueNameInput = ref<HTMLInputElement | null>(null)
 
@@ -119,10 +154,10 @@ const checkSlug = useDebounceFn(async (currentSlug) => {
   if (!currentSlug) return
   try {
     const isAvailable = await checkSlugAvailability(currentSlug)
-    if (!isAvailable) {
-      setFieldError('slug', 'This link is already taken')
-    } else {
+    if (isAvailable) {
       setFieldError('slug', undefined)
+    } else {
+      setFieldError('slug', 'This link is already taken')
     }
   } catch (err) {
     const error = err as Error
@@ -146,6 +181,65 @@ watch(slug, (newSlug) => {
   }
 })
 
+const {
+  isLocating,
+  isSatellite,
+  locationName,
+  isFetchingPlace,
+  fetchPlaceName,
+  toggleMapType,
+  initLeafletMap,
+  destroyLeafletMap,
+  captureLocation,
+} = useLocation(latitude, longitude)
+
+const recaptureLocation = async () => {
+  const pos = await captureLocation()
+  if (pos) {
+    showToast('Successfully captured business location coordinates!', { type: 'success' })
+    fetchPlaceName(pos.latitude, pos.longitude)
+  } else {
+    showToast(
+      'Location permission is required to enable Geo-Lockdown. Please allow location access in your browser.',
+      { type: 'error' },
+    )
+    isGeoLocked.value = false
+  }
+}
+
+watch(isGeoLocked, async (newValue) => {
+  if (newValue) {
+    if (!subscription.value?.allowGeoLock) {
+      showToast(
+        'Geo-Lockdown is a premium feature. Please upgrade your plan to unlock this feature.',
+        { type: 'warning' },
+      )
+      isGeoLocked.value = false
+      return
+    }
+    recaptureLocation()
+  } else {
+    latitude.value = null
+    longitude.value = null
+    locationName.value = ''
+    destroyLeafletMap()
+  }
+})
+
+watch([latitude, longitude], ([newLat, newLng]) => {
+  if (newLat && newLng) {
+    setTimeout(() => {
+      initLeafletMap('leaflet-map', null, null, 200, { draggable: true })
+    }, 100)
+  } else {
+    destroyLeafletMap()
+  }
+})
+
+onUnmounted(() => {
+  destroyLeafletMap()
+})
+
 const onSubmit = handleSubmit(async (values) => {
   if (errors.value.slug || isCheckingSlug.value || isSubmitting.value) return
 
@@ -159,6 +253,10 @@ const onSubmit = handleSubmit(async (values) => {
       maxPartySize: values.allowPartyJoining ? Number(values.maxPartySize) : 1,
       manualPositioning: values.manualPositioning,
       collectEmails: values.collectEmails,
+      isGeoLocked: values.isGeoLocked,
+      latitude: values.latitude || undefined,
+      longitude: values.longitude || undefined,
+      geoRadiusMeters: values.isGeoLocked ? Number(values.geoRadiusMeters) : undefined,
     }
     const queue = await createQueue(payload)
     if (queue) {
@@ -444,6 +542,144 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
               v-model="collectEmails"
               aria-label="Toggle collect emails from customers"
             />
+          </div>
+        </div>
+
+        <!-- ═══ Card 5: Geo-Location Lockdown (Premium) ═══ -->
+        <div
+          class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none transition-all relative overflow-hidden"
+          :class="{ 'border-mint/30 shadow-[0_4px_20px_rgba(0,229,160,0.05)]': isGeoLocked }"
+        >
+          <!-- Premium Sparkle Badge -->
+          <div
+            class="absolute top-0 right-0 bg-mint-light text-plum font-body text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider"
+          >
+            Premium
+          </div>
+
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1 pr-12">
+              <label
+                for="isGeoLocked"
+                class="font-body text-sm font-semibold text-plum flex items-center gap-2"
+              >
+                Geo-Location Lockdown
+              </label>
+              <p class="font-body text-xs text-plum-muted mt-1 leading-relaxed">
+                Restrict queue entry strictly to customers physically present within a specific
+                radius of your business coordinates. Prevents remote joining.
+              </p>
+            </div>
+            <BaseToggle
+              id="isGeoLocked"
+              v-model="isGeoLocked"
+              aria-label="Toggle Geo-Location Lockdown"
+              :class="{ 'opacity-50': isLocating }"
+              :disabled="isLocating"
+            />
+          </div>
+
+          <!-- Geolocation active/loading state -->
+          <div
+            v-if="isLocating || isGeoLocked"
+            class="mt-6 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
+          >
+            <div
+              v-if="isLocating"
+              class="flex items-center gap-3 py-2 text-plum-muted font-body text-sm"
+            >
+              <SpinnerLoadingIcon class="h-5 w-5 animate-spin text-mint shrink-0" />
+              <span
+                >Fetching precise device GPS coordinates... Please allow location access in your
+                browser.</span
+              >
+            </div>
+
+            <div v-else-if="latitude && longitude" class="flex flex-col gap-5">
+              <!-- Location Address Display -->
+              <div
+                v-if="isFetchingPlace || locationName"
+                class="flex items-center gap-3 p-4 bg-mint-light/40 border border-[#B4FBE4] rounded-2xl text-plum"
+              >
+                <div
+                  class="w-10 h-10 rounded-xl bg-white border border-[#B4FBE4] flex items-center justify-center shrink-0"
+                >
+                  <MapPin class="w-5 h-5 text-plum" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-mint animate-pulse" />
+                    <span class="font-body text-sm font-medium text-plum">Location Verified</span>
+                  </div>
+                  <div v-if="isFetchingPlace" class="flex items-center gap-2 mt-0.5">
+                    <SpinnerLoadingIcon class="h-3.5 w-3.5 animate-spin text-plum-muted shrink-0" />
+                    <span class="font-body text-sm text-plum-muted animate-pulse"
+                      >Reverse geocoding address...</span
+                    >
+                  </div>
+                  <p
+                    v-else
+                    class="font-body text-sm font-semibold text-plum truncate mt-0.5"
+                    :title="locationName"
+                  >
+                    {{ locationName }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Map Preview Card -->
+              <MapPreviewCard
+                :is-satellite="isSatellite"
+                :is-locating="isLocating"
+                @toggle-map-type="toggleMapType"
+                @recapture="recaptureLocation"
+              />
+
+              <!-- Lockdown Radius Customization -->
+              <div>
+                <label
+                  for="geoRadiusMeters"
+                  class="block font-body text-sm font-semibold text-plum mb-4"
+                >
+                  Allowed Lockdown Radius:
+                  <span class="text-mint font-bold">{{ geoRadiusMeters }} meters</span>
+                </label>
+
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <button
+                    v-for="radiusVal in [50, 100, 200, 500, 1000]"
+                    :key="radiusVal"
+                    type="button"
+                    :class="[
+                      'px-4 py-2 rounded-xl font-body text-sm transition-all cursor-pointer',
+                      geoRadiusMeters === radiusVal
+                        ? 'bg-plum text-sand font-semibold'
+                        : 'border border-plum-faint text-plum-muted hover:border-plum hover:bg-sand',
+                    ]"
+                    @click="geoRadiusMeters = radiusVal"
+                  >
+                    {{ radiusVal }}m
+                  </button>
+                </div>
+
+                <div class="relative w-full flex flex-col mt-6">
+                  <input
+                    id="geoRadiusMeters"
+                    v-model.number="geoRadiusMeters"
+                    type="range"
+                    min="20"
+                    max="1000"
+                    step="10"
+                    aria-label="Lockdown radius in meters"
+                    class="w-full accent-mint h-2 bg-plum/10 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <div class="mt-2 flex justify-between font-body text-xs text-plum-muted">
+                    <span>20 meters</span>
+                    <span>1,000 meters (1km)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </template>

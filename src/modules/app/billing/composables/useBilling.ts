@@ -21,6 +21,7 @@ export interface PlanLimits {
   queueExpiryHours: number
   canViewGuestData: boolean
   historyRetentionDays: number
+  allowGeoLock: boolean
 }
 
 export interface DisplayPlan {
@@ -96,6 +97,7 @@ function transformPlan(p: BillingPlan, cycle: 'monthly' | 'yearly'): DisplayPlan
       historyRetentionDays: Number(
         get(limits, 'history_retention_days', 'historyRetentionDays') || 0,
       ),
+      allowGeoLock: Boolean(get(limits, 'allow_geo_lock', 'allowGeoLock')),
     },
   }
 }
@@ -108,6 +110,7 @@ export const comparisonFeatures: ComparisonCategory[] = [
       { name: 'Guests per Queue', key: 'maxGuestsPerQueue', type: 'number' },
       { name: 'Queue Expiry time', key: 'queueExpiryHours', type: 'hours' },
       { name: 'Real-time Live Updates', key: 'live', type: 'boolean', value: true },
+      { name: 'Geo-Location Lockdown', key: 'allowGeoLock', type: 'boolean' },
     ],
   },
   {

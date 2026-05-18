@@ -6,17 +6,17 @@
  */
 import Placeholder from '@tiptap/extension-placeholder'
 import StarterKit from '@tiptap/starter-kit'
-import { useEditor, EditorContent } from '@tiptap/vue-3'
+import { EditorContent, useEditor } from '@tiptap/vue-3'
 import {
-  BookOpenIcon,
-  Loader2Icon,
-  XIcon,
-  PenLineIcon,
   BoldIcon,
+  BookOpenIcon,
   ItalicIcon,
   ListIcon,
+  Loader2Icon,
+  PenLineIcon,
+  XIcon,
 } from 'lucide-vue-next'
-import { ref, watch, onBeforeUnmount } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 
 const props = defineProps<{
   initialNotes?: string
@@ -29,7 +29,7 @@ const emit = defineEmits<{
 }>()
 
 // Drag state
-const pos = ref({ x: 265, y: 20 })
+const pos = ref({ x: 50, y: 250 })
 const isDragging = ref(false)
 const dragStart = ref({ x: 0, y: 0 })
 

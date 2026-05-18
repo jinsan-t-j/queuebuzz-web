@@ -4,7 +4,7 @@
  * @description Live queue card with search bar, guest entries list,
  * "Call Next Guest" button, and optional "Terminate Queue" button.
  */
-import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onBeforeMount, onUnmounted, ref, watch } from 'vue'
 
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
@@ -13,6 +13,8 @@ import SearchIcon from '@/assets/icons/search.svg?component'
 import ShieldCheckIcon from '@/assets/icons/shield-verified.svg?component'
 import BaseTooltip from '@/components/base/BaseTooltip.vue'
 import { useToast } from '@/composables/useToast'
+import type { BillingPlan } from '@/modules/app/billing/actions/billing.actions'
+import { fetchCurrentPlan } from '@/modules/app/billing/actions/billing.actions'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 
 // Icons
@@ -48,6 +50,18 @@ const QueueFilterDropdown = defineAsyncComponent(() => import('./QueueFilterDrop
 
 // 9. Reactive state
 const selectedEntry = ref<QueueEntry | null>(null)
+const currentPlan = ref<BillingPlan | null>(null)
+
+const maxGuests = computed(() => {
+  if (!currentPlan.value) {
+    return '25'
+  }
+  const max = currentPlan.value.limits?.maxGuestsPerQueue
+  if (typeof max !== 'number' || !max) {
+    throw new Error('maxGuestsPerQueue is not defined')
+  }
+  return String(max)
+})
 const isDetailsModalOpen = ref(false)
 const isHistoryExpanded = ref(false)
 const { showToast } = useToast()
@@ -116,9 +130,15 @@ onUnmounted(() => {
 })
 
 // 12. Lifecycle hooks
-onMounted(() => {
+onBeforeMount(async () => {
   if (props.activeEntries?.length === 0 && (props.servedEntries?.length || 0) > 0) {
     isHistoryExpanded.value = true
+  }
+
+  const plan = await fetchCurrentPlan()
+  currentPlan.value = plan
+  if (!currentPlan.value) {
+    throw new Error('No plan found')
   }
 })
 
@@ -281,6 +301,17 @@ function resetFilters() {
 
       <!-- Case 4: Populated List -->
       <template v-else>
+        <div class="flex items-center justify-between pb-1.5 px-1 select-none">
+          <span
+            class="font-body text-[10px] font-medium uppercase tracking-widest text-plum-muted/60"
+          >
+            Active Waiting Guests
+          </span>
+          <span class="font-mono text-[10px] font-medium text-plum-muted/60">
+            {{ activeEntries.length }} / {{ maxGuests }}
+          </span>
+        </div>
+
         <div
           v-for="entry in sortedActiveEntries"
           :key="entry.id"

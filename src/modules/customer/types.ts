@@ -24,6 +24,8 @@ export interface JoinQueueFormPayload {
   partySize?: number
   notificationEnabled: boolean
   fcmToken?: string | null
+  latitude?: number
+  longitude?: number
 }
 
 export interface JoinQueuePayload extends JoinQueueFormPayload {

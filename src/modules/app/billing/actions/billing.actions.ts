@@ -8,12 +8,22 @@ export interface BillingPlan {
   tier: string
   name: string
   description: string
-  monthly_price: number
-  yearly_price: number
+  monthlyPrice: number
+  yearlyPrice: number
   currency: string
-  country_code: string
-  is_free: boolean
-  limits: Record<string, number | boolean>
+  countryCode: string
+  isFree: boolean
+  limits: {
+    maxQueuesPerMonth: number
+    maxGuestsPerQueue: number
+    historyAccess: boolean
+    customBranding: boolean
+    canExport: boolean
+    queueExpiryHours: number
+    canViewGuestData: boolean
+    historyRetentionDays: number
+    allowGeoLock: boolean
+  }
 }
 
 export interface CheckoutResponse {
@@ -35,6 +45,7 @@ export interface Subscription {
   canCustomBranding: boolean
   canExportData: boolean
   canViewHistory: boolean
+  allowGeoLock?: boolean
   updatedAt: string
 }
 

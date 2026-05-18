@@ -128,6 +128,15 @@ async function handleLeaveQueue() {
   }
 }
 
+async function handleRecheck() {
+  const targetQueueId = activeQueue.value?.id || resolvedQueueId.value || queueRouteKey.value
+  if (targetQueueId) {
+    customerStore.error = null
+    customerStore.errorCode = null
+    await queueStore.IntializeQueueByIdOrCode(targetQueueId, queueCodeInput.value)
+  }
+}
+
 const {
   activeQueue,
   waitingCount,
@@ -222,6 +231,13 @@ function handleJoinByCode() {
         @leave="handleLeaveQueue"
       />
 
+      <QueueStateOverlay
+        v-else-if="customerStore.errorCode === 'QUEUE_FULL'"
+        error-type="FULL"
+        :error-message="customerStore.error || ''"
+        @action="handleRecheck"
+      />
+
       <JoinQueueForm
         v-else
         :queue-name="activeQueue.name"
@@ -231,6 +247,10 @@ function handleJoinByCode() {
         :max-allowed-party-size="activeQueue.maxPartySize"
         :is-loading="isLoading"
         :collect-emails="activeQueue.collectEmails"
+        :is-geo-locked="activeQueue.isGeoLocked"
+        :venue-latitude="activeQueue.latitude"
+        :venue-longitude="activeQueue.longitude"
+        :geo-radius-meters="activeQueue.geoRadiusMeters"
         @join-queue="(payload) => joinQueue(activeQueue.id, payload)"
         @go-to-join-by-code="handleJoinByCode"
       />
