@@ -7,7 +7,7 @@
 import BaseButton from '@/components/base/BaseButton.vue'
 
 interface Props {
-  errorType?: 'NOT_FOUND' | 'LOCKED' | 'FULL'
+  errorType?: 'NOT_FOUND' | 'LOCKED' | 'FULL' | 'DENIED'
   errorMessage?: string
 }
 
@@ -27,7 +27,7 @@ defineEmits<{
   >
     <div class="w-12 h-12 rounded-2xl bg-plum-faint flex items-center justify-center">
       <svg
-        v-if="errorType === 'FULL'"
+        v-if="errorType === 'FULL' || errorType === 'DENIED'"
         class="w-6 h-6 text-warning"
         fill="none"
         viewBox="0 0 24 24"
@@ -70,6 +70,22 @@ defineEmits<{
         {{
           errorMessage ||
           'This queue has reached its maximum capacity. Please contact the business owner or try again later.'
+        }}
+      </p>
+      <button
+        class="inline-flex items-center justify-center gap-2 rounded-pill font-body font-semibold cursor-pointer transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-plum px-6 py-2.5 text-sm min-h-[48px] mt-4 bg-plum text-sand hover:bg-plum-soft hover:scale-[1.02] active:scale-[0.98] shadow-sm hover:shadow-md"
+        @click="$emit('action')"
+      >
+        Check Again
+      </button>
+    </template>
+
+    <template v-else-if="errorType === 'DENIED'">
+      <h2 class="font-display font-bold text-xl text-plum">Entries Paused</h2>
+      <p class="font-body text-sm text-plum-muted text-center max-w-[290px]">
+        {{
+          errorMessage ||
+          'This queue is currently not accepting new entries. Please check again later.'
         }}
       </p>
       <button
