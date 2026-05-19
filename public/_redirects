@@ -1,6 +1,6 @@
-# Explicit SPA routes - serve the clean SPA shell (no pre-rendered homepage content)
-# This prevents homepage HTML flashing on authenticated deep link reloads.
-/dashboard/*       /app/index.html 200
-/dashboard         /app/index.html 200
-/login-or-signup   /app/index.html 200
-/q/*               /app/index.html 200
+# Explicit SPA routes - serve the clean SPA shell via the .htm fallback file.
+# Since Cloudflare Pages only strips .html, the .htm target is served directly without pretty-url redirects.
+/dashboard/*       /spa.htm 200
+/dashboard         /spa.htm 200
+/login-or-signup   /spa.htm 200
+/q/*               /spa.htm 200
