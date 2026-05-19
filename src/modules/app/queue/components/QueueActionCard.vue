@@ -46,16 +46,13 @@ function handleTerminateClick() {
     <h3 class="font-display text-base sm:text-lg font-bold text-plum">Quick Actions</h3>
     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
       <button
-        class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand dark:bg-plum-faint/30 p-4 transition-all hover:bg-mint-light dark:hover:bg-plum-faint/60 group cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-sand dark:disabled:hover:bg-plum-faint/30"
-        :disabled="isPaused"
+        class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand dark:bg-plum-faint/30 p-4 transition-all hover:bg-mint-light dark:hover:bg-plum-faint/60 group cursor-pointer"
         @click="$emit('add-guest')"
       >
         <div
-          class="rounded-full bg-white dark:bg-plum-faint p-2 shadow-sm dark:shadow-none group-hover:bg-mint transition-colors group-disabled:group-hover:bg-white dark:group-disabled:group-hover:bg-plum-faint"
+          class="rounded-full bg-white dark:bg-plum-faint p-2 shadow-sm dark:shadow-none group-hover:bg-mint transition-colors"
         >
-          <PlusIcon
-            class="h-5 w-5 text-plum group-hover:text-on-mint transition-colors group-disabled:group-hover:text-plum"
-          />
+          <PlusIcon class="h-5 w-5 text-plum group-hover:text-on-mint transition-colors" />
         </div>
         <span class="font-body text-xs font-bold text-plum">Add Guest</span>
       </button>
@@ -75,7 +72,7 @@ function handleTerminateClick() {
           </template>
         </div>
         <span class="font-body text-xs font-bold text-plum">{{
-          isPaused ? 'Resume' : 'Pause'
+          isPaused ? 'Resume Entries' : 'Pause Entries'
         }}</span>
       </button>
 

@@ -48,8 +48,8 @@ const content = computed<ModalContent>(() => {
   switch (props.mode) {
     case 'resume':
       return {
-        title: 'Resume Queue?',
-        description: 'This will allow you to call guests again and move the queue forward.',
+        title: 'Resume Entry?',
+        description: 'This will allow new guests to join your queue again.',
         confirmText: 'Resume Now',
         variant: 'primary',
         icon: PlayIcon,
@@ -69,10 +69,10 @@ const content = computed<ModalContent>(() => {
       }
     default: // pause
       return {
-        title: 'Pause Queue?',
+        title: 'Pause Upcoming Entries?',
         description:
-          'New guests can still join, but you will not be able to call guests until you resume.',
-        confirmText: 'Pause Queue',
+          'This will temporarily prevent new guests from joining your queue. Existing guests can still be called and served normally.',
+        confirmText: 'Pause Entries',
         variant: 'secondary',
         icon: PauseCircleIcon,
         iconBg: 'bg-plum/5',
