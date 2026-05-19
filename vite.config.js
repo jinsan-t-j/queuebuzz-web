@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import vue from '@vitejs/plugin-vue'
 import esbuild from 'esbuild'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
@@ -206,6 +207,16 @@ export default defineConfig(({ mode }) => {
       formatting: 'minify',
       dirStyle: 'nested',
       includedRoutes(paths) {
+        // Save a copy of the clean client-built index.html before pre-rendering overwrites it.
+        // This clean template is used as the SPA fallback for dynamic/SPA routes.
+        const distDir = path.resolve(process.cwd(), 'dist')
+        const indexHtmlPath = path.join(distDir, 'index.html')
+        const appHtmlPath = path.join(distDir, 'app.html')
+
+        if (fs.existsSync(indexHtmlPath)) {
+          fs.copyFileSync(indexHtmlPath, appHtmlPath)
+        }
+
         // Pre-render the core landing pages
         return ['/', '/support', '/login-or-signup']
       },

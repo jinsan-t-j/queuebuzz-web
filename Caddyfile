@@ -8,7 +8,7 @@ http://queue.test {
 	root * /Users/Shared/www/queuebuzz-web/dist
 	encode gzip
 	file_server
-	try_files {path} {path}/ /index.html
+	try_files {path} {path}/ /app.html
 	log {
 		output file caddy_access.log
 	}
