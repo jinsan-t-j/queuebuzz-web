@@ -341,7 +341,7 @@ function selectSuggestion(suggestion: string) {
             </div>
           </BaseCard>
 
-          <!-- Geo-Location Lockdown (Premium) -->
+          <!-- Geo Fence (Premium) -->
           <BaseCard
             padding="md"
             class="relative overflow-hidden transition-all duration-300"
@@ -360,7 +360,7 @@ function selectSuggestion(suggestion: string) {
                   for="editIsGeoLocked"
                   class="block font-body text-sm font-semibold text-plum"
                 >
-                  Geo-Location Lockdown
+                  Geo Fence
                 </label>
                 <p class="font-body text-xs text-plum-muted leading-relaxed">
                   Restrict queue entry strictly to customers physically present within a specific
@@ -370,7 +370,7 @@ function selectSuggestion(suggestion: string) {
               <BaseToggle
                 id="editIsGeoLocked"
                 v-model="isGeoLocked"
-                aria-label="Toggle Geo-Location Lockdown"
+                aria-label="Toggle Geo Fence"
                 :class="{ 'opacity-50': isLocating }"
                 :disabled="isLocating"
               />

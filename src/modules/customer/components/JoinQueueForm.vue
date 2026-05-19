@@ -430,7 +430,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Geo-Location Lockdown Notice -->
+    <!-- Geo Fence Notice -->
     <div
       v-if="isGeoLocked"
       class="mt-6 flex items-start gap-3 rounded-2xl bg-mint-light/40 border border-mint/20 p-4"

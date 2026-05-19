@@ -110,7 +110,7 @@ export const comparisonFeatures: ComparisonCategory[] = [
       { name: 'Guests per Queue', key: 'maxGuestsPerQueue', type: 'number' },
       { name: 'Queue Expiry time', key: 'queueExpiryHours', type: 'hours' },
       { name: 'Real-time Live Updates', key: 'live', type: 'boolean', value: true },
-      { name: 'Geo-Location Lockdown', key: 'allowGeoLock', type: 'boolean' },
+      { name: 'Geo Fence', key: 'allowGeoLock', type: 'boolean' },
     ],
   },
   {

@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import {
   CheckCircle2,
-  Sparkles,
-  ZapOff,
-  Layers,
-  Users,
   Clock,
-  History,
   FileSpreadsheet,
-  Palette,
+  History,
+  Layers,
   Loader2,
   MapPin,
+  Palette,
+  Sparkles,
+  Users,
+  ZapOff,
 } from 'lucide-vue-next'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 import { useToast } from '@/composables/useToast'
 import {
-  useBilling,
   comparisonFeatures,
   formatComparisonValue,
+  useBilling,
 } from '@/modules/app/billing/composables/useBilling'
 
 const {
@@ -311,7 +311,7 @@ onUnmounted(() => {
                 </li>
                 <li v-if="plan.limits.allowGeoLock" class="flex items-center gap-4">
                   <MapPin :class="['w-5 h-5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']" />
-                  <span class="font-body text-sm font-bold">Geo-Location Lockdown</span>
+                  <span class="font-body text-sm font-bold">Geo Fence</span>
                 </li>
 
                 <li
@@ -326,9 +326,7 @@ onUnmounted(() => {
                   class="flex items-center gap-4 opacity-30"
                 >
                   <ZapOff class="w-5 h-5" />
-                  <span class="font-body text-sm font-medium line-through"
-                    >Geo-Location Lockdown</span
-                  >
+                  <span class="font-body text-sm font-medium line-through">Geo Fence</span>
                 </li>
               </ul>
             </div>
