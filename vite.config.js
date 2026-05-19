@@ -211,12 +211,7 @@ export default defineConfig(({ mode }) => {
         // Cloudflare Pages and Netlify auto-serve 200.html as the SPA fallback.
         const distDir = path.resolve(process.cwd(), 'dist')
         const indexHtmlPath = path.join(distDir, 'index.html')
-
-        const appDir = path.join(distDir, 'app')
-        if (!fs.existsSync(appDir)) {
-          fs.mkdirSync(appDir, { recursive: true })
-        }
-        const spaFallbackPath = path.join(appDir, 'index.html')
+        const spaFallbackPath = path.join(distDir, 'spa.htm')
 
         if (fs.existsSync(indexHtmlPath)) {
           fs.copyFileSync(indexHtmlPath, spaFallbackPath)
