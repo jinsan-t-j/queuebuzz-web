@@ -63,7 +63,9 @@ import { CalendarIcon } from 'lucide-vue-next'
             </li>
             <li>
               <b>For Customers:</b> You can join a queue provided by a Host, check your real-time
-              status, and receive notifications when it is your turn.
+              status, and receive notifications (including web-based audio chimes, alerts, and
+              haptic/vibration feedback where supported by your device browser) when it is your
+              turn.
             </li>
           </ul>
         </article>

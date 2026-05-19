@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 import { API_ROUTES, buildApiUrl } from '@/config/api.constants'
-import { createSseClient, type SseClient, type SseConnectionState } from '@/lib/sse'
+import { createSseClient } from '@/lib/sse'
 import * as CustomerActions from '@/modules/customer/actions/customer.action'
 import type { Entry, JoinQueuePayload } from '@/modules/customer/types'
 import router from '@/router'
@@ -16,13 +16,14 @@ const CUSTOMER_FCM_TOKEN_KEY = 'queuebuzz_customer_fcm_token'
 
 export const useCustomerStore = defineStore('customer', {
   state: () => ({
-    entry: null as Entry | null,
-    position: null as number | null,
+    entry: null,
+    position: null,
     isLoading: false,
-    error: null as string | null,
-    streamState: 'idle' as SseConnectionState,
-    connectedEntryId: null as string | null,
-    sseClient: null as SseClient | null,
+    error: null,
+    errorCode: null,
+    streamState: 'idle',
+    connectedEntryId: null,
+    sseClient: null,
   }),
 
   getters: {
@@ -149,6 +150,7 @@ export const useCustomerStore = defineStore('customer', {
     async joinQueue(queueId: string, payload: JoinQueuePayload): Promise<Entry | null> {
       this.isLoading = true
       this.error = null
+      this.errorCode = null
       try {
         const result = await CustomerActions.joinQueue(queueId, payload)
         this.setEntry(result)
@@ -162,7 +164,9 @@ export const useCustomerStore = defineStore('customer', {
         return result
       } catch (e: unknown) {
         const err = e as ApiError
-        this.error = err?.response?.data?.message || 'Failed to join queue'
+        this.error =
+          err?.response?.data?.message || err?.response?.data?.error || 'Failed to join queue'
+        this.errorCode = err?.response?.data?.code || null
         return null
       } finally {
         this.isLoading = false
@@ -277,7 +281,7 @@ export const useCustomerStore = defineStore('customer', {
                 finishedAt: payload.finishedAt,
                 createdAt: payload.createdAt,
                 updatedAt: payload.updatedAt,
-              } as Entry)
+              })
             }
           },
           [CUSTOMER_EVENTS.POSITION_UPDATE]: (payload: { position?: number }) => {
@@ -513,6 +517,7 @@ export const useCustomerStore = defineStore('customer', {
       this.entry = null
       this.position = null
       this.error = null
+      this.errorCode = null
     },
 
     clearEntry() {

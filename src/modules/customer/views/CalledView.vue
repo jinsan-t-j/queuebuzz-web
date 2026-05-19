@@ -6,7 +6,7 @@
  */
 
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue'
+import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
@@ -123,8 +123,134 @@ onBeforeMount(async () => {
   }
 })
 
+let alertInterval: ReturnType<typeof setInterval> | null = null
+let playCount = 0
+
+let audioCtx: AudioContext | null = null
+let activeGestureResume: (() => void) | null = null
+
+const getAudioContext = (): AudioContext | null => {
+  if (audioCtx) return audioCtx
+
+  try {
+    const AudioContextClass =
+      globalThis.AudioContext ||
+      (globalThis as typeof globalThis & { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass()
+    }
+  } catch {
+    // Ignore audio context initialisation failures
+  }
+  return audioCtx
+}
+
+const playRingtone = (ctx: AudioContext) => {
+  const playNote = (time: number, frequency: number, duration: number) => {
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(frequency, time)
+
+    gain.gain.setValueAtTime(0, time)
+    gain.gain.linearRampToValueAtTime(0.5, time + 0.05)
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+
+    osc.start(time)
+    osc.stop(time + duration)
+  }
+
+  const now = ctx.currentTime
+  playNote(now, 880, 0.8) // Ding (A5)
+  playNote(now + 0.3, 698.46, 1.2) // Dong (F5)
+}
+
+const playSoundAndVibrate = () => {
+  try {
+    const ctx = getAudioContext()
+    if (ctx) {
+      if (ctx.state === 'suspended') {
+        if (activeGestureResume) {
+          return
+        }
+        const resume = () => {
+          ctx.resume().then(() => {
+            playRingtone(ctx)
+            cleanupGestureResume()
+          })
+        }
+        activeGestureResume = resume
+        document.addEventListener('click', resume)
+        document.addEventListener('touchstart', resume)
+        return
+      }
+
+      playRingtone(ctx)
+    }
+  } catch {
+    // Ignore audio autoplay restrictions or browser limitations
+  }
+
+  // Vibrate using Vibration API
+  try {
+    if ('vibrate' in navigator) {
+      navigator.vibrate([300, 100, 300, 100, 300])
+    }
+  } catch {
+    // Ignore vibration restrictions or browser limitations
+  }
+}
+
+const cleanupGestureResume = () => {
+  if (activeGestureResume) {
+    document.removeEventListener('click', activeGestureResume)
+    document.removeEventListener('touchstart', activeGestureResume)
+    activeGestureResume = null
+  }
+}
+
+const startAlertLoop = () => {
+  playSoundAndVibrate()
+  playCount = 1
+
+  alertInterval = setInterval(() => {
+    if (playCount < 20) {
+      playSoundAndVibrate()
+      playCount++
+    } else {
+      stopAlertLoop()
+    }
+  }, 2500)
+}
+
+const stopAlertLoop = () => {
+  if (alertInterval) {
+    clearInterval(alertInterval)
+    alertInterval = null
+  }
+  if (audioCtx) {
+    try {
+      audioCtx.close()
+    } catch {
+      // Ignore context close failures
+    }
+    audioCtx = null
+  }
+}
+
+onMounted(() => {
+  startAlertLoop()
+})
+
 onUnmounted(() => {
   disconnectEvents()
+  stopAlertLoop()
+  cleanupGestureResume()
 })
 
 const handleMainCta = async () => {
@@ -135,6 +261,7 @@ const handleMainCta = async () => {
     await confirmArrival()
     isConfirming.value = false
   }
+  stopAlertLoop()
 }
 
 const handleFinishService = async () => {
@@ -180,6 +307,32 @@ const handleFinishService = async () => {
         <p class="mt-2 font-body text-base font-medium text-plum/60">Your turn has arrived.</p>
       </div>
 
+      <!-- Chime Alert Banner -->
+      <div
+        class="mt-4 flex items-center justify-between rounded-2xl bg-mint-light/40 border border-mint/20 px-4 py-3 animate-pulse"
+      >
+        <div class="flex items-center gap-3">
+          <!-- Beautiful pulsing sound/bell icon -->
+          <div
+            class="flex h-9 w-9 items-center justify-center rounded-xl bg-mint/10 text-plum animate-bounce"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.02 6.02 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+              />
+            </svg>
+          </div>
+          <div class="text-left">
+            <p class="font-body text-sm font-semibold text-plum">
+              Hurray Its your turn, Please head in.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Ticket card -->
       <div
         class="relative mt-6 overflow-hidden rounded-[40px] border-2 border-mint bg-[#fdfcfe] p-6 text-center shadow-[0_20px_50px_rgba(0,229,160,0.12)]"
@@ -220,11 +373,6 @@ const handleFinishService = async () => {
           {{ isSaved ? '✓ SAVED TO GALLERY' : 'SAVE TICKET IMAGE' }}
         </button>
       </div>
-
-      <!-- Hurray message -->
-      <p class="mt-8 text-center font-body text-sm font-light text-plum-soft">
-        🎉 Hurray Its your turn, Please head in.
-      </p>
 
       <!-- Main CTA Button (I'm Here / Service Finished) -->
       <button

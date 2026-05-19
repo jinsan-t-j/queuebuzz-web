@@ -12,14 +12,15 @@
 
 import { AtSign, ChevronDown, Info, User } from 'lucide-vue-next'
 import { useField, useForm } from 'vee-validate'
-import { ref } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 import * as yup from 'yup'
 
 import ArrowRightBoldIcon from '@/assets/icons/arrow-right-bold.svg?component'
 import ClockFilledIcon from '@/assets/icons/clock-filled.svg?component'
 import BaseToggle from '@/components/base/BaseToggle.vue'
+import GeoPromptModal from '@/modules/customer/components/GeoPromptModal.vue'
+import { useLocation } from '@/modules/customer/composables/useLocation'
 
-// 6. Props
 const props = defineProps({
   queueName: { type: String, default: '' },
   peopleInQueue: { type: Number, default: 0 },
@@ -28,12 +29,14 @@ const props = defineProps({
   maxAllowedPartySize: { type: Number, default: 10 },
   isLoading: { type: Boolean, default: false },
   collectEmails: { type: Boolean, default: false },
+  isGeoLocked: { type: Boolean, default: false },
+  venueLatitude: { type: Number, default: null },
+  venueLongitude: { type: Number, default: null },
+  geoRadiusMeters: { type: Number, default: 200 },
 })
 
-// 7. Emits
 const emit = defineEmits(['join-queue', 'go-to-join-by-code'])
 
-// 8. Validation Schema
 const schema = yup.object({
   displayName: yup.string().max(30, 'Name too long').optional(),
   email: yup.string().email('Invalid email address').optional(),
@@ -47,7 +50,6 @@ const schema = yup.object({
     .default(0),
 })
 
-// 9. VeeValidate Setup
 const { handleSubmit, isSubmitting } = useForm({
   validationSchema: schema,
   initialValues: {
@@ -61,12 +63,26 @@ const { value: displayName, errorMessage: nameError } = useField<string>('displa
 const { value: email, errorMessage: emailError } = useField<string>('email')
 const { value: accompanying } = useField<number>('accompanying')
 
-// 10. Reactive UI State
 const buzzEnabled = ref(true)
 const isEmailExpanded = ref(false)
 const isGuestsOpen = ref(false)
 
-// 11. Methods
+const showGeoPromptModal = ref(false)
+
+const {
+  latitude,
+  longitude,
+  isLocating,
+  isRefreshingLocation,
+  geoError,
+  isSatellite,
+  toggleMapType,
+  initLeafletMap,
+  destroyLeafletMap,
+  refreshMyLocation,
+  captureLocation,
+} = useLocation()
+
 function toggleEmail() {
   isEmailExpanded.value = !isEmailExpanded.value
 }
@@ -84,7 +100,51 @@ async function ensureNotificationPermission() {
   return permission === 'granted'
 }
 
+/**
+ * Geolocation capture and submit
+ */
+async function captureLocationAndJoin() {
+  const pos = await captureLocation()
+  if (!pos) return
+
+  showGeoPromptModal.value = false
+
+  let notificationEnabled = buzzEnabled.value
+  let fcmToken = null
+
+  if (notificationEnabled) {
+    const hasPermission = await ensureNotificationPermission()
+    if (hasPermission) {
+      const { getFCMTokenDetails } = await import('@/lib/firebase')
+      const tokenResult = await getFCMTokenDetails()
+      fcmToken = tokenResult.token
+      if (!fcmToken) {
+        notificationEnabled = false
+      }
+    } else {
+      notificationEnabled = false
+    }
+  }
+
+  const payload = {
+    name: displayName.value?.trim() || 'Guest',
+    partySize: (accompanying.value || 0) + 1,
+    notificationEnabled,
+    fcmToken,
+    email: email.value?.trim() || undefined,
+    latitude: pos.latitude,
+    longitude: pos.longitude,
+  }
+
+  emit('join-queue', payload)
+}
+
 const handleJoin = handleSubmit(async (values) => {
+  if (props.isGeoLocked && (latitude.value === null || longitude.value === null)) {
+    showGeoPromptModal.value = true
+    return
+  }
+
   let notificationEnabled = buzzEnabled.value
   let fcmToken = null
 
@@ -112,9 +172,30 @@ const handleJoin = handleSubmit(async (values) => {
     notificationEnabled,
     fcmToken,
     email: values.email?.trim() || undefined,
+    latitude: latitude.value || undefined,
+    longitude: longitude.value || undefined,
   }
 
   emit('join-queue', payload)
+})
+
+watch(showGeoPromptModal, (isOpen) => {
+  if (isOpen) {
+    setTimeout(() => {
+      initLeafletMap(
+        'leaflet-map',
+        props.venueLatitude,
+        props.venueLongitude,
+        props.geoRadiusMeters,
+      )
+    }, 150)
+  } else {
+    destroyLeafletMap()
+  }
+})
+
+onUnmounted(() => {
+  destroyLeafletMap()
 })
 </script>
 
@@ -349,6 +430,44 @@ const handleJoin = handleSubmit(async (values) => {
       </div>
     </div>
 
+    <!-- Geo-Location Lockdown Notice -->
+    <div
+      v-if="isGeoLocked"
+      class="mt-6 flex items-start gap-3 rounded-2xl bg-mint-light/40 border border-mint/20 p-4"
+    >
+      <div
+        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mint-light text-plum"
+      >
+        <svg
+          class="h-4 w-4 text-plum animate-pulse"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+          />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+          />
+        </svg>
+      </div>
+      <div>
+        <p class="font-body text-xs font-semibold text-plum uppercase tracking-wider">
+          On-Site Queue Only
+        </p>
+        <p class="font-body text-xs text-plum-soft mt-0.5 leading-relaxed">
+          This business has enabled Geo-Lockdown. You must be physically present at the venue to
+          join.
+        </p>
+      </div>
+    </div>
+
     <!-- Join CTA -->
     <button
       :disabled="isSubmitting || isLoading"
@@ -375,5 +494,20 @@ const handleJoin = handleSubmit(async (values) => {
         Enter your join code
       </button>
     </p>
+
+    <!-- Geo Prompt Modal -->
+    <GeoPromptModal
+      :is-open="showGeoPromptModal"
+      :venue-latitude="venueLatitude"
+      :venue-longitude="venueLongitude"
+      :is-locating="isLocating"
+      :is-refreshing-location="isRefreshingLocation"
+      :is-satellite="isSatellite"
+      :geo-error="geoError"
+      @close="showGeoPromptModal = false"
+      @toggle-map-type="toggleMapType"
+      @refresh-location="refreshMyLocation"
+      @confirm="captureLocationAndJoin()"
+    />
   </div>
 </template>

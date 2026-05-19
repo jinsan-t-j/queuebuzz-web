@@ -5,7 +5,6 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   BellRingIcon,
-  ShieldCheckIcon,
 } from 'lucide-vue-next'
 import { ref, computed, onMounted, watch } from 'vue'
 
@@ -17,24 +16,15 @@ import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
  * @description Centralized onboarding and optimization assistant for host dashboard.
  */
 
-const {
-  activeQueue,
-  hasHostFcmToken,
-  handleUpdateSettings,
-  handleEnableNotifications,
-  isFcmRegistering,
-  isLoading,
-  error,
-} = useLiveQueue()
+const { activeQueue, hasHostFcmToken, handleEnableNotifications, isFcmRegistering, error } =
+  useLiveQueue()
 
 const LOCALSTORAGE_KEYS = {
   NOTIF: 'queuebuzz_hide_notif_nudge',
-  STRICT: 'queuebuzz_hide_strict_tip',
 }
 
 const states = ref({
   isNotifDismissed: false,
-  isStrictDismissed: false,
   isExpanded: true,
   activeStepId: null as string | null,
   isNotifDenied: false,
@@ -44,36 +34,22 @@ const browserPermission = ref(
   typeof Notification === 'undefined' ? 'default' : Notification.permission,
 )
 
-// Logic Flags
-const isStrictModeOff = computed(() => activeQueue.value && !activeQueue.value.strictQueueMode)
-
 /**
  * Step Configuration
  */
 const STEPS_CONFIG = [
   {
     id: 'notification',
-    num: 2,
+    num: 1,
     label: 'Push Notifications',
     icon: BellRingIcon,
     check: () => hasHostFcmToken.value && browserPermission.value === 'granted',
     dismissed: () => states.value.isNotifDismissed,
   },
-  {
-    id: 'strict',
-    num: 3,
-    label: 'Consistent Calling',
-    icon: ShieldCheckIcon,
-    check: () => !isStrictModeOff.value,
-    dismissed: () => states.value.isStrictDismissed,
-  },
 ]
 
 const steps = computed(() =>
-  STEPS_CONFIG.filter((s) => {
-    if (s.id === 'strict' && activeQueue.value?.manualPositioning) return false
-    return true
-  }).map((s) => ({
+  STEPS_CONFIG.map((s) => ({
     ...s,
     isCompleted: s.check(),
     isDismissed: s.dismissed() && !s.check(),
@@ -93,7 +69,6 @@ const progressPercent = computed(() => {
 
 function loadPreferences() {
   states.value.isNotifDismissed = localStorage.getItem(LOCALSTORAGE_KEYS.NOTIF) === 'true'
-  states.value.isStrictDismissed = localStorage.getItem(LOCALSTORAGE_KEYS.STRICT) === 'true'
 }
 
 function updateBrowserPermission() {
@@ -150,16 +125,6 @@ async function handleEnableNotifs() {
   await handleEnableNotifications(queueId)
 
   updateBrowserPermission()
-}
-async function handleToggleStrict() {
-  await handleUpdateSettings({ strictQueueMode: true })
-  states.value.isStrictDismissed = false
-  localStorage.removeItem(LOCALSTORAGE_KEYS.STRICT)
-}
-
-function dismissStrictTip() {
-  states.value.isStrictDismissed = true
-  localStorage.setItem(LOCALSTORAGE_KEYS.STRICT, 'true')
 }
 
 watch(activeQueue, () => {
@@ -382,36 +347,6 @@ function skipTask() {
                 <p v-if="error" class="font-body text-[10px] font-bold text-danger px-1">
                   {{ error }}
                 </p>
-              </div>
-            </div>
-
-            <!-- Strict Mode Tool -->
-            <div v-else-if="states.activeStepId === 'strict'" key="strict" class="space-y-4">
-              <p class="font-body text-xs text-plum-muted leading-relaxed">
-                Strict Mode prevents out-of-order guest calling, keeping your intake consistent and
-                fair.
-              </p>
-              <div class="flex gap-2">
-                <BaseButton
-                  variant="primary"
-                  class="flex-1 h-11"
-                  :disabled="isLoading"
-                  @click="handleToggleStrict"
-                >
-                  <div
-                    class="flex items-center justify-center gap-2 font-bold uppercase tracking-wider text-[11px]"
-                  >
-                    <ShieldCheckIcon class="w-3.5 h-3.5" />
-                    <span>Turn it On</span>
-                  </div>
-                </BaseButton>
-                <BaseButton
-                  variant="ghost"
-                  class="h-11 px-4 !text-plum-muted"
-                  @click="dismissStrictTip"
-                >
-                  <span class="text-[11px] font-bold uppercase">Maybe Later</span>
-                </BaseButton>
               </div>
             </div>
           </Transition>

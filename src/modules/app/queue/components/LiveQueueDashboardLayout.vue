@@ -4,12 +4,24 @@
  * @description Shared layout for the live queue dashboard.
  * Uses useLiveQueue composable directly for state and actions.
  */
-import { ref, defineAsyncComponent } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+  onBeforeMount,
+} from 'vue'
+import { useRouter } from 'vue-router'
 
+import { fetchCurrentPlan } from '@/modules/app/billing/actions/billing.actions'
+import type { BillingPlan } from '@/modules/app/billing/actions/billing.actions'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 import LiveSyncLoader from '@/modules/app/queue/components/LiveSyncLoader.vue'
 import LiveSyncStatus from '@/modules/app/queue/components/LiveSyncStatus.vue'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
+import { useAuthStore } from '@/stores/auth.store'
 
 // Critical path — renders immediately
 
@@ -39,6 +51,15 @@ const SessionNotesCard = defineAsyncComponent(
 )
 const FloatingConnectionBadge = defineAsyncComponent(
   () => import('@/modules/app/queue/components/FloatingConnectionBadge.vue'),
+)
+const PremiumUpgradeModal = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/PremiumUpgradeModal.vue'),
+)
+const PremiumLimitBanner = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/PremiumLimitBanner.vue'),
+)
+const PremiumExpiryBanner = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/PremiumExpiryBanner.vue'),
 )
 
 const {
@@ -93,8 +114,8 @@ const InfoQueueModal = defineAsyncComponent(
 const AddGuestModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/AddGuestModal.vue'),
 )
-const LiveQueueSettingsModal = defineAsyncComponent(
-  () => import('@/modules/app/queue/components/LiveQueueSettingsModal.vue'),
+const LiveQueueSettings = defineAsyncComponent(
+  () => import('@/modules/app/queue/components/LiveQueueSettings.vue'),
 )
 const DisableStrictModeModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/DisableStrictModeModal.vue'),
@@ -125,17 +146,93 @@ const showDisableStrictModal = ref(false)
 
 async function confirmDisableStrictMode() {
   await handleUpdateSettings({ strictQueueMode: false })
-  showDisableStrictModal.value = false
 }
 
-function handleToggleStrictMode() {
-  if (activeQueue.value?.manualPositioning) return
+const authStore = useAuthStore()
+const router = useRouter()
 
-  if (activeQueue.value?.strictQueueMode) {
-    showDisableStrictModal.value = true
-  } else {
-    handleUpdateSettings({ strictQueueMode: true })
+const timeToExpiry = ref(0)
+let expiryTimer: ReturnType<typeof setInterval> | null = null
+
+function checkExpiry() {
+  if (!activeQueue.value?.expiresAt) {
+    timeToExpiry.value = 0
+    return
   }
+  const expiry = new Date(activeQueue.value.expiresAt).getTime()
+  const now = Date.now()
+  timeToExpiry.value = expiry - now
+}
+
+onMounted(() => {
+  checkExpiry()
+  expiryTimer = setInterval(checkExpiry, 1000)
+})
+
+onUnmounted(() => {
+  if (expiryTimer) clearInterval(expiryTimer)
+})
+
+watch(
+  () => activeQueue.value?.expiresAt,
+  () => {
+    checkExpiry()
+  },
+)
+
+const isSessionExpired = computed(() => {
+  if (authStore.isPremium) return false
+  if (!activeQueue.value?.expiresAt) return false
+  return timeToExpiry.value <= 0
+})
+
+const isSessionExpiringSoon = computed(() => {
+  if (authStore.isPremium) return false
+  if (!activeQueue.value?.expiresAt) return false
+  return timeToExpiry.value > 0 && timeToExpiry.value < 15 * 60 * 1000
+})
+
+const expiryTimeLeftStr = computed(() => {
+  if (timeToExpiry.value <= 0) return 'Expired'
+  const minutes = Math.floor(timeToExpiry.value / 60000)
+  const seconds = Math.floor((timeToExpiry.value % 60000) / 1000)
+  return `${minutes}m ${seconds}s`
+})
+
+const currentPlan = ref<BillingPlan | null>(null)
+
+onBeforeMount(async () => {
+  try {
+    currentPlan.value = await fetchCurrentPlan()
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to fetch plan:', e)
+  }
+})
+
+const maxGuests = computed(() => {
+  if (!currentPlan.value) return 25
+  return currentPlan.value.limits?.maxGuestsPerQueue || 25
+})
+
+const showLimitBanner = computed(() => {
+  if (authStore.isPremium) return false
+  return waitingCount.value >= maxGuests.value - 5 && !isSessionExpired.value
+})
+
+const isLimitReached = computed(() => {
+  if (authStore.isPremium) return false
+  return waitingCount.value >= maxGuests.value
+})
+
+const showUpgradeModal = ref(false)
+
+function openUpgradeModal() {
+  showUpgradeModal.value = true
+}
+
+function openLoginModal() {
+  router.push({ name: 'login', query: { claim_queue_id: activeQueue.value?.id } })
 }
 </script>
 
@@ -148,7 +245,7 @@ function handleToggleStrictMode() {
       :class="{ 'opacity-60 pointer-events-none': isRefreshing }"
     >
       <!-- Content Header (Slot for custom titles/slugs) -->
-      <header v-if="activeQueue" class="py-2">
+      <header v-if="activeQueue" class="py-2 flex flex-col gap-4">
         <LiveSyncStatus
           :queue-name="activeQueue?.name"
           :is-stream-connected="isStreamConnected"
@@ -157,6 +254,45 @@ function handleToggleStrictMode() {
           :strict-mode="activeQueue?.strictQueueMode"
           :show-notifications="showNotifications"
         />
+
+        <!-- Premium Expiry Banner -->
+        <transition
+          enter-active-class="transition-all duration-500 ease-out"
+          enter-from-class="opacity-0 -translate-y-4"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition-all duration-300 ease-in"
+          leave-from-class="opacity-100 translate-y-0"
+          leave-to-class="opacity-0 -translate-y-4"
+        >
+          <PremiumExpiryBanner
+            v-if="(isSessionExpired || isSessionExpiringSoon) && !showLimitBanner"
+            :is-expired="isSessionExpired"
+            :time-left-str="expiryTimeLeftStr"
+            :is-authenticated="authStore.isAuthenticated"
+            @upgrade="openUpgradeModal"
+            @login="openLoginModal"
+          />
+        </transition>
+
+        <!-- Premium Limit Banner -->
+        <transition
+          enter-active-class="transition-all duration-500 ease-out"
+          enter-from-class="opacity-0 -translate-y-4"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition-all duration-300 ease-in"
+          leave-from-class="opacity-100 translate-y-0"
+          leave-to-class="opacity-0 -translate-y-4"
+        >
+          <PremiumLimitBanner
+            v-if="showLimitBanner"
+            :is-limit-reached="isLimitReached"
+            :waiting-count="waitingCount"
+            :is-authenticated="authStore.isAuthenticated"
+            :max-guests="maxGuests"
+            @upgrade="openUpgradeModal"
+            @login="openLoginModal"
+          />
+        </transition>
       </header>
 
       <!-- Main Responsive Grid -->
@@ -190,20 +326,22 @@ function handleToggleStrictMode() {
             <ShareCodeCard
               :join-code="activeQueue?.joinCode"
               :share-url="queueUrl"
-              title="Queue URL"
+              :expires-at="activeQueue?.expiresAt"
               @show-qr="showInfoModal = true"
             />
 
             <div class="relative">
               <QueueActionCard
                 :is-paused="isPaused"
-                :strict-mode="activeQueue?.strictQueueMode"
                 :manual-positioning="activeQueue?.manualPositioning"
-                @add-guest="showAddGuestModal = true"
+                @add-guest="
+                  isLimitReached || isSessionExpired || isSessionExpiringSoon
+                    ? (showUpgradeModal = true)
+                    : (showAddGuestModal = true)
+                "
                 @update-status="openStatusModal"
                 @open-settings="showSettingsModal = true"
                 @toggle-notes="showNotes = !showNotes"
-                @toggle-strict-mode="handleToggleStrictMode"
               />
 
               <SessionNotesCard
@@ -255,7 +393,7 @@ function handleToggleStrictMode() {
       @submit="handleAddGuestSubmit"
     />
 
-    <LiveQueueSettingsModal
+    <LiveQueueSettings
       v-if="activeQueue"
       :is-open="showSettingsModal"
       :queue="activeQueue"
@@ -274,5 +412,12 @@ function handleToggleStrictMode() {
     />
 
     <FloatingConnectionBadge :stream-state="streamState" :ping-ms="pingMs" />
+
+    <PremiumUpgradeModal
+      :is-open="showUpgradeModal"
+      :is-limit-reached="isLimitReached"
+      :queue-id="activeQueue?.id"
+      @close="showUpgradeModal = false"
+    />
   </LiveSyncLoader>
 </template>

@@ -140,4 +140,95 @@ test.describe('Customer Join', () => {
     // Should lead to the queue join screen
     await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/join`))
   })
+
+  test('should render geo-lock notice if queue is geo-locked', async ({ page, mockApi }) => {
+    const geoQueueId = 'q-geo-123'
+    await mockApi(`/queue/p/${geoQueueId}/live`, {
+      id: geoQueueId,
+      name: 'Geo Locked Clinic',
+      status: 'ACTIVE',
+      joinCode: 'CLNC02',
+      isGeoLocked: true,
+      latitude: 19.076,
+      longitude: 72.8777,
+      geoRadiusMeters: 200,
+    })
+    await mockApi('/queue/p/find', {
+      id: geoQueueId,
+      name: 'Geo Locked Clinic',
+      status: 'ACTIVE',
+      isGeoLocked: true,
+      latitude: 19.076,
+      longitude: 72.8777,
+      geoRadiusMeters: 200,
+    })
+    await mockApi('/customer/entry/recover-session', null, 404)
+
+    await page.goto(`/q/${geoQueueId}/join`)
+
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible({ timeout: 10000 })
+    await codeInput.fill('CLNC02')
+    await page.getByRole('button', { name: /Verify code/i }).click()
+
+    // Notice text should be displayed
+    await expect(page.getByText('On-Site Queue Only').first()).toBeVisible()
+  })
+
+  test('should render full overlay state when join fails with QUEUE_FULL', async ({
+    page,
+    mockApi,
+  }) => {
+    const fullQueueId = 'q-full-123'
+    await mockApi(`/queue/p/${fullQueueId}/live`, {
+      id: fullQueueId,
+      name: 'Full Clinic',
+      status: 'ACTIVE',
+      joinCode: 'CLNC03',
+    })
+    await mockApi('/queue/p/find', {
+      id: fullQueueId,
+      name: 'Full Clinic',
+      status: 'ACTIVE',
+    })
+    await mockApi('/customer/entry/recover-session', null, 404)
+
+    await page.goto(`/q/${fullQueueId}/join`)
+
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible({ timeout: 10000 })
+    await codeInput.fill('CLNC03')
+    await page.getByRole('button', { name: /Verify code/i }).click()
+
+    await page.fill('#guest-name', 'John Doe')
+    await page.getByLabel(/Toggle haptic vibration buzz notifications/i).click()
+
+    // Mock join failing with QUEUE_FULL
+    await page.route(`**/customer/entry/join/${fullQueueId}**`, async (route) => {
+      await route.fulfill({
+        status: 403,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: false,
+          code: 'QUEUE_FULL',
+          error:
+            'This queue has reached its maximum capacity. Please contact the business owner or try again later.',
+        }),
+      })
+    })
+
+    await page.click('button:has-text("Join the Queue")')
+
+    // Expect the full overlay to be visible
+    await expect(page.getByRole('heading', { name: 'Queue is currently full' })).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(
+      page
+        .getByText(
+          'This queue has reached its maximum capacity. Please contact the business owner or try again later.',
+        )
+        .first(),
+    ).toBeVisible()
+  })
 })

@@ -13,6 +13,7 @@ import {
   FileSpreadsheet,
   Palette,
   Loader2,
+  MapPin,
 } from 'lucide-vue-next'
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -94,6 +95,7 @@ const displayPlans = computed(() => {
         queueExpiryHours: 0, // No expiry
         canViewGuestData: true,
         historyRetentionDays: 0, // Unlimited
+        allowGeoLock: true,
       },
     }
     filtered.push(enterprisePlaceholder)
@@ -331,6 +333,10 @@ function handleEnterpriseContact() {
                 <li v-if="plan.limits.customBranding" class="flex items-center gap-4">
                   <Palette :class="['w-5 h-5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']" />
                   <span class="font-body text-sm font-bold">Custom Branding</span>
+                </li>
+                <li v-if="plan.limits.allowGeoLock" class="flex items-center gap-4">
+                  <MapPin :class="['w-5 h-5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']" />
+                  <span class="font-body text-sm font-bold">Geo-Location Lockdown</span>
                 </li>
                 <li v-if="plan.tier === 'enterprise'" class="flex items-center gap-4">
                   <Sparkles

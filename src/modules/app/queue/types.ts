@@ -16,6 +16,10 @@ export interface QueueRecord {
   manualPositioning: boolean
   strictQueueMode: boolean
   collectEmails: boolean
+  isGeoLocked?: boolean
+  latitude?: number
+  longitude?: number
+  geoRadiusMeters?: number
   hostProfileImageUrl?: string
   hostBannerImageUrl?: string
   createdAt?: string
@@ -61,6 +65,10 @@ export interface UpdateQueuePayload {
   slug?: string
   strictQueueMode?: boolean
   notes?: string
+  isGeoLocked?: boolean
+  latitude?: number
+  longitude?: number
+  geoRadiusMeters?: number
 }
 
 export type TrendDirection = 'up' | 'down' | 'flat'

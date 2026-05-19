@@ -10,6 +10,7 @@ import {
   FileSpreadsheet,
   Palette,
   Loader2,
+  MapPin,
 } from 'lucide-vue-next'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -308,6 +309,10 @@ onUnmounted(() => {
                   <Palette :class="['w-5 h-5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']" />
                   <span class="font-body text-sm font-bold">Custom Branding</span>
                 </li>
+                <li v-if="plan.limits.allowGeoLock" class="flex items-center gap-4">
+                  <MapPin :class="['w-5 h-5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']" />
+                  <span class="font-body text-sm font-bold">Geo-Location Lockdown</span>
+                </li>
 
                 <li
                   v-if="!plan.limits.customBranding && !isEliteTier(plan)"
@@ -315,6 +320,15 @@ onUnmounted(() => {
                 >
                   <ZapOff class="w-5 h-5" />
                   <span class="font-body text-sm font-medium line-through">Custom Branding</span>
+                </li>
+                <li
+                  v-if="!plan.limits.allowGeoLock && !isEliteTier(plan)"
+                  class="flex items-center gap-4 opacity-30"
+                >
+                  <ZapOff class="w-5 h-5" />
+                  <span class="font-body text-sm font-medium line-through"
+                    >Geo-Location Lockdown</span
+                  >
                 </li>
               </ul>
             </div>

@@ -19,6 +19,8 @@ export async function joinQueue(queueId: string, payload: JoinQueuePayload): Pro
     notification_enabled: payload.notificationEnabled,
     fcm_token: payload.fcmToken,
     join_code: payload.code,
+    latitude: payload.latitude,
+    longitude: payload.longitude,
   }
 
   const response = (await apiClient.post<ApiSuccessResponse<Entry>>(
