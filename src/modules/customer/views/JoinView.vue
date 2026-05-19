@@ -238,6 +238,13 @@ function handleJoinByCode() {
         @action="handleRecheck"
       />
 
+      <QueueStateOverlay
+        v-else-if="customerStore.errorCode === 'QUEUE_PAUSED' || activeQueue.status === 'PAUSED'"
+        error-type="DENIED"
+        :error-message="customerStore.error || ''"
+        @action="handleRecheck"
+      />
+
       <JoinQueueForm
         v-else
         :queue-name="activeQueue.name"

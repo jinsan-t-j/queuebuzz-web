@@ -104,7 +104,7 @@ const sortedActiveEntries = computed(() => {
   })
 })
 const nextCallDisabled = computed(() => {
-  if (props.isLoading || props.isRefreshing || props.isPaused) return true
+  if (props.isLoading || props.isRefreshing) return true
   if (props.strictQueueMode && hasActiveCalledEntry.value) return true
   return false
 })
@@ -521,11 +521,10 @@ function resetFilters() {
         {{ isLoading ? 'Calling...' : 'Call Next Guest' }}
       </button>
       <p
-        v-if="activeEntries.length === 0 || isPaused || (strictQueueMode && hasActiveCalledEntry)"
+        v-if="activeEntries.length === 0 || (strictQueueMode && hasActiveCalledEntry)"
         class="mt-3 text-center font-body text-xs font-medium uppercase tracking-wider text-plum-muted"
       >
-        <template v-if="isPaused">Resume queue to call guests</template>
-        <template v-else-if="strictQueueMode && hasActiveCalledEntry">
+        <template v-if="strictQueueMode && hasActiveCalledEntry">
           Serve current guest first
         </template>
       </p>

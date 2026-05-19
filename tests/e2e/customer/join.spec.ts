@@ -231,4 +231,84 @@ test.describe('Customer Join', () => {
         .first(),
     ).toBeVisible()
   })
+
+  test('should render paused overlay state when join fails with QUEUE_PAUSED', async ({
+    page,
+    mockApi,
+  }) => {
+    const pausedQueueId = 'q-paused-123'
+    await mockApi(`/queue/p/${pausedQueueId}/live`, {
+      id: pausedQueueId,
+      name: 'Paused Clinic',
+      status: 'ACTIVE',
+      joinCode: 'CLNC04',
+    })
+    await mockApi('/queue/p/find', {
+      id: pausedQueueId,
+      name: 'Paused Clinic',
+      status: 'ACTIVE',
+    })
+    await mockApi('/customer/entry/recover-session', null, 404)
+
+    await page.goto(`/q/${pausedQueueId}/join`)
+
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible({ timeout: 10000 })
+    await codeInput.fill('CLNC04')
+    await page.getByRole('button', { name: /Verify code/i }).click()
+
+    await page.fill('#guest-name', 'John Doe')
+    await page.getByLabel(/Toggle haptic vibration buzz notifications/i).click()
+
+    // Mock join failing with QUEUE_PAUSED
+    await page.route(`**/customer/entry/join/${pausedQueueId}**`, async (route) => {
+      await route.fulfill({
+        status: 403,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: false,
+          code: 'QUEUE_PAUSED',
+          error: 'This queue is currently not accepting new entries. Please check again later.',
+        }),
+      })
+    })
+
+    await page.click('button:has-text("Join the Queue")')
+
+    // Expect the paused overlay to be visible
+    await expect(page.getByRole('heading', { name: 'Entries Paused' })).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(
+      page
+        .getByText('This queue is currently not accepting new entries. Please check again later.')
+        .first(),
+    ).toBeVisible()
+  })
+
+  test('should render paused overlay immediately if queue is paused on load', async ({
+    page,
+    mockApi,
+  }) => {
+    const pausedQueueId = 'q-paused-123'
+    await mockApi(`/queue/p/${pausedQueueId}/live`, {
+      id: pausedQueueId,
+      name: 'Paused Clinic',
+      status: 'PAUSED',
+      joinCode: 'CLNC04',
+    })
+    await mockApi('/queue/p/find', {
+      id: pausedQueueId,
+      name: 'Paused Clinic',
+      status: 'PAUSED',
+    })
+    await mockApi('/customer/entry/recover-session', null, 404)
+
+    await page.goto(`/q/${pausedQueueId}/join`)
+
+    // Expect the paused overlay to be visible immediately without form filling
+    await expect(page.getByRole('heading', { name: 'Entries Paused' })).toBeVisible({
+      timeout: 10000,
+    })
+  })
 })

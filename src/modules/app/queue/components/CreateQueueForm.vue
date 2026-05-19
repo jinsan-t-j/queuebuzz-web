@@ -545,7 +545,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
           </div>
         </div>
 
-        <!-- ═══ Card 5: Geo-Location Lockdown (Premium) ═══ -->
+        <!-- ═══ Card 5: Geo Fence (Premium) ═══ -->
         <div
           class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none transition-all relative overflow-hidden"
           :class="{ 'border-mint/30 shadow-[0_4px_20px_rgba(0,229,160,0.05)]': isGeoLocked }"
@@ -563,7 +563,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
                 for="isGeoLocked"
                 class="font-body text-sm font-semibold text-plum flex items-center gap-2"
               >
-                Geo-Location Lockdown
+                Geo Fence
               </label>
               <p class="font-body text-xs text-plum-muted mt-1 leading-relaxed">
                 Restrict queue entry strictly to customers physically present within a specific
@@ -573,7 +573,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
             <BaseToggle
               id="isGeoLocked"
               v-model="isGeoLocked"
-              aria-label="Toggle Geo-Location Lockdown"
+              aria-label="Toggle Geo Fence"
               :class="{ 'opacity-50': isLocating }"
               :disabled="isLocating"
             />

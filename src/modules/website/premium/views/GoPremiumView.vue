@@ -6,16 +6,16 @@
  */
 
 import {
-  Sparkles,
-  Layers,
-  Users,
-  History,
   FileSpreadsheet,
-  Palette,
+  History,
+  Layers,
   Loader2,
   MapPin,
+  Palette,
+  Sparkles,
+  Users,
 } from 'lucide-vue-next'
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -336,7 +336,7 @@ function handleEnterpriseContact() {
                 </li>
                 <li v-if="plan.limits.allowGeoLock" class="flex items-center gap-4">
                   <MapPin :class="['w-5 h-5', isEliteTier(plan) ? 'text-on-mint' : 'text-mint']" />
-                  <span class="font-body text-sm font-bold">Geo-Location Lockdown</span>
+                  <span class="font-body text-sm font-bold">Geo Fence</span>
                 </li>
                 <li v-if="plan.tier === 'enterprise'" class="flex items-center gap-4">
                   <Sparkles

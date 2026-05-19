@@ -64,7 +64,7 @@ function openTerminateModal() {
           class="font-body text-xs font-bold"
           :class="isPaused ? 'text-warning-dark' : 'text-mint-dark'"
         >
-          {{ isPaused ? 'Paused' : 'Active Now' }}
+          {{ isPaused ? 'Entry Paused' : 'Active Now' }}
         </p>
       </div>
       <div v-if="isPaused" class="flex flex-col items-end">
@@ -84,7 +84,7 @@ function openTerminateModal() {
         @click="openPauseModal"
       >
         <PauseCircle class="h-4 w-4 text-plum group-hover:text-mint" />
-        Pause Queue
+        Pause Entries
       </button>
       <button
         v-else
@@ -92,7 +92,7 @@ function openTerminateModal() {
         @click="handleResume"
       >
         <PlayCircle class="h-4 w-4 text-on-mint" />
-        Resume Now
+        Resume Entries
       </button>
 
       <button
