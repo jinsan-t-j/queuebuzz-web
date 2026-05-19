@@ -207,14 +207,14 @@ export default defineConfig(({ mode }) => {
       formatting: 'minify',
       dirStyle: 'nested',
       includedRoutes(paths) {
-        // Save a copy of the clean client-built index.html before pre-rendering overwrites it.
-        // This clean template is used as the SPA fallback for dynamic/SPA routes.
+        // Save a clean SPA shell as 200.html before pre-rendering overwrites index.html.
+        // Cloudflare Pages and Netlify auto-serve 200.html as the SPA fallback.
         const distDir = path.resolve(process.cwd(), 'dist')
         const indexHtmlPath = path.join(distDir, 'index.html')
-        const appHtmlPath = path.join(distDir, 'app.html')
+        const spaFallbackPath = path.join(distDir, '200.html')
 
         if (fs.existsSync(indexHtmlPath)) {
-          fs.copyFileSync(indexHtmlPath, appHtmlPath)
+          fs.copyFileSync(indexHtmlPath, spaFallbackPath)
         }
 
         // Pre-render the core landing pages
