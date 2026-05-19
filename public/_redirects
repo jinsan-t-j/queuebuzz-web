@@ -1,0 +1,6 @@
+# Explicit SPA routes - serve the clean SPA shell (no pre-rendered homepage content)
+# This prevents homepage HTML flashing on authenticated deep link reloads.
+/dashboard/*       /app/index.html 200
+/dashboard         /app/index.html 200
+/login-or-signup   /app/index.html 200
+/q/*               /app/index.html 200
