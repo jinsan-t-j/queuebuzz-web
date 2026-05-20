@@ -33,15 +33,11 @@ export async function joinQueue(queueId: string, payload: JoinQueuePayload): Pro
 
 export async function fetchEntry(): Promise<Entry | null> {
   const config = createApiRequestConfig({}, { withCredentials: true, skipLogout: true })
-  try {
-    const response = (await apiClient.get<ApiSuccessResponse<Entry>>(
-      API_ROUTES.CUSTOMER.GET_ENTRY(),
-      config,
-    )) as unknown as ApiSuccessResponse<Entry>
-    return response.data
-  } catch {
-    return null
-  }
+  const response = (await apiClient.get<ApiSuccessResponse<Entry>>(
+    API_ROUTES.CUSTOMER.GET_ENTRY(),
+    config,
+  )) as unknown as ApiSuccessResponse<Entry>
+  return response.data
 }
 
 export async function confirmStillHere(): Promise<MutationResult> {
@@ -76,12 +72,8 @@ export async function finishService(): Promise<MutationResult> {
 
 export async function leaveQueue(): Promise<MutationResult> {
   const config = createApiRequestConfig({}, { withCredentials: true })
-  try {
-    await apiClient.post(API_ROUTES.CUSTOMER.LEAVE_GUEST, null, config)
-    return { success: true }
-  } catch {
-    return { success: false }
-  }
+  await apiClient.post(API_ROUTES.CUSTOMER.LEAVE_GUEST, null, config)
+  return { success: true }
 }
 
 export async function recoverGuestSession(): Promise<Entry | null> {

@@ -100,13 +100,11 @@ const ticketNumberParts = computed(() => {
 const queueName = computed(() => activeQueue.value?.name || 'Your Queue')
 
 onBeforeMount(async () => {
-  // 1. If not in store, attempt to re-hydrate from cookie session
-  if (!isJoined.value) {
-    await fetchEntry()
-  }
+  // Always fetch entry to validate active session on mount
+  await fetchEntry()
 
-  // 2. If still not joined after hydration attempt, redirect to home
-  if (!isJoined.value) {
+  // 2. If still not joined after validation attempt, redirect to home
+  if (!isJoined.value || !entry.value) {
     showToast('You are not joined to any queue', { type: 'error' })
     router.push('/')
     return
@@ -114,8 +112,30 @@ onBeforeMount(async () => {
 
   // 3. Ensure queue context is available for estWaitMin calculation
   const queueId = router.currentRoute.value.params.queueId as string
+  let queueValid = false
   if (queueId) {
-    await queueStore.IntializeQueueByIdOrCode(queueId)
+    queueValid = await queueStore.IntializeQueueByIdOrCode(queueId)
+  }
+
+  if (!queueValid || !queueStore.activeQueue) {
+    showToast('This queue is no longer available', { type: 'error' })
+    router.push('/')
+    return
+  }
+
+  // Check if the ticket belongs to the loaded queue
+  if (entry.value.queueId !== queueStore.activeQueue.id) {
+    let routeName = 'customer-waiting'
+    if (status.value === 'CALLED' || status.value === 'ARRIVED') {
+      routeName = 'customer-called'
+    } else if (status.value === 'IDLE') {
+      routeName = 'customer-idle'
+    } else if (status.value === 'SERVED') {
+      routeName = 'customer-served'
+    }
+
+    router.replace({ name: routeName, params: { queueId: entry.value.queueId } })
+    return
   }
 
   if (entry.value?.id) {

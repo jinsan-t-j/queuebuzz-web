@@ -158,6 +158,10 @@ const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
 }
 
 onBeforeMount(async () => {
+  if (customerStore.isJoined) {
+    await customerStore.fetchEntry()
+  }
+
   if (routeCode.value) {
     await resolveQueueCode(routeCode.value)
     return
