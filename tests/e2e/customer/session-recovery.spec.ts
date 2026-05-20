@@ -126,4 +126,49 @@ test.describe('Customer Session Recovery & Redirection', () => {
     await expect(page.locator('text=Already in a queue').first()).toBeVisible({ timeout: 10000 })
     await expect(page.getByRole('button', { name: /leave current queue/i })).toBeVisible()
   })
+
+  test('should handle session transition successfully even when leaving a 401/expired session', async ({
+    page,
+    mockApi,
+  }) => {
+    await mockApi(
+      '/customer/entry/recover-session',
+      makeEntryStatus('waiting', { queueId: ACTIVE_QUEUE_ID }),
+    )
+    // Mock the leave endpoint to fail with 401 Unauthorized
+    await mockApi('/customer/entry/leave', {}, 401)
+
+    await page.goto(`/q/${OTHER_QUEUE_ID}/join`)
+
+    // Fill code for the OTHER queue
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible()
+    await codeInput.fill('STALL2')
+    await page.getByRole('button', { name: 'Verify code' }).click()
+
+    // Click "Leave Current Queue"
+    await page.getByRole('button', { name: /leave current queue/i }).click()
+
+    // Warning should disappear and join form should be visible (local session cleared)
+    await expect(page.locator('text=Already in a queue')).not.toBeVisible()
+    await expect(page.getByRole('button', { name: /join the queue/i })).toBeVisible()
+  })
+
+  test('should redirect to the correct queue waiting room if visiting a mismatched queue waiting page', async ({
+    page,
+    mockApi,
+  }) => {
+    // Current ticket is for ACTIVE_QUEUE_ID
+    await mockApi('/customer/entry', makeEntryStatus('waiting', { queueId: ACTIVE_QUEUE_ID }))
+    await mockApi(
+      '/customer/entry/recover-session',
+      makeEntryStatus('waiting', { queueId: ACTIVE_QUEUE_ID }),
+    )
+
+    // User visits waiting page of OTHER_QUEUE_ID
+    await page.goto(`/q/${OTHER_QUEUE_ID}/waiting`)
+
+    // Should redirect to the active queue's waiting room
+    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/waiting`))
+  })
 })

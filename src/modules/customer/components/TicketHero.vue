@@ -46,9 +46,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div
-    class="rounded-3xl border border-plum-faint bg-white p-5 shadow-[0_4px_24px_rgba(26,10,46,0.08)]"
-  >
+  <div class="rounded-3xl bg-white p-5 shadow-[0_4px_24px_rgba(26,10,46,0.08)]">
     <div class="flex">
       <!-- Left: Ticket info -->
       <div class="flex w-[40%] flex-col justify-center">

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useClipboard, useDebounceFn } from '@vueuse/core'
-import { MapPin } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { useField, useForm } from 'vee-validate'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
@@ -11,10 +10,12 @@ import CopyCodeIcon from '@/assets/icons/copy-code.svg?component'
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
 import BaseToggle from '@/components/base/BaseToggle.vue'
+import LocationTroubleshooter from '@/components/common/LocationTroubleshooter.vue'
 import { useToast } from '@/composables/useToast'
 import { APP_BASE_URL } from '@/config/api.constants'
 import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
 import { checkSlugAvailability, createQueue } from '@/modules/app/queue/actions/queue.action'
+import LocationVerifiedCard from '@/modules/app/queue/components/LocationVerifiedCard.vue'
 import MapPreviewCard from '@/modules/app/queue/components/MapPreviewCard.vue'
 import { SLUG_REGEX } from '@/modules/app/queue/utils/validation'
 import { useLocation } from '@/modules/customer/composables/useLocation'
@@ -191,6 +192,8 @@ const {
   initLeafletMap,
   destroyLeafletMap,
   captureLocation,
+  geoError,
+  accuracy,
 } = useLocation(latitude, longitude)
 
 const recaptureLocation = async () => {
@@ -198,12 +201,13 @@ const recaptureLocation = async () => {
   if (pos) {
     showToast('Successfully captured business location coordinates!', { type: 'success' })
     fetchPlaceName(pos.latitude, pos.longitude)
+    initLeafletMap('leaflet-map', null, null, 200, { draggable: true })
   } else {
     showToast(
-      'Location permission is required to enable Geo-Lockdown. Please allow location access in your browser.',
+      geoError.value ||
+        'Location permission is required to enable Geo-Lockdown. Please allow location access in your browser.',
       { type: 'error' },
     )
-    isGeoLocked.value = false
   }
 }
 
@@ -584,8 +588,11 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
             v-if="isLocating || isGeoLocked"
             class="mt-6 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
           >
+            <!-- Location Troubleshooter / Warning Panel -->
+            <LocationTroubleshooter :geo-error="geoError" :accuracy="accuracy" class="mb-4" />
+
             <div
-              v-if="isLocating"
+              v-if="isLocating && !latitude && !longitude"
               class="flex items-center gap-3 py-2 text-plum-muted font-body text-sm"
             >
               <SpinnerLoadingIcon class="h-5 w-5 animate-spin text-mint shrink-0" />
@@ -595,37 +602,12 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
               >
             </div>
 
-            <div v-else-if="latitude && longitude" class="flex flex-col gap-5">
+            <div v-if="latitude && longitude" class="flex flex-col gap-5">
               <!-- Location Address Display -->
-              <div
-                v-if="isFetchingPlace || locationName"
-                class="flex items-center gap-3 p-4 bg-mint-light/40 border border-[#B4FBE4] rounded-2xl text-plum"
-              >
-                <div
-                  class="w-10 h-10 rounded-xl bg-white border border-[#B4FBE4] flex items-center justify-center shrink-0"
-                >
-                  <MapPin class="w-5 h-5 text-plum" />
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 rounded-full bg-mint animate-pulse" />
-                    <span class="font-body text-sm font-medium text-plum">Location Verified</span>
-                  </div>
-                  <div v-if="isFetchingPlace" class="flex items-center gap-2 mt-0.5">
-                    <SpinnerLoadingIcon class="h-3.5 w-3.5 animate-spin text-plum-muted shrink-0" />
-                    <span class="font-body text-sm text-plum-muted animate-pulse"
-                      >Reverse geocoding address...</span
-                    >
-                  </div>
-                  <p
-                    v-else
-                    class="font-body text-sm font-semibold text-plum truncate mt-0.5"
-                    :title="locationName"
-                  >
-                    {{ locationName }}
-                  </p>
-                </div>
-              </div>
+              <LocationVerifiedCard
+                :is-fetching-place="isFetchingPlace"
+                :location-name="locationName"
+              />
 
               <!-- Map Preview Card -->
               <MapPreviewCard

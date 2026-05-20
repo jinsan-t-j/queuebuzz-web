@@ -11,6 +11,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import JoinQueueForm from '@/modules/customer/components/JoinQueueForm.vue'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import type { JoinQueueFormPayload, JoinQueuePayload } from '@/modules/customer/types'
 import { useQueueStore } from '@/stores/queue.store'
@@ -20,9 +21,6 @@ const ActiveSessionWarning = defineAsyncComponent(
 )
 const JoinCodeModal = defineAsyncComponent(
   () => import('@/modules/customer/components/JoinCodeModal.vue'),
-)
-const JoinQueueForm = defineAsyncComponent(
-  () => import('@/modules/customer/components/JoinQueueForm.vue'),
 )
 const QueueStateOverlay = defineAsyncComponent(
   () => import('@/modules/customer/components/QueueStateOverlay.vue'),
@@ -160,6 +158,10 @@ const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
 }
 
 onBeforeMount(async () => {
+  if (customerStore.isJoined) {
+    await customerStore.fetchEntry()
+  }
+
   if (routeCode.value) {
     await resolveQueueCode(routeCode.value)
     return
@@ -194,22 +196,24 @@ function handleJoinByCode() {
 
     <div
       v-if="isLoading || queueIsLoading"
-      class="flex flex-col items-center px-6 py-12 flex-1 animate-in fade-in"
+      class="flex flex-col items-center flex-1 animate-in fade-in"
     >
-      <!-- Skeleton Header (LCP Target) -->
-      <div v-once class="h-12 w-64 bg-plum-faint rounded-2xl animate-pulse mx-auto" />
+      <!-- Skeleton Header (LCP Target) using CustomerHeader's built-in Shimmer -->
+      <CustomerHeader :is-loading="true" />
 
       <!-- Skeleton Form Container -->
       <div
         v-once
-        class="mt-10 w-full max-w-sm rounded-[40px] border border-plum-faint bg-white p-8 shadow-sm"
+        class="mt-10 mx-6 w-[calc(100%-48px)] max-w-sm rounded-[40px] border border-plum-faint bg-white p-8 shadow-sm"
       >
         <div class="h-8 w-40 bg-plum-faint rounded-lg animate-pulse mb-8" />
         <div class="h-24 w-full bg-sand rounded-3xl animate-pulse mb-6" />
         <div class="h-[60px] w-full bg-plum-faint rounded-2xl animate-pulse" />
       </div>
 
-      <p class="mt-8 font-body text-sm text-plum-muted uppercase tracking-widest animate-pulse">
+      <p
+        class="mt-8 pb-12 font-body text-sm text-plum-muted uppercase tracking-widest animate-pulse"
+      >
         Connecting to queue...
       </p>
     </div>

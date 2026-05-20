@@ -119,12 +119,10 @@ function syncForm() {
   isDirty.value = false
 }
 
-const displayBannerUrl = computed(
-  () => bannerImageUrl.value || '/images/branding/default-banner.png',
-)
-const displayProfileUrl = computed(
-  () => profileImageUrl.value || '/images/branding/default-profile.png',
-)
+const profileInitial = computed(() => {
+  const name = form.value.business_name || form.value.name
+  return name?.charAt(0)?.toUpperCase() || '?'
+})
 
 function onFieldChange() {
   isDirty.value = true
@@ -367,9 +365,9 @@ async function refreshSubscription() {
           :class="{ 'cursor-pointer': canCustomBranding }"
           @click="canCustomBranding && bannerFileInput?.click()"
         >
-          <!-- Banner Preview -->
-          <div class="relative aspect-[16/5] w-full">
-            <img :src="displayBannerUrl" alt="Banner preview" class="h-full w-full object-cover" />
+          <!-- Banner Preview (uploaded image) -->
+          <div v-if="hasBannerImage" class="relative aspect-[16/5] w-full">
+            <img :src="bannerImageUrl!" alt="Banner preview" class="h-full w-full object-cover" />
             <!-- Hover overlay -->
             <div
               v-if="canCustomBranding"
@@ -390,10 +388,9 @@ async function refreshSubscription() {
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                  {{ hasBannerImage ? 'Change' : 'Upload' }}
+                  Change
                 </button>
                 <button
-                  v-if="hasBannerImage"
                   class="flex items-center gap-1.5 rounded-full bg-danger/90 px-4 py-2 font-body text-xs font-semibold text-white shadow-sm dark:shadow-none backdrop-blur-sm transition-transform hover:scale-105"
                   @click.stop="removeBannerImage"
                 >
@@ -409,6 +406,33 @@ async function refreshSubscription() {
                 </button>
               </div>
             </div>
+          </div>
+
+          <!-- Empty banner placeholder (premium, no image uploaded) -->
+          <div
+            v-else-if="canCustomBranding"
+            class="relative flex aspect-[16/5] w-full items-center justify-center bg-plum-faint/50"
+          >
+            <div class="flex flex-col items-center gap-2 text-plum/60">
+              <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <p class="font-body text-xs font-semibold">Upload a cover banner</p>
+            </div>
+          </div>
+
+          <!-- Default banner (non-premium fallback, decorative) -->
+          <div v-else class="relative aspect-[16/5] w-full">
+            <img
+              src="/images/branding/default-banner.png"
+              alt=""
+              class="h-full w-full object-cover"
+            />
           </div>
 
           <p
@@ -439,8 +463,23 @@ async function refreshSubscription() {
               @click="canCustomBranding && profileFileInput?.click()"
             >
               <img
-                :src="displayProfileUrl"
+                v-if="hasProfileImage"
+                :src="profileImageUrl!"
                 alt="Business Logo"
+                class="h-full w-full object-cover"
+              />
+              <div
+                v-else-if="canCustomBranding"
+                class="flex h-full w-full items-center justify-center bg-plum-faint"
+              >
+                <span class="font-display text-3xl font-bold text-plum-muted">{{
+                  profileInitial
+                }}</span>
+              </div>
+              <img
+                v-else
+                src="/images/branding/default-profile.png"
+                alt=""
                 class="h-full w-full object-cover"
               />
               <div

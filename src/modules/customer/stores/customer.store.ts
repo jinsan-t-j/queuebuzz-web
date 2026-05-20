@@ -420,6 +420,14 @@ export const useCustomerStore = defineStore('customer', {
         return result.success
       } catch (e: unknown) {
         const err = e as ApiError
+        if (
+          err?.response?.status === 401 ||
+          err?.response?.status === 410 ||
+          err?.response?.status === 404
+        ) {
+          this.resetCustomerSession()
+          return true
+        }
         this.error = err?.response?.data?.message || 'Failed to leave queue'
         return false
       } finally {

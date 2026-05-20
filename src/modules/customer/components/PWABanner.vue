@@ -1,30 +1,60 @@
 <script setup lang="ts">
 /**
  * @component PWABanner
- * @description Persistent instructional banner for iOS users to "Add to Home Screen"
- * as it is required for push notifications in Safari.
- * Hidden if in standalone mode or dismissed by user.
+ * @description Ultra-minimal persistent instructional banner for iOS/macOS Safari.
+ * Includes a direct shortcut button that installs the app programmatically (Chrome/Android)
+ * or opens a gorgeous interactive walkthrough helper for iOS/macOS Safari.
  */
-import { X, Share } from 'lucide-vue-next'
-import { ref, onMounted, computed } from 'vue'
+import { BellRing, X } from 'lucide-vue-next'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+
+import PWAInstallModal from './PWAInstallModal.vue'
+
+const props = defineProps({
+  forceShow: {
+    type: Boolean,
+    default: false,
+  },
+})
 
 interface NavigatorWithStandalone extends Navigator {
   standalone?: boolean
 }
 
+// Custom interface for beforeinstallprompt event support
+interface BeforeInstallPromptEvent extends Event {
+  readonly platforms: string[]
+  readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
+  prompt(): Promise<void>
+}
+
 const isVisible = ref(false)
 const isIOS = ref(false)
+const isMac = ref(false)
 const isStandalone = ref(false)
+const showGuide = ref(false)
+const deferredPrompt = ref<BeforeInstallPromptEvent | null>(null)
 
 interface WindowWithMSStream extends Window {
   MSStream?: unknown
 }
 
+function handleInstallPrompt(e: Event) {
+  e.preventDefault()
+  deferredPrompt.value = e as BeforeInstallPromptEvent
+}
+
 onMounted(() => {
   // 1. Detect device & PWA state
   const ua = globalThis.navigator.userAgent
-  isIOS.value =
-    /iPad|iPhone|iPod/.test(ua) && !(globalThis as unknown as WindowWithMSStream).MSStream
+  isMac.value = /Macintosh|Mac OS X/.test(ua)
+
+  const isApple =
+    /iPad|iPhone|iPod|Macintosh/.test(ua) && !(globalThis as unknown as WindowWithMSStream).MSStream
+  const isSafari = /^((?!chrome|android).)*safari/i.test(ua)
+
+  isIOS.value = isApple && isSafari
+
   isStandalone.value =
     globalThis.matchMedia('(display-mode: standalone)').matches ||
     (globalThis.navigator as NavigatorWithStandalone).standalone === true
@@ -32,16 +62,41 @@ onMounted(() => {
   // 2. Check dismissal state
   const isDismissed = localStorage.getItem('qb_pwa_banner_dismissed') === 'true'
 
-  // 3. Show only to iOS users not in PWA mode and haven't dismissed
-  isVisible.value = isIOS.value && !isStandalone.value && !isDismissed
+  // 3. Listen for native install prompt (Chrome / Android)
+  globalThis.addEventListener('beforeinstallprompt', handleInstallPrompt)
+
+  // 4. Show if:
+  // - forceShow is explicitly passed OR
+  // - running in local development mode (for easy styling & inspection) OR
+  // - on iOS/macOS Safari, not running in PWA mode, and not previously dismissed
+  const isDev = import.meta.env.DEV
+  isVisible.value = props.forceShow || isDev || (isIOS.value && !isStandalone.value && !isDismissed)
 })
+
+onUnmounted(() => {
+  globalThis.removeEventListener('beforeinstallprompt', handleInstallPrompt)
+})
+
+async function triggerInstall() {
+  if (deferredPrompt.value) {
+    // If native prompt is available (Chrome / Android), trigger it directly
+    await deferredPrompt.value.prompt()
+    const { outcome } = await deferredPrompt.value.userChoice
+    if (outcome === 'accepted') {
+      deferredPrompt.value = null
+    }
+  } else {
+    // Fallback: iOS/macOS Safari does not support programmatic installs.
+    // Display a beautiful interactive guide overlay.
+    showGuide.value = true
+  }
+}
 
 function dismiss() {
   isVisible.value = false
   localStorage.setItem('qb_pwa_banner_dismissed', 'true')
 }
 
-// Check if we should even render (performance optimization - zero DOM impact if false)
 const shouldRender = computed(() => isVisible.value)
 </script>
 
@@ -54,49 +109,46 @@ const shouldRender = computed(() => isVisible.value)
     leave-from-class="translate-y-0 opacity-100"
     leave-to-class="-translate-y-full opacity-0"
   >
-    <div v-if="shouldRender" class="sticky top-4 z-[60] mx-4 mb-8">
+    <div v-if="shouldRender" class="sticky top-4 z-[60] mx-4 mb-6">
+      <!-- Minimalist inline card -->
       <div
-        class="relative overflow-hidden rounded-[24px] border border-warning/20 bg-white p-5 shadow-[0_12px_40px_rgba(26,10,46,0.12)]"
+        class="relative overflow-hidden rounded-[20px] border border-plum-faint bg-white py-3 pl-4 pr-12 shadow-[0_8px_30px_rgba(26,10,46,0.06)]"
       >
-        <!-- Background Accent -->
-        <div class="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-warning/10 blur-2xl" />
-
-        <div class="flex items-start gap-4">
-          <!-- Icon Circle -->
-          <div
-            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-warning/15"
-          >
-            <Share class="h-5 w-5 text-warning" />
-          </div>
-
-          <!-- Content -->
-          <div class="flex-1 pr-6 text-left">
-            <h3 class="font-body text-sm font-bold text-plum">Add to Home Screen</h3>
-            <p class="mt-1 font-body text-sm leading-relaxed text-plum-muted">
-              Safari requires this to receive <strong class="text-plum">buzz alerts</strong> and
-              real-time updates while you wait.
-            </p>
-
-            <div
-              class="mt-3 flex items-center gap-1.5 font-body text-sm font-semibold uppercase tracking-wider text-plum-muted"
-            >
-              <span>Tap</span>
-              <Share class="h-3 w-3" />
-              <span>then</span>
-              <span class="rounded bg-sand px-1 py-0.5 text-sm text-plum">Add to Home Screen</span>
+        <div class="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+          <div class="flex items-center gap-3">
+            <!-- Icon -->
+            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-mint-light">
+              <BellRing class="h-4.5 w-4.5 text-plum" />
             </div>
+
+            <!-- Instruction Text -->
+            <p class="font-body text-xs leading-normal text-plum-soft">
+              Get live buzz alerts: Add to {{ isMac ? 'Dock' : 'Home Screen' }} to never miss your
+              turn.
+            </p>
           </div>
 
-          <!-- Close button -->
+          <!-- Install Action Button -->
           <button
-            class="absolute right-3 top-3 rounded-full min-h-[48px] min-w-[48px] flex items-center justify-center text-plum-muted transition-colors hover:bg-sand active:scale-95"
-            aria-label="Close banner"
-            @click="dismiss"
+            class="rounded-xl bg-plum px-3 py-1.5 font-body text-[11px] font-semibold text-sand hover:bg-plum-soft active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+            @click="triggerInstall"
           >
-            <X class="h-6 w-6" />
+            Install App
           </button>
         </div>
+
+        <!-- Close button -->
+        <button
+          class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full h-8 w-8 flex items-center justify-center text-plum-muted transition-colors hover:bg-sand active:scale-90"
+          aria-label="Close banner"
+          @click="dismiss"
+        >
+          <X class="h-4 w-4" />
+        </button>
       </div>
     </div>
   </transition>
+
+  <!-- PWA Install Guide Modal -->
+  <PWAInstallModal :is-open="showGuide" :is-mac="isMac" @close="showGuide = false" />
 </template>
