@@ -72,6 +72,7 @@ const showGeoPromptModal = ref(false)
 const {
   latitude,
   longitude,
+  accuracy,
   isLocating,
   isRefreshingLocation,
   geoError,
@@ -504,6 +505,7 @@ onUnmounted(() => {
       :is-refreshing-location="isRefreshingLocation"
       :is-satellite="isSatellite"
       :geo-error="geoError"
+      :accuracy="accuracy"
       @close="showGeoPromptModal = false"
       @toggle-map-type="toggleMapType"
       @refresh-location="refreshMyLocation"

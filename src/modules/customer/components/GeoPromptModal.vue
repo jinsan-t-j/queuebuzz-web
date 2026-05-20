@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Info, Layers, Locate } from 'lucide-vue-next'
+import { Layers, Locate } from 'lucide-vue-next'
 
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 import BaseModal from '@/components/base/BaseModal.vue'
+import LocationTroubleshooter from '@/components/common/LocationTroubleshooter.vue'
 
 defineProps({
   isOpen: {
@@ -31,6 +32,10 @@ defineProps({
   },
   geoError: {
     type: String,
+    default: null,
+  },
+  accuracy: {
+    type: Number,
     default: null,
   },
 })
@@ -108,15 +113,7 @@ defineEmits(['close', 'toggle-map-type', 'refresh-location', 'confirm'])
         </div>
       </div>
 
-      <div
-        v-if="geoError"
-        class="mb-6 p-4 bg-danger/5 rounded-2xl border border-danger/25 text-left flex items-start gap-2"
-      >
-        <Info class="w-4 h-4 shrink-0 text-danger mt-0.5" />
-        <p class="font-body text-xs text-danger leading-relaxed">
-          {{ geoError }}
-        </p>
-      </div>
+      <LocationTroubleshooter :geo-error="geoError" :accuracy="accuracy" class="mb-6" />
 
       <div class="flex flex-col sm:flex-row gap-3 justify-center">
         <button

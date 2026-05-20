@@ -3,6 +3,7 @@ import { ref, type Ref } from 'vue'
 interface LeafletMap {
   setView: (center: [number, number], zoom: number) => LeafletMap
   remove: () => void
+  invalidateSize: () => void
 }
 
 interface LeafletMarker {
@@ -36,6 +37,7 @@ export function useLocation(
 ) {
   const latitude = customLatitude || ref<number | null>(null)
   const longitude = customLongitude || ref<number | null>(null)
+  const accuracy = ref<number | null>(null)
   const isLocating = ref(false)
   const isRefreshingLocation = ref(false)
   const geoError = ref<string | null>(null)
@@ -198,6 +200,11 @@ export function useLocation(
       }
 
       leafletMap = map
+      setTimeout(() => {
+        if (leafletMap) {
+          leafletMap.invalidateSize()
+        }
+      }, 200)
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Failed to initialize Leaflet map:', err)
@@ -218,6 +225,11 @@ export function useLocation(
       if (leafletMarker && options.draggable) {
         leafletMarker.setLatLng([centerLat, centerLng])
       }
+      setTimeout(() => {
+        if (leafletMap) {
+          leafletMap.invalidateSize()
+        }
+      }, 200)
       return
     }
 
@@ -236,6 +248,19 @@ export function useLocation(
         setupLeaflet(elementId, venueLatitude, venueLongitude, geoRadiusMeters, options)
       }
       document.head.appendChild(script)
+    }
+  }
+
+  const getFriendlyErrorMessage = (err: GeolocationPositionError) => {
+    switch (err.code) {
+      case 1: // PERMISSION_DENIED
+        return 'Location permission denied. Please allow location access in your browser settings.'
+      case 2: // POSITION_UNAVAILABLE
+        return "Location services are unavailable. Please make sure your device's GPS / location services are turned ON in system settings."
+      case 3: // TIMEOUT
+        return 'Location request timed out. Please check your network/GPS signal and try again.'
+      default:
+        return 'Failed to retrieve your location. Please check your device location settings.'
     }
   }
 
@@ -263,10 +288,12 @@ export function useLocation(
         (position) => {
           latitude.value = position.coords.latitude
           longitude.value = position.coords.longitude
+          accuracy.value = position.coords.accuracy
           isRefreshingLocation.value = false
 
           if (leafletMap) {
             leafletMap.setView([latitude.value, longitude.value], 17)
+            leafletMap.invalidateSize()
 
             const win = globalThis as unknown as WindowWithL
             const L = win.L
@@ -293,8 +320,7 @@ export function useLocation(
         (err) => {
           // eslint-disable-next-line no-console
           console.error('Guest refresh location error:', err)
-          geoError.value =
-            "Failed to retrieve your location. Please check your browser's location permissions."
+          geoError.value = getFriendlyErrorMessage(err)
           isRefreshingLocation.value = false
           resolve(null)
         },
@@ -312,14 +338,14 @@ export function useLocation(
         (position) => {
           latitude.value = position.coords.latitude
           longitude.value = position.coords.longitude
+          accuracy.value = position.coords.accuracy
           isLocating.value = false
           resolve({ latitude: latitude.value, longitude: longitude.value })
         },
         (err) => {
           // eslint-disable-next-line no-console
           console.error('Guest geolocation error:', err)
-          geoError.value =
-            "Failed to retrieve your location. Please check your browser's location permissions."
+          geoError.value = getFriendlyErrorMessage(err)
           isLocating.value = false
           resolve(null)
         },
@@ -331,6 +357,7 @@ export function useLocation(
   return {
     latitude,
     longitude,
+    accuracy,
     isLocating,
     isRefreshingLocation,
     geoError,

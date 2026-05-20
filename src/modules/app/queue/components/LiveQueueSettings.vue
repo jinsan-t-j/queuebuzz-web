@@ -4,7 +4,6 @@
  * @description Modal for updating active queue settings.
  * Includes Queue Name and Avg. Service Time.
  */
-import { MapPin } from 'lucide-vue-next'
 import { useField, useForm } from 'vee-validate'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import * as yup from 'yup'
@@ -18,8 +17,10 @@ import BaseCard from '@/components/base/BaseCard.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseSlider from '@/components/base/BaseSlider.vue'
 import BaseToggle from '@/components/base/BaseToggle.vue'
+import LocationTroubleshooter from '@/components/common/LocationTroubleshooter.vue'
 import { useToast } from '@/composables/useToast'
 import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
+import LocationVerifiedCard from '@/modules/app/queue/components/LocationVerifiedCard.vue'
 import MapPreviewCard from '@/modules/app/queue/components/MapPreviewCard.vue'
 import type { QueueRecord } from '@/modules/app/queue/types'
 import { useLocation } from '@/modules/customer/composables/useLocation'
@@ -110,6 +111,8 @@ const {
   initLeafletMap,
   destroyLeafletMap,
   captureLocation,
+  geoError,
+  accuracy,
 } = useLocation(latitude, longitude)
 
 const recaptureLocation = async () => {
@@ -117,6 +120,13 @@ const recaptureLocation = async () => {
   if (pos) {
     showToast('Successfully captured business location coordinates!', { type: 'success' })
     fetchPlaceName(pos.latitude, pos.longitude)
+    initLeafletMap('leaflet-map', null, null, 200, { draggable: true })
+  } else {
+    showToast(
+      geoError.value ||
+        'Location permission is required to enable Geo-Lockdown. Please allow location access in your browser.',
+      { type: 'error' },
+    )
   }
 }
 
@@ -381,47 +391,23 @@ function selectSuggestion(suggestion: string) {
               v-if="isLocating || isGeoLocked"
               class="mt-6 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
             >
+              <!-- Location Troubleshooter / Warning Panel -->
+              <LocationTroubleshooter :geo-error="geoError" :accuracy="accuracy" class="mb-4" />
+
               <div
-                v-if="isLocating"
+                v-if="isLocating && !latitude && !longitude"
                 class="flex items-center gap-3 py-2 text-plum-muted font-body text-sm"
               >
                 <SpinnerLoadingIcon class="h-5 w-5 animate-spin text-mint shrink-0" />
                 <span>Fetching coordinates... Please allow location access in your browser.</span>
               </div>
 
-              <div v-else-if="latitude && longitude" class="flex flex-col gap-5">
+              <div v-if="latitude && longitude" class="flex flex-col gap-5">
                 <!-- Location Address Display -->
-                <div
-                  v-if="isFetchingPlace || locationName"
-                  class="flex items-center gap-3 p-4 bg-mint-light/40 border border-[#B4FBE4] rounded-2xl text-plum"
-                >
-                  <div
-                    class="w-10 h-10 rounded-xl bg-white border border-[#B4FBE4] flex items-center justify-center shrink-0"
-                  >
-                    <MapPin class="w-5 h-5 text-plum" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2">
-                      <div class="w-2 h-2 rounded-full bg-mint animate-pulse" />
-                      <span class="font-body text-sm font-medium text-plum">Location Verified</span>
-                    </div>
-                    <div v-if="isFetchingPlace" class="flex items-center gap-2 mt-0.5">
-                      <SpinnerLoadingIcon
-                        class="h-3.5 w-3.5 animate-spin text-plum-muted shrink-0"
-                      />
-                      <span class="font-body text-sm text-plum-muted animate-pulse"
-                        >Reverse geocoding address...</span
-                      >
-                    </div>
-                    <p
-                      v-else
-                      class="font-body text-sm font-semibold text-plum truncate mt-0.5"
-                      :title="locationName"
-                    >
-                      {{ locationName }}
-                    </p>
-                  </div>
-                </div>
+                <LocationVerifiedCard
+                  :is-fetching-place="isFetchingPlace"
+                  :location-name="locationName"
+                />
 
                 <!-- Map Preview Card -->
                 <MapPreviewCard
