@@ -115,10 +115,10 @@ defineEmits(['close', 'toggle-map-type', 'refresh-location', 'confirm'])
 
       <LocationTroubleshooter :geo-error="geoError" :accuracy="accuracy" class="mb-6" />
 
-      <div class="flex flex-col sm:flex-row gap-3 justify-center">
+      <div class="flex flex-col gap-3 justify-center">
         <button
           type="button"
-          class="rounded-xl border border-plum-faint font-body text-sm font-semibold text-plum hover:bg-sand transition-all h-12 flex-1 px-4 cursor-pointer"
+          class="rounded-xl border border-plum-faint font-body text-sm font-semibold text-plum hover:bg-sand transition-all h-12 w-full px-4 cursor-pointer"
           @click="$emit('close')"
         >
           Cancel
@@ -126,7 +126,7 @@ defineEmits(['close', 'toggle-map-type', 'refresh-location', 'confirm'])
         <button
           type="button"
           :disabled="isLocating"
-          class="rounded-xl bg-mint font-body text-sm font-semibold text-on-mint shadow-[0_4px_12px_rgba(0,229,160,0.30)] hover:bg-mint-dark transition-all h-12 flex-1 px-4 cursor-pointer flex items-center justify-center gap-2"
+          class="rounded-xl bg-mint font-body text-sm font-semibold text-on-mint shadow-[0_4px_12px_rgba(0,229,160,0.30)] hover:bg-mint-dark transition-all h-12 w-full px-4 cursor-pointer flex items-center justify-center gap-2"
           @click="$emit('confirm')"
         >
           <SpinnerLoadingIcon v-if="isLocating" class="w-4 h-4 animate-spin text-on-mint" />
