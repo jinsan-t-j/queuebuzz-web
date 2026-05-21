@@ -20,6 +20,7 @@ import {
   findQueueByIdOrSlugOrCode,
   getLiveQueue,
   getLiveQueueById,
+  getPublicStatus,
   pauseQueue,
   resumeQueue,
   terminateQueue,
@@ -190,6 +191,38 @@ export const useQueueStore = defineStore('queue', {
       }
     },
 
+    async fetchPublicStatus(id: string, silent = false) {
+      if (silent) {
+        this.isRefreshing = true
+      } else {
+        this.isLoading = true
+      }
+      this.error = null
+      try {
+        const payload = await getPublicStatus(id)
+        this.activeQueue = payload.queue
+        this.entries = (payload.entries || []).map(normalizeQueueEntry)
+        return payload
+      } catch (e: unknown) {
+        const error = e as ApiError
+        if (error.response?.status === 404) {
+          this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
+        } else if (error.response?.status === 401) {
+          this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
+        } else if (error.response?.status === 403) {
+          this.error = QUEUE_ERROR_REASONS.UNAUTHORIZED
+        } else if (error.response?.status === 410) {
+          this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
+        } else {
+          this.error = error.response?.data?.message || QUEUE_ERROR_REASONS.UNKNOWN
+        }
+        return null
+      } finally {
+        this.isLoading = false
+        this.isRefreshing = false
+      }
+    },
+
     async initializeActiveQueue(silent = false) {
       const queue = await this.fetchActiveQueue({ silent })
       if (queue?.id) {
@@ -324,6 +357,25 @@ export const useQueueStore = defineStore('queue', {
               if (status === 'CLOSED' || status === 'EXPIRED') {
                 useCustomerStore().onGlobalQueueEnd()
               }
+            }
+          },
+          joined: (payload: QueueSseEnvelopeMap['joined']) => {
+            if (payload.data) {
+              const entry = normalizeQueueEntry(payload.data)
+              this.upsertEntry(entry)
+            }
+          },
+          called: (payload: QueueSseEnvelopeMap['called']) => {
+            this.applyEntryStatus(payload.data)
+          },
+          user_status_changed: (payload: QueueSseEnvelopeMap['user_status_changed']) => {
+            if (payload.data) {
+              this.applyEntryStatus(payload.data)
+            }
+          },
+          user_arrived: (payload: QueueSseEnvelopeMap['user_arrived']) => {
+            if (payload.data) {
+              this.applyEntryStatus({ id: payload.data.id, status: ENTRY_STATUS.ARRIVED })
             }
           },
         },

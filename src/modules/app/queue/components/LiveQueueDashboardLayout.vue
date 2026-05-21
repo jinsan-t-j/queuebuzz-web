@@ -234,6 +234,15 @@ function openUpgradeModal() {
 function openLoginModal() {
   router.push({ name: 'login', query: { claim_queue_id: activeQueue.value?.id } })
 }
+
+function openLiveScreen() {
+  if (!activeQueue.value) return
+  const url = router.resolve({
+    name: 'customer-queue-status',
+    params: { queueId: activeQueue.value.id },
+  }).href
+  window.open(url, '_blank')
+}
 </script>
 
 <template>
@@ -342,6 +351,7 @@ function openLoginModal() {
                 @update-status="openStatusModal"
                 @open-settings="showSettingsModal = true"
                 @toggle-notes="showNotes = !showNotes"
+                @open-live-screen="openLiveScreen"
               />
 
               <SessionNotesCard

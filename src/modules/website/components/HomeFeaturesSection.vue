@@ -7,6 +7,7 @@ import {
   FileDown,
   Globe,
   Users,
+  User,
   BarChart3,
   Settings,
   Bell,
@@ -14,6 +15,11 @@ import {
   Clock,
   MoreVertical,
   Mic,
+  MapPin,
+  MonitorPlay,
+  Volume2,
+  QrCode,
+  Maximize2,
 } from 'lucide-vue-next'
 
 import BaseBadge from '@/components/base/BaseBadge.vue'
@@ -294,6 +300,200 @@ defineProps<{
             State is preserved across signal drops. Your customers will never lose their spot in
             line.
           </p>
+        </BaseCard>
+
+        <!-- Small Feature: Geo Fence -->
+        <BaseCard
+          class="p-8 bg-white/40 border-plum/5 hover:bg-white/60 transition-all group relative"
+        >
+          <div
+            class="absolute top-6 right-6 px-2 py-0.5 rounded-full bg-mint-light font-mono text-[8px] font-bold text-mint-dark uppercase tracking-tighter"
+          >
+            GEO-FENCE
+          </div>
+          <div class="h-12 w-12 rounded-2xl bg-mint-light flex items-center justify-center mb-6">
+            <MapPin class="h-6 w-6 text-mint-dark" />
+          </div>
+          <h3 class="font-display text-xl font-bold mb-2">Geo Fence</h3>
+          <p class="font-body text-sm text-plum-soft leading-relaxed">
+            Keep queues honest. Restrict joining to customers physically present within your
+            customized radius.
+          </p>
+        </BaseCard>
+
+        <!-- Wide Feature: Public View / Live Screen -->
+        <BaseCard
+          class="md:col-span-2 p-8 lg:p-10 bg-white/40 border-plum/5 hover:bg-white/60 transition-all group overflow-hidden relative"
+        >
+          <div class="flex flex-col lg:flex-row gap-8 lg:gap-10">
+            <!-- Text Content -->
+            <div class="lg:w-2/5 relative z-10 flex flex-col justify-center">
+              <div
+                class="absolute top-0 right-0 lg:hidden px-2 py-0.5 rounded-full bg-mint-light font-mono text-[8px] font-bold text-mint-dark uppercase tracking-tighter"
+              >
+                LIVE
+              </div>
+              <div
+                class="h-14 w-14 rounded-3xl bg-gradient-to-br from-plum to-plum-soft flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-plum/20"
+              >
+                <MonitorPlay class="h-7 w-7 text-white" />
+              </div>
+              <h3 class="font-display text-2xl lg:text-3xl font-bold mb-3">Public View</h3>
+              <p class="font-body text-sm text-plum-soft leading-relaxed mb-5">
+                A TV-friendly live board that shows the currently serving ticket in real-time. Mount
+                it in your lobby so every visitor can see their turn — no app required.
+              </p>
+              <div class="flex flex-wrap gap-x-5 gap-y-2 opacity-60">
+                <div
+                  v-for="s in ['Audio Chime', 'QR Join', 'Auto Fullscreen', 'Text Zoom']"
+                  :key="s"
+                  class="flex items-center gap-1.5 font-body text-[10px] font-bold uppercase tracking-widest text-plum"
+                >
+                  <div class="h-1 w-1 rounded-full bg-mint" />
+                  {{ s }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Mini TV Mockup — faithful replica of QueueStatusView -->
+            <div class="lg:w-3/5 flex items-center justify-center">
+              <div
+                aria-hidden="true"
+                class="w-full bg-sand rounded-3xl border border-plum-faint shadow-[0_16px_48px_rgba(26,10,46,0.08)] overflow-hidden group-hover:scale-[1.02] transition-transform duration-500 relative"
+              >
+                <!-- Background blurs matching actual view -->
+                <div
+                  class="pointer-events-none absolute -right-6 -top-6 h-[120px] w-[120px] rounded-full bg-mint-light/30 blur-[40px]"
+                />
+                <div
+                  class="pointer-events-none absolute -bottom-8 -left-8 h-[100px] w-[100px] rounded-full bg-warning/10 blur-[30px]"
+                />
+
+                <!-- TV Header -->
+                <div
+                  class="flex items-center justify-between px-4 py-2.5 border-b border-plum-faint relative z-10"
+                >
+                  <!-- Left: Wordmark + Badge + Queue Name -->
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <span class="font-display font-bold text-[11px] text-plum tracking-tight"
+                        >QueueBuzz</span
+                      >
+                      <span
+                        class="bg-mint-light text-mint-dark text-[6px] font-bold font-body px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse"
+                        >LIVE SCREEN</span
+                      >
+                    </div>
+                    <p class="font-body font-semibold text-[9px] text-plum-muted mt-0.5">
+                      Main Queue
+                    </p>
+                  </div>
+
+                  <!-- Right: Clock + Controls -->
+                  <div class="flex items-center gap-1.5">
+                    <div
+                      class="flex items-center gap-1 bg-white px-2 py-1 rounded-xl border border-plum-faint"
+                    >
+                      <Clock class="h-2 w-2 text-plum-muted" />
+                      <span class="font-mono text-[7px] text-plum font-semibold">04:35 PM</span>
+                    </div>
+                    <div
+                      class="w-5 h-5 rounded-lg bg-white border border-plum-faint flex items-center justify-center"
+                    >
+                      <Volume2 class="h-2.5 w-2.5 text-plum" />
+                    </div>
+                    <div
+                      class="flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg bg-white border border-plum-faint"
+                    >
+                      <span class="text-[5px] text-plum-muted uppercase font-body">Size:</span>
+                      <span class="text-[6px] text-plum font-semibold font-body">Normal</span>
+                    </div>
+                    <div
+                      class="w-5 h-5 rounded-lg bg-white border border-plum-faint flex items-center justify-center"
+                    >
+                      <Maximize2 class="h-2.5 w-2.5 text-plum" />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TV Body: Two-Column Layout -->
+                <div class="grid grid-cols-12 gap-3 p-4 relative z-10">
+                  <!-- Left: NOW SERVING (~7 cols) -->
+                  <div class="col-span-7 flex flex-col gap-2">
+                    <p
+                      class="font-body text-[7px] font-bold text-plum-muted uppercase tracking-[0.15em]"
+                    >
+                      Now Serving
+                    </p>
+                    <div
+                      class="bg-white rounded-2xl border border-plum-faint flex flex-col items-center justify-center text-center px-4 py-8 shadow-[0_4px_20px_rgba(26,10,46,0.03)] flex-grow"
+                    >
+                      <p
+                        class="font-body text-[7px] font-semibold tracking-[0.12em] text-plum-muted uppercase mb-2"
+                      >
+                        Please proceed to counter
+                      </p>
+                      <span
+                        class="font-mono font-black text-[2.5rem] leading-none text-plum tracking-wider"
+                        >Q-0001</span
+                      >
+                      <div
+                        class="flex items-center gap-1.5 bg-sand px-3 py-1 rounded-full border border-plum-faint mt-3"
+                      >
+                        <User class="w-2.5 h-2.5 text-plum-muted" />
+                        <span class="font-body text-[8px] font-bold text-plum-soft">Guest</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Right: SCAN TO JOIN QUEUE (~5 cols) -->
+                  <div class="col-span-5 flex flex-col gap-2">
+                    <p
+                      class="font-body text-[7px] font-bold text-plum-muted uppercase tracking-[0.15em]"
+                    >
+                      Scan to Join Queue
+                    </p>
+                    <div
+                      class="bg-white rounded-2xl border border-plum-faint flex flex-col items-center justify-center text-center px-3 py-5 shadow-[0_4px_20px_rgba(26,10,46,0.03)] flex-grow gap-2"
+                    >
+                      <!-- QR Code placeholder (grid pattern) -->
+                      <div
+                        class="w-16 h-16 rounded-xl border border-plum-faint bg-white p-1 shadow-xs"
+                      >
+                        <QrCode class="h-full w-full text-plum" />
+                      </div>
+
+                      <p
+                        class="font-body text-[5px] text-plum-muted font-bold tracking-wider uppercase"
+                      >
+                        OR VISIT localhost:4001 AND ENTER
+                      </p>
+
+                      <div class="bg-white px-3 py-1 rounded-lg border border-plum-faint">
+                        <span
+                          class="font-mono font-black text-sm text-plum tracking-widest leading-none"
+                          >BKNASA</span
+                        >
+                      </div>
+
+                      <p class="font-body text-[5px] text-plum-muted leading-relaxed max-w-[120px]">
+                        Scan on your smartphone to join virtually, check live status, and skip the
+                        wait line.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TV Footer -->
+                <div class="flex items-center px-4 py-2 border-t border-plum-faint relative z-10">
+                  <span class="font-body text-[6px] text-plum-muted"
+                    >Powered by
+                    <span class="font-display font-bold text-plum">QueueBuzz</span></span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
         </BaseCard>
       </div>
     </div>

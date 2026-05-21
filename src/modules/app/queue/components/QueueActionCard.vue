@@ -10,7 +10,7 @@
  * @emits {terminate} - "Terminate Queue" clicked.
  */
 
-import { PenLineIcon } from 'lucide-vue-next'
+import { PenLineIcon, Tv } from 'lucide-vue-next'
 
 import CloseCircleIcon from '@/assets/icons/close-circle.svg?component'
 import navSettingsIcon from '@/assets/icons/nav-settings.svg?component'
@@ -28,6 +28,7 @@ const emit = defineEmits<{
   (e: 'update-status', mode: 'pause' | 'resume' | 'terminate'): void
   (e: 'open-settings'): void
   (e: 'toggle-notes'): void
+  (e: 'open-live-screen'): void
 }>()
 
 function handlePauseClick() {
@@ -110,6 +111,18 @@ function handleTerminateClick() {
           <PenLineIcon class="h-5 w-5 text-plum group-hover:text-on-mint transition-colors" />
         </div>
         <span class="font-body text-xs font-bold text-plum">Notes</span>
+      </button>
+
+      <button
+        class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand dark:bg-plum-faint/30 p-4 transition-all hover:bg-mint-light dark:hover:bg-plum-faint/60 group cursor-pointer"
+        @click="$emit('open-live-screen')"
+      >
+        <div
+          class="rounded-full bg-white dark:bg-plum-faint p-2 shadow-sm dark:shadow-none group-hover:bg-mint transition-colors"
+        >
+          <Tv class="h-5 w-5 text-plum group-hover:text-on-mint transition-colors" />
+        </div>
+        <span class="font-body text-xs font-bold text-plum">TV Screen</span>
       </button>
     </div>
   </div>

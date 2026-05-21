@@ -91,4 +91,16 @@ export const customerRoutes: RouteRecordRaw[] = [
       },
     ],
   },
+  {
+    path: '/q/:queueId/status',
+    component: () => import('@/layouts/BlankLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'customer-queue-status',
+        component: () => import('@/modules/customer/views/QueueStatusView.vue'),
+        meta: { title: 'Live Queue StatusBoard' },
+      },
+    ],
+  },
 ]
