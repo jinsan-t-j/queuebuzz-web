@@ -14,6 +14,7 @@ import {
   Clock,
   MoreVertical,
   Mic,
+  MapPin,
 } from 'lucide-vue-next'
 
 import BaseBadge from '@/components/base/BaseBadge.vue'
@@ -293,6 +294,25 @@ defineProps<{
           <p class="font-body text-sm text-plum-soft leading-relaxed">
             State is preserved across signal drops. Your customers will never lose their spot in
             line.
+          </p>
+        </BaseCard>
+
+        <!-- Small Feature: Geo Fence -->
+        <BaseCard
+          class="p-8 bg-white/40 border-plum/5 hover:bg-white/60 transition-all group relative"
+        >
+          <div
+            class="absolute top-6 right-6 px-2 py-0.5 rounded-full bg-mint-light font-mono text-[8px] font-bold text-mint-dark uppercase tracking-tighter"
+          >
+            GEO-FENCE
+          </div>
+          <div class="h-12 w-12 rounded-2xl bg-mint-light flex items-center justify-center mb-6">
+            <MapPin class="h-6 w-6 text-mint-dark" />
+          </div>
+          <h3 class="font-display text-xl font-bold mb-2">Geo Fence</h3>
+          <p class="font-body text-sm text-plum-soft leading-relaxed">
+            Keep queues honest. Restrict joining to customers physically present within your
+            customized radius.
           </p>
         </BaseCard>
       </div>
