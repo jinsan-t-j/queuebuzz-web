@@ -44,6 +44,7 @@ export const API_ROUTES = {
     FIND_QUEUE: () => `/queue/p/find`,
     // Public / Guest
     GET_LIVE_QUEUE_BY_ID: (id: string): string => `/queue/p/${id}/live`,
+    GET_PUBLIC_STATUS: (id: string): string => `/queue/p/${id}/public-status`,
     PUBLIC_EVENTS: (id: string): string => `/queue/p/${id}/events`,
     // Host Management
     CONNECT_EVENTS: (id: string): string => `/queue/manage/${id}/events`,

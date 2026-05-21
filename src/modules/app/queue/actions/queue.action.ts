@@ -171,3 +171,16 @@ export async function findQueueByIdOrSlugOrCode(id?: string, code?: string): Pro
 
   return response.data
 }
+
+export async function getPublicStatus(
+  id: string,
+): Promise<{ queue: QueueRecord; entries: QueueEntry[] }> {
+  const config = createApiRequestConfig({}, { skipLogout: true })
+  const response = (await apiClient.get<
+    ApiSuccessResponse<{ queue: QueueRecord; entries: QueueEntry[] }>
+  >(API_ROUTES.QUEUE.GET_PUBLIC_STATUS(id), config)) as unknown as ApiSuccessResponse<{
+    queue: QueueRecord
+    entries: QueueEntry[]
+  }>
+  return response.data
+}

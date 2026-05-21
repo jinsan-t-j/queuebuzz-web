@@ -51,6 +51,39 @@ test.describe('Customer Edge Cases', () => {
       timeout: 5000,
     })
   })
+
+  test('should render offline page when public status board returns 404', async ({
+    page,
+    mockApi,
+  }) => {
+    await mockApi('/queue/p/q-nonexistent', { message: 'not found' }, 404)
+    await page.goto('/q/q-nonexistent/status')
+
+    await expect(page.getByRole('heading', { name: 'Queue is currently offline' })).toBeVisible({
+      timeout: 5000,
+    })
+  })
+
+  test('should render status board when queue exists', async ({ page, mockApi }) => {
+    await mockApi(
+      '/queue/p/q-123',
+      {
+        queue: {
+          id: 'q-123',
+          name: 'Test Coffee Shop',
+          status: 'ACTIVE',
+          manualPositioning: false,
+        },
+        entries: [],
+      },
+      200,
+    )
+    await page.goto('/q/q-123/status')
+
+    await expect(page.getByText('Test Coffee Shop')).toBeVisible({
+      timeout: 5000,
+    })
+  })
 })
 
 test.describe('Error Page', () => {
