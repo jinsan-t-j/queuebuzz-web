@@ -99,15 +99,15 @@ onUnmounted(() => {
           leave-from-class="translate-y-0 scale-100 opacity-100"
           leave-to-class="translate-y-4 scale-95 opacity-0"
         >
-          <dialog
+          <div
             ref="modalRef"
-            open
-            class="relative w-full max-w-lg overflow-y-auto rounded-[32px] bg-white border border-plum-faint shadow-[0_40px_80px_rgba(26,10,46,0.18)] dark:shadow-none focus:outline-none m-0 p-0"
+            class="relative w-full max-w-lg max-h-[calc(100dvh_-_2rem)] flex flex-col overflow-y-auto rounded-[32px] bg-white border border-plum-faint shadow-[0_40px_80px_rgba(26,10,46,0.18)] dark:shadow-none focus:outline-none m-0 p-0"
+            role="dialog"
             aria-modal="true"
             @click.stop
           >
             <slot />
-          </dialog>
+          </div>
         </Transition>
       </div>
     </Transition>
