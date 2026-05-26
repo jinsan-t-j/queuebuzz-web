@@ -187,6 +187,16 @@ watch(
   { immediate: true },
 )
 
+watch(
+  () => route.query.redirect,
+  (redirectPath) => {
+    if (redirectPath) {
+      router.replace(redirectPath as string)
+    }
+  },
+  { immediate: true },
+)
+
 // 11. Methods
 async function loadDashboard() {
   await dashboardStore.fetchDashboard({ force: true })

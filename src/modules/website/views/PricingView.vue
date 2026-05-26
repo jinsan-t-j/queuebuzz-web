@@ -23,6 +23,7 @@ import {
   formatComparisonValue,
   useBilling,
 } from '@/modules/app/billing/composables/useBilling'
+import { useAuthStore } from '@/stores/auth.store'
 
 const {
   isLoading,
@@ -57,6 +58,27 @@ onMounted(async () => {
     })
     // Clean up URL
     router.replace({ query: { ...route.query, checkout: undefined } })
+  }
+
+  // Auto-checkout after login redirect
+  const authStore = useAuthStore()
+  const planSlug = route.query.plan as string
+  const cycleVal = route.query.cycle as 'monthly' | 'yearly'
+
+  if (planSlug && cycleVal && authStore.isAuthenticated) {
+    if (cycleVal === 'monthly' || cycleVal === 'yearly') {
+      billingCycle.value = cycleVal
+    }
+
+    // Find the plan from gridPlans
+    const plan = gridPlans.value.find((p) => p.slug === planSlug)
+    if (plan) {
+      // Clear plan and cycle queries to prevent repeated checks on page refresh
+      router.replace({
+        query: { ...route.query, plan: undefined, cycle: undefined },
+      })
+      await handleChoosePlan(plan)
+    }
   }
 })
 
