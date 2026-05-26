@@ -158,7 +158,7 @@ async function confirmDelete() {
       </div>
 
       <BaseButton
-        v-if="subscription?.canExportData"
+        v-if="subscription?.canExportData && queues.length > 0"
         variant="ghost"
         :loading="isExporting"
         class="h-11 font-black w-full md:w-auto"
@@ -170,7 +170,11 @@ async function confirmDelete() {
     </div>
 
     <!-- Stats -->
-    <HistoryStatsOverview :summary="summary" :is-loading="isLoading" />
+    <HistoryStatsOverview
+      v-if="queues.length > 0 || isLoading"
+      :summary="summary"
+      :is-loading="isLoading"
+    />
 
     <!-- Main List Section -->
     <BaseCard
