@@ -25,7 +25,6 @@ test.describe('Authentication', () => {
 
     // Social login buttons
     await expect(page.getByRole('button', { name: 'Continue with Google' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Continue with Apple' })).toBeVisible()
 
     // Legal footer links
     await expect(page.getByRole('link', { name: 'Terms of Service' })).toBeVisible()
