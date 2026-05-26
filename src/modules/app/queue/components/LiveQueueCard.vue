@@ -57,8 +57,11 @@ const maxGuests = computed(() => {
     return '25'
   }
   const max = currentPlan.value.limits?.maxGuestsPerQueue
-  if (typeof max !== 'number' || !max) {
-    throw new Error('maxGuestsPerQueue is not defined')
+  if (typeof max !== 'number') {
+    return '25'
+  }
+  if (max <= 0) {
+    return 'Unlimited'
   }
   return String(max)
 })
@@ -135,10 +138,34 @@ onBeforeMount(async () => {
     isHistoryExpanded.value = true
   }
 
-  const plan = await fetchCurrentPlan()
-  currentPlan.value = plan
-  if (!currentPlan.value) {
-    throw new Error('No plan found')
+  try {
+    const plan = await fetchCurrentPlan()
+    currentPlan.value = plan
+  } catch {
+    // Fallback default for anonymous/guest hosts to avoid component mount failure
+    currentPlan.value = {
+      id: 'free',
+      slug: 'free',
+      tier: 'free',
+      name: 'Free',
+      description: 'Free Tier',
+      monthlyPrice: 0,
+      yearlyPrice: 0,
+      currency: 'INR',
+      countryCode: 'IN',
+      isFree: true,
+      limits: {
+        maxQueuesPerMonth: 1,
+        maxGuestsPerQueue: 25,
+        historyAccess: false,
+        customBranding: false,
+        canExport: false,
+        queueExpiryHours: 24,
+        canViewGuestData: false,
+        historyRetentionDays: 1,
+        allowGeoLock: false,
+      },
+    } as BillingPlan
   }
 })
 
@@ -307,8 +334,14 @@ function resetFilters() {
           >
             Active Waiting Guests
           </span>
-          <span class="font-mono text-[10px] font-medium text-plum-muted/60">
+          <span
+            v-if="maxGuests !== 'Unlimited'"
+            class="font-mono text-[10px] font-medium text-plum-muted/60"
+          >
             {{ activeEntries.length }} / {{ maxGuests }}
+          </span>
+          <span v-else class="font-mono text-[10px] font-medium text-plum-muted/60">
+            {{ activeEntries.length }}
           </span>
         </div>
 

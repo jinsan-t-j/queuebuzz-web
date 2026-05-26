@@ -103,7 +103,7 @@ function handleTerminateClick() {
 
       <button
         class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand dark:bg-plum-faint/30 p-4 transition-all hover:bg-mint-light dark:hover:bg-plum-faint/60 group cursor-pointer"
-        @click="$emit('toggle-notes')"
+        @click.stop="$emit('toggle-notes')"
       >
         <div
           class="rounded-full bg-white dark:bg-plum-faint p-2 shadow-sm dark:shadow-none group-hover:bg-mint transition-colors"

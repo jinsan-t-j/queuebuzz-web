@@ -81,6 +81,7 @@ watch(
 )
 
 function startDrag(e: MouseEvent) {
+  e.stopPropagation()
   // Don't drag if clicking buttons or editor
   if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('.tiptap'))
     return
@@ -103,6 +104,7 @@ function endDrag() {
 }
 
 function startTouchDrag(e: TouchEvent) {
+  e.stopPropagation()
   // Don't drag if clicking buttons or editor
   if ((e.target as HTMLElement).closest('button') || (e.target as HTMLElement).closest('.tiptap'))
     return
@@ -148,8 +150,9 @@ onBeforeUnmount(() => {
   <div
     class="absolute z-50 bg-white backdrop-blur-xl rounded-[28px] border border-plum-faint shadow-[0_20px_50px_rgba(26,10,46,0.15)] dark:shadow-none p-4 flex flex-col gap-3 w-[320px] cursor-grab active:cursor-grabbing select-none"
     :style="{ top: pos.y + 'px', left: pos.x + 'px' }"
-    @mousedown="startDrag"
-    @touchstart="startTouchDrag"
+    @mousedown.stop="startDrag"
+    @touchstart.stop="startTouchDrag"
+    @click.stop
   >
     <!-- Header -->
     <div class="flex items-center justify-between">

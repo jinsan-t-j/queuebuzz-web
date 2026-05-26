@@ -19,7 +19,7 @@ import BaseSlider from '@/components/base/BaseSlider.vue'
 import BaseToggle from '@/components/base/BaseToggle.vue'
 import LocationTroubleshooter from '@/components/common/LocationTroubleshooter.vue'
 import { useToast } from '@/composables/useToast'
-import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
+import { fetchCurrentPlan, type BillingPlan } from '@/modules/app/billing/actions/billing.actions'
 import LocationVerifiedCard from '@/modules/app/queue/components/LocationVerifiedCard.vue'
 import MapPreviewCard from '@/modules/app/queue/components/MapPreviewCard.vue'
 import type { QueueRecord } from '@/modules/app/queue/types'
@@ -50,7 +50,7 @@ interface SubmitValues {
 
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
 const { showToast } = useToast()
-const subscription = ref<Subscription | null>(null)
+const currentPlan = ref<BillingPlan | null>(null)
 
 const schema = yup.object({
   queueName: yup
@@ -158,7 +158,7 @@ watch(
 
 watch(isGeoLocked, async (newValue) => {
   if (newValue) {
-    if (!subscription.value?.allowGeoLock) {
+    if (!currentPlan.value?.limits?.allowGeoLock) {
       showToast(
         'Geo-Lockdown is a premium feature. Please upgrade your plan to unlock this feature.',
         { type: 'warning' },
@@ -185,10 +185,10 @@ watch(
   async (open) => {
     if (open) {
       try {
-        subscription.value = await fetchSubscription()
+        currentPlan.value = await fetchCurrentPlan()
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error('Failed to fetch subscription:', err)
+        console.error('Failed to fetch current plan:', err)
       }
       if (isGeoLocked.value && latitude.value && longitude.value) {
         setTimeout(() => {

@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 import type { TrendSummary } from '@/modules/app/queue/types'
@@ -19,9 +19,28 @@ function buildHourlyBoundaries(now: Date): { labels: string[]; boundaries: Date[
   return { labels, boundaries }
 }
 
-function distributeIntoBuckets(entries: { servedAt?: string }[], boundaries: Date[]): number[] {
+function buildWeeklyBoundaries(now: Date): { labels: string[]; boundaries: Date[] } {
+  const labels: string[] = []
+  const boundaries: Date[] = []
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now)
+    d.setDate(now.getDate() - i)
+    d.setHours(0, 0, 0, 0)
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
+    labels.push(dayName)
+    boundaries.push(d)
+  }
+  return { labels, boundaries }
+}
+
+function distributeIntoBuckets(
+  entries: { servedAt?: string }[],
+  boundaries: Date[],
+  isWeekly = false,
+): number[] {
   const bars = new Array(boundaries.length).fill(0)
   const withTimestamp = entries.filter((e) => e.servedAt)
+  const bucketSize = isWeekly ? 24 * 3600 * 1000 : 3600000
 
   for (const entry of withTimestamp) {
     const servedTime = new Date(entry.servedAt).getTime()
@@ -29,7 +48,7 @@ function distributeIntoBuckets(entries: { servedAt?: string }[], boundaries: Dat
       const currentBound = boundaries[i].getTime()
       if (servedTime >= currentBound) {
         const nextBound =
-          i < boundaries.length - 1 ? boundaries[i + 1].getTime() : currentBound + 3600000
+          i < boundaries.length - 1 ? boundaries[i + 1].getTime() : currentBound + bucketSize
 
         if (servedTime < nextBound) {
           bars[i]++
@@ -48,6 +67,22 @@ function distributeIntoBuckets(entries: { servedAt?: string }[], boundaries: Dat
  */
 export function useQueueAnalysis() {
   const store = useQueueStore()
+  const viewType = ref<'day' | 'week'>('day')
+
+  watch(
+    () => store.activeQueue,
+    (queue) => {
+      if (queue?.createdAt) {
+        const durationMs = new Date().getTime() - new Date(queue.createdAt).getTime()
+        if (durationMs > 24 * 3600 * 1000) {
+          viewType.value = 'week'
+        } else {
+          viewType.value = 'day'
+        }
+      }
+    },
+    { immediate: true },
+  )
 
   // Single pass: extract served entries once
   const servedEntries = computed(() =>
@@ -63,28 +98,33 @@ export function useQueueAnalysis() {
   })
 
   /**
-   * Build an array of hourly buckets for the last 6 hours.
+   * Build an array of hourly or weekly buckets.
    */
-  const hourlyBuckets = computed(() => {
+  const buckets = computed(() => {
     const queue = store.activeQueue
     if (!queue) return { labels: [] as string[], bars: [] as number[] }
 
-    const { labels, boundaries } = buildHourlyBoundaries(new Date())
-    const bars = distributeIntoBuckets(servedEntries.value, boundaries)
+    const isWeekly = viewType.value === 'week'
+    const now = new Date()
+    const { labels, boundaries } = isWeekly
+      ? buildWeeklyBoundaries(now)
+      : buildHourlyBoundaries(now)
+    const bars = distributeIntoBuckets(servedEntries.value, boundaries, isWeekly)
 
     return { labels, bars }
   })
 
-  const chartLabels = computed(() => hourlyBuckets.value.labels)
-  const chartBars = computed(() => hourlyBuckets.value.bars)
+  const chartLabels = computed(() => buckets.value.labels)
+  const chartBars = computed(() => buckets.value.bars)
 
   /* ── Trend (Current hour so far vs Previous full hour) ───────── */
   const trend = computed<TrendSummary>(() => {
     const bars = chartBars.value
     if (bars.length < 2) return { text: 'No data', direction: 'flat' }
 
-    const current = bars.at(-1)
-    const previous = bars.at(-2)
+    const current = bars.at(-1) ?? 0
+    const previous = bars.at(-2) ?? 0
+    const label = viewType.value === 'week' ? 'yesterday' : 'last hr'
 
     if (previous === 0) {
       return {
@@ -100,7 +140,7 @@ export function useQueueAnalysis() {
     if (diff > 0) direction = 'up'
     else if (diff < 0) direction = 'down'
 
-    const text = diff === 0 ? 'Same as last hr' : `${pct}% ${direction} vs last hr`
+    const text = diff === 0 ? `Same as ${label}` : `${pct}% ${direction} vs ${label}`
 
     return { text, direction }
   })
@@ -111,5 +151,6 @@ export function useQueueAnalysis() {
     chartLabels,
     chartBars,
     trend,
+    viewType,
   }
 }

@@ -208,6 +208,7 @@ function handleRowClick(id) {
 
           <!-- Export Option -->
           <button
+            v-if="pastQueues.length > 0"
             class="flex items-center gap-2 rounded-full bg-plum/5 px-4 py-2 text-sm font-body font-medium text-plum transition-colors hover:bg-plum/10"
             @click="handleExport"
           >

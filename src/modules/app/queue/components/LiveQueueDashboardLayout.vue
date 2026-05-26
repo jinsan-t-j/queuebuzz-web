@@ -90,6 +90,7 @@ const {
   chartLabels,
   chartBars,
   trend,
+  viewType,
 
   // Actions
   handleSearchUpdate,
@@ -212,16 +213,22 @@ onBeforeMount(async () => {
 
 const maxGuests = computed(() => {
   if (!currentPlan.value) return 25
-  return currentPlan.value.limits?.maxGuestsPerQueue || 25
+  const max = currentPlan.value.limits?.maxGuestsPerQueue
+  if (typeof max === 'number') {
+    return max
+  }
+  return 25
 })
 
 const showLimitBanner = computed(() => {
   if (authStore.isPremium) return false
+  if (maxGuests.value <= 0) return false
   return waitingCount.value >= maxGuests.value - 5 && !isSessionExpired.value
 })
 
 const isLimitReached = computed(() => {
   if (authStore.isPremium) return false
+  if (maxGuests.value <= 0) return false
   return waitingCount.value >= maxGuests.value
 })
 
@@ -239,7 +246,7 @@ function openLiveScreen() {
   if (!activeQueue.value) return
   const url = router.resolve({
     name: 'customer-queue-status',
-    params: { queueId: activeQueue.value.id },
+    params: { queueId: activeQueue.value.slug || activeQueue.value.id },
   }).href
   window.open(url, '_blank')
 }
@@ -366,6 +373,7 @@ function openLiveScreen() {
           </div>
 
           <QueueAnalysisCard
+            v-model:view-type="viewType"
             :served-today="servedTodayCount"
             :trend-text="trend.text"
             :trend-direction="trend.direction"
