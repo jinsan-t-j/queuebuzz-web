@@ -141,8 +141,12 @@ function isActive(item: NavItem) {
     >
       <Logo class="h-12 w-12 transition-transform duration-500 group-hover:rotate-12" />
       <div class="flex flex-col justify-center leading-none text-plum">
-        <span class="text-[26px] font-extrabold tracking-tight leading-none">ueue</span>
-        <span class="text-[18px] font-bold tracking-tight leading-none mt-0.5">Buzz</span>
+        <span class="text-[26px] font-extrabold tracking-tight leading-none overflow-hidden"
+          >ueue</span
+        >
+        <span class="text-[18px] font-bold tracking-tight leading-none mt-0.5 overflow-hidden"
+          >Buzz</span
+        >
       </div>
 
       <button class="ml-auto p-2 text-plum-muted hover:text-plum lg:hidden" @click="emit('close')">
