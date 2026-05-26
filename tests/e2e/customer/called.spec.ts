@@ -7,13 +7,39 @@ import { test, expect } from '../fixtures/base.fixture'
  */
 
 test.describe('Customer Called', () => {
-  test.beforeEach(async ({ mockApi }) => {
+  test.beforeEach(async ({ page, mockApi }) => {
+    // Inject customer session tokens before navigation
+    await page.addInitScript(() => {
+      globalThis.localStorage.setItem('customer_entry_token', 'mock-entry-token')
+      globalThis.localStorage.setItem('customer_entry_id', 'e-999')
+      globalThis.localStorage.setItem('customer_queue_id', 'q-123')
+    })
+
     // Mock queue info
     await mockApi('/queue/p/q-123', {
       data: {
         id: 'q-123',
         name: 'Morning Consultation',
         status: 'active',
+      },
+    })
+
+    // Mock queue find info
+    await mockApi('/queue/p/find', {
+      data: {
+        id: 'q-123',
+        name: 'Morning Consultation',
+        status: 'active',
+      },
+    })
+
+    // Mock live queue lookup
+    await mockApi('/queue/p/q-123/live', {
+      data: {
+        id: 'q-123',
+        name: 'Morning Consultation',
+        status: 'active',
+        avgServiceMins: 10,
       },
     })
 
@@ -26,12 +52,30 @@ test.describe('Customer Called', () => {
         status: 'CALLED',
         position: 0,
         queue_id: 'q-123',
+        queueId: 'q-123',
         guest_name: 'Test User',
+        name: 'Test User',
+        token: 'mock-entry-token',
       },
     })
 
     // Mock events SSE endpoint
     await mockApi('/customer/entry/events', '')
+
+    // Mock session recovery
+    await mockApi('/customer/entry/recover-session', {
+      data: {
+        id: 'e-999',
+        ticket_no: 48,
+        ticketNo: 48,
+        status: 'CALLED',
+        position: 0,
+        queue_id: 'q-123',
+        queueId: 'q-123',
+        name: 'Test User',
+        token: 'mock-entry-token',
+      },
+    })
   })
 
   test('should show called screen with ticket and CTA', async ({ page }) => {
