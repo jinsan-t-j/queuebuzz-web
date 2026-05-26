@@ -7,6 +7,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
 
 defineProps({
   isSaving: { type: Boolean, default: false },
+  isDisabled: { type: Boolean, default: false },
 })
 
 defineEmits(['discard', 'save'])
@@ -58,6 +59,7 @@ defineEmits(['discard', 'save'])
         </BaseButton>
         <BaseButton
           :is-loading="isSaving"
+          :is-disabled="isDisabled"
           size="sm"
           class="flex-1 sm:flex-none !min-h-[40px] sm:!min-h-[44px] text-xs sm:text-sm shadow-sm"
           @click="$emit('save')"

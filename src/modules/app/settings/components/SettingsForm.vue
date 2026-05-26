@@ -4,12 +4,13 @@
  * @description Refactored Host settings form using settingsStore and Base components.
  */
 import { storeToRefs } from 'pinia'
-import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseSlider from '@/components/base/BaseSlider.vue'
 import BaseToggle from '@/components/base/BaseToggle.vue'
+import { useToast } from '@/composables/useToast'
 import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
 import { useSettingsStore } from '@/stores/settings.store'
 
@@ -42,6 +43,7 @@ const form = ref({
   email_notifications: true,
   push_notifications: true,
   collect_emails: true,
+  slug: '',
 })
 
 const isDirty = ref(false)
@@ -113,6 +115,7 @@ function syncForm() {
     email_notifications: userSettings.value.settings?.emailNotifications ?? false,
     push_notifications: userSettings.value.settings?.pushNotifications ?? true,
     collect_emails: userSettings.value.settings?.collectEmails ?? false,
+    slug: userSettings.value.slug || '',
   }
   profileImageUrl.value = userSettings.value.profileImageUrl || null
   bannerImageUrl.value = userSettings.value.bannerImageUrl || null
@@ -216,6 +219,8 @@ function handleCroppedImage(dataUrl: string) {
 }
 
 async function handleSave() {
+  saveAttempted.value = true
+  if (slugError.value) return
   const formData = new FormData()
 
   // 1. Basic Fields
@@ -223,6 +228,7 @@ async function handleSave() {
   formData.append('business_name', form.value.business_name)
   formData.append('address', form.value.address)
   formData.append('phone', form.value.phone || '')
+  formData.append('slug', form.value.slug)
 
   // 2. Settings (nested as JSON string)
   formData.append(
@@ -263,10 +269,14 @@ async function handleSave() {
 
   await settingsStore.updateSettings(formData)
   isDirty.value = false
+  const { showToast } = useToast()
+  showToast('Settings updated successfully')
 }
 
 async function handleDiscard() {
   syncForm()
+  slugTouched.value = false
+  saveAttempted.value = false
 }
 
 async function refreshSubscription() {
@@ -279,6 +289,74 @@ async function refreshSubscription() {
     isFetchingSub.value = false
   }
 }
+
+let copyTvTimeoutId: ReturnType<typeof setTimeout> | null = null
+let copyQueueTimeoutId: ReturnType<typeof setTimeout> | null = null
+
+const tvScreenUrl = computed(() => {
+  const origin =
+    globalThis.window === undefined ? 'https://queuebuzz.com' : globalThis.location.origin
+  return `${origin}/q/${form.value.slug || 'your-slug'}/status`
+})
+
+const publicQueueUrl = computed(() => {
+  const origin =
+    globalThis.window === undefined ? 'https://queuebuzz.com' : globalThis.location.origin
+  return `${origin}/q/${form.value.slug || 'your-slug'}`
+})
+
+const slugTouched = ref(false)
+const saveAttempted = ref(false)
+
+const slugError = computed(() => {
+  const val = form.value.slug.trim()
+  if (!val) return ''
+  if (val.length < 3 || val.length > 30) {
+    return 'Slug must be between 3 and 30 characters.'
+  }
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(val)) {
+    return 'Must be lowercase alphanumeric characters or hyphens.'
+  }
+  return ''
+})
+
+const copiedTvSlug = ref(false)
+const copiedQueueSlug = ref(false)
+
+async function copyTvUrl() {
+  if (!form.value.slug) return
+  await navigator.clipboard.writeText(tvScreenUrl.value)
+  copiedTvSlug.value = true
+
+  if (copyTvTimeoutId) {
+    clearTimeout(copyTvTimeoutId)
+  }
+
+  copyTvTimeoutId = setTimeout(() => {
+    copiedTvSlug.value = false
+    copyTvTimeoutId = null
+  }, 2000)
+}
+
+async function copyPublicQueueUrl() {
+  if (!form.value.slug) return
+  await navigator.clipboard.writeText(publicQueueUrl.value)
+  copiedQueueSlug.value = true
+
+  if (copyQueueTimeoutId) {
+    clearTimeout(copyQueueTimeoutId)
+  }
+
+  copyQueueTimeoutId = setTimeout(() => {
+    copiedQueueSlug.value = false
+    copyQueueTimeoutId = null
+  }, 2000)
+}
+
+onUnmounted(() => {
+  if (copyTvTimeoutId) clearTimeout(copyTvTimeoutId)
+  if (copyQueueTimeoutId) clearTimeout(copyQueueTimeoutId)
+})
 </script>
 
 <template>
@@ -310,6 +388,7 @@ async function refreshSubscription() {
           />
           <BaseInput
             v-model="form.phone"
+            type="number"
             label="Phone Number"
             placeholder=""
             @update:model-value="onFieldChange"
@@ -586,6 +665,93 @@ async function refreshSubscription() {
               @update:model-value="onFieldChange"
             />
           </div>
+
+          <div class="space-y-4 pt-6 border-t border-plum-faint">
+            <BaseInput
+              v-model="form.slug"
+              label="Custom URL Slug"
+              placeholder="e.g. kalra-dental-clinic"
+              :error="slugError"
+              @update:model-value="onFieldChange"
+              @blur="slugTouched = true"
+            />
+
+            <div v-if="form.slug" class="flex flex-col gap-2 mt-1">
+              <!-- Public Queue Link -->
+              <div class="flex items-center gap-2 text-xs font-body text-plum-muted">
+                <span>Public Queue:</span>
+                <span class="font-mono text-plum truncate max-w-[200px] sm:max-w-xs">{{
+                  publicQueueUrl
+                }}</span>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-[11px] font-semibold text-plum hover:text-mint transition-colors cursor-pointer"
+                  @click="copyPublicQueueUrl"
+                >
+                  <svg
+                    v-if="copiedQueueSlug"
+                    class="h-3 w-3 text-[#00B87A]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <svg v-else class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                  <span>{{ copiedQueueSlug ? 'Copied' : 'Copy' }}</span>
+                </button>
+              </div>
+
+              <!-- TV Screen Link -->
+              <div class="flex items-center gap-2 text-xs font-body text-plum-muted">
+                <span>TV Screen:</span>
+                <span class="font-mono text-plum truncate max-w-[200px] sm:max-w-xs">{{
+                  tvScreenUrl
+                }}</span>
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1 text-[11px] font-semibold text-plum hover:text-mint transition-colors cursor-pointer"
+                  @click="copyTvUrl"
+                >
+                  <svg
+                    v-if="copiedTvSlug"
+                    class="h-3 w-3 text-[#00B87A]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <svg v-else class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2"
+                    />
+                  </svg>
+                  <span>{{ copiedTvSlug ? 'Copied' : 'Copy' }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </BaseCard>
 
@@ -597,30 +763,6 @@ async function refreshSubscription() {
 
         <div class="divide-y divide-plum-faint">
           <div class="flex items-center justify-between py-4 first:pt-0">
-            <div>
-              <p class="font-body font-semibold text-plum">Email Alerts</p>
-              <p class="font-body text-sm text-plum-muted">Receive updates when queue is busy.</p>
-            </div>
-            <BaseToggle
-              v-model="form.email_notifications"
-              aria-label="Toggle email notifications"
-              @update:model-value="onFieldChange"
-            />
-          </div>
-
-          <div class="flex items-center justify-between py-4">
-            <div>
-              <p class="font-body font-semibold text-plum">Push Notifications</p>
-              <p class="font-body text-sm text-plum-muted">Get browser alerts for new arrivals.</p>
-            </div>
-            <BaseToggle
-              v-model="form.push_notifications"
-              aria-label="Toggle push notifications"
-              @update:model-value="onFieldChange"
-            />
-          </div>
-
-          <div class="flex items-center justify-between py-4 last:pb-0">
             <div>
               <p class="font-body font-semibold text-plum">Collect Guest Emails</p>
               <p class="font-body text-sm text-plum-muted">Require email when customers join.</p>
@@ -663,6 +805,7 @@ async function refreshSubscription() {
       <SettingsActionBar
         v-if="isDirty"
         :is-saving="isSaving"
+        :is-disabled="!!slugError"
         @discard="handleDiscard"
         @save="handleSave"
       />
