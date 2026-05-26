@@ -166,10 +166,10 @@ export function useLocation(
         if (venueLatitude && venueLongitude) {
           L.circle([venueLatitude, venueLongitude], {
             color: '#00E5A0',
-            fillColor: '#00E5A0',
-            fillOpacity: 0.15,
+            fill: false,
             radius: geoRadiusMeters,
-            weight: 1.5,
+            weight: 2,
+            dashArray: '5, 5',
           }).addTo(map)
 
           const venueIcon = L.divIcon({

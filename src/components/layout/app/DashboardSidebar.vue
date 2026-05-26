@@ -15,19 +15,20 @@
  * @emits {close} - User clicked to close the sidebar on mobile.
  */
 
-import { useLocalStorage, onKeyStroke } from '@vueuse/core'
+import { onKeyStroke, useLocalStorage } from '@vueuse/core'
 import {
-  PanelsTopLeft,
-  LineSquiggle,
-  History,
-  Settings,
   ChevronLeft,
   ChevronRight,
+  History,
+  ListOrdered,
+  PanelsTopLeft,
+  Settings,
   X,
 } from 'lucide-vue-next'
 import { defineAsyncComponent, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
+import Logo from '@/assets/icons/logo.svg?component'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
 import type { Component } from 'vue'
@@ -96,7 +97,7 @@ const navItems = [
   {
     name: 'Queue',
     to: '/dashboard/queue',
-    icon: LineSquiggle,
+    icon: ListOrdered,
     exact: true,
   },
   {
@@ -133,26 +134,25 @@ function isActive(item: NavItem) {
     ]"
   >
     <!-- Logo area -->
-    <div
-      class="flex items-center gap-3 py-8 transition-all duration-300"
+    <router-link
+      to="/"
+      class="flex items-center gap-1 py-8 transition-all duration-300"
       :class="isCollapsed ? 'lg:justify-center lg:px-0 px-7' : 'px-7'"
     >
-      <div
-        class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-mint text-on-mint shadow-lg dark:shadow-none"
-      >
-        <PanelsTopLeft class="h-5 w-5 text-on-mint" />
+      <Logo class="h-12 w-12 transition-transform duration-500 group-hover:rotate-12" />
+      <div class="flex flex-col justify-center leading-none text-plum">
+        <span class="text-[26px] font-extrabold tracking-tight leading-none overflow-hidden"
+          >ueue</span
+        >
+        <span class="text-[18px] font-bold tracking-tight leading-none mt-0.5 overflow-hidden"
+          >Buzz</span
+        >
       </div>
-      <span
-        v-if="!isCollapsed || isMobileOpen"
-        class="font-display text-xl font-black tracking-tight text-plum whitespace-nowrap overflow-hidden transition-all duration-300"
-      >
-        QueueBuzz
-      </span>
 
       <button class="ml-auto p-2 text-plum-muted hover:text-plum lg:hidden" @click="emit('close')">
         <X class="h-6 w-6" />
       </button>
-    </div>
+    </router-link>
 
     <nav
       class="flex flex-1 flex-col gap-1.5 py-4 transition-all duration-300"

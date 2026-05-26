@@ -191,6 +191,12 @@ const playRingtone = (ctx: AudioContext) => {
 }
 
 const playSoundAndVibrate = () => {
+  const isBuzzEnabled =
+    typeof localStorage === 'undefined'
+      ? true
+      : localStorage.getItem('queuebuzz_buzz_enabled') !== 'false'
+  if (!isBuzzEnabled) return
+
   try {
     const ctx = getAudioContext()
     if (ctx) {

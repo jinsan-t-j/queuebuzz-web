@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Info } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 defineProps({
   geoError: {
@@ -15,6 +15,21 @@ defineProps({
 
 const isTroubleshootingOpen = ref(false)
 const activeOsTab = ref('mac')
+
+onMounted(() => {
+  if (typeof navigator !== 'undefined') {
+    const ua = navigator.userAgent.toLowerCase()
+    if (ua.includes('android')) {
+      activeOsTab.value = 'android'
+    } else if (ua.includes('iphone') || ua.includes('ipad') || ua.includes('ipod')) {
+      activeOsTab.value = 'iphone'
+    } else if (ua.includes('windows')) {
+      activeOsTab.value = 'windows'
+    } else {
+      activeOsTab.value = 'mac'
+    }
+  }
+})
 </script>
 
 <template>

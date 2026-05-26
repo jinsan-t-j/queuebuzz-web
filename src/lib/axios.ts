@@ -35,7 +35,13 @@ export const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (config.data) {
-      config.data = keysToSnakeCase(config.data)
+      if (config.data instanceof FormData) {
+        if (config.headers) {
+          delete config.headers['Content-Type']
+        }
+      } else {
+        config.data = keysToSnakeCase(config.data)
+      }
     }
 
     if (config.params) {

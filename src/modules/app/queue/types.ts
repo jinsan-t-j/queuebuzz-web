@@ -113,6 +113,7 @@ export interface QueueSseEnvelopeMap {
   waiting_count_updated: {
     data: {
       count: number
+      avgServiceMins?: number
     }
   }
 }

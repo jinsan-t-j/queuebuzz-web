@@ -1,4 +1,4 @@
-import { test, expect } from '../fixtures/base.fixture'
+import { expect, test } from '../fixtures/base.fixture'
 import { makeDashboardResponse } from '../fixtures/mocks/host.mock'
 
 test.describe('Slug Validation', () => {
@@ -14,8 +14,7 @@ test.describe('Slug Validation', () => {
     // Fill form
     await page.getByLabel('Queue Name').fill('Existing Queue')
 
-    // Fill slug
-    const slugInput = page.getByLabel('Queue Link (Optional)')
+    const slugInput = page.locator('#slug')
     await slugInput.fill('taken-slug')
 
     // Wait for API check
@@ -35,7 +34,7 @@ test.describe('Slug Validation', () => {
     await page.getByLabel('Queue Name').fill('Invalid Slug Test')
 
     // Fill invalid slug
-    const slugInput = page.getByLabel('Queue Link (Optional)')
+    const slugInput = page.locator('#slug')
     await slugInput.fill('invalid slug!')
 
     // Error should show up immediately (client-side)
@@ -61,7 +60,7 @@ test.describe('Slug Validation', () => {
     await page.getByLabel('Queue Name').fill('First Queue')
 
     // Fill slug
-    const slugInput = page.getByLabel('Queue Link (Optional)')
+    const slugInput = page.locator('#slug')
     await slugInput.fill('new-slug')
 
     // Wait for API check

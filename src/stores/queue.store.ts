@@ -347,6 +347,10 @@ export const useQueueStore = defineStore('queue', {
             if (count !== undefined) {
               this.publicWaitingCount = count
             }
+            const avgMins = payload.data?.avgServiceMins
+            if (avgMins !== undefined && this.activeQueue) {
+              this.activeQueue.avgServiceMins = avgMins
+            }
           },
           queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
             const status = payload.data?.status
@@ -520,7 +524,14 @@ export const useQueueStore = defineStore('queue', {
     applyEntryStatus(data: QueueStatusEventData) {
       this.entries = this.entries.map((entry) =>
         entry.id === data.id
-          ? { ...entry, status: data.status.toUpperCase() as QueueEntryStatus }
+          ? {
+              ...entry,
+              status: data.status.toUpperCase() as QueueEntryStatus,
+              servedAt:
+                data.status.toUpperCase() === ENTRY_STATUS.SERVED
+                  ? entry.servedAt || new Date().toISOString()
+                  : entry.servedAt,
+            }
           : entry,
       )
     },

@@ -12,6 +12,7 @@ export interface UserSettings {
   tier: UserTier
   profileImageUrl: string | null
   bannerImageUrl: string | null
+  slug?: string
   settings: {
     defaultQueueName: string
     avgServiceMins: number

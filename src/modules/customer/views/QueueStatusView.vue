@@ -278,22 +278,26 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="flex items-center gap-4">
+        <div
+          class="flex flex-wrap items-center gap-2.5 sm:gap-4 w-full md:w-auto justify-between md:justify-end"
+        >
           <!-- Real-Time clock -->
           <div
-            class="bg-white border border-plum-faint px-5 py-2.5 rounded-2xl flex items-center gap-2 shadow-sm"
+            class="bg-white border border-plum-faint px-3 sm:px-5 py-2 sm:py-2.5 rounded-2xl flex items-center gap-1.5 sm:gap-2 shadow-sm shrink-0"
           >
-            <Clock class="h-4 w-4 text-plum-muted" />
-            <span class="font-mono text-plum font-semibold text-lg uppercase tracking-wide">
+            <Clock class="h-3.5 w-3.5 sm:h-4 sm:w-4 text-plum-muted" />
+            <span
+              class="font-mono text-plum font-semibold text-sm sm:text-base md:text-lg uppercase tracking-wide"
+            >
               {{ clockString }}
             </span>
           </div>
 
           <!-- Quick TV display options -->
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5 sm:gap-2">
             <!-- Chime Toggle -->
             <button
-              class="p-3.5 rounded-2xl border flex items-center justify-center transition-all cursor-pointer shadow-sm"
+              class="p-2 sm:p-3.5 rounded-2xl border flex items-center justify-center transition-all cursor-pointer shadow-sm"
               :class="
                 isSoundEnabled
                   ? 'bg-white border-plum-faint text-plum hover:bg-plum-faint'
@@ -302,13 +306,13 @@ onUnmounted(() => {
               :title="isSoundEnabled ? 'Chime sound is active' : 'Chime is muted'"
               @click="isSoundEnabled = !isSoundEnabled"
             >
-              <Volume2 v-if="isSoundEnabled" class="h-5 w-5" />
-              <VolumeX v-else class="h-5 w-5" />
+              <Volume2 v-if="isSoundEnabled" class="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+              <VolumeX v-else class="h-4.5 w-4.5 sm:h-5 sm:w-5" />
             </button>
 
             <!-- Text Zoom Selector -->
             <button
-              class="px-4 py-3.5 rounded-2xl bg-white border border-plum-faint hover:bg-plum-faint text-plum font-semibold font-body text-sm flex items-center gap-1.5 shadow-sm cursor-pointer select-none"
+              class="px-2.5 py-2 sm:px-4 sm:py-3.5 rounded-2xl bg-white border border-plum-faint hover:bg-plum-faint text-plum font-semibold font-body text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 shadow-sm cursor-pointer select-none"
               title="Change Text Size"
               @click="
                 textZoom =
@@ -321,12 +325,12 @@ onUnmounted(() => {
 
             <!-- Fullscreen -->
             <button
-              class="p-3.5 rounded-2xl bg-white border border-plum-faint hover:bg-plum-faint text-plum flex items-center justify-center transition-all cursor-pointer shadow-sm"
+              class="p-2 sm:p-3.5 rounded-2xl bg-white border border-plum-faint hover:bg-plum-faint text-plum flex items-center justify-center transition-all cursor-pointer shadow-sm"
               title="Toggle Fullscreen"
               @click="toggleFullscreen"
             >
-              <Minimize2 v-if="isFullscreen" class="h-5 w-5" />
-              <Maximize2 v-else class="h-5 w-5" />
+              <Minimize2 v-if="isFullscreen" class="h-4.5 w-4.5 sm:h-5 sm:w-5" />
+              <Maximize2 v-else class="h-4.5 w-4.5 sm:h-5 sm:w-5" />
             </button>
           </div>
         </div>

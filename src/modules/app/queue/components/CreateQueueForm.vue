@@ -56,6 +56,7 @@ onMounted(async () => {
       queueName.value = userSettings.value.settings?.defaultQueueName || 'Main Queue'
       serviceTime.value = userSettings.value.settings?.avgServiceMins || 5
       collectEmails.value = userSettings.value.settings?.collectEmails ?? false
+      slug.value = userSettings.value.slug || ''
     }
   }
 
@@ -485,7 +486,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
           class="rounded-card border border-plu m-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
         >
           <label for="slug" class="mb-3 block font-body text-sm font-medium text-plum-muted">
-            Queue Link (Optional)
+            Queue Link
           </label>
           <div class="flex flex-col sm:flex-row gap-3 sm:gap-2">
             <div

@@ -6,8 +6,9 @@
  */
 import { Menu, X } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
+import Logo from '@/assets/icons/logo.svg?component'
 import { useAuthStore } from '@/stores/auth.store'
 import { useQueueStore } from '@/stores/queue.store'
 
@@ -70,16 +71,16 @@ onUnmounted(() => {
     ]"
   >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-      <router-link
-        to="/"
-        class="group flex items-center gap-2 font-display text-2xl font-bold text-plum"
-      >
-        <div
-          class="h-8 w-8 rounded-xl bg-mint flex items-center justify-center transition-transform duration-500 group-hover:rotate-12"
-        >
-          <div class="h-2 w-2 rounded-full bg-plum" />
+      <router-link to="/" class="group flex items-center gap-1.5 font-display text-2xl font-bold">
+        <Logo class="h-12 w-12 transition-transform duration-500 group-hover:rotate-12" />
+        <div class="flex flex-col justify-center leading-none text-plum">
+          <span class="text-[26px] font-extrabold tracking-tight leading-none overflow-hidden"
+            >ueue</span
+          >
+          <span class="text-[18px] font-bold tracking-tight leading-none mt-0.5 overflow-hidden"
+            >Buzz</span
+          >
         </div>
-        <span class="tracking-tight">QueueBuzz</span>
       </router-link>
 
       <div class="hidden items-center gap-8 md:flex">

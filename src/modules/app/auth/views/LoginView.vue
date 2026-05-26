@@ -6,7 +6,7 @@
 import { defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 
-import QueueBuzzLogoBg from '@/assets/icons/queuebuzz-logo-bg.svg?component'
+import Logo from '@/assets/icons/logo.svg?component'
 import LoginForm from '@/modules/app/auth/components/LoginForm.vue'
 
 const route = useRoute()
@@ -22,7 +22,7 @@ const ClaimContextChip = defineAsyncComponent(
   <div class="min-h-screen flex flex-col items-center justify-center px-6 py-10 sm:py-12">
     <!-- Logo -->
     <router-link to="/" class="mb-8 sm:mb-12 flex flex-col items-center gap-4">
-      <QueueBuzzLogoBg class="h-10 w-10 sm:h-12 sm:w-12" />
+      <Logo class="h-10 w-10 sm:h-12 sm:w-12" />
       <span class="font-display text-lg sm:text-xl font-bold text-plum tracking-tight">
         QueueBuzz
       </span>

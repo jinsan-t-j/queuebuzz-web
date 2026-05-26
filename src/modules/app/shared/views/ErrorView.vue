@@ -6,7 +6,7 @@
  */
 import { computed } from 'vue'
 
-import QueueBuzzLogoBg from '@/assets/icons/queuebuzz-logo-bg.svg?component'
+import Logo from '@/assets/icons/logo.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
 
 interface Props {
@@ -43,7 +43,7 @@ const finalRequestId = computed(
   >
     <!-- Branding Section -->
     <router-link to="/" class="mb-12 flex flex-col items-center gap-4 group">
-      <QueueBuzzLogoBg class="h-14 w-14" />
+      <Logo class="h-14 w-14" />
       <h1 class="font-display text-3xl font-bold tracking-tight text-plum">{{ title }}</h1>
     </router-link>
 

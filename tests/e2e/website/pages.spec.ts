@@ -10,8 +10,8 @@ test.describe('Website — Home', () => {
   test('should render landing page with hero and CTA', async ({ page }) => {
     await page.goto('/')
 
-    // Brand in nav
-    await expect(page.getByRole('navigation').getByText('QueueBuzz').first()).toBeVisible()
+    // Brand wordmark in nav (logo SVG renders Q, then "ueue" + "Buzz" text)
+    await expect(page.getByRole('navigation').getByText('ueue').first()).toBeVisible()
 
     // Primary heading (LCP element)
     await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 5000 })
