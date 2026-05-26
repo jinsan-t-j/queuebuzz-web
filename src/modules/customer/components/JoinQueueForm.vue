@@ -63,7 +63,17 @@ const { value: displayName, errorMessage: nameError } = useField<string>('displa
 const { value: email, errorMessage: emailError } = useField<string>('email')
 const { value: accompanying } = useField<number>('accompanying')
 
-const buzzEnabled = ref(true)
+const buzzEnabled = ref(
+  typeof localStorage === 'undefined'
+    ? true
+    : localStorage.getItem('queuebuzz_buzz_enabled') !== 'false',
+)
+
+watch(buzzEnabled, (val) => {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('queuebuzz_buzz_enabled', String(val))
+  }
+})
 const isEmailExpanded = ref(false)
 const isGuestsOpen = ref(false)
 
@@ -483,18 +493,6 @@ onUnmounted(() => {
       {{ isSubmitting || isLoading ? 'Joining…' : 'Join the Queue' }}
       <ArrowRightBoldIcon v-if="!(isSubmitting || isLoading)" class="h-4 w-4 text-on-mint" />
     </button>
-
-    <!-- Join by code link -->
-    <p class="mt-6 text-center font-body text-sm text-plum-muted">
-      Already have a ticket?
-      <button
-        type="button"
-        class="font-body text-sm text-plum-muted underline underline-offset-4 hover:text-plum transition-colors p-4"
-        @click="emit('go-to-join-by-code')"
-      >
-        Enter your join code
-      </button>
-    </p>
 
     <!-- Geo Prompt Modal -->
     <GeoPromptModal
