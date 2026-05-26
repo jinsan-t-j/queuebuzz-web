@@ -22,6 +22,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 import { useToast } from '@/composables/useToast'
 import { useBilling } from '@/modules/app/billing/composables/useBilling'
+import { useAuthStore } from '@/stores/auth.store'
 
 const {
   isLoading,
@@ -55,6 +56,27 @@ onMounted(async () => {
       type: 'error',
     })
     router.replace({ query: { ...route.query, checkout: undefined } })
+  }
+
+  // Auto-checkout after login redirect
+  const authStore = useAuthStore()
+  const planSlug = route.query.plan as string
+  const cycleVal = route.query.cycle as 'monthly' | 'yearly'
+
+  if (planSlug && cycleVal && authStore.isAuthenticated) {
+    if (cycleVal === 'monthly' || cycleVal === 'yearly') {
+      billingCycle.value = cycleVal
+    }
+
+    // Find the plan from displayPlans
+    const plan = displayPlans.value.find((p) => p.slug === planSlug)
+    if (plan) {
+      // Clear plan and cycle queries to prevent repeated checks on page refresh
+      router.replace({
+        query: { ...route.query, plan: undefined, cycle: undefined },
+      })
+      await handleChoosePlan(plan)
+    }
   }
 })
 
