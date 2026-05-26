@@ -5,7 +5,6 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import * as yup from 'yup'
 
-import AppleIcon from '@/assets/icons/apple.svg?component'
 import GoogleIcon from '@/assets/icons/google.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
@@ -111,16 +110,6 @@ function handleSocialLogin(provider: SocialProvider) {
       >
         <GoogleIcon class="w-5 h-5 mr-1" />
         Continue with Google
-      </BaseButton>
-
-      <BaseButton
-        variant="secondary"
-        class="w-full !bg-white border border-plum-faint hover:!bg-plum-faint/30 !rounded-pill !text-plum font-medium"
-        :is-disabled="isSocialLoading"
-        @click="handleSocialLogin('apple')"
-      >
-        <AppleIcon class="w-5 h-5 mr-1" />
-        Continue with Apple
       </BaseButton>
     </div>
   </div>
