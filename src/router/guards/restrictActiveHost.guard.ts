@@ -13,7 +13,7 @@ import type { NavigationGuardWithThis } from 'vue-router'
 export const restrictActiveHostGuard: NavigationGuardWithThis<undefined> = async () => {
   const auth = useAuthStore()
 
-  if (!auth.isAuthenticated && !auth.activeGuestQueueId) {
+  if (!auth.isAuthenticated && !auth.anonymousQueueId) {
     return
   }
 
@@ -31,7 +31,7 @@ export const restrictActiveHostGuard: NavigationGuardWithThis<undefined> = async
         duration: 3500,
       })
 
-      if (auth.activeGuestQueueId) {
+      if (auth.anonymousQueueId) {
         return {
           name: 'guest-host-live-queue',
           params: { id: activeQueue.id },

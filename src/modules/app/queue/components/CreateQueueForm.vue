@@ -268,7 +268,7 @@ const onSubmit = handleSubmit(async (values) => {
       queueStore.setActiveQueue(queue)
 
       if (props.role === 'guest') {
-        authStore.setGuestSession(queue.id)
+        authStore.setAnonymousHostSession(queue.id)
       }
 
       useDashboardStore().setDirty()

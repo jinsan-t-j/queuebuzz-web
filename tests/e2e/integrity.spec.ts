@@ -1,6 +1,6 @@
 import seo from '../../src/config/seo.constants.json' with { type: 'json' }
 
-import { test, expect } from './fixtures/base.fixture'
+import { expect, test } from './fixtures/base.fixture'
 
 /**
  * @spec SSG and SEO Integrity
@@ -67,7 +67,7 @@ test.describe('SPA Hydration (JS Enabled)', () => {
           tier: 'free',
           avatar: null,
         },
-        activeGuestQueueId: null,
+        anonymousQueueId: null,
         isHydrated: true,
       }
       globalThis.localStorage.setItem('auth', JSON.stringify(authState))

@@ -44,6 +44,7 @@ import type {
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { ApiError, getErrorMessage } from '@/utils/api-response'
 
+import { useAuthStore } from './auth.store'
 import { useDashboardStore } from './dashboard.store'
 import { useNotificationStore } from './notification.store'
 
@@ -821,6 +822,7 @@ export const useQueueStore = defineStore('queue', {
       this.hostFcmToken = null
       this.isFcmRegistering = false
       useNotificationStore().clearNotifications()
+      useAuthStore().setAnonymousHostSession(null)
     },
 
     clearError() {
