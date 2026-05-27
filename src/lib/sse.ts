@@ -171,7 +171,19 @@ export function createSseClient(options: SseClientOptions): SseClient {
 
       options.onMessage?.(payload, { event: frame.event, data: frame.data })
     } catch (error) {
-      options.onParseError?.(error as Error, frame.data)
+      if (options.onParseError) {
+        options.onParseError(error as Error, frame.data)
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(
+          'SSE event processing failed:',
+          error,
+          'Event:',
+          frame.event,
+          'Data:',
+          frame.data,
+        )
+      }
     }
   }
 

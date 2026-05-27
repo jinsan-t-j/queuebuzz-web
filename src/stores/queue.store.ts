@@ -104,7 +104,6 @@ export const useQueueStore = defineStore('queue', {
     canJoinWithParty: (state) => state.activeQueue?.allowPartyJoining ?? false,
     maxAllowedPartySize: (state) => state.activeQueue?.maxPartySize ?? 1,
     isStreamConnected: (state) => state.streamState === 'open',
-    notifyStore: () => useNotificationStore(),
   },
 
   actions: {
@@ -114,7 +113,7 @@ export const useQueueStore = defineStore('queue', {
       type: 'info' | 'success' | 'warning' | 'error' = 'info',
       dedupeKey?: string,
     ) {
-      this.notifyStore.addNotification({
+      useNotificationStore().addNotification({
         title,
         message,
         type,
@@ -268,6 +267,65 @@ export const useQueueStore = defineStore('queue', {
      * because the backend may exclude them from live broadcasts to save bandwidth.
      */
     updateEntries(newEntries: QueueEntry[]) {
+      // Diff the list to identify actions that occurred while offline/backgrounded
+      if (this.entries.length > 0) {
+        newEntries.forEach((entry) => {
+          const existingEntry = this.entries.find((e) => e.id === entry.id)
+          if (existingEntry) {
+            // Existing guest status changed while offline
+            if (
+              existingEntry.status !== ENTRY_STATUS.ARRIVED &&
+              entry.status === ENTRY_STATUS.ARRIVED
+            ) {
+              this.addLiveNotification(
+                'Guest Arrived!',
+                `${entry.name} (${entry.ticketNo}) has arrived.`,
+                'success',
+                `host-arrived-${entry.id}`,
+              )
+            }
+          } else {
+            // New guest joined while we were offline!
+            if (entry.status === ENTRY_STATUS.ARRIVED) {
+              this.addLiveNotification(
+                'Guest Arrived!',
+                `${entry.name} (${entry.ticketNo}) has arrived.`,
+                'success',
+                `host-arrived-${entry.id}`,
+              )
+            } else {
+              this.addLiveNotification(
+                'New Guest Joined',
+                `${entry.name} is now waiting with ticket ${entry.ticketNo}.`,
+                'info',
+                `host-joined-${entry.id}`,
+              )
+            }
+          }
+        })
+
+        // Identify guests who left the queue while we were offline.
+        // If a guest was in an active state in our list (WAITING, CALLED, ARRIVED, IDLE)
+        // but is completely absent from the new snapshot, it means they left/were removed.
+        const newEntryIds = new Set(newEntries.map((e) => e.id))
+        const activeStatuses = [
+          ENTRY_STATUS.WAITING,
+          ENTRY_STATUS.CALLED,
+          ENTRY_STATUS.ARRIVED,
+          ENTRY_STATUS.IDLE,
+        ] as string[]
+        this.entries.forEach((existingEntry) => {
+          if (activeStatuses.includes(existingEntry.status) && !newEntryIds.has(existingEntry.id)) {
+            this.addLiveNotification(
+              'Guest Left Queue',
+              'A guest has removed themselves from the queue.',
+              'warning',
+              `host-left-${existingEntry.id}`,
+            )
+          }
+        })
+      }
+
       // 1. Identify all current entries that are in a terminal state
       const terminalEntries = this.entries.filter((e) =>
         ([ENTRY_STATUS.SERVED, ENTRY_STATUS.LEFT, ENTRY_STATUS.SKIPPED] as string[]).includes(
@@ -334,6 +392,8 @@ export const useQueueStore = defineStore('queue', {
             this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
           } else if (e.status === 410) {
             this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
+          } else if (e.status === 429) {
+            this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
           }
 
           if (this.error) {
@@ -380,6 +440,12 @@ export const useQueueStore = defineStore('queue', {
           user_arrived: (payload: QueueSseEnvelopeMap['user_arrived']) => {
             if (payload.data) {
               this.applyEntryStatus({ id: payload.data.id, status: ENTRY_STATUS.ARRIVED })
+            }
+          },
+          user_updated: (payload: QueueSseEnvelopeMap['user_updated']) => {
+            if (payload.data) {
+              const entry = normalizeQueueEntry(payload.data)
+              this.upsertEntry(entry)
             }
           },
         },
@@ -435,6 +501,8 @@ export const useQueueStore = defineStore('queue', {
             this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
           } else if (e.status === 410) {
             this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
+          } else if (e.status === 429) {
+            this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
           }
 
           if (this.error) {
@@ -458,30 +526,42 @@ export const useQueueStore = defineStore('queue', {
             }
           },
           called: (payload: QueueSseEnvelopeMap['called']) => {
-            this.applyEntryStatus(payload.data)
+            if (payload.data) {
+              this.applyEntryStatus(payload.data)
+            }
           },
           user_status_changed: (payload: QueueSseEnvelopeMap['user_status_changed']) => {
             const data = payload.data
-            this.applyEntryStatus(data)
+            if (data) {
+              this.applyEntryStatus(data)
 
-            if (data?.status?.toUpperCase() === ENTRY_STATUS.LEFT) {
-              this.addLiveNotification(
-                'Guest Left Queue',
-                'A guest has removed themselves from the queue.',
-                'warning',
-                `host-left-${data.id}`,
-              )
+              if (data.status?.toUpperCase() === ENTRY_STATUS.LEFT) {
+                this.addLiveNotification(
+                  'Guest Left Queue',
+                  'A guest has removed themselves from the queue.',
+                  'warning',
+                  `host-left-${data.id}`,
+                )
+              }
             }
           },
           user_arrived: (payload: QueueSseEnvelopeMap['user_arrived']) => {
             const data = payload.data
-            this.applyEntryStatus({ id: data.id, status: ENTRY_STATUS.ARRIVED })
-            this.addLiveNotification(
-              'Guest Arrived!',
-              `${data.name} (${data.ticketNumber}) has arrived.`,
-              'success',
-              `host-arrived-${data.id}`,
-            )
+            if (data) {
+              this.applyEntryStatus({ id: data.id, status: ENTRY_STATUS.ARRIVED })
+              this.addLiveNotification(
+                'Guest Arrived!',
+                `${data.name} (${data.ticketNumber}) has arrived.`,
+                'success',
+                `host-arrived-${data.id}`,
+              )
+            }
+          },
+          user_updated: (payload: QueueSseEnvelopeMap['user_updated']) => {
+            if (payload.data) {
+              const entry = normalizeQueueEntry(payload.data)
+              this.upsertEntry(entry)
+            }
           },
           queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
             const status = payload.data.status.toUpperCase() as QueueStatus
@@ -740,7 +820,7 @@ export const useQueueStore = defineStore('queue', {
       this.publicSseClient = null
       this.hostFcmToken = null
       this.isFcmRegistering = false
-      this.notifyStore.clearNotifications()
+      useNotificationStore().clearNotifications()
     },
 
     clearError() {

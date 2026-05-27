@@ -17,7 +17,7 @@ const { isVisible, message, type } = useToast()
   >
     <div
       v-if="isVisible"
-      class="fixed bottom-28 sm:bottom-12 left-1/2 z-[100] flex w-[calc(100%-32px)] sm:w-auto sm:min-w-[320px] max-w-[400px] -translate-x-1/2 items-center gap-3 rounded-2xl sm:rounded-full px-5 py-4 backdrop-blur-xl transition-all"
+      class="fixed bottom-28 sm:bottom-12 left-1/2 z-[99999] flex w-[calc(100%-32px)] sm:w-auto sm:min-w-[320px] max-w-[400px] -translate-x-1/2 items-center gap-3 rounded-2xl sm:rounded-full px-5 py-4 backdrop-blur-xl transition-all"
       :class="[
         type === 'error'
           ? 'bg-red-500/95 shadow-[0_12px_32px_rgba(239,68,68,0.4)]'

@@ -69,6 +69,8 @@ export interface UpdateQueuePayload {
   latitude?: number
   longitude?: number
   geoRadiusMeters?: number
+  allowPartyJoining?: boolean
+  maxPartySize?: number
 }
 
 export type TrendDirection = 'up' | 'down' | 'flat'
@@ -109,6 +111,9 @@ export interface QueueSseEnvelopeMap {
   }
   queue_status_changed: {
     data: QueueStatusData
+  }
+  user_updated: {
+    data: QueueEntry
   }
   waiting_count_updated: {
     data: {

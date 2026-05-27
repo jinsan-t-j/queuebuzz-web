@@ -116,7 +116,7 @@ export function useWebsiteData() {
     {
       question: 'How do customers join without an app?',
       answer:
-        'QueueBuzz uses modern web technology. Customers simply scan a QR code at your entrance or visit a short URL. Their browser acts as their ticket, keeping them updated in real-time without any installation.',
+        'Customers simply scan a QR code at your entrance or visit a short URL. Their browser acts as their ticket, keeping them updated in real-time without any installation.',
     },
     {
       question: 'Is it truly global? Does it support my language?',

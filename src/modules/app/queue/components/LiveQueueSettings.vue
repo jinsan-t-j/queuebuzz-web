@@ -39,9 +39,11 @@ const emit = defineEmits<{
 }>()
 
 interface SubmitValues {
-  name: string
-  avgServiceMins: number
-  strictQueueMode: boolean
+  name?: string
+  avgServiceMins?: number
+  strictQueueMode?: boolean
+  allowPartyJoining?: boolean
+  maxPartySize?: number
   isGeoLocked?: boolean
   latitude?: number
   longitude?: number
@@ -60,6 +62,12 @@ const schema = yup.object({
     .max(50, 'At least 50 characters'),
   avgServiceMins: yup.number().required('Service time is required').min(1).max(60),
   strictQueueMode: yup.boolean(),
+  allowPartyJoining: yup.boolean().default(false),
+  maxPartySize: yup.number().when('allowPartyJoining', {
+    is: true,
+    then: (schema) => schema.required('Limit is required').min(1).max(50),
+    otherwise: (schema) => schema.notRequired(),
+  }),
   isGeoLocked: yup.boolean(),
   latitude: yup
     .number()
@@ -86,6 +94,8 @@ const { handleSubmit, errors, resetForm, meta } = useForm({
     queueName: props.queue?.name || '',
     avgServiceMins: props.queue?.avgServiceMins || 5,
     strictQueueMode: props.queue?.strictQueueMode || false,
+    allowPartyJoining: props.queue?.allowPartyJoining || false,
+    maxPartySize: props.queue?.maxPartySize || 5,
     isGeoLocked: props.queue?.isGeoLocked || false,
     latitude: props.queue?.latitude || null,
     longitude: props.queue?.longitude || null,
@@ -96,6 +106,8 @@ const { handleSubmit, errors, resetForm, meta } = useForm({
 const { value: queueName } = useField<string>('queueName')
 const { value: avgServiceMins } = useField<number>('avgServiceMins')
 const { value: strictQueueMode } = useField<boolean>('strictQueueMode')
+const { value: allowPartyJoining } = useField<boolean>('allowPartyJoining')
+const { value: maxPartySize } = useField<number>('maxPartySize')
 const { value: isGeoLocked } = useField<boolean>('isGeoLocked')
 const { value: latitude } = useField<number | null>('latitude')
 const { value: longitude } = useField<number | null>('longitude')
@@ -140,6 +152,8 @@ watch(
           queueName: newQueue.name,
           avgServiceMins: newQueue.avgServiceMins,
           strictQueueMode: newQueue.strictQueueMode || false,
+          allowPartyJoining: newQueue.allowPartyJoining || false,
+          maxPartySize: newQueue.maxPartySize || 5,
           isGeoLocked: newQueue.isGeoLocked || false,
           latitude: newQueue.latitude || null,
           longitude: newQueue.longitude || null,
@@ -217,15 +231,41 @@ onUnmounted(() => {
 })
 
 const onSubmit = handleSubmit((values) => {
-  emit('submit', {
-    name: values.queueName,
-    avgServiceMins: values.avgServiceMins,
-    strictQueueMode: values.strictQueueMode,
-    isGeoLocked: values.isGeoLocked,
-    latitude: values.latitude || undefined,
-    longitude: values.longitude || undefined,
-    geoRadiusMeters: values.isGeoLocked ? Number(values.geoRadiusMeters) : undefined,
-  })
+  const payload: SubmitValues = {}
+
+  if (values.queueName !== props.queue?.name) {
+    payload.name = values.queueName
+  }
+  if (values.avgServiceMins !== props.queue?.avgServiceMins) {
+    payload.avgServiceMins = values.avgServiceMins
+  }
+  if (values.strictQueueMode !== props.queue?.strictQueueMode) {
+    payload.strictQueueMode = values.strictQueueMode
+  }
+  if (values.allowPartyJoining !== props.queue?.allowPartyJoining) {
+    payload.allowPartyJoining = values.allowPartyJoining
+  }
+  const expectedMaxPartySize = values.allowPartyJoining ? Number(values.maxPartySize) : 1
+  if (expectedMaxPartySize !== props.queue?.maxPartySize) {
+    payload.maxPartySize = expectedMaxPartySize
+  }
+  if (values.isGeoLocked !== props.queue?.isGeoLocked) {
+    payload.isGeoLocked = values.isGeoLocked
+  }
+  if (values.isGeoLocked) {
+    if (values.latitude !== props.queue?.latitude) {
+      payload.latitude = values.latitude || undefined
+    }
+    if (values.longitude !== props.queue?.longitude) {
+      payload.longitude = values.longitude || undefined
+    }
+    const expectedGeoRadiusMeters = Number(values.geoRadiusMeters)
+    if (expectedGeoRadiusMeters !== props.queue?.geoRadiusMeters) {
+      payload.geoRadiusMeters = expectedGeoRadiusMeters
+    }
+  }
+
+  emit('submit', payload)
 })
 
 const canSubmit = computed(() => {
@@ -238,256 +278,338 @@ function selectSuggestion(suggestion: string) {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-[100] pointer-events-none" :class="{ 'pointer-events-auto': isOpen }">
-    <!-- Overlay Backdrop -->
+  <Teleport to="body">
     <div
-      class="absolute inset-0 bg-plum/20 backdrop-blur-[2px] transition-opacity duration-300 ease-out"
-      :class="isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-      @click="emit('close')"
-    />
-
-    <!-- Right Sidebar Drawer Panel -->
-    <div
-      class="absolute right-0 top-0 bottom-0 w-full max-w-[420px] bg-sand border-l border-plum-faint shadow-[-8px_0_40px_rgba(26,10,46,0.12)] flex flex-col transition-all duration-300 ease-out h-full overflow-hidden pointer-events-auto"
-      :class="isOpen ? 'translate-x-0' : 'translate-x-full'"
+      class="fixed inset-0 z-[9999]"
+      :class="isOpen ? 'pointer-events-auto' : 'pointer-events-none'"
     >
-      <!-- Header (Sticky) -->
+      <!-- Overlay Backdrop -->
       <div
-        class="px-6 py-5 bg-white border-b border-plum-faint flex items-center justify-between shrink-0"
+        class="absolute inset-0 bg-plum/20 backdrop-blur-[2px] transition-opacity duration-300 ease-out"
+        :class="isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+        @click="emit('close')"
+      />
+
+      <!-- Right Sidebar Drawer Panel -->
+      <div
+        class="absolute right-0 top-0 bottom-0 w-full max-w-[420px] bg-sand border-l border-plum-faint shadow-[-8px_0_40px_rgba(26,10,46,0.12)] flex flex-col transition-all duration-300 ease-out h-full overflow-hidden pointer-events-auto"
+        :class="isOpen ? 'translate-x-0' : 'translate-x-full'"
       >
-        <div class="flex items-center gap-3">
-          <div
-            class="flex h-10 w-10 items-center justify-center rounded-xl bg-plum/5 dark:bg-plum-faint/10"
-          >
-            <navSettingsIcon class="h-5 w-5 text-plum" />
-          </div>
-          <h2 class="font-display text-xl font-bold tracking-tight text-plum">Queue Settings</h2>
-        </div>
-        <button
-          type="button"
-          class="flex h-8 w-8 items-center justify-center rounded-full bg-sand dark:bg-plum-faint/20 text-plum/30 transition-colors hover:text-plum cursor-pointer"
-          @click="emit('close')"
+        <!-- Header (Sticky) -->
+        <div
+          class="px-6 py-5 bg-white border-b border-plum-faint flex items-center justify-between shrink-0"
         >
-          <CloseIcon class="h-4 w-4" />
-        </button>
-      </div>
-
-      <!-- Scrollable Form Body -->
-      <div class="flex-1 overflow-y-auto p-6 space-y-6">
-        <form id="settings-form" class="space-y-6" @submit.prevent="onSubmit">
-          <!-- Queue Name -->
-          <BaseCard padding="md" class="space-y-4">
-            <BaseInput
-              id="editQueueName"
-              v-model="queueName"
-              label="Queue Name"
-              placeholder="What are people queuing for?"
-              :error="errors.queueName"
-            />
-
-            <div class="flex flex-wrap gap-2 mt-2">
-              <button
-                v-for="suggestion in suggestions"
-                :key="suggestion"
-                type="button"
-                class="rounded-full border border-plum-faint dark:border-plum-faint/50 px-3 py-1 font-body text-xs font-medium text-plum/60 transition-colors hover:bg-plum-faint dark:hover:bg-plum-faint/20 hover:text-plum cursor-pointer"
-                @click="selectSuggestion(suggestion)"
-              >
-                {{ suggestion }}
-              </button>
+          <div class="flex items-center gap-3">
+            <div
+              class="flex h-10 w-10 items-center justify-center rounded-xl bg-plum/5 dark:bg-plum-faint/10"
+            >
+              <navSettingsIcon class="h-5 w-5 text-plum" />
             </div>
-          </BaseCard>
-
-          <!-- Avg Service Time -->
-          <BaseCard padding="md" class="space-y-4">
-            <div class="flex items-center justify-between">
-              <label for="avgServiceMins" class="block font-body text-sm font-semibold text-plum">
-                Service Duration Estimator
-              </label>
-              <div class="flex items-center gap-1.5 rounded-lg bg-mint/10 px-2 py-1">
-                <TimeIcon class="h-3 w-3 text-mint" />
-                <span class="font-body text-sm font-semibold text-mint">{{ avgServiceMins }}m</span>
-              </div>
-            </div>
-            <p class="font-body text-xs text-plum-muted leading-relaxed">
-              How long does it typically take to serve one guest? This is only used for calculating
-              estimated wait times.
-            </p>
-            <div class="mt-2">
-              <BaseSlider
-                id="avgServiceMins"
-                v-model="avgServiceMins"
-                :min="1"
-                :max="60"
-                :step="1"
-              />
-              <div class="flex justify-between font-body text-xs text-plum-muted mt-1">
-                <span>Quick (1m)</span>
-                <span>Relaxed (60m)</span>
-              </div>
-            </div>
-          </BaseCard>
-
-          <!-- Strict Calling Mode -->
-          <BaseCard padding="md">
-            <div class="flex items-center justify-between gap-4">
-              <div class="flex flex-col gap-1">
-                <label
-                  for="strictQueueMode"
-                  class="block font-body text-sm font-semibold text-plum"
-                >
-                  Strict Calling Mode
-                </label>
-                <p class="font-body text-xs text-plum-muted leading-relaxed">
-                  Enforces strict ordering by preventing the host from calling the next guest until
-                  the currently active guest is served or skipped.
-                </p>
-              </div>
-              <BaseToggle
-                id="strictQueueMode"
-                v-model="strictQueueMode"
-                aria-label="Toggle strict queue mode"
-              />
-            </div>
-          </BaseCard>
-
-          <!-- Geo Fence (Premium) -->
-          <BaseCard
-            padding="md"
-            class="relative overflow-hidden transition-all duration-300"
-            :class="{ 'border-mint/30 shadow-[0_4px_20px_rgba(0,229,160,0.05)]': isGeoLocked }"
+            <h2 class="font-display text-xl font-bold tracking-tight text-plum">Queue Settings</h2>
+          </div>
+          <button
+            type="button"
+            class="flex h-8 w-8 items-center justify-center rounded-full bg-sand dark:bg-plum-faint/20 text-plum/30 transition-colors hover:text-plum cursor-pointer"
+            @click="emit('close')"
           >
-            <!-- Premium Sparkle Badge -->
-            <div
-              class="absolute top-0 right-0 bg-mint-light text-plum font-body text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider"
-            >
-              Premium
-            </div>
+            <CloseIcon class="h-4 w-4" />
+          </button>
+        </div>
 
-            <div class="flex items-start justify-between gap-4">
-              <div class="flex-1 pr-12 space-y-1">
-                <label
-                  for="editIsGeoLocked"
-                  class="block font-body text-sm font-semibold text-plum"
-                >
-                  Geo Fence
-                </label>
-                <p class="font-body text-xs text-plum-muted leading-relaxed">
-                  Restrict queue entry strictly to customers physically present within a specific
-                  radius of your coordinates. Prevents remote joining.
-                </p>
-              </div>
-              <BaseToggle
-                id="editIsGeoLocked"
-                v-model="isGeoLocked"
-                aria-label="Toggle Geo Fence"
-                :class="{ 'opacity-50': isLocating }"
-                :disabled="isLocating"
+        <!-- Scrollable Form Body -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+          <form id="settings-form" class="space-y-6" @submit.prevent="onSubmit">
+            <!-- Queue Name -->
+            <BaseCard padding="md" class="space-y-4">
+              <BaseInput
+                id="editQueueName"
+                v-model="queueName"
+                label="Queue Name"
+                placeholder="What are people queuing for?"
+                :error="errors.queueName"
               />
-            </div>
 
-            <!-- Geolocation details / loading -->
-            <div
-              v-if="isLocating || isGeoLocked"
-              class="mt-6 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
-            >
-              <!-- Location Troubleshooter / Warning Panel -->
-              <LocationTroubleshooter :geo-error="geoError" :accuracy="accuracy" class="mb-4" />
-
-              <div
-                v-if="isLocating && !latitude && !longitude"
-                class="flex items-center gap-3 py-2 text-plum-muted font-body text-sm"
-              >
-                <SpinnerLoadingIcon class="h-5 w-5 animate-spin text-mint shrink-0" />
-                <span>Fetching coordinates... Please allow location access in your browser.</span>
+              <div class="flex flex-wrap gap-2 mt-2">
+                <button
+                  v-for="suggestion in suggestions"
+                  :key="suggestion"
+                  type="button"
+                  class="rounded-full border border-plum-faint dark:border-plum-faint/50 px-3 py-1 font-body text-xs font-medium text-plum/60 transition-colors hover:bg-plum-faint dark:hover:bg-plum-faint/20 hover:text-plum cursor-pointer"
+                  @click="selectSuggestion(suggestion)"
+                >
+                  {{ suggestion }}
+                </button>
               </div>
+            </BaseCard>
 
-              <div v-if="latitude && longitude" class="flex flex-col gap-5">
-                <!-- Location Address Display -->
-                <LocationVerifiedCard
-                  :is-fetching-place="isFetchingPlace"
-                  :location-name="locationName"
+            <!-- Avg Service Time -->
+            <BaseCard padding="md" class="space-y-4">
+              <div class="flex items-center justify-between">
+                <label for="avgServiceMins" class="block font-body text-sm font-semibold text-plum">
+                  Service Duration Estimator
+                </label>
+                <div class="flex items-center gap-1.5 rounded-lg bg-mint/10 px-2 py-1">
+                  <TimeIcon class="h-3 w-3 text-mint" />
+                  <span class="font-body text-sm font-semibold text-mint"
+                    >{{ avgServiceMins }}m</span
+                  >
+                </div>
+              </div>
+              <p class="font-body text-xs text-plum-muted leading-relaxed">
+                How long does it typically take to serve one guest? This is only used for
+                calculating estimated wait times.
+              </p>
+              <div class="mt-2">
+                <BaseSlider
+                  id="avgServiceMins"
+                  v-model="avgServiceMins"
+                  :min="1"
+                  :max="60"
+                  :step="1"
                 />
+                <div class="flex justify-between font-body text-xs text-plum-muted mt-1">
+                  <span>Quick (1m)</span>
+                  <span>Relaxed (60m)</span>
+                </div>
+              </div>
+            </BaseCard>
 
-                <!-- Map Preview Card -->
-                <MapPreviewCard
-                  :is-satellite="isSatellite"
-                  :is-locating="isLocating"
-                  @toggle-map-type="toggleMapType"
-                  @recapture="recaptureLocation"
-                />
-
-                <!-- Lockdown Radius Customization -->
-                <div class="space-y-4">
+            <!-- Strict Calling Mode -->
+            <BaseCard padding="md">
+              <div class="flex items-center justify-between gap-4">
+                <div class="flex flex-col gap-1">
                   <label
-                    for="editGeoRadiusMeters"
+                    for="strictQueueMode"
                     class="block font-body text-sm font-semibold text-plum"
                   >
-                    Allowed Lockdown Radius:
-                    <span class="text-mint font-bold">{{ geoRadiusMeters }} meters</span>
+                    Strict Calling Mode
                   </label>
+                  <p class="font-body text-xs text-plum-muted leading-relaxed">
+                    Enforces strict ordering by preventing the host from calling the next guest
+                    until the currently active guest is served or skipped.
+                  </p>
+                </div>
+                <BaseToggle
+                  id="strictQueueMode"
+                  v-model="strictQueueMode"
+                  aria-label="Toggle strict queue mode"
+                />
+              </div>
+            </BaseCard>
 
-                  <div class="flex flex-wrap gap-2">
-                    <button
-                      v-for="radiusVal in [50, 100, 200, 500, 1000]"
-                      :key="radiusVal"
-                      type="button"
-                      :class="[
-                        'px-4 py-2 rounded-xl font-body text-sm transition-all cursor-pointer',
-                        geoRadiusMeters === radiusVal
-                          ? 'bg-plum text-sand font-semibold'
-                          : 'border border-plum-faint text-plum-muted hover:border-plum hover:bg-sand',
-                      ]"
-                      @click="geoRadiusMeters = radiusVal"
-                    >
-                      {{ radiusVal }}m
-                    </button>
+            <!-- Party Settings -->
+            <BaseCard padding="md">
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1">
+                  <label
+                    for="allowPartyJoining"
+                    class="block font-body text-sm font-semibold text-plum"
+                  >
+                    Allow Party Joining
+                  </label>
+                  <p class="font-body text-xs text-plum-muted mt-1 leading-relaxed">
+                    Allows guests to book together as a group and reserve spots for their entire
+                    party.
+                  </p>
+                  <div v-if="errors.allowPartyJoining" class="mt-1 font-body text-sm text-red-500">
+                    {{ errors.allowPartyJoining }}
                   </div>
+                </div>
+                <BaseToggle
+                  id="allowPartyJoining"
+                  v-model="allowPartyJoining"
+                  aria-label="Toggle party joining mode"
+                />
+              </div>
 
-                  <div class="relative w-full flex flex-col pt-2">
+              <div
+                v-if="allowPartyJoining"
+                class="mt-6 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
+              >
+                <label
+                  for="maxPartySize"
+                  class="block font-body text-sm font-semibold text-plum mb-4"
+                >
+                  Max Party Size Limit
+                </label>
+
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="size in [2, 4, 6, 8, 10, 15, 20]"
+                    :key="size"
+                    type="button"
+                    :class="[
+                      'px-4 py-2 rounded-xl font-body text-sm transition-all cursor-pointer',
+                      maxPartySize === size
+                        ? 'bg-plum text-sand font-semibold'
+                        : 'border border-plum-faint text-plum-muted hover:border-plum',
+                    ]"
+                    @click="maxPartySize = size"
+                  >
+                    {{ size }}
+                  </button>
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm text-plum-muted font-body">Custom:</span>
                     <input
-                      id="editGeoRadiusMeters"
-                      v-model.number="geoRadiusMeters"
-                      type="range"
-                      min="20"
-                      max="1000"
-                      step="10"
-                      aria-label="Lockdown radius in meters"
-                      class="w-full accent-mint h-2 bg-plum/10 rounded-lg appearance-none cursor-pointer"
+                      id="maxPartySize"
+                      v-model.number="maxPartySize"
+                      type="number"
+                      min="1"
+                      max="50"
+                      class="w-16 h-9 rounded-xl border bg-sand text-center font-body text-base text-plum outline-none transition-all"
+                      :class="[
+                        ![2, 4, 6, 8, 10, 15, 20].includes(maxPartySize)
+                          ? 'border-plum ring-1 ring-plum font-semibold bg-white'
+                          : 'border-plum-faint focus:border-plum',
+                      ]"
                     />
-                    <div class="mt-2 flex justify-between font-body text-xs text-plum-muted">
-                      <span>20 meters</span>
-                      <span>1,000 meters (1km)</span>
+                  </div>
+                </div>
+                <div v-if="errors.maxPartySize" class="mt-2 font-body text-sm text-red-500">
+                  {{ errors.maxPartySize }}
+                </div>
+              </div>
+            </BaseCard>
+
+            <!-- Geo Fence (Premium) -->
+            <BaseCard
+              padding="md"
+              class="relative overflow-hidden transition-all duration-300"
+              :class="{ 'border-mint/30 shadow-[0_4px_20px_rgba(0,229,160,0.05)]': isGeoLocked }"
+            >
+              <!-- Premium Sparkle Badge -->
+              <div
+                class="absolute top-0 right-0 bg-mint-light text-plum font-body text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider"
+              >
+                Premium
+              </div>
+
+              <div class="flex items-start justify-between gap-4">
+                <div class="flex-1 pr-12 space-y-1">
+                  <label
+                    for="editIsGeoLocked"
+                    class="block font-body text-sm font-semibold text-plum"
+                  >
+                    Geo Fence
+                  </label>
+                  <p class="font-body text-xs text-plum-muted leading-relaxed">
+                    Restrict queue entry strictly to customers physically present within a specific
+                    radius of your coordinates. Prevents remote joining.
+                  </p>
+                </div>
+                <BaseToggle
+                  id="editIsGeoLocked"
+                  v-model="isGeoLocked"
+                  aria-label="Toggle Geo Fence"
+                  :class="{ 'opacity-50': isLocating }"
+                  :disabled="isLocating"
+                />
+              </div>
+
+              <!-- Geolocation details / loading -->
+              <div
+                v-if="isLocating || isGeoLocked"
+                class="mt-6 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
+              >
+                <!-- Location Troubleshooter / Warning Panel -->
+                <LocationTroubleshooter :geo-error="geoError" :accuracy="accuracy" class="mb-4" />
+
+                <div
+                  v-if="isLocating && !latitude && !longitude"
+                  class="flex items-center gap-3 py-2 text-plum-muted font-body text-sm"
+                >
+                  <SpinnerLoadingIcon class="h-5 w-5 animate-spin text-mint shrink-0" />
+                  <span>Fetching coordinates... Please allow location access in your browser.</span>
+                </div>
+
+                <div v-if="latitude && longitude" class="flex flex-col gap-5">
+                  <!-- Location Address Display -->
+                  <LocationVerifiedCard
+                    :is-fetching-place="isFetchingPlace"
+                    :location-name="locationName"
+                  />
+
+                  <!-- Map Preview Card -->
+                  <MapPreviewCard
+                    :is-satellite="isSatellite"
+                    :is-locating="isLocating"
+                    @toggle-map-type="toggleMapType"
+                    @recapture="recaptureLocation"
+                  />
+
+                  <!-- Lockdown Radius Customization -->
+                  <div class="space-y-4">
+                    <label
+                      for="editGeoRadiusMeters"
+                      class="block font-body text-sm font-semibold text-plum"
+                    >
+                      Allowed Lockdown Radius:
+                      <span class="text-mint font-bold">{{ geoRadiusMeters }} meters</span>
+                    </label>
+
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        v-for="radiusVal in [50, 100, 200, 500, 1000]"
+                        :key="radiusVal"
+                        type="button"
+                        :class="[
+                          'px-4 py-2 rounded-xl font-body text-sm transition-all cursor-pointer',
+                          geoRadiusMeters === radiusVal
+                            ? 'bg-plum text-sand font-semibold'
+                            : 'border border-plum-faint text-plum-muted hover:border-plum hover:bg-sand',
+                        ]"
+                        @click="geoRadiusMeters = radiusVal"
+                      >
+                        {{ radiusVal }}m
+                      </button>
+                    </div>
+
+                    <div class="relative w-full flex flex-col pt-2">
+                      <input
+                        id="editGeoRadiusMeters"
+                        v-model.number="geoRadiusMeters"
+                        type="range"
+                        min="20"
+                        max="1000"
+                        step="10"
+                        aria-label="Lockdown radius in meters"
+                        class="w-full accent-mint h-2 bg-plum/10 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div class="mt-2 flex justify-between font-body text-xs text-plum-muted">
+                        <span>20 meters</span>
+                        <span>1,000 meters (1km)</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </BaseCard>
-        </form>
-      </div>
+            </BaseCard>
+          </form>
+        </div>
 
-      <!-- Footer (Sticky) -->
-      <div
-        class="p-6 bg-white border-t border-plum-faint flex items-center justify-end gap-3 shrink-0"
-      >
-        <BaseButton type="button" variant="ghost" class="cursor-pointer" @click="$emit('close')">
-          Cancel
-        </BaseButton>
-        <BaseButton
-          type="submit"
-          form="settings-form"
-          variant="primary"
-          :is-loading="isLoading"
-          :disabled="!canSubmit"
-          class="cursor-pointer"
+        <!-- Footer (Sticky) -->
+        <div
+          v-if="meta.dirty"
+          class="p-6 bg-white border-t border-plum-faint flex items-center justify-end gap-3 shrink-0"
         >
-          <div class="flex items-center gap-2">
-            <SpinnerLoadingIcon v-if="isLoading" class="h-4 w-4 animate-spin" />
-            <span>Save Changes</span>
-          </div>
-        </BaseButton>
+          <BaseButton type="button" variant="ghost" class="cursor-pointer" @click="$emit('close')">
+            Cancel
+          </BaseButton>
+          <BaseButton
+            type="submit"
+            form="settings-form"
+            variant="primary"
+            :is-loading="isLoading"
+            :disabled="!canSubmit"
+            class="cursor-pointer"
+          >
+            <div class="flex items-center gap-2">
+              <SpinnerLoadingIcon v-if="isLoading" class="h-4 w-4 animate-spin" />
+              <span>Save Changes</span>
+            </div>
+          </BaseButton>
+        </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>

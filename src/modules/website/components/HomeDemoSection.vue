@@ -99,8 +99,10 @@ const exportHovered = ref(false)
             <!-- Right: Interactive demo card -->
             <BaseCard
               :class="[
-                'flex flex-col bg-white shadow-2xl rounded-[40px] border-plum-faint overflow-hidden relative',
-                activeTab === 'branding' ? 'p-0' : 'aspect-square justify-center p-8',
+                'flex flex-col bg-white shadow-2xl rounded-[40px] border-plum-faint overflow-hidden relative w-full',
+                activeTab === 'branding'
+                  ? 'p-0'
+                  : 'aspect-auto lg:aspect-square justify-center p-6 sm:p-8 max-w-md mx-auto lg:max-w-none',
               ]"
             >
               <!-- ── REAL-TIME SYNC ── -->
@@ -119,7 +121,7 @@ const exportHovered = ref(false)
                   v-for="(g, i) in guests"
                   :key="g.ticket"
                   :class="[
-                    'relative flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-500 cursor-pointer select-none',
+                    'relative flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-500 cursor-pointer select-none w-full text-left',
                     calledGuest === i
                       ? 'bg-mint-light border-mint scale-[1.02] shadow-lg shadow-mint/20'
                       : i === 0

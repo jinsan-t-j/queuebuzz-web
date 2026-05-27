@@ -168,7 +168,10 @@ onBeforeMount(async () => {
   }
 
   if (queueRouteKey.value) {
-    await initializeQueue(queueRouteKey.value)
+    const success = await initializeQueue(queueRouteKey.value)
+    if (success) {
+      return
+    }
   }
 
   // If initialization failed with 404, don't show the prompt
