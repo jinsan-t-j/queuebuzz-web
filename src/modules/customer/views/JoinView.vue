@@ -170,6 +170,13 @@ onBeforeMount(async () => {
   if (queueRouteKey.value) {
     const success = await initializeQueue(queueRouteKey.value)
     if (success) {
+      if (queueStore.activeQueue?.status === 'PAUSED') {
+        return
+      }
+      if (!queueCodeInput.value) {
+        isCodePromptOpen.value = true
+        return
+      }
       return
     }
   }
