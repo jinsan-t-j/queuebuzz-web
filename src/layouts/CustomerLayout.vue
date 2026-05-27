@@ -23,12 +23,14 @@ const showMaintenanceBanner = import.meta.env.VITE_SHOW_MAINTENANCE_BANNER === '
     <CustomerNavbar />
 
     <!-- Centred mobile column -->
-    <main class="relative mx-auto w-full max-w-[430px] flex-1 px-0 overflow-x-hidden">
+    <main
+      class="relative mx-auto w-full max-w-[430px] flex-1 px-0 overflow-x-hidden flex flex-col justify-between"
+    >
       <!-- View content injected here — each view adds its own blobs -->
       <RouterView />
-    </main>
 
-    <!-- Footer -->
-    <CustomerFooter />
+      <!-- Footer -->
+      <CustomerFooter />
+    </main>
   </div>
 </template>

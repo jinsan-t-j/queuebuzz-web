@@ -22,11 +22,19 @@ export const useNotificationStore = defineStore('notification', {
 
   actions: {
     addNotification(payload: Omit<AppNotification, 'id' | 'createdAt' | 'isRead'>) {
+      if (!Array.isArray(this.history)) {
+        this.history = []
+      }
+      if (!Array.isArray(this.notifications)) {
+        this.notifications = []
+      }
+
       const dedupeKey = payload.dedupeKey
       if (dedupeKey) {
         const recentMatch = this.history.find(
           (notification) =>
-            notification.dedupeKey === dedupeKey && Date.now() - notification.createdAt < 4000,
+            notification.dedupeKey === dedupeKey &&
+            Date.now() - Number(notification.createdAt) < 4000,
         )
 
         if (recentMatch) {
@@ -74,5 +82,7 @@ export const useNotificationStore = defineStore('notification', {
       this.history = []
     },
   },
-  persist: true,
+  persist: {
+    pick: ['history'],
+  },
 })

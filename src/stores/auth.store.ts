@@ -9,7 +9,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null as AuthUser | null,
     isHydrated: false,
-    activeGuestQueueId: null as string | null,
+    anonymousQueueId: null as string | null,
     error: null as Error | null,
   }),
 
@@ -21,11 +21,11 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     setUser(userData: AuthUser) {
       this.user = userData
-      this.activeGuestQueueId = null
+      this.anonymousQueueId = null
     },
 
-    setGuestSession(queueId: string | null) {
-      this.activeGuestQueueId = queueId
+    setAnonymousHostSession(queueId: string | null) {
+      this.anonymousQueueId = queueId
     },
 
     async logout() {
@@ -50,12 +50,12 @@ export const useAuthStore = defineStore('auth', {
 
     clearSession() {
       this.user = null
-      this.activeGuestQueueId = null
+      this.anonymousQueueId = null
       // We keep isHydrated = true because we know the session is empty
       this.isHydrated = true
     },
   },
   persist: {
-    pick: ['user', 'activeGuestQueueId'],
+    pick: ['user', 'anonymousQueueId'],
   },
 })
