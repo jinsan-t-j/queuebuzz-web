@@ -58,4 +58,46 @@ test.describe('Authentication', () => {
     await expect(logoLink).toBeVisible()
     await expect(logoLink).toContainText('QueueBuzz')
   })
+
+  test('should show, dismiss, and restore queue claim context from query parameter', async ({
+    page,
+    mockApi,
+  }) => {
+    // Mock the queue details for the claim_queue_id param
+    await mockApi('/queue/p/claim-123/live', {
+      id: 'claim-123',
+      name: 'Chai Point Mumbai',
+    })
+
+    // Navigate to login with claim_queue_id query param
+    await page.goto('/login-or-signup?claim_queue_id=claim-123')
+
+    // 1. Verify Claim Context Chip is visible
+    const chip = page.getByText('Claiming Chai Point Mumbai — log in to continue')
+    await expect(chip).toBeVisible()
+
+    // 2. Click dismiss button on the chip
+    const dismissBtn = page.getByRole('button', { name: 'Dismiss claim' })
+    await expect(dismissBtn).toBeVisible()
+    await dismissBtn.click()
+
+    // 3. Verify Chip is removed and claim_queue_id query param is removed from URL
+    await expect(chip).not.toBeVisible()
+    await expect(page).toHaveURL(/^(?!.*claim_queue_id=).*$/)
+
+    // 4. Verify "Restore Claim" prompt is visible
+    const restorePrompt = page.getByText('Not claiming "Chai Point Mumbai" anymore?')
+    await expect(restorePrompt).toBeVisible()
+
+    const restoreBtn = page.getByRole('button', { name: 'Add queue claim back' })
+    await expect(restoreBtn).toBeVisible()
+
+    // 5. Click "Restore Claim" button
+    await restoreBtn.click()
+
+    // 6. Verify URL has the query param again and Chip is restored
+    await expect(page).toHaveURL(/claim_queue_id=claim-123/)
+    await expect(chip).toBeVisible()
+    await expect(restorePrompt).not.toBeVisible()
+  })
 })

@@ -54,7 +54,7 @@ const {
 } = useWebsiteData()
 
 onMounted(async () => {
-  if (authStore.isHydrated) {
+  if (authStore.user || authStore.anonymousQueueId) {
     try {
       await queueStore.fetchActiveQueue({ skipLogout: true })
     } catch {

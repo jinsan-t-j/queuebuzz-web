@@ -3,19 +3,35 @@
  * @component LoginView
  * @description Simplified login page.
  */
-import { defineAsyncComponent } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, defineAsyncComponent } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import Logo from '@/assets/icons/logo.svg?component'
 import LoginForm from '@/modules/app/auth/components/LoginForm.vue'
 
 const route = useRoute()
+const router = useRouter()
 
-const hasClaimParam = !!route.query.claim_queue_id
+const claimQueueId = computed(() => route.query.claim_queue_id as string | undefined)
+const hasClaimParam = computed(() => !!claimQueueId.value)
+
+const dismissedQueue = ref<{ id: string; name: string } | null>(null)
 
 const ClaimContextChip = defineAsyncComponent(
   () => import('@/modules/app/auth/components/ClaimContextChip.vue'),
 )
+
+function handleDismissClaim(queueInfo: { id: string; name: string }) {
+  dismissedQueue.value = queueInfo
+  router.replace({ query: { ...route.query, claim_queue_id: undefined } })
+}
+
+function handleRestoreClaim() {
+  if (dismissedQueue.value) {
+    router.replace({ query: { ...route.query, claim_queue_id: dismissedQueue.value.id } })
+    dismissedQueue.value = null
+  }
+}
 </script>
 
 <template>
@@ -28,7 +44,7 @@ const ClaimContextChip = defineAsyncComponent(
       </span>
     </router-link>
 
-    <ClaimContextChip v-if="hasClaimParam" />
+    <ClaimContextChip v-if="hasClaimParam" @close="handleDismissClaim" />
 
     <div
       class="w-full max-w-[440px] bg-white rounded-[24px] sm:rounded-[32px] p-6 sm:p-10 shadow-[0_8px_40px_rgba(26,10,46,0.06)]"
@@ -44,6 +60,42 @@ const ClaimContextChip = defineAsyncComponent(
 
       <LoginForm />
     </div>
+
+    <!-- Restore Claim Prompt -->
+    <Transition
+      enter-active-class="transition-all duration-300 ease-out"
+      enter-from-class="opacity-0 translate-y-2 scale-95"
+      enter-to-class="opacity-100 translate-y-0 scale-100"
+      leave-active-class="transition-all duration-200 ease-in"
+      leave-from-class="opacity-100 translate-y-0 scale-100"
+      leave-to-class="opacity-0 translate-y-2 scale-95"
+    >
+      <div
+        v-if="dismissedQueue"
+        class="mt-6 flex flex-col items-center gap-2 px-5 py-4 rounded-3xl bg-white border border-plum-faint shadow-[0_4px_24px_rgba(26,10,46,0.04)] max-w-[440px] w-full text-center"
+      >
+        <p class="font-body text-sm text-plum-muted">
+          Not claiming
+          <span class="font-semibold text-plum">"{{ dismissedQueue.name }}"</span> anymore?
+        </p>
+        <button
+          type="button"
+          class="font-body text-xs font-semibold text-mint hover:underline flex items-center gap-1.5 focus:outline-none cursor-pointer"
+          @click="handleRestoreClaim"
+        >
+          <svg
+            class="h-3.5 w-3.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          Add queue claim back
+        </button>
+      </div>
+    </Transition>
 
     <!-- Legal footer -->
     <div class="mt-12 text-center max-w-xs">

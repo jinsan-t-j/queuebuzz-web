@@ -9,10 +9,20 @@ import { useRoute } from 'vue-router'
 
 import { getLiveQueueById } from '@/modules/app/queue/actions/queue.action'
 
+const emit = defineEmits<{
+  (e: 'close', payload: { id: string; name: string }): void
+}>()
+
 const route = useRoute()
 
 const claimQueueId = computed(() => route.query.claim_queue_id as string | undefined)
 const claimQueueName = ref<string | null>(null)
+
+function handleClose() {
+  if (claimQueueId.value && claimQueueName.value) {
+    emit('close', { id: claimQueueId.value, name: claimQueueName.value })
+  }
+}
 
 onMounted(async () => {
   if (claimQueueId.value) {
@@ -54,6 +64,22 @@ onMounted(async () => {
       <p class="font-body text-sm text-plum">
         Claiming <span class="font-semibold">{{ claimQueueName }}</span> — log in to continue
       </p>
+      <button
+        type="button"
+        class="ml-2 -mr-1 p-1 text-plum/60 hover:text-plum hover:bg-plum-faint/30 rounded-full transition-colors focus:outline-none flex items-center justify-center cursor-pointer"
+        aria-label="Dismiss claim"
+        @click="handleClose"
+      >
+        <svg
+          class="h-3.5 w-3.5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   </Transition>
 </template>
