@@ -14,7 +14,12 @@ import LocationTroubleshooter from '@/components/common/LocationTroubleshooter.v
 import { useToast } from '@/composables/useToast'
 import { APP_BASE_URL } from '@/config/api.constants'
 import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
-import { checkSlugAvailability, createQueue } from '@/modules/app/queue/actions/queue.action'
+import {
+  checkSlugAvailability,
+  createQueue,
+  terminateQueue,
+} from '@/modules/app/queue/actions/queue.action'
+import ActiveQueueConflictModal from '@/modules/app/queue/components/ActiveQueueConflictModal.vue'
 import LocationVerifiedCard from '@/modules/app/queue/components/LocationVerifiedCard.vue'
 import MapPreviewCard from '@/modules/app/queue/components/MapPreviewCard.vue'
 import { SLUG_REGEX } from '@/modules/app/queue/utils/validation'
@@ -245,39 +250,113 @@ onUnmounted(() => {
   destroyLeafletMap()
 })
 
+const showConflictModal = ref(false)
+const conflictingQueueId = ref('')
+
+interface FormValues {
+  queueName: string | null
+  serviceTime: number
+  slug: string | null
+  allowPartyJoining: boolean
+  maxPartySize: number
+  manualPositioning: boolean
+  collectEmails: boolean
+  isGeoLocked: boolean
+  latitude: number | null
+  longitude: number | null
+  geoRadiusMeters: number
+}
+
+const pendingValues = ref<FormValues | null>(null)
+
+async function handleResume() {
+  showConflictModal.value = false
+  if (props.role === 'guest') {
+    router.push({
+      name: 'guest-host-live-queue',
+      params: { id: conflictingQueueId.value },
+    })
+  } else {
+    router.push({ name: 'dashboard' })
+  }
+}
+
+async function submitQueueCreation(formValues: FormValues) {
+  const payload = {
+    name: formValues.queueName || 'Main Queue',
+    avgServiceMins: Number(formValues.serviceTime),
+    slug: formValues.slug || undefined,
+    allowPartyJoining: formValues.allowPartyJoining,
+    maxPartySize: formValues.allowPartyJoining ? Number(formValues.maxPartySize) : 1,
+    manualPositioning: formValues.manualPositioning,
+    collectEmails: formValues.collectEmails,
+    isGeoLocked: formValues.isGeoLocked,
+    latitude: formValues.latitude || undefined,
+    longitude: formValues.longitude || undefined,
+    geoRadiusMeters: formValues.isGeoLocked ? Number(formValues.geoRadiusMeters) : undefined,
+  }
+  const queue = await createQueue(payload)
+  if (queue) {
+    queueStore.setActiveQueue(queue)
+    if (props.role === 'guest') {
+      authStore.setAnonymousHostSession(queue.id)
+    }
+    useDashboardStore().setDirty()
+    return queue
+  }
+  return null
+}
+
+async function handleForceCreate() {
+  showConflictModal.value = false
+  isSubmitting.value = true
+  try {
+    await terminateQueue(conflictingQueueId.value)
+    queueStore.clearQueue()
+    if (pendingValues.value) {
+      const queue = await submitQueueCreation(pendingValues.value)
+      if (queue) {
+        if (props.role === 'guest') {
+          router.push({
+            name: 'guest-host-live-queue',
+            params: { id: queue.id },
+          })
+        } else {
+          emit('queue-created', queue)
+        }
+      }
+    }
+  } catch (err: unknown) {
+    const error = err as { response?: { data?: { error?: string } }; message?: string }
+    const msg = error.response?.data?.error || error.message || 'Something went wrong'
+    showToast(msg, { type: 'error' })
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
 const onSubmit = handleSubmit(async (values) => {
   if (errors.value.slug || isCheckingSlug.value || isSubmitting.value) return
 
   isSubmitting.value = true
   try {
-    const payload = {
-      name: values.queueName,
-      avgServiceMins: Number(values.serviceTime),
-      slug: values.slug,
-      allowPartyJoining: values.allowPartyJoining,
-      maxPartySize: values.allowPartyJoining ? Number(values.maxPartySize) : 1,
-      manualPositioning: values.manualPositioning,
-      collectEmails: values.collectEmails,
-      isGeoLocked: values.isGeoLocked,
-      latitude: values.latitude || undefined,
-      longitude: values.longitude || undefined,
-      geoRadiusMeters: values.isGeoLocked ? Number(values.geoRadiusMeters) : undefined,
-    }
-    const queue = await createQueue(payload)
+    const queue = await submitQueueCreation(values as FormValues)
     if (queue) {
-      queueStore.setActiveQueue(queue)
-
-      if (props.role === 'guest') {
-        authStore.setAnonymousHostSession(queue.id)
-      }
-
-      useDashboardStore().setDirty()
       emit('queue-created', queue)
     }
-  } catch (err) {
-    const error = err as { response?: { data?: { error?: string } }; message?: string }
-    const msg = error.response?.data?.error || error.message || 'Something went wrong'
-    showToast(msg, { type: 'error' })
+  } catch (err: unknown) {
+    const error = err as {
+      response?: { data?: { error?: string; code?: string; queue_id?: string } }
+      message?: string
+    }
+    if (error.response?.data?.code === 'ACTIVE_QUEUE_EXISTS' && error.response?.data?.queue_id) {
+      pendingValues.value = values as FormValues
+      conflictingQueueId.value = error.response.data.queue_id
+      showConflictModal.value = true
+    } else {
+      const msg = error.response?.data?.error || error.message || 'Something went wrong'
+      showToast(msg, { type: 'error' })
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -700,4 +779,13 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
       </router-link>
     </p>
   </form>
+
+  <!-- Active Queue Conflict Resolution Modal -->
+  <ActiveQueueConflictModal
+    :is-open="showConflictModal"
+    :queue-id="conflictingQueueId"
+    @cancel="showConflictModal = false"
+    @confirm-resume="handleResume"
+    @confirm-terminate="handleForceCreate"
+  />
 </template>
