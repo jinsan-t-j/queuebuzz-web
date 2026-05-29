@@ -10,7 +10,7 @@
  * @prop {Array} chartLabels - Labels for the activity bar chart.
  * @prop {Array} chartBars - Data values for the activity bar chart.
  */
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 
 import TrendUpIcon from '@/assets/icons/trend-up.svg?component'
 
@@ -22,11 +22,15 @@ interface Props {
   chartBars: number[]
   trendDirection?: 'up' | 'down' | 'flat'
   viewType?: 'day' | 'week'
+  createdAt?: string
+  expiresAt?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   trendDirection: 'up',
   viewType: 'day',
+  createdAt: '',
+  expiresAt: '',
 })
 
 const emit = defineEmits<{
@@ -35,6 +39,23 @@ const emit = defineEmits<{
 
 const maxBarValue = computed(() => Math.max(1, ...props.chartBars))
 const statsLabel = computed(() => (props.viewType === 'week' ? 'Served this Week' : 'Served Today'))
+
+const showWeekTab = computed(() => {
+  if (!props.expiresAt || !props.createdAt) return true
+  const durationMs = new Date(props.expiresAt).getTime() - new Date(props.createdAt).getTime()
+  const durationHours = durationMs / (1000 * 60 * 60)
+  return durationHours >= 24
+})
+
+watch(
+  showWeekTab,
+  (canShow) => {
+    if (!canShow && props.viewType === 'week') {
+      emit('update:viewType', 'day')
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
@@ -46,7 +67,10 @@ const statsLabel = computed(() => (props.viewType === 'week' ? 'Served this Week
       class="px-6 py-4 sm:px-8 sm:py-6 border-b border-plum/5 sm:border-none flex items-center justify-between"
     >
       <h3 class="font-display text-lg sm:text-xl font-bold text-plum">Queue Analysis</h3>
-      <div class="flex items-center gap-1 bg-sand p-1 rounded-xl border border-plum-faint">
+      <div
+        v-if="showWeekTab"
+        class="flex items-center gap-1 bg-sand p-1 rounded-xl border border-plum-faint"
+      >
         <button
           :class="[
             'px-3 py-1 text-xs font-semibold rounded-lg transition-colors font-body cursor-pointer',

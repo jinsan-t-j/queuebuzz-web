@@ -380,6 +380,8 @@ function openLiveScreen() {
             :completion-rate="completionRatePercent"
             :chart-labels="chartLabels"
             :chart-bars="chartBars"
+            :created-at="activeQueue?.createdAt"
+            :expires-at="activeQueue?.expiresAt"
           />
         </div>
       </div>
