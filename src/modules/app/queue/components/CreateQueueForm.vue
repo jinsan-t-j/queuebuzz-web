@@ -297,7 +297,6 @@ async function submitQueueCreation(formValues: FormValues) {
   }
   const queue = await createQueue(payload)
   if (queue) {
-    queueStore.setActiveQueue(queue)
     if (props.role === 'guest') {
       authStore.setAnonymousHostSession(queue.id)
     }
@@ -317,12 +316,14 @@ async function handleForceCreate() {
       const queue = await submitQueueCreation(pendingValues.value)
       if (queue) {
         if (props.role === 'guest') {
+          queueStore.setActiveQueue(queue)
           router.push({
             name: 'guest-host-live-queue',
             params: { id: queue.id },
           })
         } else {
           emit('queue-created', queue)
+          queueStore.setActiveQueue(queue)
         }
       }
     }
@@ -343,6 +344,7 @@ const onSubmit = handleSubmit(async (values) => {
     const queue = await submitQueueCreation(values as FormValues)
     if (queue) {
       emit('queue-created', queue)
+      queueStore.setActiveQueue(queue)
     }
   } catch (err: unknown) {
     const error = err as {
