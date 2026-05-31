@@ -9,21 +9,44 @@ import { storeToRefs } from 'pinia'
 import { onMounted, computed, defineAsyncComponent } from 'vue'
 
 import seoConfig from '@/config/seo.constants.json'
-import HomeCTA from '@/modules/website/components/HomeCTA.vue'
-import HomeDemoSection from '@/modules/website/components/HomeDemoSection.vue'
-import HomeFaqSection from '@/modules/website/components/HomeFaqSection.vue'
-import HomeFeaturesSection from '@/modules/website/components/HomeFeaturesSection.vue'
+import ActiveWaitingBanner from '@/modules/customer/components/ActiveWaitingBanner.vue'
 import HomeHeroSection from '@/modules/website/components/HomeHeroSection.vue'
-import HomeHowItWorksSection from '@/modules/website/components/HomeHowItWorksSection.vue'
-import HomeImpactSection from '@/modules/website/components/HomeImpactSection.vue'
-import HomeOsStrip from '@/modules/website/components/HomeOsStrip.vue'
-import HomeTestimonials from '@/modules/website/components/HomeTestimonials.vue'
-import HomeTransformationSection from '@/modules/website/components/HomeTransformationSection.vue'
-import HomeUseCasesSection from '@/modules/website/components/HomeUseCasesSection.vue'
-import PwaLauncher from '@/modules/website/components/PwaLauncher.vue'
 import { useWebsiteData } from '@/modules/website/composables/useWebsiteData'
 import { useAuthStore } from '@/stores/auth.store'
 import { useQueueStore } from '@/stores/queue.store'
+
+// Lazy-load below-the-fold non-critical components to optimize initial bundle size & LCP
+const HomeOsStrip = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeOsStrip.vue'),
+)
+const HomeFeaturesSection = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeFeaturesSection.vue'),
+)
+const HomeHowItWorksSection = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeHowItWorksSection.vue'),
+)
+const HomeDemoSection = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeDemoSection.vue'),
+)
+const HomeUseCasesSection = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeUseCasesSection.vue'),
+)
+const HomeTransformationSection = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeTransformationSection.vue'),
+)
+const HomeImpactSection = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeImpactSection.vue'),
+)
+const HomeFaqSection = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeFaqSection.vue'),
+)
+const HomeTestimonials = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeTestimonials.vue'),
+)
+const HomeCTA = defineAsyncComponent(() => import('@/modules/website/components/HomeCTA.vue'))
+const PwaLauncher = defineAsyncComponent(
+  () => import('@/modules/website/components/PwaLauncher.vue'),
+)
 
 useSeoMeta(seoConfig['/'])
 
@@ -84,13 +107,19 @@ const resumeLink = computed(() => {
 
   <div v-else class="min-h-screen bg-sand text-plum selection:bg-mint/30 overflow-x-hidden">
     <!-- Floating Orbs Background (Global Interactive Parallax) -->
-    <div class="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
+    <div
+      class="fixed inset-0 pointer-events-none z-0"
+      style="overflow-anchor: none"
+      aria-hidden="true"
+    >
       <div
         class="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-mint/5 rounded-full blur-[120px] animate-blob transition-transform duration-1000 ease-out"
+        style="will-change: transform"
         :style="{ transform: `translateY(${scrollY * 0.04}px)` }"
       />
       <div
         class="absolute bottom-[-5%] left-[-5%] w-[600px] h-[600px] bg-plum/5 rounded-full blur-[120px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
+        style="will-change: transform"
         :style="{ transform: `translateY(${scrollY * -0.06}px)` }"
       />
     </div>
@@ -103,10 +132,18 @@ const resumeLink = computed(() => {
       :formatted-started-at="formattedStartedAt"
     />
 
+    <!-- Active Waiting Banner for Customers -->
+    <ActiveWaitingBanner />
+
     <!-- Holi Background Atmosphere (Fixed Interactive Parallax) -->
-    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+    <div
+      class="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+      style="overflow-anchor: none"
+      aria-hidden="true"
+    >
       <div
         class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob transition-transform duration-700 ease-out"
+        style="will-change: transform"
         :style="{
           clipPath: 'polygon(15% 0, 100% 10%, 85% 95%, 0 80%)',
           transform: `translateY(${scrollY * 0.08}px)`,
@@ -114,6 +151,7 @@ const resumeLink = computed(() => {
       />
       <div
         class="absolute bottom-[-5%] right-[-10%] w-[60%] h-[50%] bg-blue-500/5 blur-[140px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
+        style="will-change: transform"
         :style="{
           clipPath: 'polygon(25% 15%, 90% 0, 100% 85%, 10% 100%)',
           transform: `translateY(${scrollY * -0.12}px)`,
@@ -123,6 +161,7 @@ const resumeLink = computed(() => {
 
     <!-- Sections -->
     <HomeHeroSection
+      id="hero"
       :hero-badge="HERO_DATA.badge"
       :scroll-y="scrollY"
       :is-visible="isVisible('hero')"
@@ -131,9 +170,9 @@ const resumeLink = computed(() => {
 
     <HomeOsStrip :scroll-y="scrollY" />
 
-    <HomeFeaturesSection :is-visible="isVisible('features')" :scroll-y="scrollY" />
+    <HomeFeaturesSection id="features" :is-visible="isVisible('features')" :scroll-y="scrollY" />
 
-    <HomeHowItWorksSection :is-visible="isVisible('how-it-works')" />
+    <HomeHowItWorksSection id="how-it-works" :is-visible="isVisible('how-it-works')" />
 
     <HomeDemoSection
       v-model:active-tab="activeTab"
@@ -150,6 +189,7 @@ const resumeLink = computed(() => {
     />
 
     <HomeTransformationSection
+      id="comparison"
       :upgrade-data="UPGRADE_DATA"
       :is-visible="isVisible('comparison')"
       :scroll-y="scrollY"

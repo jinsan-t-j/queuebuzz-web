@@ -202,6 +202,8 @@ export function useWebsiteData() {
     { chaos: 'Blind Waiting', calm: 'Live Tracking', icon: BarChart3, delay: '300ms' },
   ]
 
+  const mutationObserver = ref<MutationObserver | null>(null)
+
   // --- STATE ---
   const testimonials = ref([])
   const isPwa = ref(false)
@@ -285,10 +287,17 @@ export function useWebsiteData() {
 
     updateItemsPerView()
     globalThis.addEventListener('resize', updateItemsPerView)
+    let ticked = false
     globalThis.addEventListener(
       'scroll',
       () => {
-        scrollY.value = globalThis.scrollY
+        if (!ticked) {
+          globalThis.requestAnimationFrame(() => {
+            scrollY.value = globalThis.scrollY
+            ticked = false
+          })
+          ticked = true
+        }
       },
       { passive: true },
     )
@@ -306,8 +315,17 @@ export function useWebsiteData() {
       { threshold: 0.1 },
     )
 
-    // Observe already present sections
-    document.querySelectorAll('section[id]').forEach((s) => observer.value?.observe(s))
+    // Observe initially present sections
+    const observeSections = () => {
+      document.querySelectorAll('section[id]').forEach((s) => observer.value?.observe(s))
+    }
+    observeSections()
+
+    // MutationObserver to automatically discover and observe asynchronously resolved lazy components
+    mutationObserver.value = new MutationObserver(() => {
+      observeSections()
+    })
+    mutationObserver.value.observe(document.body, { childList: true, subtree: true })
 
     testimonials.value = await fetchTestimonials()
   })
@@ -317,6 +335,7 @@ export function useWebsiteData() {
       globalThis.removeEventListener('resize', updateItemsPerView)
     }
     observer.value?.disconnect()
+    mutationObserver.value?.disconnect()
   })
 
   return {

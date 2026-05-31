@@ -40,10 +40,10 @@ onUnmounted(() => {
   >
     <div class="mx-auto flex h-14 max-w-[430px] items-center px-5">
       <!-- Wordmark -->
-      <div class="flex items-center gap-1">
+      <router-link to="/" class="flex items-center gap-1 cursor-pointer">
         <Logo class="h-7 w-7 transition-transform duration-500 hover:rotate-12" />
         <span class="font-display text-lg font-bold tracking-tight text-plum">ueueBuzz</span>
-      </div>
+      </router-link>
     </div>
   </header>
 </template>

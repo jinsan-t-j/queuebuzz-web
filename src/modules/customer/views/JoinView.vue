@@ -11,7 +11,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
-import JoinQueueForm from '@/modules/customer/components/JoinQueueForm.vue'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import type { JoinQueueFormPayload, JoinQueuePayload } from '@/modules/customer/types'
 import { useQueueStore } from '@/stores/queue.store'
@@ -21,6 +20,9 @@ const ActiveSessionWarning = defineAsyncComponent(
 )
 const JoinCodeModal = defineAsyncComponent(
   () => import('@/modules/customer/components/JoinCodeModal.vue'),
+)
+const JoinQueueForm = defineAsyncComponent(
+  () => import('@/modules/customer/components/JoinQueueForm.vue'),
 )
 const QueueStateOverlay = defineAsyncComponent(
   () => import('@/modules/customer/components/QueueStateOverlay.vue'),

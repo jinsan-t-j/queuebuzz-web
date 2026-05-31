@@ -35,10 +35,6 @@ const isStandalone = ref(false)
 const showGuide = ref(false)
 const deferredPrompt = ref<BeforeInstallPromptEvent | null>(null)
 
-interface WindowWithMSStream extends Window {
-  MSStream?: unknown
-}
-
 function handleInstallPrompt(e: Event) {
   e.preventDefault()
   deferredPrompt.value = e as BeforeInstallPromptEvent
@@ -47,13 +43,13 @@ function handleInstallPrompt(e: Event) {
 onMounted(() => {
   // 1. Detect device & PWA state
   const ua = globalThis.navigator.userAgent
-  isMac.value = /Macintosh|Mac OS X/.test(ua)
-
-  const isApple =
-    /iPad|iPhone|iPod|Macintosh/.test(ua) && !(globalThis as unknown as WindowWithMSStream).MSStream
+  const isAppleMobile =
+    /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && globalThis.navigator.maxTouchPoints > 1)
+  const isMacOs = /Macintosh|Mac OS X/.test(ua) && !isAppleMobile
   const isSafari = /^((?!chrome|android).)*safari/i.test(ua)
 
-  isIOS.value = isApple && isSafari
+  isIOS.value = isAppleMobile && isSafari
+  isMac.value = isMacOs && isSafari
 
   isStandalone.value =
     globalThis.matchMedia('(display-mode: standalone)').matches ||
@@ -70,7 +66,10 @@ onMounted(() => {
   // - running in local development mode (for easy styling & inspection) OR
   // - on iOS/macOS Safari, not running in PWA mode, and not previously dismissed
   const isDev = import.meta.env.DEV
-  isVisible.value = props.forceShow || isDev || (isIOS.value && !isStandalone.value && !isDismissed)
+  isVisible.value =
+    props.forceShow ||
+    isDev ||
+    ((isIOS.value || isMac.value) && !isStandalone.value && !isDismissed)
 })
 
 onUnmounted(() => {

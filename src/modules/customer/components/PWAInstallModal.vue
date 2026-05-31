@@ -37,7 +37,9 @@ const emit = defineEmits<{
         </div>
         <div class="text-left">
           <h4 class="font-display text-sm font-bold text-plum">Install QueueBuzz</h4>
-          <p class="font-body text-[10px] text-plum-muted">iOS Instruction</p>
+          <p class="font-body text-[10px] text-plum-muted">
+            {{ isMac ? 'macOS Instruction' : 'iOS Instruction' }}
+          </p>
         </div>
       </div>
 
