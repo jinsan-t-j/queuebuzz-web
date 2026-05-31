@@ -8,6 +8,7 @@ import { ArrowRight, LogIn, Sparkles, Users } from 'lucide-vue-next'
 
 import Logo from '@/assets/icons/logo.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
+import ActiveWaitingBanner from '@/modules/customer/components/ActiveWaitingBanner.vue'
 </script>
 
 <template>
@@ -55,6 +56,9 @@ import BaseButton from '@/components/base/BaseButton.vue'
       <p class="font-body text-sm text-plum-soft max-w-xs mb-10 leading-relaxed">
         Stop managing crowds and start managing your business. Ditch the physical line with ease.
       </p>
+
+      <!-- Active Waiting Banner for Customers -->
+      <ActiveWaitingBanner />
 
       <!-- CTAs & Actions Stack -->
       <div class="w-full flex flex-col gap-4">

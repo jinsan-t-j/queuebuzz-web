@@ -20,6 +20,11 @@ const app = initializeApp(firebaseConfig)
 const messaging = getMessaging(app)
 
 onBackgroundMessage(messaging, (payload) => {
+  // If the message has a notification block, Firebase SDK automatically shows it.
+  // We return immediately to avoid creating a duplicate notification.
+  if (payload?.notification) {
+    return
+  }
   const { title, options } = getNotificationDetails(payload)
   globalThis.registration.showNotification(title, options)
 })
@@ -35,7 +40,7 @@ function getNotificationDetails(payload) {
       icon: payload?.notification?.image || '/icons/notification-icon.png',
       badge: '/icons/badge-icon.png',
       tag: payload?.data?.event || 'queue-buzz',
-      vibrate: [200, 100, 200],
+      vibrate: [300, 100, 300, 100, 300],
       data: { ...payload?.data, link },
     },
   }
@@ -53,7 +58,12 @@ globalThis.addEventListener('activate', (event) => {
 globalThis.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
-  const link = event.notification.data?.link || '/'
+  // Robust link extraction covering both manual and automatic notification payloads
+  const link =
+    event.notification.data?.link ||
+    event.notification.data?.FCM_MSG?.notification?.click_action ||
+    event.notification.data?.FCM_MSG?.data?.link ||
+    '/'
 
   event.waitUntil(
     globalThis.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {

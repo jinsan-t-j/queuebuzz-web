@@ -12,13 +12,15 @@
 
 import { AtSign, ChevronDown, Info, User } from 'lucide-vue-next'
 import { useField, useForm } from 'vee-validate'
-import { onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import * as yup from 'yup'
 
 import ArrowRightBoldIcon from '@/assets/icons/arrow-right-bold.svg?component'
 import ClockFilledIcon from '@/assets/icons/clock-filled.svg?component'
 import BaseToggle from '@/components/base/BaseToggle.vue'
+import { useToast } from '@/composables/useToast'
 import GeoPromptModal from '@/modules/customer/components/GeoPromptModal.vue'
+import NotificationBlockedWarning from '@/modules/customer/components/NotificationBlockedWarning.vue'
 import { useLocation } from '@/modules/customer/composables/useLocation'
 
 const props = defineProps({
@@ -36,6 +38,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['join-queue', 'go-to-join-by-code'])
+
+const { showToast } = useToast()
 
 const schema = yup.object({
   displayName: yup.string().max(30, 'Name too long').optional(),
@@ -69,9 +73,111 @@ const buzzEnabled = ref(
     : localStorage.getItem('queuebuzz_buzz_enabled') !== 'false',
 )
 
-watch(buzzEnabled, (val) => {
+const isIOS = ref(false)
+const isMac = ref(false)
+const isAndroid = ref(false)
+
+const notificationPermission = ref<'default' | 'granted' | 'denied' | 'unsupported'>(
+  typeof Notification === 'undefined'
+    ? 'unsupported'
+    : (Notification.permission as 'default' | 'granted' | 'denied'),
+)
+
+const updatePermission = () => {
+  if (typeof Notification === 'undefined') {
+    if (isIOS.value) {
+      notificationPermission.value = 'denied'
+    } else {
+      notificationPermission.value = 'unsupported'
+    }
+  } else {
+    notificationPermission.value = Notification.permission as 'default' | 'granted' | 'denied'
+  }
+}
+
+onMounted(() => {
+  const ua = globalThis.navigator?.userAgent || ''
+  const isAppleMobile =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (/Macintosh/.test(ua) && globalThis.navigator?.maxTouchPoints > 1)
+  const isMacOs = /Macintosh|Mac OS X/.test(ua) && !isAppleMobile
+  const isAndroidOs = /Android/i.test(ua)
+
+  isIOS.value = isAppleMobile
+  isMac.value = isMacOs
+  isAndroid.value = isAndroidOs
+
+  updatePermission()
+
+  if (typeof navigator !== 'undefined' && navigator.permissions && navigator.permissions.query) {
+    try {
+      navigator.permissions.query({ name: 'notifications' }).then((status) => {
+        status.onchange = () => {
+          updatePermission()
+        }
+      })
+    } catch {
+      // Ignore unsupported browsers
+    }
+  }
+})
+
+async function retriggerPermissionRequest() {
+  if (typeof Notification === 'undefined') return
+  try {
+    const permission = await Notification.requestPermission()
+    notificationPermission.value = permission as 'default' | 'granted' | 'denied'
+    if (permission === 'granted') {
+      buzzEnabled.value = true
+      showToast('Notifications enabled successfully!', { type: 'success' })
+    } else if (permission === 'denied') {
+      showToast('Permission still denied. Please check your browser settings.', { type: 'error' })
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Error re-requesting notification permission:', err)
+  }
+}
+
+watch(buzzEnabled, async (val) => {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('queuebuzz_buzz_enabled', String(val))
+  }
+
+  if (val) {
+    updatePermission()
+    if (notificationPermission.value === 'unsupported') {
+      showToast('Notifications are not supported in this browser.', { type: 'error' })
+      buzzEnabled.value = false
+      return
+    }
+
+    if (notificationPermission.value === 'denied') {
+      showToast(
+        'Notifications are blocked. Please enable them in your browser settings to receive Buzz alerts.',
+        { type: 'error' },
+      )
+    } else if (notificationPermission.value === 'default') {
+      try {
+        const permission = await Notification.requestPermission()
+        notificationPermission.value = permission as 'default' | 'granted' | 'denied'
+        if (permission === 'denied') {
+          showToast(
+            'Notifications are blocked. Please enable them in your browser settings to receive Buzz alerts.',
+            { type: 'error' },
+          )
+        } else if (permission !== 'granted') {
+          showToast(
+            'Notification permission denied. Please allow permissions to receive live buzz alerts, or toggle off "Buzz me when ready".',
+            { type: 'error' },
+          )
+          buzzEnabled.value = false
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error requesting permission:', err)
+      }
+    }
   }
 })
 const isEmailExpanded = ref(false)
@@ -104,11 +210,73 @@ function toggleEmail() {
 async function ensureNotificationPermission() {
   if (!('Notification' in globalThis)) return true
 
-  if (Notification.permission === 'granted') return true
-  if (Notification.permission === 'denied') return false
+  updatePermission()
+  if (notificationPermission.value === 'granted') return true
+  if (notificationPermission.value === 'denied') return false
 
-  const permission = await Notification.requestPermission()
-  return permission === 'granted'
+  try {
+    const permission = await Notification.requestPermission()
+    notificationPermission.value = permission as 'default' | 'granted' | 'denied'
+    return permission === 'granted'
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(err)
+    return false
+  }
+}
+
+/**
+ * Handle Notification Permission and Token Fetching
+ */
+async function prepareFCMToken(): Promise<string | null> {
+  updatePermission()
+  if (notificationPermission.value === 'unsupported') {
+    showToast(
+      'Notifications are not supported in this browser. Please turn off "Buzz me when ready" to join.',
+      { type: 'error' },
+    )
+    return null
+  }
+
+  if (notificationPermission.value === 'denied') {
+    showToast(
+      'Please allow notifications in your browser settings or turn off "Buzz me when ready".',
+      { type: 'error' },
+    )
+    return null
+  }
+
+  const hasPermission = await ensureNotificationPermission()
+  if (!hasPermission) {
+    showToast(
+      'Notification permission denied. Please allow notifications to receive buzz alerts, or disable "Buzz me when ready" to join.',
+      { type: 'error' },
+    )
+    return null
+  }
+
+  // Lazy import Firebase only when needed to optimize bundle and unused JS
+  try {
+    const { getFCMTokenDetails } = await import('@/lib/firebase')
+    const tokenResult = await getFCMTokenDetails()
+    const token = tokenResult.token
+    if (!token) {
+      showToast(
+        'Failed to initialize push notifications. Please try again or disable "Buzz me when ready".',
+        { type: 'error' },
+      )
+      return null
+    }
+    return token
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to import or fetch FCM token:', err)
+    showToast(
+      'Failed to initialize push notifications. Please try again or disable "Buzz me when ready".',
+      { type: 'error' },
+    )
+    return null
+  }
 }
 
 /**
@@ -120,21 +288,12 @@ async function captureLocationAndJoin() {
 
   showGeoPromptModal.value = false
 
-  let notificationEnabled = buzzEnabled.value
-  let fcmToken = null
+  const notificationEnabled = buzzEnabled.value
+  let fcmToken: string | null = null
 
   if (notificationEnabled) {
-    const hasPermission = await ensureNotificationPermission()
-    if (hasPermission) {
-      const { getFCMTokenDetails } = await import('@/lib/firebase')
-      const tokenResult = await getFCMTokenDetails()
-      fcmToken = tokenResult.token
-      if (!fcmToken) {
-        notificationEnabled = false
-      }
-    } else {
-      notificationEnabled = false
-    }
+    fcmToken = await prepareFCMToken()
+    if (!fcmToken) return
   }
 
   const payload = {
@@ -156,25 +315,12 @@ const handleJoin = handleSubmit(async (values) => {
     return
   }
 
-  let notificationEnabled = buzzEnabled.value
-  let fcmToken = null
+  const notificationEnabled = buzzEnabled.value
+  let fcmToken: string | null = null
 
   if (notificationEnabled) {
-    const hasPermission = await ensureNotificationPermission()
-    if (hasPermission) {
-      // Lazy import Firebase only when needed to optimize bundle and unused JS
-      const { getFCMTokenDetails } = await import('@/lib/firebase')
-      const tokenResult = await getFCMTokenDetails()
-      fcmToken = tokenResult.token
-
-      if (!fcmToken) {
-        notificationEnabled = false
-        // eslint-disable-next-line no-console
-        console.warn('Guest FCM token unavailable:', tokenResult.reason, tokenResult.detail)
-      }
-    } else {
-      notificationEnabled = false
-    }
+    fcmToken = await prepareFCMToken()
+    if (!fcmToken) return
   }
 
   const payload = {
@@ -364,6 +510,16 @@ onUnmounted(() => {
         <BaseToggle v-model="buzzEnabled" aria-label="Toggle haptic vibration buzz notifications" />
       </div>
     </div>
+
+    <!-- Notifications Blocked Warning Card Component -->
+    <NotificationBlockedWarning
+      v-if="buzzEnabled && notificationPermission === 'denied'"
+      :is-i-o-s="isIOS"
+      :is-mac="isMac"
+      :is-android="isAndroid"
+      @retrigger="retriggerPermissionRequest"
+      @buzz-off="buzzEnabled = false"
+    />
 
     <!-- Email input card (Prominent if mandatory, accordion if optional) -->
     <div v-if="collectEmails" class="mt-6 flex flex-col gap-4">

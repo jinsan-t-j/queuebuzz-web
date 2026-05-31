@@ -114,7 +114,7 @@ const otherServing = computed(() => {
 const joinUrl = computed(() => {
   if (!activeQueue.value) return ''
   const slugOrId = activeQueue.value.slug || activeQueue.value.id
-  return `${origin}/q/${slugOrId}/join`
+  return `${globalThis.location.origin}/q/${slugOrId}/join`
 })
 
 // Watch called state to play sound & flash
