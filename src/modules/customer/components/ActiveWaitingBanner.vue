@@ -10,6 +10,13 @@ import { storeToRefs } from 'pinia'
 import BaseCard from '@/components/base/BaseCard.vue'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 
+defineProps({
+  isFloating: {
+    type: Boolean,
+    default: false,
+  },
+})
+
 const customerStore = useCustomerStore()
 const { entry, position } = storeToRefs(customerStore)
 </script>
@@ -20,10 +27,17 @@ const { entry, position } = storeToRefs(customerStore)
     enter-from-class="opacity-0 translate-y-2"
     enter-to-class="opacity-100 translate-y-0"
   >
-    <div v-if="entry?.id" class="w-full max-w-md mx-auto z-15 px-4 mb-4 mt-2">
+    <div
+      v-if="entry?.id"
+      :class="[
+        isFloating
+          ? 'fixed bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 w-full max-w-md pointer-events-none'
+          : 'w-full max-w-md mx-auto z-15 px-4 mb-4 mt-2',
+      ]"
+    >
       <router-link
         :to="{ name: 'customer-waiting', params: { queueId: entry.queueId } }"
-        class="block group cursor-pointer"
+        :class="['block group cursor-pointer', isFloating ? 'pointer-events-auto' : '']"
       >
         <BaseCard
           class="relative overflow-hidden border border-mint bg-mint-light/45 p-4 shadow-[0_12px_40px_rgba(0,229,160,0.12)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_16px_48px_rgba(0,229,160,0.2)] active:scale-98"

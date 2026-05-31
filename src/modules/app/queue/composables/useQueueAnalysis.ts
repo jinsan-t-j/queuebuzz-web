@@ -19,16 +19,31 @@ function buildHourlyBoundaries(now: Date): { labels: string[]; boundaries: Date[
   return { labels, boundaries }
 }
 
-function buildWeeklyBoundaries(now: Date): { labels: string[]; boundaries: Date[] } {
+function buildWeeklyBoundaries(
+  now: Date,
+  createdAt?: Date,
+): { labels: string[]; boundaries: Date[] } {
   const labels: string[] = []
   const boundaries: Date[] = []
-  for (let i = 6; i >= 0; i--) {
+
+  let daysToShow = 7
+  if (createdAt && !Number.isNaN(createdAt.getTime())) {
+    const utcCreated = Date.UTC(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate())
+    const utcNow = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())
+    const diffDays = Math.floor((utcNow - utcCreated) / (1000 * 60 * 60 * 24)) + 1
+    daysToShow = Math.max(1, diffDays)
+  }
+
+  for (let i = daysToShow - 1; i >= 0; i--) {
     const d = new Date(now)
     d.setDate(now.getDate() - i)
     d.setHours(0, 0, 0, 0)
-    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
-    labels.push(dayName)
-    boundaries.push(d)
+    const dayOfWeek = d.getDay()
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
+      labels.push(dayName)
+      boundaries.push(d)
+    }
   }
   return { labels, boundaries }
 }
@@ -107,7 +122,7 @@ export function useQueueAnalysis() {
     const isWeekly = viewType.value === 'week'
     const now = new Date()
     const { labels, boundaries } = isWeekly
-      ? buildWeeklyBoundaries(now)
+      ? buildWeeklyBoundaries(now, queue.createdAt ? new Date(queue.createdAt) : undefined)
       : buildHourlyBoundaries(now)
     const bars = distributeIntoBuckets(servedEntries.value, boundaries, isWeekly)
 

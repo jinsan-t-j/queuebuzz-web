@@ -133,7 +133,7 @@ const resumeLink = computed(() => {
     />
 
     <!-- Active Waiting Banner for Customers -->
-    <ActiveWaitingBanner />
+    <ActiveWaitingBanner :is-floating="true" />
 
     <!-- Holi Background Atmosphere (Fixed Interactive Parallax) -->
     <div
