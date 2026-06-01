@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Layers, Locate } from 'lucide-vue-next'
+import { onBeforeUnmount } from 'vue'
 
 import SpinnerLoadingIcon from '@/assets/icons/spinner-loading.svg?component'
 
@@ -14,7 +15,11 @@ defineProps({
   },
 })
 
-defineEmits(['toggle-map-type', 'recapture'])
+const emit = defineEmits(['toggle-map-type', 'recapture', 'destroy'])
+
+onBeforeUnmount(() => {
+  emit('destroy')
+})
 </script>
 
 <template>

@@ -3,7 +3,6 @@
  * @component QueueStatusView
  * @description TV-friendly live queue dashboard for physical TV monitors.
  * Displays the current serving ticket and upcoming tickets in real-time.
- * Automatically hidden/replaced with a clean status message when ManualPositioning is enabled.
  */
 
 import {
@@ -174,8 +173,8 @@ function handleFullscreenChange() {
 onMounted(async () => {
   if (queueId.value) {
     const queue = await queueStore.fetchPublicStatus(queueId.value)
-    if (queue) {
-      queueStore.connectToPublicEvents(queueId.value)
+    if (queue && queue.queue?.id) {
+      queueStore.connectToPublicEvents(queue.queue.id)
     }
   }
 
@@ -234,27 +233,6 @@ onUnmounted(() => {
         <BaseButton variant="primary" @click="queueStore.fetchPublicStatus(queueId)">
           Try Again
         </BaseButton>
-      </div>
-    </div>
-
-    <!-- 3. MANUAL POSITIONING IS ACTIVE -->
-    <div
-      v-else-if="activeQueue?.manualPositioning"
-      class="flex flex-col items-center justify-center flex-grow z-10"
-    >
-      <div
-        class="bg-white border border-plum-faint rounded-3xl p-10 max-w-xl w-full shadow-[0_12px_50px_rgba(26,10,46,0.08)] flex flex-col items-center text-center gap-6"
-      >
-        <div
-          class="flex h-20 w-20 items-center justify-center rounded-3xl bg-sand shadow-xs border border-plum-faint"
-        >
-          <Tv class="h-10 w-10 text-plum-muted" />
-        </div>
-        <h1 class="font-display text-2xl font-bold text-plum">Status Dashboard Disabled</h1>
-        <p class="font-body text-sm text-plum-muted leading-relaxed">
-          This queue uses manual positioning. Ticket numbers are managed directly by the host and
-          are not projected on this screen.
-        </p>
       </div>
     </div>
 

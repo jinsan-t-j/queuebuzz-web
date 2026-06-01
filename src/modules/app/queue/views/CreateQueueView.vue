@@ -6,8 +6,8 @@
  * Uses v-if to fully unmount the form once the queue is live.
  */
 
-import { ref, defineAsyncComponent, onMounted, onUnmounted, computed, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import { useToast } from '@/composables/useToast'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
@@ -28,6 +28,7 @@ const { showToast } = useToast()
 
 const {
   activeQueue,
+  isLoading,
   initializeHostQueue,
   disposeLiveQueue,
   claimAnonymousQueue,
@@ -117,8 +118,17 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!-- Loading state to prevent form flickering on mount -->
+  <div
+    v-if="isLoading && !activeQueue"
+    class="flex flex-col items-center justify-center min-h-[60vh] gap-6"
+  >
+    <div class="h-16 w-16 rounded-full border-4 border-plum-faint border-t-mint animate-spin" />
+    <p class="font-display text-xl font-bold text-plum/60">Checking active queue...</p>
+  </div>
+
   <!-- ═══ Create form (unmounted once queue is live) ═══ -->
-  <div v-if="!activeQueue" class="mx-auto max-w-[680px] px-6 sm:px-0">
+  <div v-else-if="!activeQueue" class="mx-auto max-w-[680px] px-6 sm:px-0">
     <h1 class="font-display text-3xl sm:text-[40px] font-extrabold text-plum">
       Let's get started.
     </h1>
@@ -127,7 +137,7 @@ onUnmounted(() => {
   </div>
 
   <!-- ═══ Live queue dashboard ═══ -->
-  <LiveQueueView v-if="activeQueue" />
+  <LiveQueueView v-else />
 
   <!-- ═══ Success modal (shown once after creation) ═══ -->
   <InfoQueueModal
