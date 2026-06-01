@@ -671,7 +671,13 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
             class="mt-6 pt-6 border-t border-plum-faint animate-in fade-in slide-in-from-top-2 duration-300"
           >
             <!-- Location Troubleshooter / Warning Panel -->
-            <LocationTroubleshooter :geo-error="geoError" :accuracy="accuracy" class="mb-4" />
+            <LocationTroubleshooter
+              :geo-error="geoError"
+              :accuracy="accuracy"
+              :is-locating="isLocating"
+              class="mb-4"
+              @retry="recaptureLocation"
+            />
 
             <div
               v-if="isLocating && !latitude && !longitude"
@@ -697,6 +703,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
                 :is-locating="isLocating"
                 @toggle-map-type="toggleMapType"
                 @recapture="recaptureLocation"
+                @destroy="destroyLeafletMap"
               />
 
               <!-- Lockdown Radius Customization -->

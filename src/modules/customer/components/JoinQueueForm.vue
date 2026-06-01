@@ -12,7 +12,7 @@
 
 import { AtSign, ChevronDown, Info, User } from 'lucide-vue-next'
 import { useField, useForm } from 'vee-validate'
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as yup from 'yup'
 
 import ArrowRightBoldIcon from '@/assets/icons/arrow-right-bold.svg?component'
@@ -38,6 +38,10 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['join-queue', 'go-to-join-by-code'])
+
+const NotificationSetupGuide = defineAsyncComponent(
+  () => import('@/modules/customer/components/NotificationSetupGuide.vue'),
+)
 
 const { showToast } = useToast()
 
@@ -72,6 +76,8 @@ const buzzEnabled = ref(
     ? true
     : localStorage.getItem('queuebuzz_buzz_enabled') !== 'false',
 )
+
+const showSetupGuide = ref(false)
 
 const isIOS = ref(false)
 const isMac = ref(false)
@@ -157,6 +163,7 @@ watch(buzzEnabled, async (val) => {
         'Notifications are blocked. Please enable them in your browser settings to receive Buzz alerts.',
         { type: 'error' },
       )
+      showSetupGuide.value = true
     } else if (notificationPermission.value === 'default') {
       try {
         const permission = await Notification.requestPermission()
@@ -166,12 +173,14 @@ watch(buzzEnabled, async (val) => {
             'Notifications are blocked. Please enable them in your browser settings to receive Buzz alerts.',
             { type: 'error' },
           )
+          showSetupGuide.value = true
         } else if (permission !== 'granted') {
           showToast(
             'Notification permission denied. Please allow permissions to receive live buzz alerts, or toggle off "Buzz me when ready".',
             { type: 'error' },
           )
           buzzEnabled.value = false
+          showSetupGuide.value = true
         }
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -243,6 +252,7 @@ async function prepareFCMToken(): Promise<string | null> {
       'Please allow notifications in your browser settings or turn off "Buzz me when ready".',
       { type: 'error' },
     )
+    showSetupGuide.value = true
     return null
   }
 
@@ -252,6 +262,7 @@ async function prepareFCMToken(): Promise<string | null> {
       'Notification permission denied. Please allow notifications to receive buzz alerts, or disable "Buzz me when ready" to join.',
       { type: 'error' },
     )
+    showSetupGuide.value = true
     return null
   }
 
@@ -634,6 +645,13 @@ onUnmounted(() => {
         </p>
       </div>
     </div>
+    <!-- Compact Device-Specific Alerts Setup Guide (Before Submit) -->
+    <NotificationSetupGuide
+      v-if="showSetupGuide && buzzEnabled && notificationPermission !== 'granted'"
+      :is-i-o-s="isIOS"
+      :is-android="isAndroid"
+      :is-mac="isMac"
+    />
 
     <!-- Join CTA -->
     <button

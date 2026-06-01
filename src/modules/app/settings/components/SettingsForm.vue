@@ -129,6 +129,9 @@ const profileInitial = computed(() => {
 
 function onFieldChange() {
   isDirty.value = true
+  if (settingsStore.error) {
+    settingsStore.error = null
+  }
 }
 
 function readFileAsDataUrl(file: File): Promise<string> {
@@ -220,14 +223,27 @@ function handleCroppedImage(dataUrl: string) {
 
 async function handleSave() {
   saveAttempted.value = true
-  if (slugError.value) return
+  if (slugError.value || localPhoneError.value) return
   const formData = new FormData()
+
+  // Normalize phone number to E.164 before submitting
+  let formattedPhone = form.value.phone?.trim() || ''
+  if (formattedPhone) {
+    const normalized = formattedPhone.replace(/[\s-()]/g, '')
+    if (/^[6-9]\d{9}$/.test(normalized)) {
+      formattedPhone = `+91${normalized}`
+    } else if (/^91[6-9]\d{9}$/.test(normalized)) {
+      formattedPhone = `+${normalized}`
+    } else {
+      formattedPhone = normalized
+    }
+  }
 
   // 1. Basic Fields
   formData.append('name', form.value.name)
   formData.append('business_name', form.value.business_name)
   formData.append('address', form.value.address)
-  formData.append('phone', form.value.phone || '')
+  formData.append('phone', formattedPhone)
   formData.append('slug', form.value.slug)
 
   // 2. Settings (nested as JSON string)
@@ -320,6 +336,98 @@ const slugError = computed(() => {
   return ''
 })
 
+const nameError = computed(() => {
+  if (!error.value) return ''
+  const err = error.value.toLowerCase()
+  if (err.includes('name') && !err.includes('business') && !err.includes('queue')) {
+    return error.value
+  }
+  return ''
+})
+
+const localPhoneError = computed(() => {
+  const val = form.value.phone?.trim()
+  if (!val) return ''
+
+  // Normalize: remove spaces, hyphens, parens
+  const normalized = val.replace(/[\s-()]/g, '')
+
+  // E.164 pattern or standard 10-digit Indian mobile number
+  const is10Digit = /^[6-9]\d{9}$/.test(normalized)
+  const is10DigitWith91 = /^91[6-9]\d{9}$/.test(normalized)
+  const isE164 = /^\+[1-9]\d{6,14}$/.test(normalized)
+
+  if (!is10Digit && !is10DigitWith91 && !isE164) {
+    return 'Please enter a valid 10-digit mobile number or standard international format.'
+  }
+  return ''
+})
+
+const phoneError = computed(() => {
+  if (localPhoneError.value) return localPhoneError.value
+
+  if (!error.value) return ''
+  const err = error.value.toLowerCase()
+  if (err.includes('phone') || err.includes('mobile')) {
+    return error.value
+  }
+  return ''
+})
+
+const businessNameError = computed(() => {
+  if (!error.value) return ''
+  const err = error.value.toLowerCase()
+  if (err.includes('business_name') || err.includes('business name')) {
+    return error.value
+  }
+  return ''
+})
+
+const addressError = computed(() => {
+  if (!error.value) return ''
+  const err = error.value.toLowerCase()
+  if (err.includes('address')) {
+    return error.value
+  }
+  return ''
+})
+
+const queueNameError = computed(() => {
+  if (!error.value) return ''
+  const err = error.value.toLowerCase()
+  if (err.includes('queue_name') || err.includes('queue name') || err.includes('default queue')) {
+    return error.value
+  }
+  return ''
+})
+
+const customSlugError = computed(() => {
+  if (slugError.value) return slugError.value
+  if (!error.value) return ''
+  const err = error.value.toLowerCase()
+  if (
+    err.includes('slug') ||
+    err.includes('url') ||
+    err.includes('taken') ||
+    err.includes('reserved') ||
+    err.includes('active queue')
+  ) {
+    return error.value
+  }
+  return ''
+})
+
+const isFieldSpecificError = computed(() => {
+  return !!(
+    nameError.value ||
+    phoneError.value ||
+    businessNameError.value ||
+    addressError.value ||
+    queueNameError.value ||
+    customSlugError.value
+  )
+})
+
 const copiedTvSlug = ref(false)
 const copiedQueueSlug = ref(false)
 
@@ -378,6 +486,7 @@ onUnmounted(() => {
             v-model="form.name"
             label="Full Name"
             placeholder=""
+            :error="nameError"
             @update:model-value="onFieldChange"
           />
           <BaseInput
@@ -388,9 +497,10 @@ onUnmounted(() => {
           />
           <BaseInput
             v-model="form.phone"
-            type="number"
+            type="tel"
             label="Phone Number"
-            placeholder=""
+            placeholder="e.g. +91 98765 43210"
+            :error="phoneError"
             @update:model-value="onFieldChange"
           />
         </div>
@@ -609,6 +719,7 @@ onUnmounted(() => {
               label="Business Name"
               placeholder="e.g. Kalra Dental Clinic"
               :disabled="!canCustomBranding"
+              :error="businessNameError"
               @update:model-value="onFieldChange"
             />
             <BaseInput
@@ -616,6 +727,7 @@ onUnmounted(() => {
               label="Business Address"
               placeholder="e.g. 123, Park Avenue, Mumbai"
               :disabled="!canCustomBranding"
+              :error="addressError"
               @update:model-value="onFieldChange"
             />
           </div>
@@ -645,6 +757,7 @@ onUnmounted(() => {
             v-model="form.default_queue_name"
             label="Default Queue Name"
             placeholder="e.g. Consultation Room 1"
+            :error="queueNameError"
             @update:model-value="onFieldChange"
           />
 
@@ -671,7 +784,7 @@ onUnmounted(() => {
               v-model="form.slug"
               label="Custom URL Slug"
               placeholder="e.g. kalra-dental-clinic"
-              :error="slugError"
+              :error="customSlugError"
               @update:model-value="onFieldChange"
               @blur="slugTouched = true"
             />
@@ -787,7 +900,7 @@ onUnmounted(() => {
 
     <!-- Error State -->
     <div
-      v-if="error"
+      v-if="error && !isFieldSpecificError"
       class="rounded-2xl bg-danger/10 p-4 text-center font-body text-sm text-danger-dark"
     >
       {{ error }}
@@ -805,7 +918,7 @@ onUnmounted(() => {
       <SettingsActionBar
         v-if="isDirty"
         :is-saving="isSaving"
-        :is-disabled="!!slugError"
+        :is-disabled="!!slugError || !!localPhoneError"
         @discard="handleDiscard"
         @save="handleSave"
       />

@@ -393,8 +393,6 @@ export const useQueueStore = defineStore('queue', {
             this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
           } else if (e.status === 410) {
             this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
-          } else if (e.status === 429) {
-            this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
           }
 
           if (this.error) {
@@ -502,8 +500,6 @@ export const useQueueStore = defineStore('queue', {
             this.error = QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
           } else if (e.status === 410) {
             this.error = QUEUE_ERROR_REASONS.QUEUE_ENDED
-          } else if (e.status === 429) {
-            this.error = QUEUE_ERROR_REASONS.SESSION_EXPIRED
           }
 
           if (this.error) {
