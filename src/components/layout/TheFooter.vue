@@ -4,7 +4,12 @@
  * @description Public website footer with links and copyright.
  * Used once inside WebsiteLayout.
  */
-import { computed, ref, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+
+import InstagramIcon from '@/assets/icons/instagram.svg?component'
+import Logo from '@/assets/icons/logo.svg?component'
+import RedditIcon from '@/assets/icons/reddit.svg?component'
+import XIcon from '@/assets/icons/x.svg?component'
 
 const currentYear = computed(() => new Date().getFullYear())
 
@@ -142,6 +147,37 @@ onUnmounted(() => {
         <p class="font-body text-sm text-plum-soft">
           © {{ currentYear }} QueueBuzz. All rights reserved.
         </p>
+
+        <!-- Social Links -->
+        <div class="flex items-center gap-2">
+          <a
+            href="https://reddit.com/r/queuebuzz/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-plum-muted hover:text-plum transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
+            aria-label="Reddit"
+          >
+            <RedditIcon class="w-5 h-5" />
+          </a>
+          <a
+            href="https://instagram.com/queuebuzz"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-plum-muted hover:text-plum transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
+            aria-label="Instagram"
+          >
+            <InstagramIcon class="w-5 h-5" />
+          </a>
+          <a
+            href="https://x.com/queuebuzz"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-plum-muted hover:text-plum transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
+            aria-label="X (formerly Twitter)"
+          >
+            <XIcon class="w-4 h-4" />
+          </a>
+        </div>
       </div>
 
       <!-- Huge Animated Branding -->
@@ -149,19 +185,30 @@ onUnmounted(() => {
         ref="footerBrandingRef"
         class="mt-12 md:mt-20 flex justify-center overflow-visible py-8 md:py-16"
       >
-        <div class="flex gap-1 sm:gap-2 md:gap-4 flex-nowrap items-center justify-center">
-          <span
-            v-for="(char, i) in 'QueueBuzz'.split('')"
-            :key="i"
+        <div class="flex gap-3 sm:gap-4 md:gap-6 flex-nowrap items-center justify-center">
+          <Logo
             :class="[
-              'font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-black transition-all duration-500 hover:text-plum cursor-default inline-block leading-none',
+              'h-12 w-12 sm:h-[72px] sm:w-[72px] md:h-[96px] md:w-[96px] lg:h-[128px] lg:w-[128px] xl:h-[160px] xl:w-[160px] transition-transform duration-500 hover:rotate-12 cursor-pointer',
               isVisible ? 'animate-pop' : 'opacity-0',
-              i === 1 || i === 2 ? 'text-mint-dark' : 'text-plum',
             ]"
-            :style="{ animationDelay: `${i * 100}ms` }"
-          >
-            {{ char }}
-          </span>
+            :style="{ animationDelay: '0ms' }"
+          />
+          <div class="flex gap-1 sm:gap-2 md:gap-4 flex-nowrap items-center">
+            <span
+              v-for="(char, i) in 'ueueBuzz'.split('')"
+              :key="i"
+              :class="[
+                'font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-black transition-all duration-500 cursor-default inline-block leading-none',
+                isVisible ? 'animate-pop' : 'opacity-0',
+                i === 1 || i === 2 || i >= 5
+                  ? 'text-mint-dark hover:text-plum'
+                  : 'text-plum hover:text-mint-dark',
+              ]"
+              :style="{ animationDelay: `${(i + 1) * 100}ms` }"
+            >
+              {{ char }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
