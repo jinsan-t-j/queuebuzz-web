@@ -119,14 +119,58 @@ const droppedSkipped = computed(() => dashboardData.value?.droppedSkipped || [])
 const peakHours = computed(() => dashboardData.value?.peakHours || [])
 const quickSetup = computed(() => dashboardData.value?.quickSetup || { show: false, steps: [] })
 
+const returnRateTimeframe = ref('today')
+const droppedSkippedTimeframe = ref('today')
+const peakHoursTimeframe = ref('week')
+
+const filteredReturnRateChartData = computed(() => {
+  const data = returnRate.value?.chartData || []
+  if (returnRateTimeframe.value === 'today') {
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+    const todayDayName = daysOfWeek[new Date().getDay()]
+    return data.filter((d) => d.day === todayDayName)
+  }
+  return data
+})
+
+const filteredDroppedSkippedData = computed(() => {
+  const data = droppedSkipped.value || []
+  if (droppedSkippedTimeframe.value === 'today') {
+    const todayDayIdx = new Date().getDay()
+    return data.filter((d) => d.day === todayDayIdx)
+  }
+  return data
+})
+
+const filteredPeakHoursData = computed(() => {
+  const data = peakHours.value || []
+  if (peakHoursTimeframe.value === 'today') {
+    const todayDayIdx = new Date().getDay()
+    return data.filter((d) => d.day === todayDayIdx).map((d) => ({ hour: d.hour, value: d.value }))
+  } else {
+    const aggregated = new Map<string, number>()
+    data.forEach((d) => {
+      aggregated.set(d.hour, (aggregated.get(d.hour) || 0) + d.value)
+    })
+    const uniqueHours = Array.from(new Set(data.map((d) => d.hour)))
+    return uniqueHours.map((hour) => ({
+      hour,
+      value: aggregated.get(hour) || 0,
+    }))
+  }
+})
+
 const returnRateByQueue = computed(() => {
   const now = new Date()
-  const monday = new Date(now)
-  const day = now.getDay()
-  // Adjust to get Monday (1-6 for Mon-Sat, 0 for Sun)
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1)
-  monday.setDate(diff)
-  monday.setHours(0, 0, 0, 0)
+  const startLimit = new Date(now)
+  if (returnRateTimeframe.value === 'today') {
+    startLimit.setHours(0, 0, 0, 0)
+  } else {
+    const day = now.getDay()
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1)
+    startLimit.setDate(diff)
+    startLimit.setHours(0, 0, 0, 0)
+  }
 
   const existing = returnRate.value?.byQueue || []
   const existingNames = new Set(existing.map((e) => e.label))
@@ -137,11 +181,11 @@ const returnRateByQueue = computed(() => {
     names.add(activeQueue.value.queueName)
   }
 
-  // Only include names from sessions that happened this week
+  // Only include names from sessions that happened within the timeframe limit
   recentSessions.value?.forEach((s) => {
     if (s.name && s.date) {
       const sessionDate = new Date(s.date)
-      if (sessionDate >= monday) {
+      if (sessionDate >= startLimit) {
         names.add(s.name)
       }
     }
@@ -379,15 +423,19 @@ onBeforeUnmount(() => {
             <!-- Analytical Widgets Mini-Grid -->
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <DashboardReturnRate
-                :chart-data="returnRate?.chartData || []"
+                :chart-data="filteredReturnRateChartData"
                 :by-queue="returnRateByQueue"
                 :returning-count="returnRate?.returningCount || 0"
                 :has-data="returnRate?.hasData"
                 :is-loading="isLoading"
                 :is-refreshing="isRefreshing"
-                @timeframe-change="dashboardStore.fetchDashboard({ force: true, silent: true })"
+                @timeframe-change="returnRateTimeframe = $event"
               />
-              <DashboardDroppedSkipped :data="droppedSkipped" :is-loading="isLoading" />
+              <DashboardDroppedSkipped
+                :data="filteredDroppedSkippedData"
+                :is-loading="isLoading"
+                @timeframe-change="droppedSkippedTimeframe = $event"
+              />
             </div>
 
             <!-- Quick Setup (Onboarding focus) -->
@@ -411,7 +459,12 @@ onBeforeUnmount(() => {
             />
 
             <!-- Operational Insights -->
-            <DashboardPeakHours :data="peakHours" :has-data="hasPeakData" :is-loading="isLoading" />
+            <DashboardPeakHours
+              :data="filteredPeakHoursData"
+              :has-data="hasPeakData"
+              :is-loading="isLoading"
+              @timeframe-change="peakHoursTimeframe = $event"
+            />
           </div>
         </div>
       </template>

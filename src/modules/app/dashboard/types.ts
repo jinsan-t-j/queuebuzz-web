@@ -54,6 +54,7 @@ export interface DashboardData {
   }>
   peakHours: Array<{
     hour: string
+    day?: number
     value: number
   }>
   quickSetup: QuickSetup
