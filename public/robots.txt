@@ -1,4 +1,35 @@
 User-agent: *
-Allow: /
 
-# Sitemap: https://queuebuzz.com/sitemap.xml
+# Allow crawling of public marketing and static routes
+Allow: /
+Allow: /pricing
+Allow: /premium
+Allow: /terms
+Allow: /privacy
+Allow: /support
+Allow: /launch
+
+# Allow crawling of public queue join pages
+Allow: /q/$
+Allow: /q/*/join
+
+# Disallow crawling of the authenticated host application
+Disallow: /dashboard/
+Disallow: /dashboard*
+Disallow: /login-or-signup
+
+# Disallow transient, session-dependent customer queue states
+Disallow: /q/*/waiting
+Disallow: /q/*/called
+Disallow: /q/*/served
+Disallow: /q/*/ended
+Disallow: /q/*/idle
+Disallow: /q/*/recover
+Disallow: /q/*/not-found
+
+# Disallow general search/utility endpoints
+Disallow: /error
+Disallow: /join
+
+# Specify the sitemap location
+Sitemap: https://queuebuzz.com/sitemap.xml

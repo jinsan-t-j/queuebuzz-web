@@ -15,6 +15,7 @@ import BasePillSelector from '@/components/base/BasePillSelector.vue'
 
 interface PeakData {
   hour: string
+  day?: number
   value: number
 }
 
@@ -44,13 +45,80 @@ function setTimeframe(key) {
   emit('timeframe-change', key)
 }
 
+const HOURS_24 = [
+  '12 AM',
+  '1 AM',
+  '2 AM',
+  '3 AM',
+  '4 AM',
+  '5 AM',
+  '6 AM',
+  '7 AM',
+  '8 AM',
+  '9 AM',
+  '10 AM',
+  '11 AM',
+  '12 PM',
+  '1 PM',
+  '2 PM',
+  '3 PM',
+  '4 PM',
+  '5 PM',
+  '6 PM',
+  '7 PM',
+  '8 PM',
+  '9 PM',
+  '10 PM',
+  '11 PM',
+]
+
 const processedData = computed(() => {
-  if (!props.data.length) return []
-  const maxVal = Math.max(...props.data.map((d) => d.value), 1)
-  return props.data.map((d) => ({
-    ...d,
-    barHeight: `${(d.value / maxVal) * 100}%`,
-  }))
+  if (activeTimeframe.value === 'today') {
+    const hourMap = new Map<string, number>()
+    const todayDayIdx = new Date().getDay()
+    props.data.forEach((d) => {
+      if (d.day === todayDayIdx) {
+        hourMap.set(d.hour, (hourMap.get(d.hour) || 0) + d.value)
+      }
+    })
+
+    const aggregated = HOURS_24.map((hour) => ({
+      label: hour,
+      value: hourMap.get(hour) || 0,
+    }))
+
+    const maxVal = Math.max(...aggregated.map((d) => d.value), 1)
+    return aggregated.map((d) => ({
+      ...d,
+      barHeight: `${(d.value / maxVal) * 100}%`,
+    }))
+  } else {
+    // Week timeframe: aggregate by weekday (Mon to Sun: 1, 2, 3, 4, 5, 6, 0)
+    const dayMap = new Map<number, number>()
+    props.data.forEach((d) => {
+      if (d.day !== undefined) {
+        dayMap.set(d.day, (dayMap.get(d.day) || 0) + d.value)
+      }
+    })
+
+    const DAYS_ORDER = [1, 2, 3, 4, 5, 6, 0] // Monday to Sunday
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+    const aggregated = DAYS_ORDER.map((dayIdx) => ({
+      label: dayNames[dayIdx],
+      value: dayMap.get(dayIdx) || 0,
+    }))
+
+    const maxVal = Math.max(...aggregated.map((d) => d.value), 1)
+    return aggregated.map((d) => ({
+      ...d,
+      barHeight: `${(d.value / maxVal) * 100}%`,
+    }))
+  }
+})
+
+const hasPeakData = computed(() => {
+  return props.hasData && processedData.value.some((d) => d.value > 0)
 })
 </script>
 
@@ -76,17 +144,20 @@ const processedData = computed(() => {
     <!-- Loading skeleton -->
     <div v-if="isLoading" class="mt-4 flex items-end gap-[1px] h-[84px] sm:gap-1">
       <div
-        v-for="i in 24"
+        v-for="i in activeTimeframe === 'today' ? 24 : 7"
         :key="i"
         class="flex-1 rounded-t-sm bg-plum-faint animate-pulse"
         :style="{
-          height: `${[40, 20, 10, 10, 10, 20, 50, 80, 70, 40, 30, 25, 45, 60, 90, 100, 80, 60, 50, 40, 60, 75, 40, 20][i - 1]}%`,
+          height:
+            activeTimeframe === 'today'
+              ? `${[40, 20, 10, 10, 10, 20, 50, 80, 70, 40, 30, 25, 45, 60, 90, 100, 80, 60, 50, 40, 60, 75, 40, 20][i - 1]}%`
+              : `${[30, 50, 80, 60, 40, 70, 90][i - 1]}%`,
         }"
       />
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="!hasData" class="flex flex-col items-center justify-center py-10 gap-3">
+    <div v-else-if="!hasPeakData" class="flex flex-col items-center justify-center py-10 gap-3">
       <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-plum-faint">
         <PeakEmptyIcon class="h-6 w-6 text-plum-muted" />
       </div>
@@ -101,7 +172,7 @@ const processedData = computed(() => {
       <div class="flex items-end gap-[1px] h-20 sm:gap-px">
         <div
           v-for="item in processedData"
-          :key="item.hour"
+          :key="item.label"
           class="flex-1 flex items-end justify-center h-full"
         >
           <div
@@ -111,11 +182,22 @@ const processedData = computed(() => {
         </div>
       </div>
 
-      <!-- Hour labels -->
-      <div class="mt-2 flex justify-between">
-        <span class="font-mono text-[10px] text-plum-muted sm:text-sm">12 AM</span>
-        <span class="font-mono text-[10px] text-plum-muted sm:text-sm">12 PM</span>
-        <span class="font-mono text-[10px] text-plum-muted sm:text-sm">11 PM</span>
+      <!-- Hour/Day labels -->
+      <div class="mt-2">
+        <div v-if="activeTimeframe === 'today'" class="flex justify-between">
+          <span class="font-mono text-[10px] text-plum-muted sm:text-sm">12 AM</span>
+          <span class="font-mono text-[10px] text-plum-muted sm:text-sm">12 PM</span>
+          <span class="font-mono text-[10px] text-plum-muted sm:text-sm">11 PM</span>
+        </div>
+        <div v-else class="flex gap-[1px] sm:gap-px">
+          <span
+            v-for="item in processedData"
+            :key="item.label"
+            class="flex-1 text-center font-mono text-[9px] sm:text-[10px] text-plum-muted uppercase"
+          >
+            {{ item.label }}
+          </span>
+        </div>
       </div>
     </div>
   </div>

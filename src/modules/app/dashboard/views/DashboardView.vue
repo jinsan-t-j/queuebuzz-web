@@ -112,6 +112,7 @@ const returnRate = computed(
       hasData: false,
       returningCount: 0,
       chartData: [],
+      chartDataToday: [],
       byQueue: [],
     },
 )
@@ -119,14 +120,26 @@ const droppedSkipped = computed(() => dashboardData.value?.droppedSkipped || [])
 const peakHours = computed(() => dashboardData.value?.peakHours || [])
 const quickSetup = computed(() => dashboardData.value?.quickSetup || { show: false, steps: [] })
 
+const returnRateTimeframe = ref('today')
+
+const filteredReturnRateChartData = computed(() => {
+  if (returnRateTimeframe.value === 'today') {
+    return returnRate.value?.chartDataToday || []
+  }
+  return returnRate.value?.chartData || []
+})
+
 const returnRateByQueue = computed(() => {
   const now = new Date()
-  const monday = new Date(now)
-  const day = now.getDay()
-  // Adjust to get Monday (1-6 for Mon-Sat, 0 for Sun)
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1)
-  monday.setDate(diff)
-  monday.setHours(0, 0, 0, 0)
+  const startLimit = new Date(now)
+  if (returnRateTimeframe.value === 'today') {
+    startLimit.setHours(0, 0, 0, 0)
+  } else {
+    const day = now.getDay()
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1)
+    startLimit.setDate(diff)
+    startLimit.setHours(0, 0, 0, 0)
+  }
 
   const existing = returnRate.value?.byQueue || []
   const existingNames = new Set(existing.map((e) => e.label))
@@ -137,11 +150,11 @@ const returnRateByQueue = computed(() => {
     names.add(activeQueue.value.queueName)
   }
 
-  // Only include names from sessions that happened this week
+  // Only include names from sessions that happened within the timeframe limit
   recentSessions.value?.forEach((s) => {
     if (s.name && s.date) {
       const sessionDate = new Date(s.date)
-      if (sessionDate >= monday) {
+      if (sessionDate >= startLimit) {
         names.add(s.name)
       }
     }
@@ -379,13 +392,13 @@ onBeforeUnmount(() => {
             <!-- Analytical Widgets Mini-Grid -->
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
               <DashboardReturnRate
-                :chart-data="returnRate?.chartData || []"
+                :chart-data="filteredReturnRateChartData"
                 :by-queue="returnRateByQueue"
                 :returning-count="returnRate?.returningCount || 0"
                 :has-data="returnRate?.hasData"
                 :is-loading="isLoading"
                 :is-refreshing="isRefreshing"
-                @timeframe-change="dashboardStore.fetchDashboard({ force: true, silent: true })"
+                @timeframe-change="returnRateTimeframe = $event"
               />
               <DashboardDroppedSkipped :data="droppedSkipped" :is-loading="isLoading" />
             </div>

@@ -218,7 +218,7 @@ function resetFilters() {
 
 <template>
   <div
-    class="max-h-[580px] flex flex-1 flex-col rounded-card border border-plum-faint bg-white shadow-sm dark:shadow-none"
+    class="flex flex-1 flex-col rounded-card border border-plum-faint bg-white shadow-sm dark:shadow-none"
   >
     <!-- Header -->
     <div class="border-b border-plum-faint bg-plum-faint/10 px-4 py-3 sm:px-6 sm:py-4">

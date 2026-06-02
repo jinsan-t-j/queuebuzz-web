@@ -91,6 +91,9 @@ const chartPlot = computed(() => {
 
 const dayLabels = computed(() => {
   if (!props.chartData.length || props.isLoading) return []
+  if (props.chartData.length > 7) {
+    return ['12 AM', '12 PM', '11 PM']
+  }
   return ['Mon', 'Wed', 'Fri', 'Sun']
 })
 </script>
