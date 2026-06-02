@@ -42,6 +42,10 @@ export interface DashboardData {
       day: string
       rate: number
     }>
+    chartDataToday: Array<{
+      day: string
+      rate: number
+    }>
     byQueue: Array<{
       label: string
       rate: number

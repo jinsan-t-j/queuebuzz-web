@@ -112,6 +112,7 @@ const returnRate = computed(
       hasData: false,
       returningCount: 0,
       chartData: [],
+      chartDataToday: [],
       byQueue: [],
     },
 )
@@ -120,44 +121,12 @@ const peakHours = computed(() => dashboardData.value?.peakHours || [])
 const quickSetup = computed(() => dashboardData.value?.quickSetup || { show: false, steps: [] })
 
 const returnRateTimeframe = ref('today')
-const droppedSkippedTimeframe = ref('today')
-const peakHoursTimeframe = ref('week')
 
 const filteredReturnRateChartData = computed(() => {
-  const data = returnRate.value?.chartData || []
   if (returnRateTimeframe.value === 'today') {
-    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-    const todayDayName = daysOfWeek[new Date().getDay()]
-    return data.filter((d) => d.day === todayDayName)
+    return returnRate.value?.chartDataToday || []
   }
-  return data
-})
-
-const filteredDroppedSkippedData = computed(() => {
-  const data = droppedSkipped.value || []
-  if (droppedSkippedTimeframe.value === 'today') {
-    const todayDayIdx = new Date().getDay()
-    return data.filter((d) => d.day === todayDayIdx)
-  }
-  return data
-})
-
-const filteredPeakHoursData = computed(() => {
-  const data = peakHours.value || []
-  if (peakHoursTimeframe.value === 'today') {
-    const todayDayIdx = new Date().getDay()
-    return data.filter((d) => d.day === todayDayIdx).map((d) => ({ hour: d.hour, value: d.value }))
-  } else {
-    const aggregated = new Map<string, number>()
-    data.forEach((d) => {
-      aggregated.set(d.hour, (aggregated.get(d.hour) || 0) + d.value)
-    })
-    const uniqueHours = Array.from(new Set(data.map((d) => d.hour)))
-    return uniqueHours.map((hour) => ({
-      hour,
-      value: aggregated.get(hour) || 0,
-    }))
-  }
+  return returnRate.value?.chartData || []
 })
 
 const returnRateByQueue = computed(() => {
@@ -431,11 +400,7 @@ onBeforeUnmount(() => {
                 :is-refreshing="isRefreshing"
                 @timeframe-change="returnRateTimeframe = $event"
               />
-              <DashboardDroppedSkipped
-                :data="filteredDroppedSkippedData"
-                :is-loading="isLoading"
-                @timeframe-change="droppedSkippedTimeframe = $event"
-              />
+              <DashboardDroppedSkipped :data="droppedSkipped" :is-loading="isLoading" />
             </div>
 
             <!-- Quick Setup (Onboarding focus) -->
@@ -459,12 +424,7 @@ onBeforeUnmount(() => {
             />
 
             <!-- Operational Insights -->
-            <DashboardPeakHours
-              :data="filteredPeakHoursData"
-              :has-data="hasPeakData"
-              :is-loading="isLoading"
-              @timeframe-change="peakHoursTimeframe = $event"
-            />
+            <DashboardPeakHours :data="peakHours" :has-data="hasPeakData" :is-loading="isLoading" />
           </div>
         </div>
       </template>

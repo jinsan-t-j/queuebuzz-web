@@ -140,7 +140,10 @@ function isActive(item: NavItem) {
       :class="isCollapsed ? 'lg:justify-center lg:px-0 px-7' : 'px-7'"
     >
       <Logo class="h-12 w-12 transition-transform duration-500 group-hover:rotate-12" />
-      <div class="flex flex-col justify-center leading-none text-plum">
+      <div
+        v-if="!isCollapsed || isMobileOpen"
+        class="flex flex-col justify-center leading-none text-plum"
+      >
         <span class="text-[26px] font-extrabold tracking-tight leading-none overflow-hidden"
           >ueue</span
         >
