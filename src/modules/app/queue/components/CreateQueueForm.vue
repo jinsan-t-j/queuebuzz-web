@@ -41,6 +41,14 @@ const emit = defineEmits(['queue-created'])
 
 const subscription = ref<Subscription | null>(null)
 
+const hasActiveSubscription = computed(() => {
+  return (
+    subscription.value !== null &&
+    subscription.value.tier !== 'free' &&
+    subscription.value.status === 'active'
+  )
+})
+
 const { showToast } = useToast()
 
 const router = useRouter()
@@ -638,6 +646,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
         >
           <!-- Premium Sparkle Badge -->
           <div
+            v-if="!hasActiveSubscription"
             class="absolute top-0 right-0 bg-mint-light text-plum font-body text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider"
           >
             Premium
@@ -672,6 +681,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
           >
             <!-- Location Troubleshooter / Warning Panel -->
             <LocationTroubleshooter
+              v-if="geoError || (accuracy && accuracy > 150)"
               :geo-error="geoError"
               :accuracy="accuracy"
               :is-locating="isLocating"
