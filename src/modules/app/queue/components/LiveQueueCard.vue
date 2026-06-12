@@ -9,6 +9,7 @@ import { computed, defineAsyncComponent, onBeforeMount, onUnmounted, ref, watch 
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
 import CallNextIcon from '@/assets/icons/call-next.svg?component'
 import CheckIcon from '@/assets/icons/check-circle.svg?component'
+import QrScanIcon from '@/assets/icons/qr-code-scan.svg?component'
 import SearchIcon from '@/assets/icons/search.svg?component'
 import ShieldCheckIcon from '@/assets/icons/shield-verified.svg?component'
 import BaseTooltip from '@/components/base/BaseTooltip.vue'
@@ -47,6 +48,7 @@ const emit = defineEmits<{
 }>()
 
 const QueueFilterDropdown = defineAsyncComponent(() => import('./QueueFilterDropdown.vue'))
+const BaseQrScanner = defineAsyncComponent(() => import('@/components/base/BaseQrScanner.vue'))
 
 // 9. Reactive state
 const selectedEntry = ref<QueueEntry | null>(null)
@@ -72,6 +74,8 @@ const recoveredIds = ref(new Set<string>())
 const sortMode = ref<'position' | 'size-asc' | 'size-desc'>('position')
 const partySizeFilter = ref<number | 'all'>('all')
 const isFilterMenuOpen = ref(false)
+const showQrScanner = ref(false)
+const qrVerifyEntryId = ref<string | null>(null)
 
 // 10. Computed properties
 const hasActiveCalledEntry = computed(() =>
@@ -214,6 +218,40 @@ function resetFilters() {
   sortMode.value = 'position'
   isFilterMenuOpen.value = false
 }
+
+function openQrScanner(fromEntryId?: string) {
+  qrVerifyEntryId.value = fromEntryId || null
+  closeDetails()
+  showQrScanner.value = true
+}
+
+function handleQrResult(scannedText: string) {
+  showQrScanner.value = false
+
+  // The customer QR encodes the entry ID directly
+  const matchedEntry = (props.activeEntries || []).find((e) => e.id === scannedText)
+
+  if (matchedEntry) {
+    // If we were verifying a specific entry, check it matches
+    if (qrVerifyEntryId.value && qrVerifyEntryId.value !== matchedEntry.id) {
+      showToast('QR does not match this guest. Scanned a different entry.', { type: 'error' })
+      qrVerifyEntryId.value = null
+      return
+    }
+
+    showToast(`Verified: ${matchedEntry.name} (#${matchedEntry.ticketNo})`, { type: 'success' })
+    qrVerifyEntryId.value = null
+    openDetails(matchedEntry)
+  } else {
+    showToast('No matching guest found for this QR code.', { type: 'error' })
+    qrVerifyEntryId.value = null
+  }
+}
+
+function handleQrClose() {
+  showQrScanner.value = false
+  qrVerifyEntryId.value = null
+}
 </script>
 
 <template>
@@ -234,6 +272,17 @@ function resetFilters() {
             @input="emit('search', ($event.target as HTMLInputElement).value)"
           />
         </div>
+
+        <!-- Scan QR Button -->
+        <BaseTooltip text="Scan guest QR">
+          <button
+            type="button"
+            class="flex h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0 items-center justify-center rounded-input border border-plum-faint text-plum-muted transition-all hover:border-plum hover:text-plum cursor-pointer"
+            @click="openQrScanner()"
+          >
+            <QrScanIcon class="h-4 w-4" />
+          </button>
+        </BaseTooltip>
         <!-- Sort by party size toggle (only when party sizes are enabled) -->
         <!-- Sort & Filter (only when party sizes are enabled) -->
         <div v-if="showPartySize" class="relative">
@@ -583,6 +632,16 @@ function resetFilters() {
           closeDetails()
         }
       "
+      @verify="openQrScanner"
+    />
+
+    <!-- QR Scanner Overlay -->
+    <BaseQrScanner
+      v-if="showQrScanner"
+      title="Verify Guest"
+      subtitle="Scan the guest's ticket QR code"
+      @result="handleQrResult"
+      @close="handleQrClose"
     />
   </div>
 </template>
