@@ -119,7 +119,7 @@ apiClient.interceptors.response.use(
 
         if (!originalRequest._skipLogout) {
           sessionStorage.setItem('qb_toast', 'Session expired.')
-          globalThis.location.href = '/'
+          globalThis.location.href = '/login-or-signup'
         }
 
         throw err
