@@ -10,7 +10,9 @@ import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue
 import { useRouter } from 'vue-router'
 
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
+import { useBackgroundKeepAlive } from '@/composables/useBackgroundKeepAlive'
 import { useToast } from '@/composables/useToast'
+import { useWakeLock } from '@/composables/useWakeLock'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useQueueStore } from '@/stores/queue.store'
@@ -269,11 +271,28 @@ const stopAlertLoop = () => {
   }
 }
 
+// Keep screen awake and tab alive in background for real-time alerts
+useWakeLock()
+useBackgroundKeepAlive()
+
+// Re-alert when user returns to the tab (e.g. after switching apps or unlocking phone)
+function handleVisibilityReAlert() {
+  if (
+    document.visibilityState === 'visible' &&
+    (status.value === 'CALLED' || status.value === 'ARRIVED') &&
+    !alertInterval
+  ) {
+    startAlertLoop()
+  }
+}
+
 onMounted(() => {
   startAlertLoop()
+  document.addEventListener('visibilitychange', handleVisibilityReAlert)
 })
 
 onUnmounted(() => {
+  document.removeEventListener('visibilitychange', handleVisibilityReAlert)
   disconnectEvents()
   stopAlertLoop()
   cleanupGestureResume()

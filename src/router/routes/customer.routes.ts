@@ -14,20 +14,6 @@ export const customerRoutes: RouteRecordRaw[] = [
     component: () => import('@/layouts/CustomerLayout.vue'),
     children: [
       {
-        path: '',
-        redirect: (to) => ({
-          name: 'customer-join',
-          params: { queueId: to.params.queueId },
-        }),
-      },
-      {
-        path: 'join/:code?',
-        name: 'customer-join',
-        beforeEnter: restrictCustomerGuard,
-        component: () => import('@/modules/customer/views/JoinView.vue'),
-        meta: { title: 'Join Queue' },
-      },
-      {
         path: 'waiting',
         name: 'customer-waiting',
         component: () => import('@/modules/customer/views/WaitingView.vue'),
@@ -69,6 +55,13 @@ export const customerRoutes: RouteRecordRaw[] = [
         component: () => import('@/modules/customer/views/EntryEndedView.vue'),
         meta: { title: 'Session Ended' },
         props: (route: RouteLocationNormalized) => ({ reason: route.query.reason }),
+      },
+      {
+        path: ':code?',
+        name: 'customer-join',
+        beforeEnter: restrictCustomerGuard,
+        component: () => import('@/modules/customer/views/JoinView.vue'),
+        meta: { title: 'Join Queue' },
       },
       // Global customer wildcard for unknown queue-specific paths
       {

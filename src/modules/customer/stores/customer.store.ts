@@ -242,6 +242,11 @@ export const useCustomerStore = defineStore('customer', {
           if (document.visibilityState === 'visible') {
             this.revalidate(id)
           } else if (document.visibilityState === 'hidden') {
+            // When background keep-alive is active (customer waiting/called views),
+            // skip SSE disconnect — the tab won't be suspended and we need
+            // real-time status updates to trigger in-page alerts
+            if (globalThis.__qb_keepalive_active) return
+
             this.sseClient?.disconnect()
             this.streamState = 'idle'
           }

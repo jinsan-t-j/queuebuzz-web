@@ -5,7 +5,9 @@ import { useRouter } from 'vue-router'
 
 import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
 import BaseCard from '@/components/base/BaseCard.vue'
+import { useBackgroundKeepAlive } from '@/composables/useBackgroundKeepAlive'
 import { useToast } from '@/composables/useToast'
+import { useWakeLock } from '@/composables/useWakeLock'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 import CustomerSettingsModal from '@/modules/customer/components/CustomerSettingsModal.vue'
 import PWABanner from '@/modules/customer/components/PWABanner.vue'
@@ -45,6 +47,10 @@ const { activeQueue } = storeToRefs(queueStore)
 const isSettingsModalOpen = ref(false)
 const showEmailHighlight = ref(false)
 const queueName = computed(() => activeQueue.value?.name || '')
+
+// Keep screen awake and tab alive in background for real-time alerts
+useWakeLock()
+useBackgroundKeepAlive()
 
 onMounted(() => {
   setTimeout(() => {
