@@ -9,6 +9,9 @@ defineProps<{
   isIOS: boolean
   isAndroid: boolean
   isMac: boolean
+  isSafari: boolean
+  isFirefox: boolean
+  isChrome: boolean
 }>()
 </script>
 
@@ -28,7 +31,9 @@ defineProps<{
         <p class="font-body text-xs font-bold text-plum">
           <span v-if="isIOS">iPhone &amp; iPad Setup</span>
           <span v-else-if="isAndroid">Android Setup</span>
-          <span v-else-if="isMac">Mac Safari Setup</span>
+          <span v-else-if="isMac && isSafari">Mac Safari Setup</span>
+          <span v-else-if="isFirefox">Firefox Setup</span>
+          <span v-else-if="isChrome">Chrome Setup</span>
           <span v-else>Browser Alert Setup</span>
         </p>
         <p class="font-body text-[11px] text-plum-muted mt-0.5 leading-normal">
@@ -74,7 +79,7 @@ defineProps<{
           </template>
 
           <!-- Mac Safari -->
-          <template v-else-if="isMac">
+          <template v-else-if="isMac && isSafari">
             <li class="flex items-start gap-2">
               <span class="font-bold text-plum shrink-0">1.</span>
               <span>
@@ -92,12 +97,31 @@ defineProps<{
             </li>
           </template>
 
-          <!-- Desktop Chrome / Generic -->
-          <template v-else>
+          <!-- Firefox -->
+          <template v-else-if="isFirefox">
             <li class="flex items-start gap-2">
               <span class="font-bold text-plum shrink-0">1.</span>
               <span>
-                Click the <strong class="text-plum font-semibold">Install icon</strong> in Chrome's
+                Click the <strong class="text-plum font-semibold">Lock 🔒</strong> or site settings
+                icon next to the URL in the address bar.
+              </span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="font-bold text-plum shrink-0">2.</span>
+              <span>
+                Under Permissions, change
+                <strong class="text-plum font-semibold">Send Notifications</strong> to
+                <strong class="text-plum font-semibold">Allow</strong>.
+              </span>
+            </li>
+          </template>
+
+          <!-- Desktop Chrome / Chromium -->
+          <template v-else-if="isChrome">
+            <li class="flex items-start gap-2">
+              <span class="font-bold text-plum shrink-0">1.</span>
+              <span>
+                Click the <strong class="text-plum font-semibold">Install icon</strong> in the
                 address bar to install the app.
               </span>
             </li>
@@ -106,6 +130,24 @@ defineProps<{
               <span>
                 Click the <strong class="text-plum font-semibold">Lock 🔒</strong> icon next to the
                 URL and allow notifications.
+              </span>
+            </li>
+          </template>
+
+          <!-- Generic Fallback -->
+          <template v-else>
+            <li class="flex items-start gap-2">
+              <span class="font-bold text-plum shrink-0">1.</span>
+              <span>
+                Click the <strong class="text-plum font-semibold">Lock 🔒</strong> or settings icon
+                next to the URL in your browser's address bar.
+              </span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="font-bold text-plum shrink-0">2.</span>
+              <span>
+                Find <strong class="text-plum font-semibold">Notifications</strong> and select
+                <strong class="text-plum font-semibold">Allow</strong>.
               </span>
             </li>
           </template>

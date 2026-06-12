@@ -8,6 +8,7 @@ defineProps({
   isIOS: { type: Boolean, default: false },
   isMac: { type: Boolean, default: false },
   isAndroid: { type: Boolean, default: false },
+  isSafari: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['retrigger', 'buzz-off'])
@@ -59,7 +60,7 @@ const emit = defineEmits(['retrigger', 'buzz-off'])
 
       <!-- MacOS/Safari Instructions -->
       <ol
-        v-else-if="isMac"
+        v-else-if="isMac && isSafari"
         class="mt-2 list-decimal pl-4 font-body text-xs text-plum-soft space-y-1.5"
       >
         <li>
