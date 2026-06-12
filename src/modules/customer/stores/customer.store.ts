@@ -18,6 +18,7 @@ export const useCustomerStore = defineStore('customer', {
   state: () => ({
     entry: null,
     position: null,
+    headsUpPosition: null,
     isLoading: false,
     error: null,
     errorCode: null,
@@ -27,7 +28,11 @@ export const useCustomerStore = defineStore('customer', {
   }),
 
   getters: {
-    isJoined: (state) => !!state.entry,
+    isJoined: (state) => {
+      if (!state.entry) return false
+      const activeStatuses = ['WAITING', 'CALLED', 'IDLE', 'ARRIVED']
+      return activeStatuses.includes(state.entry.status)
+    },
     entryId: (state) => state.entry?.id ?? null,
     status: (state) => state.entry?.status ?? null,
     ahead: (state) => (state.position == null ? null : Math.max(0, state.position - 1)),
@@ -242,6 +247,11 @@ export const useCustomerStore = defineStore('customer', {
           if (document.visibilityState === 'visible') {
             this.revalidate(id)
           } else if (document.visibilityState === 'hidden') {
+            // When background keep-alive is active (customer waiting/called views),
+            // skip SSE disconnect — the tab won't be suspended and we need
+            // real-time status updates to trigger in-page alerts
+            if (globalThis.__qb_keepalive_active) return
+
             this.sseClient?.disconnect()
             this.streamState = 'idle'
           }
@@ -284,24 +294,25 @@ export const useCustomerStore = defineStore('customer', {
               })
             }
           },
-          [CUSTOMER_EVENTS.POSITION_UPDATE]: (payload: { position?: number }) => {
-            if (payload?.position != null) {
+          [CUSTOMER_EVENTS.POSITION_UPDATE]: (payload: { data?: { position?: number } }) => {
+            const pos = payload?.data?.position
+            if (pos != null) {
               const previousPosition = this.position
-              this.position = payload.position
+              this.position = pos
               if (this.entry) {
-                this.entry.position = payload.position
+                this.entry.position = pos
               }
 
               if (
                 previousPosition != null &&
-                payload.position < previousPosition &&
+                pos < previousPosition &&
                 document.visibilityState === 'visible'
               ) {
                 this.addCustomerNotification(
                   'Queue Update',
-                  `You are now number ${payload.position} in the queue.`,
+                  `You are now number ${pos} in the queue.`,
                   'info',
-                  `customer-position-${entryId}-${payload.position}`,
+                  `customer-position-${entryId}-${pos}`,
                 )
               }
             }
@@ -338,6 +349,19 @@ export const useCustomerStore = defineStore('customer', {
                 `customer-token-refresh-${entryId}`,
               )
             }
+          },
+          [CUSTOMER_EVENTS.HEADS_UP]: (payload: { data?: { position?: number } }) => {
+            const pos = payload?.data?.position
+            if (pos == null) return
+
+            const title = pos === 2 ? "You're next!" : 'Almost your turn!'
+            const body =
+              pos === 2
+                ? "Get ready — you're second in line. Start heading over now."
+                : "Heads up — you're third in line. Your turn is coming up soon."
+
+            this.headsUpPosition = pos
+            this.addCustomerNotification(title, body, 'info', `customer-heads-up-${entryId}-${pos}`)
           },
         },
       })
@@ -524,6 +548,7 @@ export const useCustomerStore = defineStore('customer', {
       useNotificationStore().clearNotifications()
       this.entry = null
       this.position = null
+      this.headsUpPosition = null
       this.error = null
       this.errorCode = null
     },

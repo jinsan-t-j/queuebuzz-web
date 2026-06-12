@@ -48,7 +48,8 @@ const queueRouteKey = computed(() => {
 const routeCode = computed(() => {
   const value = route.params.code
   const raw = Array.isArray(value) ? value[0] : value?.toString() || ''
-  return raw.trim()
+  const trimmed = raw.trim()
+  return trimmed.toLowerCase() === 'join' ? '' : trimmed
 })
 
 const { entry: customerEntry, isLoading } = storeToRefs(customerStore)

@@ -112,7 +112,7 @@ function handleQrResult(result: string) {
   showScanner.value = false
 
   // 1. Try to extract code from URL if it's a full URL
-  // Matches: .../q/QUEUE_ID/join/CODE
+  // Matches: .../q/QUEUE_ID/CODE
   const urlParts = result.split('/')
   const lastPart = urlParts[urlParts.length - 1]
 

@@ -82,6 +82,9 @@ const showSetupGuide = ref(false)
 const isIOS = ref(false)
 const isMac = ref(false)
 const isAndroid = ref(false)
+const isSafari = ref(false)
+const isFirefox = ref(false)
+const isChrome = ref(false)
 
 const notificationPermission = ref<'default' | 'granted' | 'denied' | 'unsupported'>(
   typeof Notification === 'undefined'
@@ -108,10 +111,16 @@ onMounted(() => {
     (/Macintosh/.test(ua) && globalThis.navigator?.maxTouchPoints > 1)
   const isMacOs = /Macintosh|Mac OS X/.test(ua) && !isAppleMobile
   const isAndroidOs = /Android/i.test(ua)
+  const isSafariBrowser = /Safari/.test(ua) && !/Chrome|CriOS|Android/.test(ua)
+  const isFirefoxBrowser = /Firefox|FxiOS/.test(ua)
+  const isChromeBrowser = /Chrome|CriOS/.test(ua)
 
   isIOS.value = isAppleMobile
   isMac.value = isMacOs
   isAndroid.value = isAndroidOs
+  isSafari.value = isSafariBrowser
+  isFirefox.value = isFirefoxBrowser
+  isChrome.value = isChromeBrowser
 
   updatePermission()
 
@@ -259,7 +268,7 @@ async function prepareFCMToken(): Promise<string | null> {
   const hasPermission = await ensureNotificationPermission()
   if (!hasPermission) {
     showToast(
-      'Notification permission denied. Please allow notifications to receive buzz alerts, or disable "Buzz me when ready" to join.',
+      'Please allow notifications to receive buzz alerts, or turn off "Buzz me when ready" to join.',
       { type: 'error' },
     )
     showSetupGuide.value = true
@@ -528,6 +537,7 @@ onUnmounted(() => {
       :is-i-o-s="isIOS"
       :is-mac="isMac"
       :is-android="isAndroid"
+      :is-safari="isSafari"
       @retrigger="retriggerPermissionRequest"
       @buzz-off="buzzEnabled = false"
     />
@@ -651,6 +661,9 @@ onUnmounted(() => {
       :is-i-o-s="isIOS"
       :is-android="isAndroid"
       :is-mac="isMac"
+      :is-safari="isSafari"
+      :is-firefox="isFirefox"
+      :is-chrome="isChrome"
     />
 
     <!-- Join CTA -->

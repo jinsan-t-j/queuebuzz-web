@@ -14,6 +14,7 @@ import ErrorCircleIcon from '@/assets/icons/error-circle.svg?component'
 import WarningTriangleIcon from '@/assets/icons/warning-triangle.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { useQueueStore } from '@/stores/queue.store'
 
 const props = defineProps({
@@ -26,6 +27,7 @@ const props = defineProps({
 const router = useRouter()
 const route = useRoute()
 const queueStore = useQueueStore()
+const customerStore = useCustomerStore()
 const { activeQueue } = storeToRefs(queueStore)
 
 onBeforeMount(async () => {
@@ -33,6 +35,7 @@ onBeforeMount(async () => {
   if (queueId) {
     await queueStore.IntializeQueueByIdOrCode(queueId)
   }
+  customerStore.resetCustomerSession()
 })
 
 const config = computed(() => {

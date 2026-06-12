@@ -11,6 +11,7 @@ import CallNextIcon from '@/assets/icons/call-next.svg?component'
 import CheckIcon from '@/assets/icons/check-mint.svg?component'
 import ClockTimeIcon from '@/assets/icons/clock-time.svg?component'
 import CloseXIcon from '@/assets/icons/close-x.svg?component'
+import QrScanIcon from '@/assets/icons/qr-code-scan.svg?component'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
@@ -31,6 +32,7 @@ const emit = defineEmits<{
   (e: 'close'): void
   (e: 'call', id: string): void
   (e: 'serve', id: string): void
+  (e: 'verify', id: string): void
 }>()
 
 const statusConfig = computed(() => {
@@ -162,6 +164,14 @@ const estWaitMin = computed(() => {
             >
               <CheckIcon class="mr-2 h-5 w-5" />
               Mark as Served
+            </BaseButton>
+            <BaseButton
+              variant="ghost"
+              class="w-full border border-plum-faint"
+              @click="emit('verify', entry.id)"
+            >
+              <QrScanIcon class="mr-2 h-4 w-4" />
+              Scan QR to Verify
             </BaseButton>
             <BaseButton
               v-if="([ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(entry.status)"

@@ -300,6 +300,14 @@ const displayOsName = computed(() => {
                       ➔ Scroll down and make sure <strong>{{ detectedBrowser }}</strong> is toggled
                       ON in the list.
                     </p>
+                    <p>
+                      ➔
+                      <em
+                        >Note: If Location Services and {{ detectedBrowser }} are already ON but
+                        fetching still fails, try toggling both OFF, waiting 5 seconds, toggling
+                        them back ON, and restarting your browser.</em
+                      >
+                    </p>
                   </div>
                   <!-- iOS settings -->
                   <div v-else-if="detectedOs === 'iphone'" class="space-y-1">
@@ -363,6 +371,11 @@ const displayOsName = computed(() => {
               <p>
                 3. If using a laptop, ensure the lid is open (macOS triangulates coordinates using
                 nearby WiFi routers).
+              </p>
+              <p>
+                4. If location services are enabled but coordinate fetching still fails, toggle
+                <strong>Location Services</strong> OFF and ON in macOS System Settings, then restart
+                your browser.
               </p>
             </div>
             <!-- iOS -->

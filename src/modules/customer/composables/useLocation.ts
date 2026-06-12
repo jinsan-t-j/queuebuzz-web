@@ -4,6 +4,7 @@ interface LeafletMap {
   setView: (center: [number, number], zoom: number) => LeafletMap
   remove: () => void
   invalidateSize: () => void
+  getContainer: () => HTMLElement
 }
 
 interface LeafletMarker {
@@ -121,6 +122,11 @@ export function useLocation(
     const centerLng = venueLongitude || longitude.value
     if (!L || !mapEl || !centerLat || !centerLng) return
 
+    // Clean up any existing Leaflet state on the DOM element to prevent "Map container is already initialized"
+    if ((mapEl as HTMLElement & { _leaflet_id?: number | null })._leaflet_id) {
+      ;(mapEl as HTMLElement & { _leaflet_id?: number | null })._leaflet_id = null
+    }
+
     try {
       const map = L.map(elementId, {
         zoomControl: false,
@@ -218,6 +224,14 @@ export function useLocation(
     geoRadiusMeters: number,
     options: { draggable?: boolean } = {},
   ) => {
+    const mapEl = document.getElementById(elementId)
+    if (!mapEl) return
+
+    // If the map exists but its container has been replaced in the DOM, destroy the stale map instance.
+    if (leafletMap && leafletMap.getContainer() !== mapEl) {
+      destroyLeafletMap()
+    }
+
     if (leafletMap) {
       const centerLat = venueLatitude || latitude.value || 0
       const centerLng = venueLongitude || longitude.value || 0
@@ -279,53 +293,88 @@ export function useLocation(
     }
   }
 
+  const getPositionWithFallback = (
+    successCallback: (position: GeolocationPosition) => void,
+    errorCallback: (err: GeolocationPositionError) => void,
+  ) => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      const customErr = {
+        code: 2,
+        message: 'Geolocation is not supported by this browser.',
+        PERMISSION_DENIED: 1,
+        POSITION_UNAVAILABLE: 2,
+        TIMEOUT: 3,
+      } as GeolocationPositionError
+      errorCallback(customErr)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      successCallback,
+      (err) => {
+        if (err.code !== 1) {
+          // eslint-disable-next-line no-console
+          console.warn('High-accuracy geolocation failed, falling back to standard accuracy:', err)
+          navigator.geolocation.getCurrentPosition(successCallback, errorCallback, {
+            enableHighAccuracy: false,
+            timeout: 15000,
+            maximumAge: 60000,
+          })
+        } else {
+          errorCallback(err)
+        }
+      },
+      { enableHighAccuracy: true, timeout: 5000 },
+    )
+  }
+
   const refreshMyLocation = () => {
     isRefreshingLocation.value = true
     geoError.value = null
 
     return new Promise<{ latitude: number; longitude: number } | null>((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          latitude.value = position.coords.latitude
-          longitude.value = position.coords.longitude
-          accuracy.value = position.coords.accuracy
-          isRefreshingLocation.value = false
+      const success = (position: GeolocationPosition) => {
+        latitude.value = position.coords.latitude
+        longitude.value = position.coords.longitude
+        accuracy.value = position.coords.accuracy
+        isRefreshingLocation.value = false
 
-          if (leafletMap) {
-            leafletMap.setView([latitude.value, longitude.value], 17)
-            leafletMap.invalidateSize()
+        if (leafletMap) {
+          leafletMap.setView([latitude.value, longitude.value], 17)
+          leafletMap.invalidateSize()
 
-            const win = globalThis as unknown as WindowWithL
-            const L = win.L
-            if (L) {
-              if (leafletMarker) {
-                leafletMarker.setLatLng([latitude.value, longitude.value])
-              } else {
-                const guestIcon = L.divIcon({
-                  html: `<div class="relative w-8 h-8 rounded-full bg-white border-2 border-[#1A0A2E] flex items-center justify-center shadow-lg">
-                           <div class="w-3.5 h-3.5 rounded-full bg-mint animate-pulse"></div>
-                         </div>`,
-                  className: 'guest-pin-icon',
-                  iconSize: [32, 32],
-                  iconAnchor: [16, 16],
-                })
-                leafletMarker = L.marker([latitude.value, longitude.value], {
-                  icon: guestIcon,
-                }).addTo(leafletMap)
-              }
+          const win = globalThis as unknown as WindowWithL
+          const L = win.L
+          if (L) {
+            if (leafletMarker) {
+              leafletMarker.setLatLng([latitude.value, longitude.value])
+            } else {
+              const guestIcon = L.divIcon({
+                html: `<div class="relative w-8 h-8 rounded-full bg-white border-2 border-[#1A0A2E] flex items-center justify-center shadow-lg">
+                         <div class="w-3.5 h-3.5 rounded-full bg-mint animate-pulse"></div>
+                       </div>`,
+                className: 'guest-pin-icon',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+              })
+              leafletMarker = L.marker([latitude.value, longitude.value], {
+                icon: guestIcon,
+              }).addTo(leafletMap)
             }
           }
-          resolve({ latitude: latitude.value, longitude: longitude.value })
-        },
-        (err) => {
-          // eslint-disable-next-line no-console
-          console.error('Guest refresh location error:', err)
-          geoError.value = getFriendlyErrorMessage(err)
-          isRefreshingLocation.value = false
-          resolve(null)
-        },
-        { enableHighAccuracy: true, timeout: 10000 },
-      )
+        }
+        resolve({ latitude: latitude.value, longitude: longitude.value })
+      }
+
+      const failure = (err: GeolocationPositionError) => {
+        // eslint-disable-next-line no-console
+        console.error('Guest refresh location error:', err)
+        geoError.value = getFriendlyErrorMessage(err)
+        isRefreshingLocation.value = false
+        resolve(null)
+      }
+
+      getPositionWithFallback(success, failure)
     })
   }
 
@@ -334,23 +383,23 @@ export function useLocation(
     geoError.value = null
 
     return new Promise<{ latitude: number; longitude: number } | null>((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          latitude.value = position.coords.latitude
-          longitude.value = position.coords.longitude
-          accuracy.value = position.coords.accuracy
-          isLocating.value = false
-          resolve({ latitude: latitude.value, longitude: longitude.value })
-        },
-        (err) => {
-          // eslint-disable-next-line no-console
-          console.error('Guest geolocation error:', err)
-          geoError.value = getFriendlyErrorMessage(err)
-          isLocating.value = false
-          resolve(null)
-        },
-        { enableHighAccuracy: true, timeout: 10000 },
-      )
+      const success = (position: GeolocationPosition) => {
+        latitude.value = position.coords.latitude
+        longitude.value = position.coords.longitude
+        accuracy.value = position.coords.accuracy
+        isLocating.value = false
+        resolve({ latitude: latitude.value, longitude: longitude.value })
+      }
+
+      const failure = (err: GeolocationPositionError) => {
+        // eslint-disable-next-line no-console
+        console.error('Guest geolocation error:', err)
+        geoError.value = getFriendlyErrorMessage(err)
+        isLocating.value = false
+        resolve(null)
+      }
+
+      getPositionWithFallback(success, failure)
     })
   }
 

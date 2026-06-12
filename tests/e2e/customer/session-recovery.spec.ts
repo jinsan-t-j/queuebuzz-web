@@ -48,7 +48,7 @@ test.describe('Customer Session Recovery & Redirection', () => {
       makeEntryStatus('waiting', { queueId: ACTIVE_QUEUE_ID }),
     )
 
-    await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}`)
 
     // Should be redirected to the waiting room
     await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/waiting`))
@@ -65,7 +65,7 @@ test.describe('Customer Session Recovery & Redirection', () => {
       makeEntryStatus('waiting', { queueId: ACTIVE_QUEUE_ID }),
     )
 
-    await page.goto(`/q/${OTHER_QUEUE_ID}/join`)
+    await page.goto(`/q/${OTHER_QUEUE_ID}`)
 
     // Fill code for the OTHER queue
     const codeInput = page.getByLabel('Join code')
@@ -88,7 +88,7 @@ test.describe('Customer Session Recovery & Redirection', () => {
     )
     await mockApi('/customer/entry/leave', { success: true })
 
-    await page.goto(`/q/${OTHER_QUEUE_ID}/join`)
+    await page.goto(`/q/${OTHER_QUEUE_ID}`)
 
     // Fill code for the OTHER queue
     const codeInput = page.getByLabel('Join code')
@@ -122,7 +122,7 @@ test.describe('Customer Session Recovery & Redirection', () => {
     await page.getByRole('button', { name: /proceed to join/i }).click()
 
     // Should be redirected to the join page and show warning
-    await expect(page).toHaveURL(new RegExp(`/q/${OTHER_QUEUE_ID}/join`))
+    await expect(page).toHaveURL(new RegExp(`/q/${OTHER_QUEUE_ID}`))
     await expect(page.locator('text=Already in a queue').first()).toBeVisible({ timeout: 10000 })
     await expect(page.getByRole('button', { name: /leave current queue/i })).toBeVisible()
   })
@@ -138,7 +138,7 @@ test.describe('Customer Session Recovery & Redirection', () => {
     // Mock the leave endpoint to fail with 401 Unauthorized
     await mockApi('/customer/entry/leave', {}, 401)
 
-    await page.goto(`/q/${OTHER_QUEUE_ID}/join`)
+    await page.goto(`/q/${OTHER_QUEUE_ID}`)
 
     // Fill code for the OTHER queue
     const codeInput = page.getByLabel('Join code')
