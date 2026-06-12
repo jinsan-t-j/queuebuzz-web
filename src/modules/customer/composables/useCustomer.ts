@@ -10,7 +10,7 @@ import { useQueueStore } from '@/stores/queue.store'
 
 export function useCustomer() {
   const store = useCustomerStore()
-  const { entry, position, status, isLoading, error } = storeToRefs(store)
+  const { entry, position, status, isLoading, error, headsUpPosition } = storeToRefs(store)
   const router = useRouter()
   const { showToast } = useToast()
   const queueStore = useQueueStore()
@@ -107,8 +107,13 @@ export function useCustomer() {
     status,
     isLoading,
     error,
+    headsUpPosition,
     getDisplayTicketNumber: (value = entry.value) => store.getDisplayTicketNumber(value),
-    isJoined: computed(() => !!entry.value),
+    isJoined: computed(() => {
+      if (!entry.value) return false
+      const activeStatuses = ['WAITING', 'CALLED', 'IDLE', 'ARRIVED']
+      return activeStatuses.includes(entry.value.status)
+    }),
     ahead: computed(() =>
       position.value !== null && position.value !== undefined
         ? Math.max(0, position.value - 1)

@@ -10,6 +10,7 @@ import { useToast } from '@/composables/useToast'
 import { useWakeLock } from '@/composables/useWakeLock'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 import CustomerSettingsModal from '@/modules/customer/components/CustomerSettingsModal.vue'
+import HeadsUpBanner from '@/modules/customer/components/HeadsUpBanner.vue'
 import PWABanner from '@/modules/customer/components/PWABanner.vue'
 import TicketCaptureTemplate from '@/modules/customer/components/TicketCaptureTemplate.vue'
 import TicketHero from '@/modules/customer/components/TicketHero.vue'
@@ -178,6 +179,9 @@ onUnmounted(() => {
     <!-- Populated state -->
     <div v-else-if="entry" class="flex flex-col gap-5 px-5 py-4 animate-in fade-in duration-500">
       <PWABanner />
+
+      <!-- Heads-up / almost up notification banner -->
+      <HeadsUpBanner :position="position" />
 
       <div ref="ticketRef" class="relative">
         <!-- Blob decorations behind ticket & stats -->
