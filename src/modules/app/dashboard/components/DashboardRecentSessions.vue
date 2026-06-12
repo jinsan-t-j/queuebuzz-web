@@ -111,7 +111,7 @@ const emit = defineEmits(['select-session', 'view-history', 'create-first-queue'
     <div v-if="!isLoading && sessions.length > 0" class="mt-6">
       <RouterLink
         v-once
-        to="/history"
+        to="/dashboard/queue/history"
         class="mx-auto block rounded-xl border border-plum-faint px-6 py-2.5 text-center font-display text-sm font-black text-plum transition-all hover:bg-plum hover:text-sand"
       >
         View Full History

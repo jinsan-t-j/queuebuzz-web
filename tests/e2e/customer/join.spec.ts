@@ -20,7 +20,7 @@ test.describe('Customer Join', () => {
       name: 'Morning Clinic',
     })
 
-    await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}`)
 
     // Wait for the join code prompt to appear
     const codeInput = page.getByLabel('Join code')
@@ -56,7 +56,7 @@ test.describe('Customer Join', () => {
       })
     })
 
-    await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}`)
 
     // Loading skeleton or connecting text
     await expect(page.getByText(/connecting/i).first()).toBeVisible()
@@ -68,7 +68,7 @@ test.describe('Customer Join', () => {
       name: 'Morning Clinic',
     })
 
-    await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}`)
 
     // Fill join code (modal uses single input)
     const codeInput = page.getByLabel('Join code')
@@ -111,7 +111,7 @@ test.describe('Customer Join', () => {
   test('should show not-found state for invalid queue', async ({ page, mockApi }) => {
     await mockApi('/queue/p/find?id=invalid-q', null, 404)
 
-    await page.goto('/q/invalid-q/join')
+    await page.goto('/q/invalid-q')
     await expect(page.locator('text=Queue not found')).toBeVisible()
   })
 
@@ -138,7 +138,7 @@ test.describe('Customer Join', () => {
     await page.getByRole('button', { name: /Join|Verify/i }).click()
 
     // Should lead to the queue join screen
-    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/join`))
+    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}`))
   })
 
   test('should render geo-lock notice if queue is geo-locked', async ({ page, mockApi }) => {
@@ -164,7 +164,7 @@ test.describe('Customer Join', () => {
     })
     await mockApi('/customer/entry/recover-session', null, 404)
 
-    await page.goto(`/q/${geoQueueId}/join`)
+    await page.goto(`/q/${geoQueueId}`)
 
     const codeInput = page.getByLabel('Join code')
     await expect(codeInput).toBeVisible({ timeout: 10000 })
@@ -193,7 +193,7 @@ test.describe('Customer Join', () => {
     })
     await mockApi('/customer/entry/recover-session', null, 404)
 
-    await page.goto(`/q/${fullQueueId}/join`)
+    await page.goto(`/q/${fullQueueId}`)
 
     const codeInput = page.getByLabel('Join code')
     await expect(codeInput).toBeVisible({ timeout: 10000 })
@@ -250,7 +250,7 @@ test.describe('Customer Join', () => {
     })
     await mockApi('/customer/entry/recover-session', null, 404)
 
-    await page.goto(`/q/${pausedQueueId}/join`)
+    await page.goto(`/q/${pausedQueueId}`)
 
     const codeInput = page.getByLabel('Join code')
     await expect(codeInput).toBeVisible({ timeout: 10000 })
@@ -304,7 +304,7 @@ test.describe('Customer Join', () => {
     })
     await mockApi('/customer/entry/recover-session', null, 404)
 
-    await page.goto(`/q/${pausedQueueId}/join`)
+    await page.goto(`/q/${pausedQueueId}`)
 
     // Expect the paused overlay to be visible immediately without form filling
     await expect(page.getByRole('heading', { name: 'Entries Paused' })).toBeVisible({
@@ -329,7 +329,7 @@ test.describe('Customer Join', () => {
       name: 'Morning Clinic',
     })
 
-    await page.goto(`/q/${ACTIVE_QUEUE_ID}/join`)
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}`)
 
     const codeInput = page.getByLabel('Join code')
     await expect(codeInput).toBeVisible({ timeout: 10000 })
@@ -344,6 +344,6 @@ test.describe('Customer Join', () => {
 
     // Verify error toast or prompt is shown, and we remain on the join page
     await expect(page.getByText(/Notifications are blocked/i).first()).toBeVisible()
-    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/join`))
+    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}`))
   })
 })
