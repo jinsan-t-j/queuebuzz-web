@@ -25,7 +25,7 @@ jobs:
       queue: ${{ steps.filter.outputs.queue }}
     steps:
       - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -82,7 +82,7 @@ jobs:
 
       - name: Upload Visual Diffs & Report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-visual-report
           path: |
@@ -92,7 +92,7 @@ jobs:
 
       - name: Post Visual Diff to PR
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
