@@ -12,14 +12,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { useToast } from '@/composables/useToast'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
 
-import ClaimConflictModal from '../components/ClaimConflictModal.vue'
-
 const CreateQueueForm = defineAsyncComponent(
   () => import('@/modules/app/queue/components/CreateQueueForm.vue'),
 )
 const LiveQueueView = defineAsyncComponent(() => import('./LiveQueueView.vue'))
 const InfoQueueModal = defineAsyncComponent(
   () => import('@/modules/app/queue/components/InfoQueueModal.vue'),
+)
+const ClaimConflictModal = defineAsyncComponent(
+  () => import('../components/ClaimConflictModal.vue'),
 )
 
 const router = useRouter()

@@ -11,6 +11,7 @@ import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { usePrefetch } from '@/composables/usePrefetch'
 import { useRefresh } from '@/composables/useRefresh'
 import { useToast } from '@/composables/useToast'
 import { useDashboardStore } from '@/stores/dashboard.store'
@@ -53,6 +54,13 @@ const DashboardOnboardingHero = defineAsyncComponent(
 const DashboardErrorState = defineAsyncComponent(
   () => import('../components/DashboardErrorState.vue'),
 )
+
+// Background-prefetch the queue creation route chunks so /dashboard/queue loads instantly
+usePrefetch({
+  CreateQueueView: () => import('@/modules/app/queue/views/CreateQueueView.vue'),
+  CreateQueueForm: () => import('@/modules/app/queue/components/CreateQueueForm.vue'),
+  LiveQueueView: () => import('@/modules/app/queue/views/LiveQueueView.vue'),
+})
 
 const router = useRouter()
 const route = useRoute()

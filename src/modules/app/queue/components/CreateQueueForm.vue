@@ -59,12 +59,16 @@ const { userSettings } = storeToRefs(settingsStore)
 
 onMounted(async () => {
   if (props.role === 'host') {
-    fetchSubscription().then((sub) => {
+    // Fire subscription + settings in parallel — they're independent API calls.
+    // Settings result is needed to pre-fill form defaults; subscription is read-only.
+    const settingsPromise = userSettings.value ? Promise.resolve() : settingsStore.fetchSettings()
+
+    const subscriptionPromise = fetchSubscription().then((sub) => {
       subscription.value = sub
     })
-    if (!userSettings.value) {
-      await settingsStore.fetchSettings()
-    }
+
+    await Promise.all([settingsPromise, subscriptionPromise])
+
     if (userSettings.value) {
       queueName.value = userSettings.value.settings?.defaultQueueName || 'Main Queue'
       serviceTime.value = userSettings.value.settings?.avgServiceMins || 5

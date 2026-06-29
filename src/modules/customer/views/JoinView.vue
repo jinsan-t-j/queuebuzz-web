@@ -8,6 +8,7 @@ import { storeToRefs } from 'pinia'
 import { computed, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { usePrefetch } from '@/composables/usePrefetch'
 import { useToast } from '@/composables/useToast'
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
 import ActiveSessionWarning from '@/modules/customer/components/ActiveSessionWarning.vue'
@@ -208,13 +209,11 @@ function handleJoinByCode() {
 }
 
 // Speculative prefetch of subsequent customer views in the background to guarantee instant transitions
-if (globalThis.window !== undefined) {
-  setTimeout(() => {
-    void import('@/modules/customer/views/WaitingView.vue')
-    void import('@/modules/customer/views/CalledView.vue')
-    void import('@/modules/customer/views/IdleView.vue')
-  }, 1000)
-}
+usePrefetch({
+  WaitingView: () => import('@/modules/customer/views/WaitingView.vue'),
+  CalledView: () => import('@/modules/customer/views/CalledView.vue'),
+  IdleView: () => import('@/modules/customer/views/IdleView.vue'),
+})
 
 // Clean up the public events connection when navigating away to conserve bandwidth and CPU
 onUnmounted(() => {

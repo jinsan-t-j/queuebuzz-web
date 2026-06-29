@@ -6,8 +6,9 @@
  */
 import { useSeoMeta } from '@unhead/vue'
 import { storeToRefs } from 'pinia'
-import { onMounted, computed, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, onMounted } from 'vue'
 
+import { usePrefetch } from '@/composables/usePrefetch'
 import seoConfig from '@/config/seo.constants.json'
 import ActiveWaitingBanner from '@/modules/customer/components/ActiveWaitingBanner.vue'
 import HomeHeroSection from '@/modules/website/components/HomeHeroSection.vue'
@@ -51,6 +52,28 @@ const PwaLauncher = defineAsyncComponent(
 useSeoMeta(seoConfig['/'])
 
 const ActiveQueueBanner = defineAsyncComponent(() => import('../components/ActiveQueueBanner.vue'))
+
+// Background-prefetch page chunks during browser idle times to guarantee instant page transitions.
+// Ordered by priority: Core CTAs -> Customer Entryway -> Auth -> Sales Funnel -> Support
+usePrefetch({
+  // 1. Core CTA destinations (Start Queue / Active Queue Dashboard)
+  GuestHostCreateQueueView: () => import('@/modules/app/queue/views/GuestHostCreateQueueView.vue'),
+  GuestHostLiveQueueView: () => import('@/modules/app/queue/views/GuestHostLiveQueueView.vue'),
+  DashboardView: () => import('@/modules/app/dashboard/views/DashboardView.vue'),
+
+  // 2. Primary customer entryway (Enter Join Code)
+  JoinByCodeView: () => import('@/modules/customer/views/JoinByCodeView.vue'),
+
+  // 3. User Authentication
+  LoginView: () => import('@/modules/app/auth/views/LoginView.vue'),
+
+  // 4. Sales Funnel
+  PricingView: () => import('@/modules/website/views/PricingView.vue'),
+
+  // 5. Support & FAQ
+  SupportView: () => import('@/modules/website/views/SupportView.vue'),
+})
+
 const queueStore = useQueueStore()
 const authStore = useAuthStore()
 const { activeQueue } = storeToRefs(queueStore)
