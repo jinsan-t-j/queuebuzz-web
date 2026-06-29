@@ -4,6 +4,7 @@
  * @description Live queue card with search bar, guest entries list,
  * "Call Next Guest" button, and optional "Terminate Queue" button.
  */
+import { BanIcon, LogOutIcon } from 'lucide-vue-next'
 import { computed, defineAsyncComponent, onBeforeMount, onUnmounted, ref, watch } from 'vue'
 
 import ActionCenterIcon from '@/assets/icons/action-center.svg?component'
@@ -45,6 +46,7 @@ const emit = defineEmits<{
   (e: 'search', query: string): void
   (e: 'call-guest', id: string): void
   (e: 'serve-guest', id: string): void
+  (e: 'skip-guest', id: string): void
 }>()
 
 const QueueFilterDropdown = defineAsyncComponent(() => import('./QueueFilterDropdown.vue'))
@@ -81,8 +83,9 @@ const qrVerifyEntryId = ref<string | null>(null)
 const hasActiveCalledEntry = computed(() =>
   (props.activeEntries || []).some((e) => e.status === ENTRY_STATUS.CALLED),
 )
+const displayedServedEntries = computed(() => props.servedEntries || [])
 const totalCount = computed(
-  () => (props.activeEntries?.length || 0) + (props.servedEntries?.length || 0),
+  () => (props.activeEntries?.length || 0) + (displayedServedEntries.value?.length || 0),
 )
 const availablePartySizes = computed(() => {
   const sizes = new Set(props.activeEntries.map((e) => e.partySize).filter((s): s is number => !!s))
@@ -138,7 +141,7 @@ onUnmounted(() => {
 
 // 12. Lifecycle hooks
 onBeforeMount(async () => {
-  if (props.activeEntries?.length === 0 && (props.servedEntries?.length || 0) > 0) {
+  if (props.activeEntries?.length === 0 && (displayedServedEntries.value?.length || 0) > 0) {
     isHistoryExpanded.value = true
   }
 
@@ -177,7 +180,7 @@ onBeforeMount(async () => {
 watch(
   () => props.activeEntries?.length,
   (newVal) => {
-    if (newVal === 0 && (props.servedEntries?.length || 0) > 0) {
+    if (newVal === 0 && (displayedServedEntries.value?.length || 0) > 0) {
       isHistoryExpanded.value = true
     }
   },
@@ -266,6 +269,7 @@ function handleQrClose() {
         >
           <SearchIcon class="h-[10px] w-[10px] text-plum-muted" />
           <input
+            id="search-entry"
             :value="searchQuery"
             placeholder="Search ..."
             class="ml-2 w-full border-none bg-transparent font-body text-xs sm:text-sm font-medium text-plum placeholder:text-plum-muted tracking-wider focus:outline-none"
@@ -522,7 +526,7 @@ function handleQrClose() {
     </div>
 
     <div
-      v-if="servedEntries.length > 0"
+      v-if="displayedServedEntries.length > 0"
       class="border-t border-plum-faint bg-plum-faint/10 dark:bg-plum-faint/30"
     >
       <button
@@ -530,7 +534,7 @@ function handleQrClose() {
         @click="isHistoryExpanded = !isHistoryExpanded"
       >
         <span class="font-body text-xs font-bold uppercase tracking-widest">
-          Served Today ({{ servedEntries.length }})
+          Past Guests ({{ displayedServedEntries.length }})
         </span>
         <svg
           class="w-4 h-4 transition-transform"
@@ -554,7 +558,7 @@ function handleQrClose() {
         class="max-h-[240px] overflow-y-auto px-6 pb-4 pt-1 flex flex-col gap-2"
       >
         <div
-          v-for="entry in servedEntries"
+          v-for="entry in displayedServedEntries"
           :key="entry.id"
           class="group flex cursor-pointer items-center rounded-xl border border-plum-faint bg-plum-faint/10 px-3 py-3 opacity-60 hover:opacity-100 transition-all"
           @click="openDetails(entry)"
@@ -565,6 +569,12 @@ function handleQrClose() {
             >
               <template v-if="entry.servedAt">
                 <CheckIcon class="h-4 w-4" />
+              </template>
+              <template v-else-if="entry.status === ENTRY_STATUS.SKIPPED">
+                <BanIcon class="h-4 w-4 text-plum-muted" />
+              </template>
+              <template v-else-if="entry.status === ENTRY_STATUS.LEFT">
+                <LogOutIcon class="h-4 w-4 text-plum-muted" />
               </template>
               <template v-else>
                 {{ entry.position || '—' }}
@@ -580,6 +590,36 @@ function handleQrClose() {
                     minute: '2-digit',
                   })
                 }}
+              </p>
+              <p
+                v-else-if="entry.status === ENTRY_STATUS.SKIPPED"
+                class="font-body text-sm text-plum-muted"
+              >
+                Skipped
+                <template v-if="entry.finishedAt">
+                  at
+                  {{
+                    new Date(entry.finishedAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  }}
+                </template>
+              </p>
+              <p
+                v-else-if="entry.status === ENTRY_STATUS.LEFT"
+                class="font-body text-sm text-plum-muted"
+              >
+                Left Queue
+                <template v-if="entry.finishedAt">
+                  at
+                  {{
+                    new Date(entry.finishedAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })
+                  }}
+                </template>
               </p>
             </div>
           </div>
@@ -629,6 +669,12 @@ function handleQrClose() {
       @serve="
         (id) => {
           emit('serve-guest', id)
+          closeDetails()
+        }
+      "
+      @skip="
+        (id) => {
+          emit('skip-guest', id)
           closeDetails()
         }
       "

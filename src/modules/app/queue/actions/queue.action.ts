@@ -136,6 +136,11 @@ export async function serveGuest(id: string, entryId: string): Promise<void> {
   await apiClient.post(API_ROUTES.QUEUE.SERVE(id, entryId), null, config)
 }
 
+export async function skipGuest(id: string, entryId: string): Promise<void> {
+  const config = createApiRequestConfig({}, { withCredentials: true })
+  await apiClient.post(API_ROUTES.QUEUE.SKIP(id, entryId), null, config)
+}
+
 export async function registerHostFCM(id: string, fcmToken: string): Promise<void> {
   const config = createApiRequestConfig({}, { withCredentials: true })
   await apiClient.post(API_ROUTES.QUEUE.REGISTER_HOST_FCM(id), { fcm_token: fcmToken }, config)

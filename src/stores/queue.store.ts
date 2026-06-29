@@ -15,6 +15,7 @@ import {
   claimQueue as apiClaimQueue,
   registerHostFCM as apiRegisterHostFCM,
   serveGuest as apiServeGuest,
+  skipGuest as apiSkipGuest,
   unregisterHostFCM as apiUnregisterHostFCM,
   updateQueue as apiUpdateQueue,
   findQueueByIdOrSlugOrCode,
@@ -705,6 +706,19 @@ export const useQueueStore = defineStore('queue', {
         return true
       } catch (e: unknown) {
         this.error = getErrorMessage(e, 'Failed to serve guest')
+        return false
+      }
+    },
+
+    async skipGuest(entryId: string): Promise<boolean> {
+      if (!this.activeQueue) return false
+
+      this.error = null
+      try {
+        await apiSkipGuest(this.activeQueue.id, entryId)
+        return true
+      } catch (e: unknown) {
+        this.error = getErrorMessage(e, 'Failed to skip guest')
         return false
       }
     },

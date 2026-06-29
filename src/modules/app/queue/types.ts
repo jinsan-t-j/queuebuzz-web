@@ -32,6 +32,7 @@ export interface QueueRecord {
 export interface QueueEntry {
   id: string
   ticketNo: number
+  verifyCode?: string
   position?: number
   name: string
   email?: string

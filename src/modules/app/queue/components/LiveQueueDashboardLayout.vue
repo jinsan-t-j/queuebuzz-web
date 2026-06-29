@@ -98,6 +98,7 @@ const {
   handleCallNext,
   handleCallGuest,
   handleServeGuest,
+  handleSkipGuest,
   handleStatusUpdateConfirm,
   handleUpdateSettings,
   handleUpdateNotes,
@@ -332,6 +333,7 @@ function openLiveScreen() {
             @search="handleSearchUpdate"
             @call-guest="handleCallGuest"
             @serve-guest="handleServeGuest"
+            @skip-guest="handleSkipGuest"
             @disable-strict-mode="showDisableStrictModal = true"
           />
         </div>

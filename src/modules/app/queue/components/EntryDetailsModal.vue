@@ -16,6 +16,9 @@ import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
+import { useQueueStore } from '@/stores/queue.store'
+
+import TicketPrintTemplate from './TicketPrintTemplate.vue'
 
 // Icons
 
@@ -32,6 +35,7 @@ const emit = defineEmits<{
   (e: 'close'): void
   (e: 'call', id: string): void
   (e: 'serve', id: string): void
+  (e: 'skip', id: string): void
   (e: 'verify', id: string): void
 }>()
 
@@ -44,6 +48,8 @@ const statusConfig = computed(() => {
       return { label: 'Currently Called', color: 'bg-mint text-on-mint font-bold' }
     case ENTRY_STATUS.SERVED:
       return { label: 'Successfully Served', color: 'bg-mint/10 text-mint' }
+    case ENTRY_STATUS.SKIPPED:
+      return { label: 'Skipped Turn', color: 'bg-danger/10 text-danger' }
     case ENTRY_STATUS.ARRIVED:
       return { label: 'Confirmed Arrival', color: 'bg-mint text-on-mint font-bold' }
     case ENTRY_STATUS.IDLE:
@@ -69,6 +75,31 @@ const estWaitMin = computed(() => {
   if (props.entry.status !== ENTRY_STATUS.WAITING || !props.entry.position) return 0
   return Math.max(0, (props.entry.position - 1) * (props.avgServiceMins || 0))
 })
+
+const queueStore = useQueueStore()
+
+const guestQrUrl = computed(() => {
+  if (!queueStore.activeQueue) return ''
+  const slugOrId = queueStore.activeQueue.slug || queueStore.activeQueue.id
+  return `${globalThis.location?.origin || ''}/q/${slugOrId}/status`
+})
+
+const formattedJoinDate = computed(() => {
+  if (!props.entry.createdAt) return ''
+  try {
+    return new Date(props.entry.createdAt).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch {
+    return ''
+  }
+})
+
+function printTicket() {
+  globalThis.print?.()
+}
 </script>
 
 <template>
@@ -144,6 +175,20 @@ const estWaitMin = computed(() => {
             <span class="font-body text-sm text-plum-muted">Joined At</span>
             <span class="font-body text-base font-bold text-plum">{{ formattedJoinedTime }}</span>
           </div>
+          <div
+            v-if="
+              entry.verifyCode &&
+              ([ENTRY_STATUS.CALLED, ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(
+                entry.status,
+              )
+            "
+            class="flex items-center justify-between"
+          >
+            <span class="font-body text-sm text-plum-muted">Verify Code</span>
+            <span class="font-mono text-base font-bold tracking-[0.2em] text-plum">
+              {{ entry.verifyCode }}
+            </span>
+          </div>
         </div>
 
         <!-- Actions -->
@@ -157,6 +202,7 @@ const estWaitMin = computed(() => {
             "
             class="flex flex-col gap-3"
           >
+            <!-- Primary Action -->
             <BaseButton
               variant="primary"
               class="w-full py-4 text-base font-bold"
@@ -165,24 +211,75 @@ const estWaitMin = computed(() => {
               <CheckIcon class="mr-2 h-5 w-5" />
               Mark as Served
             </BaseButton>
-            <BaseButton
-              variant="ghost"
-              class="w-full border border-plum-faint"
-              @click="emit('verify', entry.id)"
-            >
-              <QrScanIcon class="mr-2 h-4 w-4" />
-              Scan QR to Verify
-            </BaseButton>
-            <BaseButton
+
+            <!-- Secondary Utility Row (Side-by-side) -->
+            <div class="grid grid-cols-2 gap-3">
+              <BaseButton
+                variant="ghost"
+                class="w-full border border-plum-faint font-semibold"
+                @click="emit('verify', entry.id)"
+              >
+                <QrScanIcon class="mr-2 h-4 w-4" />
+                Scan QR
+              </BaseButton>
+              <BaseButton
+                variant="ghost"
+                class="w-full border border-plum-faint font-semibold"
+                @click="printTicket"
+              >
+                <svg
+                  class="mr-2 h-4 w-4 text-plum-muted"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                  />
+                </svg>
+                Print Ticket
+              </BaseButton>
+            </div>
+
+            <!-- Tertiary / Destructive Row -->
+            <div
               v-if="([ENTRY_STATUS.ARRIVED, ENTRY_STATUS.IDLE] as string[]).includes(entry.status)"
-              variant="ghost"
-              class="w-full text-danger"
-              @click="emit('call', entry.id)"
+              class="grid grid-cols-2 gap-3"
             >
-              <CallNextIcon class="mr-2 h-4 w-4" />
-              {{ entry.status === ENTRY_STATUS.IDLE ? 'Call Again' : 'Re-call Guest' }}
+              <BaseButton
+                variant="ghost"
+                class="w-full border border-plum-faint font-semibold"
+                @click="emit('call', entry.id)"
+              >
+                <CallNextIcon class="mr-2 h-4 w-4 text-plum-muted" />
+                {{ entry.status === ENTRY_STATUS.IDLE ? 'Call Again' : 'Re-call' }}
+              </BaseButton>
+              <BaseButton
+                variant="ghost"
+                class="w-full border border-danger/20 text-danger hover:bg-danger/5 font-semibold"
+                @click="emit('skip', entry.id)"
+              >
+                <CloseXIcon class="mr-2 h-4 w-4" />
+                Skip Guest
+              </BaseButton>
+            </div>
+            <div v-else class="grid grid-cols-1">
+              <BaseButton
+                variant="ghost"
+                class="w-full border border-danger/20 text-danger hover:bg-danger/5 font-semibold"
+                @click="emit('skip', entry.id)"
+              >
+                <CloseXIcon class="mr-2 h-4 w-4" />
+                Skip Guest
+              </BaseButton>
+            </div>
+
+            <BaseButton variant="ghost" class="w-full text-plum-muted mt-2" @click="emit('close')">
+              Close
             </BaseButton>
-            <BaseButton variant="ghost" class="w-full" @click="emit('close')"> Close </BaseButton>
           </div>
 
           <!-- If waiting, show call -->
@@ -195,17 +292,87 @@ const estWaitMin = computed(() => {
               <CallNextIcon class="mr-2 h-5 w-5" />
               Call Guest
             </BaseButton>
-            <BaseButton variant="ghost" class="w-full" @click="emit('close')"> Cancel </BaseButton>
+
+            <!-- Secondary Row side-by-side: Print & Skip -->
+            <div class="grid grid-cols-2 gap-3">
+              <BaseButton
+                variant="ghost"
+                class="w-full border border-plum-faint font-semibold"
+                @click="printTicket"
+              >
+                <svg
+                  class="mr-2 h-4 w-4 text-plum-muted"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                  />
+                </svg>
+                Print Ticket
+              </BaseButton>
+              <BaseButton
+                variant="ghost"
+                class="w-full border border-danger/20 text-danger hover:bg-danger/5 font-semibold"
+                @click="emit('skip', entry.id)"
+              >
+                <CloseXIcon class="mr-2 h-4 w-4" />
+                Skip Guest
+              </BaseButton>
+            </div>
+
+            <BaseButton variant="ghost" class="w-full text-plum-muted mt-2" @click="emit('close')">
+              Cancel
+            </BaseButton>
           </div>
 
           <!-- Default close for other statuses -->
           <div v-else class="flex flex-col gap-3">
-            <BaseButton variant="primary" class="w-full py-4" @click="emit('close')">
-              Close
-            </BaseButton>
+            <div class="grid grid-cols-2 gap-3">
+              <BaseButton
+                variant="ghost"
+                class="w-full border border-plum-faint font-semibold"
+                @click="printTicket"
+              >
+                <svg
+                  class="mr-2 h-4 w-4 text-plum-muted"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                  />
+                </svg>
+                Print Ticket
+              </BaseButton>
+              <BaseButton variant="primary" class="w-full" @click="emit('close')">
+                Close
+              </BaseButton>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </BaseModal>
+
+  <!-- Teleport container for printing the ticket -->
+  <Teleport v-if="entry" to="body">
+    <div id="print-ticket-container" class="hidden print:block">
+      <TicketPrintTemplate
+        :ticket-number="String(entry.ticketNo)"
+        :queue-name="queueStore.activeQueue?.name || 'Visitor Queue'"
+        :join-time="formattedJoinedTime"
+        :join-date="formattedJoinDate"
+        :qr-value="guestQrUrl"
+      />
+    </div>
+  </Teleport>
 </template>

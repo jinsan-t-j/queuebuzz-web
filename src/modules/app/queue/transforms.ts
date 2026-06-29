@@ -5,6 +5,7 @@ export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
   return {
     id: entry.id,
     ticketNo: entry.ticketNo,
+    verifyCode: entry.verifyCode,
     position: entry.position,
     name: entry.name || 'Guest',
     partySize: entry.partySize ?? 1,
