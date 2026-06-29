@@ -45,83 +45,87 @@ onUnmounted(async () => {
 
 <template>
   <div
-    class="fixed inset-0 z-[100] flex flex-col bg-plum text-white overflow-hidden animate-in fade-in duration-300"
+    class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-plum/60 backdrop-blur-sm animate-in fade-in duration-300"
   >
-    <!-- Header -->
-    <header class="flex items-center justify-between p-6">
-      <div class="flex flex-col gap-1">
-        <h2 class="font-display text-xl font-bold text-white">{{ title }}</h2>
-        <p class="font-body text-sm text-plum-muted">{{ subtitle }}</p>
-      </div>
-      <button
-        class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-        @click="emit('close')"
-      >
-        <X class="h-5 w-5" />
-      </button>
-    </header>
-
-    <!-- Scanner Region -->
-    <div class="relative flex-1 flex flex-col items-center justify-center px-6 pb-20">
-      <!-- Loading / No Camera Fallback -->
-      <div v-if="!isScanning && !hasError" class="flex flex-col items-center gap-4">
-        <div class="w-12 h-12 rounded-full border-4 border-white/20 border-t-mint animate-spin" />
-        <p class="font-body text-sm text-plum-muted">Initializing camera...</p>
-      </div>
-
-      <div v-if="hasError" class="flex flex-col items-center gap-6 max-w-xs text-center">
-        <div class="w-16 h-16 rounded-full bg-danger/10 flex items-center justify-center">
-          <CameraOff class="w-8 h-8 text-danger" />
+    <!-- Modal Card -->
+    <div
+      class="relative bg-plum text-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-white/10 flex flex-col animate-in zoom-in-95 duration-300"
+    >
+      <!-- Header -->
+      <header class="flex items-center justify-between p-6 pb-4">
+        <div class="flex flex-col gap-1">
+          <h2 class="font-display text-lg font-bold text-white">{{ title }}</h2>
+          <p class="font-body text-xs text-plum-muted">{{ subtitle }}</p>
         </div>
-        <div>
-          <p class="font-display font-bold text-lg mb-2">Camera Access Failed</p>
-          <p class="font-body text-sm text-plum-muted leading-relaxed">
-            We couldn't access your camera. Please ensure permissions are granted in your browser
-            settings.
-          </p>
+        <button
+          class="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          @click="emit('close')"
+        >
+          <X class="h-4 w-4" />
+        </button>
+      </header>
+
+      <!-- Scanner Region -->
+      <div class="relative flex flex-col items-center justify-center px-6 pb-8 pt-4">
+        <!-- Loading / No Camera Fallback -->
+        <div v-if="!isScanning && !hasError" class="flex flex-col items-center gap-4 py-8">
+          <div class="w-10 h-10 rounded-full border-4 border-white/20 border-t-mint animate-spin" />
+          <p class="font-body text-xs text-plum-muted">Initializing camera...</p>
         </div>
-        <BaseButton variant="primary" size="sm" @click="initialize">Try Again</BaseButton>
-      </div>
 
-      <!-- Camera Container -->
-      <div
-        v-show="isScanning"
-        class="relative w-full aspect-square max-w-[320px] rounded-[40px] border-text border-white/10 overflow-hidden shadow-2xl"
-      >
-        <div :id="scannerElementId" class="w-full h-full object-cover" />
+        <div v-if="hasError" class="flex flex-col items-center gap-6 py-6 max-w-xs text-center">
+          <div class="w-12 h-12 rounded-full bg-danger/10 flex items-center justify-center">
+            <CameraOff class="w-6 h-6 text-danger" />
+          </div>
+          <div>
+            <p class="font-display font-bold text-base mb-1">Camera Access Failed</p>
+            <p class="font-body text-xs text-plum-muted leading-relaxed">
+              Ensure camera permissions are granted in your browser settings.
+            </p>
+          </div>
+          <BaseButton variant="primary" size="sm" @click="initialize">Try Again</BaseButton>
+        </div>
 
-        <!-- Scanning Overlay Decorations -->
+        <!-- Camera Container -->
         <div
-          class="absolute inset-0 border-[2px] border-mint/30 pointer-events-none rounded-[40px]"
-        />
+          v-show="isScanning"
+          class="relative w-full aspect-square max-w-[260px] rounded-[32px] border border-white/10 overflow-hidden shadow-2xl"
+        >
+          <div :id="scannerElementId" class="w-full h-full object-cover" />
 
-        <!-- Corner Frames -->
-        <div
-          class="absolute top-8 left-8 w-8 h-8 border-t-4 border-l-4 border-mint rounded-tl-lg"
-        />
-        <div
-          class="absolute top-8 right-8 w-8 h-8 border-t-4 border-r-4 border-mint rounded-tr-lg"
-        />
-        <div
-          class="absolute bottom-8 left-8 w-8 h-8 border-b-4 border-l-4 border-mint rounded-bl-lg"
-        />
-        <div
-          class="absolute bottom-8 right-8 w-8 h-8 border-b-4 border-r-4 border-mint rounded-br-lg"
-        />
+          <!-- Scanning Overlay Decorations -->
+          <div
+            class="absolute inset-0 border-[2px] border-mint/30 pointer-events-none rounded-[32px]"
+          />
 
-        <!-- Scanning Line -->
-        <div
-          class="absolute top-0 inset-x-0 h-[2px] bg-mint/50 shadow-[0_0_15px_rgba(0,229,160,0.8)] animate-[scan_3s_infinite_linear]"
-        />
-      </div>
+          <!-- Corner Frames -->
+          <div
+            class="absolute top-6 left-6 w-6 h-6 border-t-4 border-l-4 border-mint rounded-tl-lg"
+          />
+          <div
+            class="absolute top-6 right-6 w-6 h-6 border-t-4 border-r-4 border-mint rounded-tr-lg"
+          />
+          <div
+            class="absolute bottom-6 left-6 w-6 h-6 border-b-4 border-l-4 border-mint rounded-bl-lg"
+          />
+          <div
+            class="absolute bottom-6 right-6 w-6 h-6 border-b-4 border-r-4 border-mint rounded-br-lg"
+          />
 
-      <!-- Help Text -->
-      <div
-        v-if="isScanning"
-        class="mt-12 flex items-center gap-3 bg-white/5 px-4 py-2.5 rounded-2xl animate-in slide-in-from-bottom-4 duration-500"
-      >
-        <Sparkles class="w-4 h-4 text-mint" />
-        <span class="font-body text-sm font-medium">Scanning automatically...</span>
+          <!-- Scanning Line -->
+          <div
+            class="absolute top-0 inset-x-0 h-[2px] bg-mint/50 shadow-[0_0_15px_rgba(0,229,160,0.8)] animate-[scan_3s_infinite_linear]"
+          />
+        </div>
+
+        <!-- Help Text -->
+        <div
+          v-if="isScanning"
+          class="mt-6 flex items-center gap-2 bg-white/5 px-3 py-2 rounded-xl animate-in slide-in-from-bottom-4 duration-500"
+        >
+          <Sparkles class="w-3.5 h-3.5 text-mint" />
+          <span class="font-body text-xs font-medium">Scanning automatically...</span>
+        </div>
       </div>
     </div>
   </div>
