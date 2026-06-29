@@ -71,7 +71,16 @@ function getMissingConfigFields() {
   return required.filter((f) => !import.meta.env[f])
 }
 
-const RETRIABLE_PATTERNS = ['abort', 'timeout', 'network', 'service worker', 'messaging/unknown']
+const RETRIABLE_PATTERNS = [
+  'abort',
+  'timeout',
+  'network',
+  'service worker',
+  'messaging/unknown',
+  'token-subscribe-failed',
+  'failed-service-worker-registration',
+  '20', // DOMException AbortError code
+]
 
 function isRetriableTokenError(message: string) {
   const lower = message.toLowerCase()
@@ -131,7 +140,10 @@ async function ensureServiceWorker(): Promise<ServiceWorkerRegistration | undefi
     (await navigator.serviceWorker.getRegistration('/'))
 
   if (existing?.active?.scriptURL?.includes('firebase-messaging-sw.js')) {
-    await existing.update()
+    existing.update().catch((e) => {
+      // eslint-disable-next-line no-console
+      console.warn('FCM: Service worker update check failed:', e)
+    })
     localStorage.setItem(CONFIG_HASH_KEY, fingerprint)
     return waitForServiceWorkerActivation(existing)
   }
@@ -197,9 +209,16 @@ async function performTokenFetch(
 }
 
 function extractErrorMessage(error: unknown): string {
-  return String(
-    (error as { code?: string; message?: string })?.code || (error as Error)?.message || '',
-  )
+  if (!error) return ''
+  const err = error as { code?: string | number; name?: string; message?: string }
+
+  if (typeof err.code === 'number') {
+    if (err.code === 20) return 'abort'
+    if (err.code === 19) return 'network'
+    if (err.code === 30) return 'timeout'
+  }
+
+  return String(err.code || err.name || err.message || '')
 }
 
 async function handleTokenFetchError(error: unknown, attempt: number): Promise<void> {

@@ -7,17 +7,17 @@
  * @param {RouteLocationNormalized} to
  * @returns {RouteLocationRaw | undefined}
  */
-import { useToast } from '@/composables/useToast'
-import { useAuthStore } from '@/stores/auth.store'
-import { useQueueStore } from '@/stores/queue.store'
 
 import type { NavigationGuardWithThis } from 'vue-router'
 
 export const authGuard: NavigationGuardWithThis<undefined> = async (to) => {
+  const { useAuthStore } = await import('@/stores/auth.store')
   const auth = useAuthStore()
-  const { showToast } = useToast()
 
   if (!auth.isHydrated) {
+    const { useToast } = await import('@/composables/useToast')
+    const { showToast } = useToast()
+
     await auth.initializeSession({ skipLogout: true })
     if (auth.error) {
       const is401 =
@@ -28,6 +28,7 @@ export const authGuard: NavigationGuardWithThis<undefined> = async (to) => {
       }
     }
     if (auth.isAuthenticated) {
+      const { useQueueStore } = await import('@/stores/queue.store')
       const queueStore = useQueueStore()
       void queueStore.fetchActiveQueue()
     }

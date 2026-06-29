@@ -54,6 +54,7 @@ export const API_ROUTES = {
     CALL_ENTRY: (id: string, entryId?: string): string =>
       `/queue/manage/${id}/call/${entryId || ''}`,
     SERVE: (id: string, entryId: string): string => `/queue/manage/${id}/serve/${entryId}`,
+    SKIP: (id: string, entryId: string): string => `/queue/manage/${id}/skip/${entryId}`,
     ADD_ENTRY: (id: string): string => `/queue/manage/${id}/add-entry`,
     UPDATE: (id: string): string => `/queue/manage/${id}`,
     REGISTER_HOST_FCM: (id: string): string => `/queue/manage/${id}/register-host-fcm`,
