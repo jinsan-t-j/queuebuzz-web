@@ -4,6 +4,7 @@ export interface Entry {
   id: string
   queueId: string
   ticketNo: number
+  verifyCode?: string
   position?: number
   name: string
   email?: string

@@ -32,6 +32,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  verifyCode: {
+    type: String,
+    default: '',
+  },
 })
 
 const emit = defineEmits(['close'])
@@ -134,6 +138,12 @@ onMounted(() => {
             </span>
           </div>
         </div>
+
+        <!-- Verbal verification alternative -->
+        <p v-if="props.verifyCode" class="mt-2 text-center font-body text-xs text-plum-muted">
+          or tell the host:
+          <span class="font-mono font-bold tracking-wider text-plum">{{ props.verifyCode }}</span>
+        </p>
 
         <!-- Actions -->
         <div class="flex w-full flex-col gap-3">

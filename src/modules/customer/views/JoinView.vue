@@ -5,28 +5,20 @@
  */
 
 import { storeToRefs } from 'pinia'
-import { computed, defineAsyncComponent, onBeforeMount, ref } from 'vue'
+import { computed, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useToast } from '@/composables/useToast'
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
+import ActiveSessionWarning from '@/modules/customer/components/ActiveSessionWarning.vue'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import JoinCodeModal from '@/modules/customer/components/JoinCodeModal.vue'
+import JoinQueueForm from '@/modules/customer/components/JoinQueueForm.vue'
+import PWABanner from '@/modules/customer/components/PWABanner.vue'
+import QueueStateOverlay from '@/modules/customer/components/QueueStateOverlay.vue'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import type { JoinQueueFormPayload, JoinQueuePayload } from '@/modules/customer/types'
 import { useQueueStore } from '@/stores/queue.store'
-
-const ActiveSessionWarning = defineAsyncComponent(
-  () => import('@/modules/customer/components/ActiveSessionWarning.vue'),
-)
-const JoinCodeModal = defineAsyncComponent(
-  () => import('@/modules/customer/components/JoinCodeModal.vue'),
-)
-const JoinQueueForm = defineAsyncComponent(
-  () => import('@/modules/customer/components/JoinQueueForm.vue'),
-)
-const QueueStateOverlay = defineAsyncComponent(
-  () => import('@/modules/customer/components/QueueStateOverlay.vue'),
-)
 
 const route = useRoute()
 const router = useRouter()
@@ -40,6 +32,11 @@ const queueCodeError = ref('')
 const isCodePromptOpen = ref(false)
 const isVerifyingCode = ref(false)
 const resolvedQueueId = ref<string | null>(null)
+const isAndroid = ref(false)
+
+if (typeof navigator !== 'undefined') {
+  isAndroid.value = /Android/i.test(navigator.userAgent)
+}
 
 const queueRouteKey = computed(() => {
   const value = route.params.queueId
@@ -160,18 +157,30 @@ const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
   return result
 }
 
-onBeforeMount(async () => {
-  if (customerStore.isJoined) {
-    await customerStore.fetchEntry()
+// Initialize queue state immediately on component creation for faster loading
+const initQueueState = async () => {
+  // Execute both entry fetching and queue initialization in parallel to avoid sequential network round-trips.
+  // Avoid duplicate network requests if the entry has already been loaded by the navigation guard.
+  const fetchEntryPromise =
+    customerStore.isJoined && !customerStore.entry ? customerStore.fetchEntry() : Promise.resolve()
+
+  let initQueuePromise: Promise<boolean>
+  if (routeCode.value) {
+    initQueuePromise = resolveQueueCode(routeCode.value)
+  } else if (queueRouteKey.value) {
+    initQueuePromise = initializeQueue(queueRouteKey.value)
+  } else {
+    initQueuePromise = Promise.resolve(false)
   }
 
+  await Promise.all([fetchEntryPromise, initQueuePromise])
+
   if (routeCode.value) {
-    await resolveQueueCode(routeCode.value)
     return
   }
 
   if (queueRouteKey.value) {
-    const success = await initializeQueue(queueRouteKey.value)
+    const success = await initQueuePromise
     if (success) {
       if (queueStore.activeQueue?.status === 'PAUSED') {
         return
@@ -190,11 +199,27 @@ onBeforeMount(async () => {
   }
 
   isCodePromptOpen.value = true
-})
+}
+
+initQueueState()
 
 function handleJoinByCode() {
   isCodePromptOpen.value = true
 }
+
+// Speculative prefetch of subsequent customer views in the background to guarantee instant transitions
+if (globalThis.window !== undefined) {
+  setTimeout(() => {
+    void import('@/modules/customer/views/WaitingView.vue')
+    void import('@/modules/customer/views/CalledView.vue')
+    void import('@/modules/customer/views/IdleView.vue')
+  }, 1000)
+}
+
+// Clean up the public events connection when navigating away to conserve bandwidth and CPU
+onUnmounted(() => {
+  queueStore.disconnectLiveUpdates()
+})
 </script>
 
 <template>
@@ -204,7 +229,7 @@ function handleJoinByCode() {
       class="pointer-events-none absolute -right-16 -top-16 h-[250px] w-[250px] rounded-[125px] bg-mint-light/70 blur-[40px]"
     />
     <div
-      class="pointer-events-none absolute -bottom-16 -left-28 h-[238px] w-[238px] rounded-[100px] bg-warning/35 blur-[40px]"
+      class="pointer-events-none absolute -bottom-16 -left-28 h-[238px] w-full rounded-[100px] bg-warning/35 blur-[40px]"
     />
 
     <div
@@ -237,6 +262,8 @@ function handleJoinByCode() {
         :profile-url="activeQueue.hostProfileImageUrl"
         :banner-url="activeQueue.hostBannerImageUrl"
       />
+
+      <PWABanner v-if="!isAndroid" />
 
       <!-- Already in another queue warning -->
       <ActiveSessionWarning

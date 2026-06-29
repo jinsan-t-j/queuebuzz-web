@@ -281,6 +281,7 @@ export const useCustomerStore = defineStore('customer', {
                 id: payload.id,
                 queueId: payload.queueId,
                 ticketNo: payload.ticketNo,
+                verifyCode: payload.verifyCode,
                 position: payload.position,
                 name: payload.name,
                 email: payload.email,
