@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: default-src 'self'; connect-src 'self' https://api.queuebuzz.com https://storage.queuebuzz.com https://*.googleapis.com https://*.firebase.com https://checkout.dodopayments.com; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://accounts.google.com https://checkout.dodopayments.com; img-src 'self' data: https: https://storage.queuebuzz.com;
+  Content-Security-Policy: default-src 'self'; connect-src 'self' https://api.queuebuzz.com https://storage.queuebuzz.com https://*.googleapis.com https://*.firebase.com https://checkout.dodopayments.com; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'self' https://accounts.google.com https://checkout.dodopayments.com; img-src 'self' data: https: https://storage.queuebuzz.com;
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Referrer-Policy: no-referrer
