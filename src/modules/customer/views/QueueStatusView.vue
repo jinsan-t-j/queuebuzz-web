@@ -12,7 +12,6 @@ import {
   Minimize2,
   Sparkles,
   Tv,
-  User,
   Volume2,
   VolumeX,
 } from 'lucide-vue-next'
@@ -86,6 +85,65 @@ function playChime() {
   }
 }
 
+// Text-to-Speech (Voice-over) using Web Speech API
+function speakTicket(ticketNo: string) {
+  if (!isSoundEnabled.value) return
+  try {
+    if (globalThis.window === undefined || !globalThis.speechSynthesis) return
+
+    // Cancel any ongoing speech so it speaks the new one immediately
+    globalThis.speechSynthesis.cancel()
+
+    // Clean and split ticket number characters to spell it out clearly (e.g., A - 1 - 2 - 3)
+    const spelledNo = ticketNo
+      .replace(/[^a-zA-Z0-9]/g, ' ')
+      .split('')
+      .filter((char) => char.trim() !== '')
+      .join(' ')
+
+    const text = `Ticket number ${spelledNo}`
+    const utterance = new SpeechSynthesisUtterance(text)
+
+    // Set voice to a clear female voice (preferably Indian English, falling back to standard English female)
+    const voices = globalThis.speechSynthesis.getVoices()
+    const femaleVoicePatterns = [
+      'veena', // macOS Indian English female
+      'heera', // Windows Indian English female
+      'samantha', // macOS standard clear female
+      'zira', // Windows standard clear female
+      'karen', // macOS Australian English female
+      'tessa', // macOS South African English female
+      'moira', // macOS Irish English female
+      'female',
+      'woman',
+      'google us english', // Chrome/Android female
+      'google uk english female',
+    ]
+
+    let selectedVoice = voices.find((v) => {
+      const nameLower = v.name.toLowerCase()
+      return femaleVoicePatterns.some((pattern) => nameLower.includes(pattern))
+    })
+
+    // Fallback to any en-IN or English voice if no specific female voice matches
+    if (!selectedVoice) {
+      selectedVoice =
+        voices.find((v) => v.lang === 'en-IN') || voices.find((v) => v.lang.startsWith('en'))
+    }
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice
+    }
+
+    utterance.rate = 0.7 // Slower speech rate for better comprehension over speaker systems
+    utterance.pitch = 1
+
+    globalThis.speechSynthesis.speak(utterance)
+  } catch {
+    // TTS fallback silent catch
+  }
+}
+
 // Trigger screen blink / flash
 function triggerFlash() {
   isFlashing.value = true
@@ -123,6 +181,12 @@ watch(
     if (oldVal !== undefined && newVal !== oldVal && newVal !== '') {
       playChime()
       triggerFlash()
+      const nextTicket = activeCalls.value[0]
+      if (nextTicket && nextTicket.ticketNo) {
+        setTimeout(() => {
+          speakTicket(String(nextTicket.ticketNo))
+        }, 800)
+      }
     }
   },
 )
@@ -358,16 +422,6 @@ onUnmounted(() => {
                 >
                   {{ currentServing.ticketNo }}
                 </div>
-
-                <!-- Guest details -->
-                <div
-                  class="mt-6 flex items-center gap-3 bg-sand px-6 py-3 rounded-full border border-plum-faint"
-                >
-                  <User class="h-5 w-5 text-plum-muted" />
-                  <span class="font-body text-xl font-bold text-plum-soft">
-                    {{ currentServing.name }}
-                  </span>
-                </div>
               </div>
 
               <!-- Empty/Idle state -->
@@ -403,9 +457,6 @@ onUnmounted(() => {
                 >
                   <span class="font-mono font-bold text-2xl text-plum-soft">{{
                     entry.ticketNo
-                  }}</span>
-                  <span class="font-body text-xs text-plum-muted mt-1 truncate max-w-full">{{
-                    entry.name
                   }}</span>
                 </div>
               </div>
