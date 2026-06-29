@@ -1,5 +1,9 @@
 import { test, expect } from '../fixtures/base.fixture'
-import { makeDashboardResponse, makeActiveQueueDashboard } from '../fixtures/mocks/host.mock'
+import {
+  makeDashboardResponse,
+  makeActiveQueueDashboard,
+  makeLiveQueueEntries,
+} from '../fixtures/mocks/host.mock'
 
 /**
  * @spec Queue Lifecycle
@@ -50,6 +54,102 @@ test.describe('Queue Lifecycle', () => {
 
     // Should render the queue management page (heading visible)
     await expect(page.getByRole('heading').first()).toBeVisible({ timeout: 8000 })
+  })
+
+  test('should open and close the host QR modal from the live dashboard', async ({
+    page,
+    mockApi,
+  }) => {
+    await mockApi('/queue/dashboard', makeActiveQueueDashboard())
+    await mockApi('/queue/active', {
+      data: {
+        id: 'q-123',
+        public_id: 'p-q-123',
+        queue_name: 'Morning Consultation',
+        status: 'active',
+        waiting: 3,
+        is_active: true,
+        joinCode: 'CLNC01',
+        startedAt: new Date().toISOString(),
+      },
+    })
+    await mockApi('/queue/manage/q-123/live', {
+      data: makeLiveQueueEntries().data,
+    })
+
+    await page.goto('/dashboard/queue')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByRole('button', { name: 'Show QR' })).toBeVisible({ timeout: 10000 })
+    await page.getByRole('button', { name: 'Show QR' }).click()
+
+    await expect(page.getByRole('heading', { name: 'Queue is open!' })).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(page.getByText('CLNC01').first()).toBeVisible()
+    await expect(page.getByRole('button', { name: 'SHARE JOIN LINK' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'CLOSE' }).click()
+
+    await expect(page.getByRole('heading', { name: 'Queue is open!' })).not.toBeVisible()
+  })
+
+  test('should surface scanner error state when camera access is unavailable', async ({
+    page,
+    mockApi,
+  }) => {
+    await page.addInitScript(() => {
+      const mediaDevices = navigator.mediaDevices
+      if (mediaDevices) {
+        Object.defineProperty(mediaDevices, 'getUserMedia', {
+          value: async () => {
+            throw new Error('Permission denied')
+          },
+        })
+      }
+    })
+
+    await mockApi('/queue/dashboard', makeActiveQueueDashboard())
+    await mockApi('/queue/active', {
+      data: {
+        id: 'q-123',
+        public_id: 'p-q-123',
+        queue_name: 'Morning Consultation',
+        status: 'active',
+        waiting: 3,
+        is_active: true,
+        joinCode: 'CLNC01',
+        startedAt: new Date().toISOString(),
+      },
+    })
+    await mockApi('/queue/manage/q-123/live', {
+      data: [
+        {
+          id: 'e-1',
+          ticket_no: 101,
+          ticketNo: 101,
+          name: 'Aditya R.',
+          status: 'called',
+          position: 1,
+          createdAt: new Date().toISOString(),
+          verifyCode: 'A1B2C3',
+        },
+      ],
+    })
+
+    await page.goto('/dashboard/queue')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByText('Aditya R.').first()).toBeVisible({ timeout: 10000 })
+    await page.getByText('Aditya R.').first().click()
+
+    await expect(page.getByRole('button', { name: 'Scan QR to Verify' })).toBeVisible({
+      timeout: 10000,
+    })
+    await page.getByRole('button', { name: 'Scan QR to Verify' }).click()
+
+    await expect(page.getByText('Camera Access Failed').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('button', { name: 'Try Again' })).toBeVisible()
   })
 
   test('should show or hide Week tab in Queue Analysis Card based on queue expiry', async ({

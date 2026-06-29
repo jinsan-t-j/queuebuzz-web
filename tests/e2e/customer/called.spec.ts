@@ -99,4 +99,21 @@ test.describe('Customer Called', () => {
     // Leave option
     await expect(page.getByText('Leave').first()).toBeVisible()
   })
+
+  test('should open and close the arrival QR modal', async ({ page }) => {
+    await page.goto('/q/q-123/called')
+    await expect(page.getByRole('button', { name: 'SHOW QR' })).toBeVisible({ timeout: 10000 })
+
+    await page.getByRole('button', { name: 'SHOW QR' }).click()
+
+    await expect(page.getByRole('heading', { name: 'Your Arrival QR' })).toBeVisible({
+      timeout: 10000,
+    })
+    await expect(page.getByText('Ticket').first()).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Save to Gallery' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Got it' }).click()
+
+    await expect(page.getByRole('heading', { name: 'Your Arrival QR' })).not.toBeVisible()
+  })
 })
