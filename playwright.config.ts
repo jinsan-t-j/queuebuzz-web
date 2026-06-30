@@ -67,7 +67,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4002',
+    command: 'npm run build && node scripts/preview-server.js',
     url: 'http://127.0.0.1:4002',
     reuseExistingServer: !process.env.CI,
     stdout: 'ignore',
