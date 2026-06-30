@@ -34,12 +34,14 @@ const server = http.createServer((req, res) => {
     filePath = path.join(filePath, 'index.html')
   }
 
-  // Check if file exists, if not, fall back to spa.htm
+  // Check if file exists, if not, fall back to index.html (pre-rendered Home page).
+  // With JS enabled, Vue router hydrates and navigates to the correct route.
+  // With JS disabled, the user sees the pre-rendered Home content as a safe fallback.
   let exists = fs.existsSync(filePath)
   if (!exists) {
     const ext = path.extname(urlPath)
     if (!ext) {
-      filePath = path.join(distDir, 'spa.htm')
+      filePath = path.join(distDir, 'index.html')
       exists = fs.existsSync(filePath)
     }
   }
@@ -56,7 +58,6 @@ const server = http.createServer((req, res) => {
 
   res.writeHead(200, {
     'Content-Type': contentType,
-    'Access-Control-Allow-Origin': '*',
   })
 
   const stream = fs.createReadStream(filePath)
