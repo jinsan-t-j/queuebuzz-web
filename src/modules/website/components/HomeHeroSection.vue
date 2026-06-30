@@ -97,7 +97,8 @@ const marqueeRows = computed(() => {
         class="mt-8 font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-plum tracking-tight leading-[0.95] max-w-5xl mx-auto uppercase"
       >
         ZERO LINES. <br />
-        <span class="bg-gradient-to-r from-mint-dark to-emerald-500 bg-clip-text text-transparent"
+        <span
+          class="bg-gradient-to-r from-mint-dark to-emerald-700 dark:to-emerald-400 bg-clip-text text-transparent"
           >BETTER BUSINESS.</span
         >
       </h1>
@@ -203,7 +204,7 @@ const marqueeRows = computed(() => {
         >
           <!-- Row 1: Orange Band -->
           <div
-            class="flex overflow-x-hidden select-none bg-[#F97316] py-4 shadow-[0_4px_12px_rgba(249,115,22,0.15)]"
+            class="flex overflow-x-hidden select-none bg-warning-dark py-4 shadow-[0_4px_12px_rgba(194,65,12,0.15)]"
           >
             <div
               class="flex gap-16 shrink-0 animate-marquee items-center whitespace-nowrap"
@@ -233,7 +234,7 @@ const marqueeRows = computed(() => {
                     <div
                       class="w-7.5 h-7.5 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0"
                     >
-                      <component :is="item.icon" class="w-4 h-4 text-[#F97316]" />
+                      <component :is="item.icon" class="w-4 h-4 text-warning-dark" />
                     </div>
                     <span class="font-body text-sm font-bold text-white tracking-wide">{{
                       item.name
@@ -250,7 +251,7 @@ const marqueeRows = computed(() => {
 
           <!-- Row 2: Vibrant Blue Band -->
           <div
-            class="flex overflow-x-hidden select-none bg-[#3B82F6] py-4 shadow-[0_4px_12px_rgba(59,130,246,0.15)]"
+            class="flex overflow-x-hidden select-none bg-blue-700 py-4 shadow-[0_4px_12px_rgba(29,78,216,0.15)]"
           >
             <div
               class="flex gap-16 shrink-0 animate-marquee-reverse items-center whitespace-nowrap"
@@ -280,7 +281,7 @@ const marqueeRows = computed(() => {
                     <div
                       class="w-7.5 h-7.5 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0"
                     >
-                      <component :is="item.icon" class="w-4 h-4 text-[#3B82F6]" />
+                      <component :is="item.icon" class="w-4 h-4 text-blue-700" />
                     </div>
                     <span class="font-body text-sm font-bold text-white tracking-wide">{{
                       item.name

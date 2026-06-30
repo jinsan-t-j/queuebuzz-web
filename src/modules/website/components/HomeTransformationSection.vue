@@ -37,7 +37,7 @@ defineProps<{
         <BaseBadge class="mb-4">THE UPGRADE</BaseBadge>
         <h2 class="font-display text-4xl font-bold md:text-6xl">
           From <span class="text-plum-muted line-through opacity-30">chaos</span> to
-          <span class="text-mint">calm.</span>
+          <span class="text-mint-dark">calm.</span>
         </h2>
       </div>
 
@@ -64,9 +64,11 @@ defineProps<{
               <div
                 class="h-16 w-16 rounded-[24px] bg-mint-light flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500"
               >
-                <component :is="item.icon" class="h-8 w-8 text-mint" />
+                <component :is="item.icon" class="h-8 w-8 text-mint-dark" />
               </div>
-              <p class="font-display text-xs font-bold uppercase tracking-widest text-mint mb-2">
+              <p
+                class="font-display text-xs font-bold uppercase tracking-widest text-mint-dark mb-2"
+              >
                 THE QUEUEBUZZ WAY
               </p>
               <p class="font-display text-2xl font-bold text-plum">{{ item.calm }}</p>

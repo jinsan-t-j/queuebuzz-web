@@ -131,6 +131,7 @@ function closeCropper() {
               v-model="brandTitle"
               type="text"
               placeholder="Business Name"
+              aria-label="Business Name"
               class="bg-transparent font-display text-lg font-bold drop-shadow-md outline-none border-b border-dashed border-white/30 focus:border-white focus:ring-0 p-0 h-auto w-44 transition-all cursor-text"
               :class="
                 bannerPreview ? 'text-white placeholder-white/50' : 'text-plum placeholder-plum/50'
