@@ -193,7 +193,6 @@ export default defineConfig(({ mode }) => {
                 return 'radix'
               if (id.includes('vee-validate') || id.includes('yup')) return 'form-validation'
               if (id.includes('html-to-image')) return 'capture'
-              if (id.includes('axios')) return 'axios'
               if (id.includes('date-fns') || id.includes('dompurify')) return 'utils'
               if (id.includes('vue') || id.includes('pinia')) return 'vendor'
             }

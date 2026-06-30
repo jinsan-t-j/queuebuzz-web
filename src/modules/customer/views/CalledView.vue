@@ -101,6 +101,19 @@ const ticketNumberParts = computed(() => {
 })
 const queueName = computed(() => activeQueue.value?.name || 'Your Queue')
 
+const formattedJoinDate = computed(() => {
+  if (!entry.value?.createdAt) return ''
+  try {
+    return new Date(entry.value.createdAt).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch {
+    return ''
+  }
+})
+
 onBeforeMount(async () => {
   // Always fetch entry to validate active session on mount
   await fetchEntry()
@@ -395,9 +408,7 @@ const handleFinishService = async () => {
         </p>
         <p class="mt-4 font-mono text-[92px] font-black leading-[92px] text-plum">
           {{ ticketNumberParts.prefix
-          }}<template v-if="ticketNumberParts.suffix"
-            >-<br />{{ ticketNumberParts.suffix }}</template
-          >
+          }}<template v-if="ticketNumberParts.suffix">-<br />{{ ticketNumber }}</template>
         </p>
 
         <!-- Show QR button -->
@@ -417,6 +428,18 @@ const handleFinishService = async () => {
         >
           {{ isSaved ? '✓ SAVED TO GALLERY' : 'SAVE TICKET IMAGE' }}
         </button>
+      </div>
+
+      <!-- Verification Code -->
+      <div
+        v-if="entry?.verifyCode"
+        class="mt-4 rounded-2xl border border-plum-faint bg-white/60 px-5 py-4 text-center"
+      >
+        <p class="font-body text-xs uppercase tracking-[2.4px] text-plum/50">Verification Code</p>
+        <p class="mt-1.5 font-mono text-2xl font-bold tracking-[0.3em] text-plum">
+          {{ entry.verifyCode }}
+        </p>
+        <p class="mt-1 font-body text-xs text-plum-muted">Share this with the host if asked</p>
       </div>
 
       <!-- Main CTA Button (I'm Here / Service Finished) -->
@@ -469,6 +492,7 @@ const handleFinishService = async () => {
         :is-open="isQrModalOpen"
         :entry-id="entry.id"
         :ticket-no="ticketNumber"
+        :verify-code="entry.verifyCode || ''"
         @close="isQrModalOpen = false"
       />
 
@@ -477,7 +501,7 @@ const handleFinishService = async () => {
         v-if="entry"
         :ticket-number="String(entry.ticketNo)"
         :queue-name="queueName"
-        join-date="Apr 01, 2026"
+        :join-date="formattedJoinDate"
       />
     </div>
   </div>

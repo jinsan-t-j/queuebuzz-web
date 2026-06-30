@@ -123,8 +123,10 @@ export function useCustomer() {
       const pos = position.value
       if (pos == null) return null
       const aheadVal = Math.max(0, pos - 1)
-      const avgServiceMins = useQueueStore().activeQueue?.avgServiceMins ?? 0
-      return aheadVal * avgServiceMins
+      const activeQueue = useQueueStore().activeQueue
+      const avgServiceMins = activeQueue?.avgServiceMins ?? 0
+      const bufferMins = activeQueue?.bufferMins ?? 0
+      return aheadVal * avgServiceMins + bufferMins
     }),
 
     canJoinWithParty: computed(() => useQueueStore().canJoinWithParty),

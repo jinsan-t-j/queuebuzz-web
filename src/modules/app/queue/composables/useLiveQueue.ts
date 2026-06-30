@@ -195,6 +195,15 @@ export function useLiveQueue() {
     }
   }
 
+  async function handleSkipGuest(entryId: string) {
+    const success = await store.skipGuest(entryId)
+    if (success) {
+      showToast('Guest marked as skipped.')
+    } else if (store.error) {
+      showToast(store.error, { type: 'error' })
+    }
+  }
+
   async function handleUpdateSettings(payload: UpdateQueuePayload) {
     const updated = await store.updateQueue(payload, { silent: true })
     if (updated) {
@@ -240,7 +249,6 @@ export function useLiveQueue() {
         return false
       }
 
-      showToast('Notifications enabled successfully.')
       return true
     } catch (e: unknown) {
       const errorMessage =
@@ -314,6 +322,7 @@ export function useLiveQueue() {
     handleCallNext,
     handleCallGuest,
     handleServeGuest,
+    handleSkipGuest,
     handleStatusUpdateConfirm,
     handleUpdateSettings,
     initializeHostQueue: store.initializeActiveQueue,

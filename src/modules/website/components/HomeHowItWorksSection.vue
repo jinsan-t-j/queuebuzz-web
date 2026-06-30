@@ -21,7 +21,7 @@ defineProps<{ isVisible: boolean }>()
       <div class="text-center mb-16">
         <BaseBadge class="mb-4">THE WORKFLOW</BaseBadge>
         <h2 class="font-display text-4xl font-bold md:text-5xl">
-          Three steps to <span class="text-mint">zero lines.</span>
+          Three steps to <span class="text-mint-dark">zero lines.</span>
         </h2>
       </div>
 

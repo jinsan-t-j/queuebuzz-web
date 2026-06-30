@@ -10,6 +10,7 @@ export interface QueueRecord {
   joinCode: string
   slug: string
   avgServiceMins: number
+  bufferMins: number
   status: QueueStatus
   allowPartyJoining: boolean
   maxPartySize: number
@@ -32,6 +33,7 @@ export interface QueueRecord {
 export interface QueueEntry {
   id: string
   ticketNo: number
+  verifyCode?: string
   position?: number
   name: string
   email?: string
@@ -62,6 +64,7 @@ export interface AddQueueEntryPayload {
 export interface UpdateQueuePayload {
   name?: string
   avgServiceMins?: number
+  bufferMins?: number
   slug?: string
   strictQueueMode?: boolean
   notes?: string
@@ -119,6 +122,7 @@ export interface QueueSseEnvelopeMap {
     data: {
       count: number
       avgServiceMins?: number
+      bufferMins?: number
     }
   }
 }

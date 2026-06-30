@@ -8,10 +8,12 @@ import { restrictCustomerGuard } from '@/router/guards/restrictCustomer.guard'
 
 import type { RouteLocationNormalized, RouteRecordRaw } from 'vue-router'
 
+const CustomerLayout = () => import('@/layouts/CustomerLayout.vue')
+
 export const customerRoutes: RouteRecordRaw[] = [
   {
     path: '/q/:queueId',
-    component: () => import('@/layouts/CustomerLayout.vue'),
+    component: CustomerLayout,
     children: [
       {
         path: 'waiting',
@@ -72,7 +74,7 @@ export const customerRoutes: RouteRecordRaw[] = [
   },
   {
     path: '/join',
-    component: () => import('@/layouts/CustomerLayout.vue'),
+    component: CustomerLayout,
     beforeEnter: restrictActiveHostGuard,
     children: [
       {

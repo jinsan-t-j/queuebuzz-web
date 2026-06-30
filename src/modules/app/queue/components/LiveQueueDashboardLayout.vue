@@ -7,16 +7,16 @@
 import {
   computed,
   defineAsyncComponent,
+  onBeforeMount,
   onMounted,
   onUnmounted,
   ref,
   watch,
-  onBeforeMount,
 } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { fetchCurrentPlan } from '@/modules/app/billing/actions/billing.actions'
 import type { BillingPlan } from '@/modules/app/billing/actions/billing.actions'
+import { fetchCurrentPlan } from '@/modules/app/billing/actions/billing.actions'
 import LiveQueueCard from '@/modules/app/queue/components/LiveQueueCard.vue'
 import LiveSyncLoader from '@/modules/app/queue/components/LiveSyncLoader.vue'
 import LiveSyncStatus from '@/modules/app/queue/components/LiveSyncStatus.vue'
@@ -98,6 +98,7 @@ const {
   handleCallNext,
   handleCallGuest,
   handleServeGuest,
+  handleSkipGuest,
   handleStatusUpdateConfirm,
   handleUpdateSettings,
   handleUpdateNotes,
@@ -147,6 +148,10 @@ const showDisableStrictModal = ref(false)
 
 async function confirmDisableStrictMode() {
   await handleUpdateSettings({ strictQueueMode: false })
+}
+
+async function handleUpdateBuffer(newBuffer: number) {
+  await handleUpdateSettings({ bufferMins: newBuffer })
 }
 
 const authStore = useAuthStore()
@@ -314,8 +319,14 @@ function openLiveScreen() {
       <!-- Main Responsive Grid -->
       <div class="grid grid-cols-1 gap-8 lg:grid-cols-12">
         <!-- Left Column: Statistics & Live List -->
-        <div class="lg:col-span-4 flex flex-col gap-6">
-          <QueueStatCards :waiting-count="waitingCount" :avg-wait-time="avgWaitTime" />
+        <div class="lg:col-span-4 flex flex-col gap-3">
+          <QueueStatCards
+            :waiting-count="waitingCount"
+            :avg-wait-time="avgWaitTime"
+            :buffer-mins="activeQueue?.bufferMins || 0"
+            :allow-push="true"
+            @update-buffer="handleUpdateBuffer"
+          />
 
           <LiveQueueCard
             :active-entries="filteredActiveEntries"
@@ -332,6 +343,7 @@ function openLiveScreen() {
             @search="handleSearchUpdate"
             @call-guest="handleCallGuest"
             @serve-guest="handleServeGuest"
+            @skip-guest="handleSkipGuest"
             @disable-strict-mode="showDisableStrictModal = true"
           />
         </div>

@@ -40,8 +40,10 @@ export const useCustomerStore = defineStore('customer', {
       const position = state.position
       if (position == null) return null
       const ahead = Math.max(0, position - 1)
-      const avgServiceMins = useQueueStore().activeQueue?.avgServiceMins ?? 0
-      return ahead * avgServiceMins
+      const activeQueue = useQueueStore().activeQueue
+      const avgServiceMins = activeQueue?.avgServiceMins ?? 0
+      const bufferMins = activeQueue?.bufferMins ?? 0
+      return ahead * avgServiceMins + bufferMins
     },
     isStreamConnected: (state) => state.streamState === 'open',
   },
@@ -281,6 +283,7 @@ export const useCustomerStore = defineStore('customer', {
                 id: payload.id,
                 queueId: payload.queueId,
                 ticketNo: payload.ticketNo,
+                verifyCode: payload.verifyCode,
                 position: payload.position,
                 name: payload.name,
                 email: payload.email,

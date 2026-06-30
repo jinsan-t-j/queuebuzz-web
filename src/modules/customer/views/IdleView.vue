@@ -43,6 +43,19 @@ const { activeQueue } = storeToRefs(queueStore)
 const queueName = computed(() => activeQueue.value?.name || 'Your Queue')
 const ticketNumber = computed(() => entry.value?.ticketNo || '...')
 
+const formattedJoinDate = computed(() => {
+  if (!entry.value?.createdAt) return ''
+  try {
+    return new Date(entry.value.createdAt).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch {
+    return ''
+  }
+})
+
 const isLeaveModalOpen = ref(false)
 
 // Watch for recovery or skip while on this screen
@@ -180,7 +193,7 @@ const handleGraceExpired = () => {
     <TicketCaptureTemplate
       :ticket-number="String(entry.ticketNo)"
       :queue-name="queueName"
-      join-date="Mar 31, 2026"
+      :join-date="formattedJoinDate"
     />
   </div>
 </template>

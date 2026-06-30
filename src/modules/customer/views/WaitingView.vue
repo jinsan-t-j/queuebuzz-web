@@ -49,6 +49,19 @@ const isSettingsModalOpen = ref(false)
 const showEmailHighlight = ref(false)
 const queueName = computed(() => activeQueue.value?.name || '')
 
+const formattedJoinDate = computed(() => {
+  if (!entry.value?.createdAt) return ''
+  try {
+    return new Date(entry.value.createdAt).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch {
+    return ''
+  }
+})
+
 // Keep screen awake and tab alive in background for real-time alerts
 useWakeLock()
 useBackgroundKeepAlive()
@@ -266,7 +279,7 @@ onUnmounted(() => {
       <TicketCaptureTemplate
         :ticket-number="String(entry.ticketNo)"
         :queue-name="queueName"
-        join-date="Mar 31, 2026"
+        :join-date="formattedJoinDate"
       />
 
       <CustomerSettingsModal v-model:is-open="isSettingsModalOpen" />

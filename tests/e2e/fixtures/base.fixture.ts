@@ -45,6 +45,18 @@ export const test = base.extend<{
       }
     })
 
+    page.on('pageerror', (err) => {
+      // eslint-disable-next-line no-console
+      console.log(`[Browser PageError] ${err.name}: ${err.message}\n${err.stack}`)
+    })
+
+    page.on('requestfailed', (req) => {
+      // eslint-disable-next-line no-console
+      console.log(
+        `[Request Failed] ${req.method()} ${req.url()} - ${req.failure()?.errorText || 'Unknown error'}`,
+      )
+    })
+
     // Log API requests for debugging
     page.on('request', (req) => {
       if (req.url().includes('/api/v1')) {
