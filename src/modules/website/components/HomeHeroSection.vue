@@ -73,14 +73,16 @@ const marqueeRows = computed(() => {
     <!-- Ambient Radial Background Glows -->
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-mint/10 rounded-full blur-[140px] animate-pulse transition-transform duration-700 ease-out"
+      class="pointer-events-none absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-mint/10 rounded-full blur-[140px]"
+      style="will-change: transform"
       :style="{
         transform: `translate(-50%, ${scrollY * 0.1}px)`,
       }"
     />
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute top-[30%] left-[20%] w-[300px] h-[300px] bg-pink-500/5 rounded-full blur-[100px] transition-transform duration-500 ease-out"
+      class="pointer-events-none absolute top-[30%] left-[20%] w-[300px] h-[300px] bg-pink-500/5 rounded-full blur-[100px]"
+      style="will-change: transform"
       :style="{
         transform: `translateY(${scrollY * -0.05}px)`,
       }"
@@ -203,7 +205,10 @@ const marqueeRows = computed(() => {
           <div
             class="flex overflow-x-hidden select-none bg-[#F97316] py-4 shadow-[0_4px_12px_rgba(249,115,22,0.15)]"
           >
-            <div class="flex gap-16 shrink-0 animate-marquee items-center whitespace-nowrap">
+            <div
+              class="flex gap-16 shrink-0 animate-marquee items-center whitespace-nowrap"
+              style="will-change: transform"
+            >
               <div v-for="loop in 2" :key="loop" class="flex gap-16 shrink-0 items-center">
                 <div
                   v-for="(item, idx) in marqueeRows[0]"
@@ -249,6 +254,7 @@ const marqueeRows = computed(() => {
           >
             <div
               class="flex gap-16 shrink-0 animate-marquee-reverse items-center whitespace-nowrap"
+              style="will-change: transform"
             >
               <div v-for="loop in 2" :key="loop" class="flex gap-16 shrink-0 items-center">
                 <div
@@ -293,7 +299,10 @@ const marqueeRows = computed(() => {
           <div
             class="flex overflow-x-hidden select-none bg-[#00E5A0] py-4 shadow-[0_4px_12px_rgba(0,229,160,0.15)]"
           >
-            <div class="flex gap-16 shrink-0 animate-marquee items-center whitespace-nowrap">
+            <div
+              class="flex gap-16 shrink-0 animate-marquee items-center whitespace-nowrap"
+              style="will-change: transform"
+            >
               <div v-for="loop in 2" :key="loop" class="flex gap-16 shrink-0 items-center">
                 <div
                   v-for="(item, idx) in marqueeRows[2]"
@@ -337,28 +346,3 @@ const marqueeRows = computed(() => {
     </div>
   </section>
 </template>
-
-<style scoped>
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-@keyframes marquee-reverse {
-  0% {
-    transform: translateX(-50%);
-  }
-  100% {
-    transform: translateX(0);
-  }
-}
-.animate-marquee {
-  animation: marquee 30s linear infinite;
-}
-.animate-marquee-reverse {
-  animation: marquee-reverse 35s linear infinite;
-}
-</style>

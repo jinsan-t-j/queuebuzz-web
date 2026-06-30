@@ -30,6 +30,7 @@ function scheduleIdle(fn: () => void): void {
  * })
  */
 export function usePrefetch(chunks: Record<string, ChunkImporter>): void {
+  if (import.meta.env.SSR) return
   scheduleIdle(() => {
     for (const [key, importer] of Object.entries(chunks)) {
       if (prefetched.has(key)) continue

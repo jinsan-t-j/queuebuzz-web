@@ -136,12 +136,12 @@ const resumeLink = computed(() => {
       aria-hidden="true"
     >
       <div
-        class="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-mint/5 rounded-full blur-[120px] animate-blob transition-transform duration-1000 ease-out"
+        class="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-mint/5 rounded-full blur-[120px] animate-blob"
         style="will-change: transform"
         :style="{ transform: `translateY(${scrollY * 0.04}px)` }"
       />
       <div
-        class="absolute bottom-[-5%] left-[-5%] w-[600px] h-[600px] bg-plum/5 rounded-full blur-[120px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
+        class="absolute bottom-[-5%] left-[-5%] w-[600px] h-[600px] bg-plum/5 rounded-full blur-[120px] animate-blob animation-delay-2000"
         style="will-change: transform"
         :style="{ transform: `translateY(${scrollY * -0.06}px)` }"
       />
@@ -165,7 +165,7 @@ const resumeLink = computed(() => {
       aria-hidden="true"
     >
       <div
-        class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob transition-transform duration-700 ease-out"
+        class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob"
         style="will-change: transform"
         :style="{
           clipPath: 'polygon(15% 0, 100% 10%, 85% 95%, 0 80%)',
@@ -173,7 +173,7 @@ const resumeLink = computed(() => {
         }"
       />
       <div
-        class="absolute bottom-[-5%] right-[-10%] w-[60%] h-[50%] bg-blue-500/5 blur-[140px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
+        class="absolute bottom-[-5%] right-[-10%] w-[60%] h-[50%] bg-blue-500/5 blur-[140px] animate-blob animation-delay-2000"
         style="will-change: transform"
         :style="{
           clipPath: 'polygon(25% 15%, 90% 0, 100% 85%, 10% 100%)',
@@ -287,6 +287,16 @@ const resumeLink = computed(() => {
 }
 .animate-marquee-reverse {
   animation: marquee-reverse 60s linear infinite;
+}
+
+/* Accessibility: pause all infinite animations for motion-sensitive users */
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob,
+  .animate-float,
+  .animate-marquee,
+  .animate-marquee-reverse {
+    animation: none;
+  }
 }
 
 /* Performance Optimizations */

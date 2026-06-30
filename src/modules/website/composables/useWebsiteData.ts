@@ -203,6 +203,7 @@ export function useWebsiteData() {
   ]
 
   const mutationObserver = ref<MutationObserver | null>(null)
+  let scrollHandler: (() => void) | null = null
 
   // --- STATE ---
   const testimonials = ref([])
@@ -288,19 +289,16 @@ export function useWebsiteData() {
     updateItemsPerView()
     globalThis.addEventListener('resize', updateItemsPerView)
     let ticked = false
-    globalThis.addEventListener(
-      'scroll',
-      () => {
-        if (!ticked) {
-          globalThis.requestAnimationFrame(() => {
-            scrollY.value = globalThis.scrollY
-            ticked = false
-          })
-          ticked = true
-        }
-      },
-      { passive: true },
-    )
+    scrollHandler = () => {
+      if (!ticked) {
+        globalThis.requestAnimationFrame(() => {
+          scrollY.value = globalThis.scrollY
+          ticked = false
+        })
+        ticked = true
+      }
+    }
+    globalThis.addEventListener('scroll', scrollHandler, { passive: true })
 
     isPwa.value = globalThis.matchMedia('(display-mode: standalone)').matches
 
@@ -333,6 +331,10 @@ export function useWebsiteData() {
   onUnmounted(() => {
     if (typeof globalThis !== 'undefined') {
       globalThis.removeEventListener('resize', updateItemsPerView)
+      if (scrollHandler) {
+        globalThis.removeEventListener('scroll', scrollHandler)
+        scrollHandler = null
+      }
     }
     observer.value?.disconnect()
     mutationObserver.value?.disconnect()
