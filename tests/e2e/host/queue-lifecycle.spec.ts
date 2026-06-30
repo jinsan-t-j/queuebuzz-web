@@ -35,11 +35,11 @@ test.describe('Queue Lifecycle', () => {
   test('should render queue management page with active queue', async ({ page, mockApi }) => {
     const dashboard = makeActiveQueueDashboard()
     await mockApi('/queue/dashboard', dashboard)
-    await mockApi('/queue/active', {
+    await mockApi('/queue/live', {
       data: {
         id: 'q-123',
         public_id: 'p-q-123',
-        queue_name: 'Morning Consultation',
+        name: 'Morning Consultation',
         status: 'active',
         waiting: 3,
         is_active: true,
@@ -61,16 +61,17 @@ test.describe('Queue Lifecycle', () => {
     mockApi,
   }) => {
     await mockApi('/queue/dashboard', makeActiveQueueDashboard())
-    await mockApi('/queue/active', {
+    await mockApi('/queue/live', {
       data: {
         id: 'q-123',
         public_id: 'p-q-123',
-        queue_name: 'Morning Consultation',
+        name: 'Morning Consultation',
         status: 'active',
         waiting: 3,
         is_active: true,
         joinCode: 'CLNC01',
         startedAt: new Date().toISOString(),
+        entries: makeLiveQueueEntries().data,
       },
     })
     await mockApi('/queue/manage/q-123/live', {
@@ -83,7 +84,7 @@ test.describe('Queue Lifecycle', () => {
     await expect(page.getByRole('button', { name: 'Show QR' })).toBeVisible({ timeout: 10000 })
     await page.getByRole('button', { name: 'Show QR' }).click()
 
-    await expect(page.getByRole('heading', { name: 'Queue is open!' })).toBeVisible({
+    await expect(page.getByRole('heading', { name: 'Your Queue Code' })).toBeVisible({
       timeout: 10000,
     })
     await expect(page.getByText('CLNC01').first()).toBeVisible()
@@ -91,7 +92,7 @@ test.describe('Queue Lifecycle', () => {
 
     await page.getByRole('button', { name: 'CLOSE' }).click()
 
-    await expect(page.getByRole('heading', { name: 'Queue is open!' })).not.toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Your Queue Code' })).not.toBeVisible()
   })
 
   test('should surface scanner error state when camera access is unavailable', async ({
@@ -99,27 +100,41 @@ test.describe('Queue Lifecycle', () => {
     mockApi,
   }) => {
     await page.addInitScript(() => {
-      const mediaDevices = navigator.mediaDevices
-      if (mediaDevices) {
-        Object.defineProperty(mediaDevices, 'getUserMedia', {
-          value: async () => {
-            throw new Error('Permission denied')
+      if (navigator.mediaDevices) {
+        Object.defineProperty(navigator, 'mediaDevices', {
+          value: {
+            getUserMedia: async () => {
+              throw new Error('Permission denied')
+            },
           },
+          configurable: true,
+          writable: true,
         })
       }
     })
 
     await mockApi('/queue/dashboard', makeActiveQueueDashboard())
-    await mockApi('/queue/active', {
+    await mockApi('/queue/live', {
       data: {
         id: 'q-123',
         public_id: 'p-q-123',
-        queue_name: 'Morning Consultation',
+        name: 'Morning Consultation',
         status: 'active',
         waiting: 3,
         is_active: true,
         joinCode: 'CLNC01',
         startedAt: new Date().toISOString(),
+        entries: [
+          {
+            id: 'e-1',
+            ticket_no: 101,
+            name: 'Aditya R.',
+            status: 'called',
+            position: 1,
+            created_at: new Date().toISOString(),
+            verify_code: 'A1B2C3',
+          },
+        ],
       },
     })
     await mockApi('/queue/manage/q-123/live', {
@@ -138,18 +153,26 @@ test.describe('Queue Lifecycle', () => {
     })
 
     await page.goto('/dashboard/queue')
+    await page.addStyleTag({
+      content: `
+        *, *::before, *::after {
+          transition: none !important;
+          animation: none !important;
+        }
+      `,
+    })
     await page.waitForLoadState('networkidle')
 
     await expect(page.getByText('Aditya R.').first()).toBeVisible({ timeout: 10000 })
     await page.getByText('Aditya R.').first().click()
 
-    await expect(page.getByRole('button', { name: 'Scan QR to Verify' })).toBeVisible({
+    await expect(page.getByRole('button', { name: 'Scan QR' })).toBeVisible({
       timeout: 10000,
     })
-    await page.getByRole('button', { name: 'Scan QR to Verify' }).click()
+    await page.getByRole('button', { name: 'Scan QR' }).click()
 
     await expect(page.getByText('Camera Access Failed').first()).toBeVisible({ timeout: 10000 })
-    await expect(page.getByRole('button', { name: 'Try Again' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Try Again' }).first()).toBeVisible()
   })
 
   test('should show or hide Week tab in Queue Analysis Card based on queue expiry', async ({
@@ -175,7 +198,7 @@ test.describe('Queue Lifecycle', () => {
       data: {
         id: 'q-123',
         public_id: 'p-q-123',
-        queue_name: 'Morning Consultation',
+        name: 'Morning Consultation',
         status: 'active',
         waiting: 3,
         is_active: true,
@@ -184,11 +207,11 @@ test.describe('Queue Lifecycle', () => {
         expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
       },
     })
-    await mockApi('/queue/active', {
+    await mockApi('/queue/live', {
       data: {
         id: 'q-123',
         public_id: 'p-q-123',
-        queue_name: 'Morning Consultation',
+        name: 'Morning Consultation',
         status: 'active',
         waiting: 3,
         is_active: true,
@@ -225,7 +248,7 @@ test.describe('Queue Lifecycle', () => {
       data: {
         id: 'q-123',
         public_id: 'p-q-123',
-        queue_name: 'Morning Consultation',
+        name: 'Morning Consultation',
         status: 'active',
         waiting: 3,
         is_active: true,
@@ -234,11 +257,11 @@ test.describe('Queue Lifecycle', () => {
         expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
       },
     })
-    await mockApi('/queue/active', {
+    await mockApi('/queue/live', {
       data: {
         id: 'q-123',
         public_id: 'p-q-123',
-        queue_name: 'Morning Consultation',
+        name: 'Morning Consultation',
         status: 'active',
         waiting: 3,
         is_active: true,

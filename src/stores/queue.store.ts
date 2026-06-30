@@ -411,6 +411,10 @@ export const useQueueStore = defineStore('queue', {
             if (avgMins !== undefined && this.activeQueue) {
               this.activeQueue.avgServiceMins = avgMins
             }
+            const bufferMins = payload.data?.bufferMins
+            if (bufferMins !== undefined && this.activeQueue) {
+              this.activeQueue.bufferMins = bufferMins
+            }
           },
           queue_status_changed: (payload: QueueSseEnvelopeMap['queue_status_changed']) => {
             const status = payload.data?.status
