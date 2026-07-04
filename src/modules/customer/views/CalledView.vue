@@ -6,7 +6,15 @@
  */
 
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  onBeforeMount,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+} from 'vue'
 import { useRouter } from 'vue-router'
 
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
@@ -22,6 +30,11 @@ import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
 
 defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'service-finished'])
+
+const ConnectionLostBanner = defineAsyncComponent(
+  () => import('../components/ConnectionLostBanner.vue'),
+)
+
 const router = useRouter()
 const { showToast } = useToast()
 const {
@@ -80,6 +93,21 @@ watch(
     }
   },
   { immediate: true },
+)
+
+// Safety net: if entry is cleared externally (queue ended, session invalidated),
+// redirect to the ended view so the customer isn't stuck on a stale screen.
+watch(
+  () => entry.value,
+  (current, previous) => {
+    if (previous && !current) {
+      router.replace({
+        name: 'customer-ended',
+        params: router.currentRoute.value.params,
+        query: { reason: 'terminated' },
+      })
+    }
+  },
 )
 
 const ticketNumber = computed(() => ticketDisplay.value || '....')
@@ -364,6 +392,8 @@ const handleFinishService = async () => {
         <h2 class="font-body text-2xl font-semibold text-plum">Great news!</h2>
         <p class="mt-2 font-body text-base font-medium text-plum/60">Your turn has arrived.</p>
       </div>
+
+      <ConnectionLostBanner />
 
       <!-- Chime Alert Banner -->
       <div

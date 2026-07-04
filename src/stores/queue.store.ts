@@ -661,8 +661,10 @@ export const useQueueStore = defineStore('queue', {
 
       this.isLoading = true
       this.error = null
+      const queueId = this.activeQueue.id
+      this.disconnectLiveUpdates()
       try {
-        await terminateQueue(this.activeQueue.id)
+        await terminateQueue(queueId)
         this.clearQueue()
         useDashboardStore().setDirty()
         return true
@@ -679,7 +681,8 @@ export const useQueueStore = defineStore('queue', {
 
       this.error = null
       try {
-        await apiAddQueueEntry(this.activeQueue.id, guest)
+        const entry = await apiAddQueueEntry(this.activeQueue.id, guest)
+        this.upsertEntry(normalizeQueueEntry(entry))
         return true
       } catch (e: unknown) {
         this.error = getErrorMessage(e, 'Failed to add guest')

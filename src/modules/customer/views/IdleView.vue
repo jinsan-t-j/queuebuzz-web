@@ -7,7 +7,7 @@
 
 // 1. Vue core imports
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onBeforeMount, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 // 4. Composables
@@ -18,10 +18,12 @@ import TicketHero from '@/modules/customer/components/TicketHero.vue'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useQueueStore } from '@/stores/queue.store'
 
-// 5. Component imports
-
 import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
+
+const ConnectionLostBanner = defineAsyncComponent(
+  () => import('../components/ConnectionLostBanner.vue'),
+)
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -75,6 +77,21 @@ watch(
         name: 'customer-served',
         params,
         query: { t: getDisplayTicketNumber() },
+      })
+    }
+  },
+)
+
+// Safety net: if entry is cleared externally (queue ended, session invalidated),
+// redirect to the ended view so the customer isn't stuck on a stale screen.
+watch(
+  () => entry.value,
+  (current, previous) => {
+    if (previous && !current) {
+      router.replace({
+        name: 'customer-ended',
+        params: router.currentRoute.value.params,
+        query: { reason: 'terminated' },
       })
     }
   },
@@ -173,6 +190,8 @@ const handleGraceExpired = () => {
         @save-ticket="saveTicketAsImage"
       />
 
+      <ConnectionLostBanner />
+
       <!-- Grace period countdown -->
       <GracePeriodCard
         :initial-seconds="60"
@@ -191,6 +210,7 @@ const handleGraceExpired = () => {
 
     <!-- Premium Ticket Template for Capture (Off-screen) -->
     <TicketCaptureTemplate
+      v-if="entry"
       :ticket-number="String(entry.ticketNo)"
       :queue-name="queueName"
       :join-date="formattedJoinDate"

@@ -48,6 +48,15 @@ const config = computed(() => {
         iconColor: 'text-mint-dark',
         bgColor: 'bg-mint-light',
       }
+    case 'skipped':
+      return {
+        title: 'You were skipped',
+        description:
+          "You didn't respond in time, so your spot was released. You can rejoin the queue if it's still open.",
+        icon: WarningTriangleIcon,
+        iconColor: 'text-warning',
+        bgColor: 'bg-[#FFF7ED]',
+      }
     case 'expired':
     case 'terminated':
       return {
