@@ -63,11 +63,14 @@ const schema = yup.object({
   avgServiceMins: yup.number().required('Service time is required').min(1).max(60),
   strictQueueMode: yup.boolean(),
   allowPartyJoining: yup.boolean().default(false),
-  maxPartySize: yup.number().when('allowPartyJoining', {
-    is: true,
-    then: (schema) => schema.required('Limit is required').min(1).max(50),
-    otherwise: (schema) => schema.notRequired(),
-  }),
+  maxPartySize: yup
+    .number()
+    .typeError('Limit must be a number')
+    .when('allowPartyJoining', {
+      is: true,
+      then: (schema) => schema.required('Limit is required').min(1).max(50),
+      otherwise: (schema) => schema.notRequired(),
+    }),
   isGeoLocked: yup.boolean(),
   latitude: yup
     .number()

@@ -4,7 +4,7 @@
  * @description Modal for hosts to manually add guests to the queue.
  */
 import { useForm, useField } from 'vee-validate'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import * as yup from 'yup'
 
 import CloseXIcon from '@/assets/icons/close-x.svg?component'
@@ -12,6 +12,7 @@ import BaseButton from '@/components/base/BaseButton.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'
+import { phoneValidationSchema, normalizePhone } from '@/utils/validation'
 
 defineProps({
   isOpen: {
@@ -27,7 +28,8 @@ const { canJoinWithParty, maxAllowedPartySize } = useLiveQueue()
 const schema = computed(() =>
   yup.object({
     name: yup.string().required('Guest name is required'),
-    phone: yup.string().nullable(),
+    email: yup.string().email('Invalid email address').nullable().optional(),
+    phone: phoneValidationSchema,
     accompanying: yup
       .number()
       .min(0)
@@ -41,24 +43,61 @@ const schema = computed(() =>
   }),
 )
 
-const { handleSubmit, errors, resetForm } = useForm({
+const { handleSubmit, resetForm, setFieldError } = useForm({
   validationSchema: schema,
   initialValues: {
     name: '',
+    email: '',
     phone: '',
     accompanying: 0,
   },
 })
 
-const { value: name } = useField<string>('name')
-const { value: phone } = useField<string | null>('phone')
+const { value: name, errorMessage: nameError } = useField<string>('name', undefined, {
+  validateOnValueUpdate: false,
+})
+const { value: email, errorMessage: emailError } = useField<string>('email', undefined, {
+  validateOnValueUpdate: false,
+})
+const { value: phone, errorMessage: phoneError } = useField<string>('phone', undefined, {
+  validateOnValueUpdate: false,
+})
 const { value: accompanying } = useField<number>('accompanying')
+
+watch(
+  () => name.value,
+  () => {
+    setFieldError('name', undefined)
+  },
+)
+watch(
+  () => email.value,
+  () => {
+    setFieldError('email', undefined)
+  },
+)
+watch(
+  () => phone.value,
+  (newVal) => {
+    setFieldError('phone', undefined)
+    if (newVal) {
+      const cleaned = newVal.replace(/[^0-9+\-\s()]/g, '')
+      if (cleaned !== newVal) {
+        phone.value = cleaned
+      }
+    }
+  },
+)
 
 const isGuestsOpen = ref(false)
 
 const onSubmit = handleSubmit((values) => {
+  const formattedPhone = normalizePhone(values.phone)
+
   emit('submit', {
     name: values.name,
+    email: values.email || undefined,
+    phone: formattedPhone,
     partySize: (values.accompanying || 0) + 1,
   })
   resetForm()
@@ -92,13 +131,22 @@ const handleClose = () => {
             v-model="name"
             label="Full Name"
             placeholder="e.g. Jane Doe"
-            :error="errors.name"
+            :error="nameError"
+          />
+
+          <BaseInput
+            v-model="email"
+            label="Email Address (Optional)"
+            placeholder="e.g. jane@example.com"
+            type="email"
+            :error="emailError"
           />
 
           <BaseInput
             v-model="phone"
             label="Contact Info (Optional)"
             placeholder="e.g. +91 98765 43210"
+            :error="phoneError"
           />
         </div>
 

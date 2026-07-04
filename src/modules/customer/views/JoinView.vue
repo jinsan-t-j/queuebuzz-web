@@ -143,19 +143,27 @@ const {
   isLoading: queueIsLoading,
 } = storeToRefs(queueStore)
 
+const isJoining = ref(false)
+
 const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
   const targetQueueId = queueId || resolvedQueueId.value || activeQueue.value?.id
   if (!targetQueueId) return null
 
+  isJoining.value = true
+
   const joinPayload: JoinQueuePayload = { ...payload, code: queueCodeInput.value }
 
-  const result = await customerStore.joinQueue(targetQueueId, joinPayload)
-  if (result) {
-    router.push({ name: 'customer-waiting', params: { queueId: targetQueueId } })
-  } else {
-    showToast(customerStore.error ?? 'Failed to join queue', { type: 'error' })
+  try {
+    const result = await customerStore.joinQueue(targetQueueId, joinPayload)
+    if (result) {
+      router.push({ name: 'customer-waiting', params: { queueId: targetQueueId } })
+    } else {
+      showToast(customerStore.error ?? 'Failed to join queue', { type: 'error' })
+    }
+    return result
+  } finally {
+    isJoining.value = false
   }
-  return result
 }
 
 // Initialize queue state immediately on component creation for faster loading
@@ -232,7 +240,7 @@ onUnmounted(() => {
     />
 
     <div
-      v-if="isLoading || queueIsLoading"
+      v-if="(isLoading || queueIsLoading) && !isJoining"
       class="flex flex-col items-center flex-1 animate-in fade-in"
     >
       <!-- Skeleton Header (LCP Target) using CustomerHeader's built-in Shimmer -->
@@ -296,7 +304,6 @@ onUnmounted(() => {
         :can-join-with-party="activeQueue.allowPartyJoining"
         :max-allowed-party-size="activeQueue.maxPartySize"
         :is-loading="isLoading"
-        :collect-emails="activeQueue.collectEmails"
         :is-geo-locked="activeQueue.isGeoLocked"
         :venue-latitude="activeQueue.latitude"
         :venue-longitude="activeQueue.longitude"

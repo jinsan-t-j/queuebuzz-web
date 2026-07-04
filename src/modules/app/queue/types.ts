@@ -16,7 +16,6 @@ export interface QueueRecord {
   maxPartySize: number
   manualPositioning: boolean
   strictQueueMode: boolean
-  collectEmails: boolean
   isGeoLocked?: boolean
   latitude?: number
   longitude?: number
@@ -49,6 +48,7 @@ export interface QueueEntry {
 
 export interface LiveQueueGuestInput {
   name: string
+  email?: string
   phone?: string
   partySize: number
 }

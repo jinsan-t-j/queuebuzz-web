@@ -25,6 +25,7 @@ export const useCustomerStore = defineStore('customer', {
     streamState: 'idle',
     connectedEntryId: null,
     sseClient: null,
+    isConnectionLost: false,
   }),
 
   getters: {
@@ -268,12 +269,16 @@ export const useCustomerStore = defineStore('customer', {
         withCredentials: true,
         onOpen: () => {
           this.streamState = 'open'
+          this.isConnectionLost = false
           this.error = null
         },
         onError: (e) => {
           this.streamState = 'error'
           if (e.status === 404 || e.status === 410) {
             this.clearEntry()
+          } else if (!e.status) {
+            // Network failure — SSE client will retry, but flag for UI
+            this.isConnectionLost = true
           }
         },
         events: {
@@ -366,6 +371,9 @@ export const useCustomerStore = defineStore('customer', {
             this.headsUpPosition = pos
             this.addCustomerNotification(title, body, 'info', `customer-heads-up-${entryId}-${pos}`)
           },
+          [CUSTOMER_EVENTS.QUEUE_ENDED]: () => {
+            this.onGlobalQueueEnd()
+          },
         },
       })
 
@@ -396,7 +404,12 @@ export const useCustomerStore = defineStore('customer', {
       try {
         const result = await CustomerActions.confirmArrival()
         return result.success
-      } catch {
+      } catch (e: unknown) {
+        const err = e as ApiError
+        if (err?.response?.status === 410 || err?.response?.status === 404) {
+          this.onGlobalQueueEnd()
+          return false
+        }
         this.error = 'Failed to confirm arrival'
         return false
       } finally {
@@ -413,7 +426,12 @@ export const useCustomerStore = defineStore('customer', {
           this.resetCustomerSession()
         }
         return result.success
-      } catch {
+      } catch (e: unknown) {
+        const err = e as ApiError
+        if (err?.response?.status === 410 || err?.response?.status === 404) {
+          this.onGlobalQueueEnd()
+          return false
+        }
         this.error = 'Failed to finish service'
         return false
       } finally {
@@ -484,6 +502,7 @@ export const useCustomerStore = defineStore('customer', {
     async updateEntry(payload: {
       name?: string
       email?: string
+      phone?: string
       partySize?: number
       fcmToken?: string
     }): Promise<boolean> {
@@ -496,6 +515,7 @@ export const useCustomerStore = defineStore('customer', {
             Object.assign(this.entry, {
               ...(payload.name && { name: payload.name }),
               ...(payload.email && { email: payload.email }),
+              ...(payload.phone !== undefined && { phone: payload.phone }),
               ...(payload.partySize && { partySize: payload.partySize }),
             })
           }
@@ -525,6 +545,10 @@ export const useCustomerStore = defineStore('customer', {
         return result.success
       } catch (e: unknown) {
         const err = e as ApiError
+        if (err?.response?.status === 410 || err?.response?.status === 404) {
+          this.onGlobalQueueEnd()
+          return false
+        }
         this.error = err?.response?.data?.message || 'Failed to confirm status'
         return false
       } finally {
@@ -554,6 +578,7 @@ export const useCustomerStore = defineStore('customer', {
       this.headsUpPosition = null
       this.error = null
       this.errorCode = null
+      this.isConnectionLost = false
     },
 
     clearEntry() {

@@ -115,6 +115,7 @@ export async function submitRating(rating: number): Promise<MutationResult> {
 export async function updateEntry(payload: {
   name?: string
   email?: string
+  phone?: string
   partySize?: number
   fcmToken?: string
 }): Promise<MutationResult> {
@@ -123,6 +124,7 @@ export async function updateEntry(payload: {
     const body = {
       name: payload.name,
       email: payload.email,
+      phone: payload.phone,
       party_size: payload.partySize,
       fcm_token: payload.fcmToken,
     }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useForm } from 'vee-validate'
-import { watch, onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import * as yup from 'yup'
 
 import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
@@ -10,6 +10,7 @@ import BaseModal from '@/components/base/BaseModal.vue'
 import { useToast } from '@/composables/useToast'
 import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
+import { normalizePhone, phoneValidationSchema } from '@/utils/validation'
 
 defineProps<{
   isOpen: boolean
@@ -25,6 +26,7 @@ const { showToast } = useToast()
 const schema = yup.object({
   name: yup.string().required('Name is required').min(2, 'Name is too short'),
   email: yup.string().email('Please enter a valid email address').nullable().optional(),
+  phone: phoneValidationSchema,
   partySize: yup
     .number()
     .required('Party size is required')
@@ -37,6 +39,7 @@ const { errors, defineField, handleSubmit, resetForm, isSubmitting } = useForm({
   initialValues: {
     name: entry.value?.name || '',
     email: entry.value?.email || '',
+    phone: entry.value?.phone || '',
     partySize: entry.value?.partySize || 1,
   },
 })
@@ -44,13 +47,17 @@ const { errors, defineField, handleSubmit, resetForm, isSubmitting } = useForm({
 // defineField for v4.14+ (replaces deprecated defineInputBinds)
 const [name, nameProps] = defineField('name')
 const [email, emailProps] = defineField('email')
+const [phone, phoneProps] = defineField('phone')
 const [partySize, _] = defineField('partySize')
 
 // Handle Submission
 const onSubmit = handleSubmit(async (formValues) => {
+  const formattedPhone = normalizePhone(formValues.phone)
+
   const success = await store.updateEntry({
     name: formValues.name,
     email: formValues.email || undefined,
+    phone: formattedPhone || undefined,
     partySize: formValues.partySize,
   })
 
@@ -71,6 +78,7 @@ watch(
         values: {
           name: newEntry.name,
           email: newEntry.email || '',
+          phone: newEntry.phone || '',
           partySize: newEntry.partySize,
         },
       })
@@ -85,6 +93,7 @@ onMounted(() => {
       values: {
         name: store.entry.name,
         email: store.entry.email || '',
+        phone: store.entry.phone || '',
         partySize: store.entry.partySize,
       },
     })
@@ -131,6 +140,17 @@ onMounted(() => {
           <p class="mt-1 font-body text-sm text-plum-muted/70">
             Highly recommended to avoid losing your spot if you close the browser.
           </p>
+        </div>
+
+        <!-- Phone Field -->
+        <div class="relative">
+          <BaseInput
+            v-model="phone"
+            v-bind="phoneProps"
+            label="Phone Number (Optional)"
+            type="tel"
+            :error="errors.phone"
+          />
         </div>
 
         <!-- Party Size Field (Stepper) -->
