@@ -88,9 +88,9 @@ test.describe('Queue Lifecycle', () => {
       timeout: 10000,
     })
     await expect(page.getByText('CLNC01').first()).toBeVisible()
-    await expect(page.getByRole('button', { name: 'SHARE JOIN LINK' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'SHARE LINK INSTEAD' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'CLOSE' }).click()
+    await page.locator('.absolute.right-6.top-6').click()
 
     await expect(page.getByRole('heading', { name: 'Your Queue Code' })).not.toBeVisible()
   })

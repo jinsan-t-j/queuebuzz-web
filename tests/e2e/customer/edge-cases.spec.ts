@@ -18,10 +18,9 @@ test.describe('Customer Edge Cases', () => {
       data: { id: 'q-123', name: 'Test Queue', status: 'active' },
     })
 
-    // "skipped" falls to default case: title = "Session ended"
     await page.goto('/q/q-123/ended?reason=skipped')
 
-    await expect(page.getByRole('heading', { name: 'Session ended' })).toBeVisible({
+    await expect(page.getByRole('heading', { name: 'You were skipped' })).toBeVisible({
       timeout: 5000,
     })
   })
