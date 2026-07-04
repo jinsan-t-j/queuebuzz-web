@@ -20,16 +20,20 @@ import { useQueueStore } from '@/stores/queue.store'
 
 import TicketPrintTemplate from './TicketPrintTemplate.vue'
 
-// Icons
-
 import type { QueueEntry } from '../types'
 
-const props = defineProps<{
-  entry: QueueEntry
-  isOpen: boolean
-  avgServiceMins: number
-  showPartySize: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    entry: QueueEntry
+    isOpen: boolean
+    avgServiceMins: number
+    showPartySize: boolean
+    canViewGuestData?: boolean
+  }>(),
+  {
+    canViewGuestData: false,
+  },
+)
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -37,6 +41,7 @@ const emit = defineEmits<{
   (e: 'serve', id: string): void
   (e: 'skip', id: string): void
   (e: 'verify', id: string): void
+  (e: 'upgrade'): void
 }>()
 
 const statusConfig = computed(() => {
@@ -167,6 +172,96 @@ function printTicket() {
             <span class="font-body text-sm text-plum-muted">Guest Name</span>
             <span class="font-body text-base font-bold text-plum">{{ entry.name }}</span>
           </div>
+          <div v-if="entry.email" class="flex items-center justify-between">
+            <span class="font-body text-sm text-plum-muted">Email Address</span>
+            <div class="flex items-center gap-2">
+              <span class="font-body text-base font-bold text-plum">{{ entry.email }}</span>
+              <a
+                v-if="canViewGuestData"
+                :href="`mailto:${entry.email}`"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-mint-light hover:bg-mint/20 text-plum transition-all duration-200 cursor-pointer"
+                title="Send Email"
+              >
+                <svg
+                  class="h-4 w-4 text-plum"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+              </a>
+              <span
+                v-else
+                class="inline-flex items-center justify-center text-warning hover:text-warning/80"
+                title="Premium Feature"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+              </span>
+            </div>
+          </div>
+          <div v-if="entry.phone" class="flex items-center justify-between">
+            <span class="font-body text-sm text-plum-muted">Phone Number</span>
+            <div class="flex items-center gap-2">
+              <span class="font-body text-base font-bold text-plum">{{ entry.phone }}</span>
+              <a
+                v-if="canViewGuestData"
+                :href="`tel:${entry.phone}`"
+                class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-mint-light hover:bg-mint/20 text-plum transition-all duration-200 cursor-pointer"
+                title="Call Guest"
+              >
+                <svg
+                  class="h-4 w-4 text-plum"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  />
+                </svg>
+              </a>
+              <span
+                v-else
+                class="inline-flex items-center justify-center text-warning hover:text-warning/80"
+                title="Premium Feature"
+              >
+                <svg
+                  class="w-3.5 h-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+              </span>
+            </div>
+          </div>
           <div v-if="entry.createdBy" class="flex items-center justify-between">
             <span class="font-body text-sm text-plum-muted">Source</span>
             <span class="font-body text-sm font-bold text-plum">Added by host</span>
@@ -188,6 +283,65 @@ function printTicket() {
             <span class="font-mono text-base font-bold tracking-[0.2em] text-plum">
               {{ entry.verifyCode }}
             </span>
+          </div>
+        </div>
+
+        <!-- Upgrade Upsell Section -->
+        <div
+          v-if="!canViewGuestData && (entry.email || entry.phone)"
+          class="mt-6 rounded-2xl border border-warning/20 bg-warning/[0.03] p-4 text-left relative overflow-hidden"
+        >
+          <!-- Lock decoration in bg -->
+          <div class="absolute -right-3 -top-3 text-warning/10 select-none pointer-events-none">
+            <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+          </div>
+
+          <div class="flex gap-3">
+            <div
+              class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-warning/10 text-warning"
+            >
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-body text-xs font-bold uppercase tracking-wider text-plum">
+                Unlock Contact Details
+              </h4>
+              <p class="font-body text-xs text-plum-muted mt-1 leading-relaxed">
+                Upgrade to Premium to view full customer emails, phone numbers.
+              </p>
+              <button
+                type="button"
+                class="mt-3 inline-flex items-center gap-1 font-body text-xs font-bold text-warning hover:text-warning/80 transition-colors cursor-pointer"
+                @click="emit('upgrade')"
+              >
+                <span>Upgrade Now</span>
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 

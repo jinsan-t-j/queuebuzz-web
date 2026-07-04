@@ -8,6 +8,8 @@ export function normalizeQueueEntry(entry: QueueEntry): QueueEntry {
     verifyCode: entry.verifyCode,
     position: entry.position,
     name: entry.name || 'Guest',
+    email: entry.email,
+    phone: entry.phone,
     partySize: entry.partySize ?? 1,
     status: entry.status.toUpperCase() as QueueEntryStatus,
     servedAt: entry.servedAt,
