@@ -346,4 +346,79 @@ test.describe('Customer Join', () => {
     await expect(page.getByText(/Notifications are blocked/i).first()).toBeVisible()
     await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}`))
   })
+
+  test('should validate phone number length', async ({ page, mockApi }) => {
+    await mockApi('/queue/p/find', {
+      id: ACTIVE_QUEUE_ID,
+      name: 'Morning Clinic',
+    })
+
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}`)
+
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible({ timeout: 10000 })
+    await codeInput.fill('CLNC01')
+    await page.getByRole('button', { name: /Verify code/i }).click()
+
+    // Fill name
+    await page.fill('#guest-name', 'John Doe')
+
+    // Uncheck "Buzz me"
+    await page.getByLabel(/Toggle haptic vibration buzz notifications/i).click()
+
+    // 1. Fill phone number that is too short
+    const phoneInput = page.getByPlaceholder(/Phone number/i)
+    await phoneInput.fill('12345')
+
+    // Click join
+    await page.click('button:has-text("Join the Queue")')
+
+    // Expect validation message for phone length
+    await expect(page.getByText(/Must be a valid mobile number/i).first()).toBeVisible()
+
+    // 2. Fill phone number that is too long
+    await phoneInput.fill('123456789012345678')
+    await page.click('button:has-text("Join the Queue")')
+    await expect(page.getByText(/Must be a valid mobile number/i).first()).toBeVisible()
+  })
+
+  test('should handle duplicate phone error', async ({ page, mockApi }) => {
+    await mockApi('/queue/p/find', {
+      id: ACTIVE_QUEUE_ID,
+      name: 'Morning Clinic',
+    })
+
+    await page.goto(`/q/${ACTIVE_QUEUE_ID}`)
+
+    const codeInput = page.getByLabel('Join code')
+    await expect(codeInput).toBeVisible({ timeout: 10000 })
+    await codeInput.fill('CLNC01')
+    await page.getByRole('button', { name: /Verify code/i }).click()
+
+    // Fill name
+    await page.fill('#guest-name', 'John Doe')
+
+    // Uncheck "Buzz me"
+    await page.getByLabel(/Toggle haptic vibration buzz notifications/i).click()
+
+    // Fill phone number
+    const phoneInput = page.getByPlaceholder(/Phone number/i)
+    await phoneInput.fill('9876543210')
+
+    // Mock duplicate phone error (status 429)
+    await mockApi(
+      `/customer/entry/join/${ACTIVE_QUEUE_ID}`,
+      {
+        success: false,
+        error: 'Guest already in queue!',
+        code: 'DUPLICATE_ENTRY',
+      },
+      429,
+    )
+
+    await page.click('button:has-text("Join the Queue")')
+
+    // Verify error toast/message
+    await expect(page.getByText(/already in queue/i).first()).toBeVisible()
+  })
 })

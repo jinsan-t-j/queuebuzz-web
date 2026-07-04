@@ -26,16 +26,11 @@ function handleAction() {
   emit('close')
   if (authStore.isAuthenticated) {
     // Navigate to settings with billing tab
-    router.push({ name: 'settings', query: { tab: 'billing' } })
+    router.push({ name: 'go-premium', query: { focus: 'plans' } })
   } else {
     // Navigate to login/signup with claim queue query
     router.push({ name: 'login', query: { claim_queue_id: props.queueId } })
   }
-}
-
-function handleLoginRedirect() {
-  emit('close')
-  router.push({ name: 'login', query: { claim_queue_id: props.queueId } })
 }
 </script>
 
@@ -201,23 +196,7 @@ function handleLoginRedirect() {
             class="w-full bg-plum text-sand hover:bg-plum-soft font-bold shadow-lg"
             @click="handleAction"
           >
-            {{
-              authStore.isAuthenticated
-                ? 'Upgrade to Premium'
-                : isLimitReached
-                  ? 'Claim Queue & Upgrade'
-                  : 'Claim My Queue (Free)'
-            }}
-          </BaseButton>
-
-          <BaseButton
-            v-if="!authStore.isAuthenticated"
-            variant="ghost"
-            size="lg"
-            class="w-full font-bold text-plum/60 hover:text-plum"
-            @click="handleLoginRedirect"
-          >
-            Log in to existing account
+            {{ authStore.isAuthenticated ? 'Upgrade to Premium' : 'Claim Queue & Upgrade' }}
           </BaseButton>
 
           <BaseButton

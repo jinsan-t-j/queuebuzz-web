@@ -15,7 +15,7 @@ import {
   Sparkles,
   Users,
 } from 'lucide-vue-next'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -49,6 +49,20 @@ onMounted(async () => {
   globalThis.addEventListener('scroll', handleScroll, { passive: true })
   await fetchPlans()
 
+  // Scroll to plans section if focus/plan query or hash is specified
+  const focus = (route.query.focus ||
+    route.query.plan ||
+    (route.hash ? route.hash.replace('#', '') : '')) as string
+  if (focus) {
+    await nextTick()
+    setTimeout(() => {
+      const el = document.getElementById('plans')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 100)
+  }
+
   // Handle payment redirects
   if (route.query.checkout === 'error') {
     const { showToast } = useToast()
@@ -69,7 +83,12 @@ onMounted(async () => {
     }
 
     // Find the plan from displayPlans
-    const plan = displayPlans.value.find((p) => p.slug === planSlug)
+    const plan = displayPlans.value.find(
+      (p) =>
+        p.slug === planSlug ||
+        p.slug.toLowerCase().includes(planSlug.toLowerCase()) ||
+        planSlug.toLowerCase().includes(p.tier.toLowerCase()),
+    )
     if (plan) {
       // Clear plan and cycle queries to prevent repeated checks on page refresh
       router.replace({
@@ -221,9 +240,39 @@ function handleEnterpriseContact() {
       </div>
 
       <!-- Pricing Cards Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
+      <div id="plans" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-24">
         <template v-if="isLoading">
-          <div v-for="i in 3" :key="i" class="h-[600px] bg-white/40 rounded-[48px] animate-pulse" />
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="bg-white/60 border border-plum-faint/30 rounded-[48px] p-10 md:p-12 flex flex-col h-[600px] justify-between animate-pulse"
+          >
+            <div>
+              <!-- Title skeleton -->
+              <div class="h-8 bg-plum-faint/80 rounded-2xl w-2/3 mb-4" />
+              <!-- Description skeleton -->
+              <div class="space-y-2 mb-8">
+                <div class="h-4 bg-plum-faint/50 rounded-lg w-full" />
+                <div class="h-4 bg-plum-faint/50 rounded-lg w-5/6" />
+              </div>
+              <!-- Price skeleton -->
+              <div class="flex items-baseline gap-2 mb-12">
+                <div class="h-16 bg-plum-faint/80 rounded-2xl w-1/2" />
+                <div class="h-4 bg-plum-faint/50 rounded-lg w-1/4" />
+              </div>
+              <!-- Features header -->
+              <div class="h-3 bg-plum-faint/60 rounded-md w-1/3 mb-6" />
+              <!-- Feature items -->
+              <div class="space-y-5">
+                <div v-for="j in 4" :key="j" class="flex items-center gap-4">
+                  <div class="w-5 h-5 rounded-full bg-plum-faint/60" />
+                  <div class="h-4 bg-plum-faint/50 rounded-lg w-1/2" />
+                </div>
+              </div>
+            </div>
+            <!-- Button skeleton -->
+            <div class="h-16 bg-plum-faint/80 rounded-2xl w-full" />
+          </div>
         </template>
 
         <template v-else>

@@ -6,8 +6,6 @@
 import QRCode from 'qrcode'
 import { onMounted, ref } from 'vue'
 
-import { APP_BASE_URL } from '@/config/api.constants'
-
 const props = defineProps<{
   queueName: string
   joinCode: string
@@ -33,7 +31,7 @@ onMounted(async () => {
       <!-- Logo / Branding -->
       <div class="mb-4">
         <span class="font-display font-bold text-4xl text-plum tracking-tight">
-          Queue<span class="text-mint">Buzz</span>
+          Queue<span class="text-plum">Buzz</span>
         </span>
       </div>
 
@@ -60,14 +58,6 @@ onMounted(async () => {
         </span>
         <span class="font-mono font-bold text-4xl text-plum tracking-[0.2em] -mr-[0.2em]">
           {{ props.joinCode }}
-        </span>
-      </div>
-
-      <!-- Footer -->
-      <div class="mt-12 flex items-center gap-2">
-        <div class="w-1.5 h-1.5 rounded-full bg-mint animate-pulse" />
-        <span class="font-body text-sm text-plum-muted font-bold tracking-widest uppercase">
-          {{ APP_BASE_URL }}
         </span>
       </div>
     </div>

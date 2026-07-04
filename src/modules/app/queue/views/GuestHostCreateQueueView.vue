@@ -10,15 +10,16 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import CreateQueueForm from '@/modules/app/queue/components/CreateQueueForm.vue'
+import type { QueueRecord } from '@/modules/app/queue/types'
 
-import QueueCreatedModal from '../components/QueueCreatedModal.vue'
+import InfoQueueModal from '../components/InfoQueueModal.vue'
 
 const router = useRouter()
 
-const activeQueueData = ref(null)
+const activeQueueData = ref<QueueRecord | null>(null)
 const showSuccessModal = ref(false)
 
-function handleQueueCreated(queueData) {
+function handleQueueCreated(queueData: QueueRecord) {
   activeQueueData.value = queueData
   showSuccessModal.value = true
 }
@@ -60,9 +61,12 @@ function goToSignup() {
   </div>
 
   <!-- ═══ Success modal (shown once after creation) ═══ -->
-  <QueueCreatedModal
+  <InfoQueueModal
     v-if="activeQueueData"
     :is-open="showSuccessModal"
+    variant="success"
+    :queue-name="activeQueueData.name"
+    :redirect-url="queueUrl"
     :join-code="activeQueueData.joinCode"
     :queue-url="queueUrl"
     @close="showSuccessModal = false"

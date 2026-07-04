@@ -60,6 +60,7 @@ usePrefetch({
   CreateQueueView: () => import('@/modules/app/queue/views/CreateQueueView.vue'),
   CreateQueueForm: () => import('@/modules/app/queue/components/CreateQueueForm.vue'),
   LiveQueueView: () => import('@/modules/app/queue/views/LiveQueueView.vue'),
+  JoinByCodeView: () => import('@/modules/customer/views/JoinByCodeView.vue'),
 })
 
 const router = useRouter()

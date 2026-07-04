@@ -13,7 +13,6 @@ export interface CreateQueuePayload {
   allowPartyJoining: boolean
   maxPartySize: number
   manualPositioning: boolean
-  collectEmails?: boolean
 }
 
 export interface CheckSlugAvailabilityResponse {

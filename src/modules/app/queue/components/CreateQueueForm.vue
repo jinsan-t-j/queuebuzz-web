@@ -72,7 +72,6 @@ onMounted(async () => {
     if (userSettings.value) {
       queueName.value = userSettings.value.settings?.defaultQueueName || 'Main Queue'
       serviceTime.value = userSettings.value.settings?.avgServiceMins || 5
-      collectEmails.value = userSettings.value.settings?.collectEmails ?? false
       slug.value = userSettings.value.slug || ''
     }
   }
@@ -82,6 +81,7 @@ onMounted(async () => {
 
 const suggestions = ref(['Consultation', 'Food Order', 'Token', 'Registration', 'Service'])
 const isSubmitting = ref(false)
+let submitTimeoutId: ReturnType<typeof setTimeout> | null = null
 
 const schema = computed(() => {
   const baseSchema = {
@@ -91,13 +91,15 @@ const schema = computed(() => {
       .max(50, 'Queue name must be at most 50 characters'),
     serviceTime: yup.number().required('Service time is required').min(1).max(30),
     allowPartyJoining: yup.boolean().default(false),
-    maxPartySize: yup.number().when('allowPartyJoining', {
-      is: true,
-      then: (schema) => schema.required('Limit is required').min(1).max(50),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+    maxPartySize: yup
+      .number()
+      .typeError('Limit must be a number')
+      .when('allowPartyJoining', {
+        is: true,
+        then: (schema) => schema.required('Limit is required').min(1).max(50),
+        otherwise: (schema) => schema.notRequired(),
+      }),
     manualPositioning: yup.boolean().default(false),
-    collectEmails: yup.boolean().default(false),
     isGeoLocked: yup.boolean().default(false),
     latitude: yup
       .number()
@@ -140,7 +142,6 @@ const { handleSubmit, errors, setFieldError } = useForm({
     maxPartySize: 5,
     manualPositioning: false,
     slug: null,
-    collectEmails: false,
     isGeoLocked: false,
     latitude: null,
     longitude: null,
@@ -155,7 +156,6 @@ const { value: allowPartyJoining } = useField<boolean>('allowPartyJoining')
 const { value: maxPartySize } = useField<number>('maxPartySize')
 const { value: manualPositioning } = useField<boolean>('manualPositioning')
 const { value: slug } = useField<string | null>('slug')
-const { value: collectEmails } = useField<boolean>('collectEmails')
 const { value: isGeoLocked } = useField<boolean>('isGeoLocked')
 const { value: latitude } = useField<number | null>('latitude')
 const { value: longitude } = useField<number | null>('longitude')
@@ -260,6 +260,9 @@ watch([latitude, longitude], ([newLat, newLng]) => {
 
 onUnmounted(() => {
   destroyLeafletMap()
+  if (submitTimeoutId) {
+    clearTimeout(submitTimeoutId)
+  }
 })
 
 const showConflictModal = ref(false)
@@ -272,7 +275,6 @@ interface FormValues {
   allowPartyJoining: boolean
   maxPartySize: number
   manualPositioning: boolean
-  collectEmails: boolean
   isGeoLocked: boolean
   latitude: number | null
   longitude: number | null
@@ -301,7 +303,6 @@ async function submitQueueCreation(formValues: FormValues) {
     allowPartyJoining: formValues.allowPartyJoining,
     maxPartySize: formValues.allowPartyJoining ? Number(formValues.maxPartySize) : 1,
     manualPositioning: formValues.manualPositioning,
-    collectEmails: formValues.collectEmails,
     isGeoLocked: formValues.isGeoLocked,
     latitude: formValues.latitude || undefined,
     longitude: formValues.longitude || undefined,
@@ -344,7 +345,9 @@ async function handleForceCreate() {
     const msg = error.response?.data?.error || error.message || 'Something went wrong'
     showToast(msg, { type: 'error' })
   } finally {
-    isSubmitting.value = false
+    submitTimeoutId = setTimeout(() => {
+      isSubmitting.value = false
+    }, 1000)
   }
 }
 
@@ -372,7 +375,9 @@ const onSubmit = handleSubmit(async (values) => {
       showToast(msg, { type: 'error' })
     }
   } finally {
-    isSubmitting.value = false
+    submitTimeoutId = setTimeout(() => {
+      isSubmitting.value = false
+    }, 1000)
   }
 })
 
@@ -617,29 +622,6 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
           </div>
           <div v-if="errors.slug" class="mt-2 font-body text-sm text-red-500">
             {{ errors.slug }}
-          </div>
-        </div>
-
-        <!-- ═══ Card 4: Guest Settings ═══ -->
-        <div
-          class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
-        >
-          <div class="flex items-start justify-between gap-4">
-            <div class="flex-1">
-              <label
-                for="collectEmails"
-                class="font-body text-sm font-medium text-plum-muted leading-snug"
-                >Would you like to collect email addresses from guests?</label
-              >
-              <p class="font-body text-xs text-plum-muted mt-0.5 leading-relaxed">
-                If yes, guests will be required to provide an email address when joining the queue.
-              </p>
-            </div>
-            <BaseToggle
-              id="collectEmails"
-              v-model="collectEmails"
-              aria-label="Toggle collect emails from customers"
-            />
           </div>
         </div>
 

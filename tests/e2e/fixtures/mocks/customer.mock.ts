@@ -14,7 +14,6 @@ export function makePublicQueue(overrides: Record<string, unknown> = {}) {
       avgServiceMins: 10,
       allowPartyJoining: true,
       maxPartySize: 5,
-      collectEmails: true,
       hostProfileImageUrl: null,
       hostBannerImageUrl: null,
       ...overrides,

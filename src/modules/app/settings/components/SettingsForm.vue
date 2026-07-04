@@ -9,7 +9,6 @@ import { computed, defineAsyncComponent, onMounted, onUnmounted, ref, watch } fr
 import BaseCard from '@/components/base/BaseCard.vue'
 import BaseInput from '@/components/base/BaseInput.vue'
 import BaseSlider from '@/components/base/BaseSlider.vue'
-import BaseToggle from '@/components/base/BaseToggle.vue'
 import { useToast } from '@/composables/useToast'
 import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
 import { useSettingsStore } from '@/stores/settings.store'
@@ -42,7 +41,6 @@ const form = ref({
   avg_service_mins: 5,
   email_notifications: true,
   push_notifications: true,
-  collect_emails: true,
   slug: '',
 })
 
@@ -114,7 +112,6 @@ function syncForm() {
     avg_service_mins: userSettings.value.settings?.avgServiceMins || 5,
     email_notifications: userSettings.value.settings?.emailNotifications ?? false,
     push_notifications: userSettings.value.settings?.pushNotifications ?? true,
-    collect_emails: userSettings.value.settings?.collectEmails ?? false,
     slug: userSettings.value.slug || '',
   }
   profileImageUrl.value = userSettings.value.profileImageUrl || null
@@ -254,7 +251,6 @@ async function handleSave() {
       avg_service_mins: form.value.avg_service_mins,
       email_notifications: form.value.email_notifications,
       push_notifications: form.value.push_notifications,
-      collect_emails: form.value.collect_emails,
     }),
   )
 
@@ -864,27 +860,6 @@ onUnmounted(() => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      </BaseCard>
-
-      <!-- ═══ Section: Preferences & Notifications ═══ -->
-      <BaseCard id="preferences" class="scroll-mt-32 p-4 sm:p-8">
-        <h2 class="mb-6 sm:mb-8 font-display text-xl sm:text-2xl font-bold text-plum">
-          Preferences
-        </h2>
-
-        <div class="divide-y divide-plum-faint">
-          <div class="flex items-center justify-between py-4 first:pt-0">
-            <div>
-              <p class="font-body font-semibold text-plum">Collect Guest Emails</p>
-              <p class="font-body text-sm text-plum-muted">Require email when customers join.</p>
-            </div>
-            <BaseToggle
-              v-model="form.collect_emails"
-              aria-label="Toggle collect emails from customers"
-              @update:model-value="onFieldChange"
-            />
           </div>
         </div>
       </BaseCard>

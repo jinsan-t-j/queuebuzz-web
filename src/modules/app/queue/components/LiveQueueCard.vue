@@ -47,6 +47,7 @@ const emit = defineEmits<{
   (e: 'call-guest', id: string): void
   (e: 'serve-guest', id: string): void
   (e: 'skip-guest', id: string): void
+  (e: 'upgrade-plan'): void
 }>()
 
 const QueueFilterDropdown = defineAsyncComponent(() => import('./QueueFilterDropdown.vue'))
@@ -60,13 +61,16 @@ const maxGuests = computed(() => {
   if (!currentPlan.value) {
     return '25'
   }
+
   const max = currentPlan.value.limits?.maxGuestsPerQueue
   if (typeof max !== 'number') {
     return '25'
   }
+
   if (max <= 0) {
     return 'Unlimited'
   }
+
   return String(max)
 })
 const isDetailsModalOpen = ref(false)
@@ -659,6 +663,7 @@ function handleQrClose() {
       :is-open="isDetailsModalOpen"
       :avg-service-mins="avgServiceMins"
       :show-party-size="showPartySize"
+      :can-view-guest-data="currentPlan?.limits?.canViewGuestData ?? false"
       @close="closeDetails"
       @call="
         (id) => {
@@ -679,6 +684,12 @@ function handleQrClose() {
         }
       "
       @verify="openQrScanner"
+      @upgrade="
+        () => {
+          emit('upgrade-plan')
+          closeDetails()
+        }
+      "
     />
 
     <!-- QR Scanner Overlay -->

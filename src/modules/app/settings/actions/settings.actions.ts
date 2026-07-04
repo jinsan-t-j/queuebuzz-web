@@ -18,7 +18,6 @@ export interface UserSettings {
     avgServiceMins: number
     emailNotifications: boolean
     pushNotifications: boolean
-    collectEmails: boolean
   }
 }
 

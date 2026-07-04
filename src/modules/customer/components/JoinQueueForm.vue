@@ -22,6 +22,7 @@ import { useToast } from '@/composables/useToast'
 import GeoPromptModal from '@/modules/customer/components/GeoPromptModal.vue'
 import NotificationBlockedWarning from '@/modules/customer/components/NotificationBlockedWarning.vue'
 import { useLocation } from '@/modules/customer/composables/useLocation'
+import { phoneValidationSchema, normalizePhone } from '@/utils/validation'
 
 const props = defineProps({
   queueName: { type: String, default: '' },
@@ -30,7 +31,6 @@ const props = defineProps({
   canJoinWithParty: { type: Boolean, default: false },
   maxAllowedPartySize: { type: Number, default: 10 },
   isLoading: { type: Boolean, default: false },
-  collectEmails: { type: Boolean, default: false },
   isGeoLocked: { type: Boolean, default: false },
   venueLatitude: { type: Number, default: null },
   venueLongitude: { type: Number, default: null },
@@ -48,6 +48,7 @@ const { showToast } = useToast()
 const schema = yup.object({
   displayName: yup.string().max(30, 'Name too long').optional(),
   email: yup.string().email('Invalid email address').optional(),
+  phone: phoneValidationSchema,
   accompanying: yup
     .number()
     .min(0)
@@ -58,18 +59,36 @@ const schema = yup.object({
     .default(0),
 })
 
-const { handleSubmit, isSubmitting } = useForm({
+const { handleSubmit, isSubmitting, setFieldError } = useForm({
   validationSchema: schema,
   initialValues: {
     displayName: '',
     email: '',
+    phone: '',
     accompanying: 0,
   },
 })
 
-const { value: displayName, errorMessage: nameError } = useField<string>('displayName')
-const { value: email, errorMessage: emailError } = useField<string>('email')
+const { value: displayName, errorMessage: nameError } = useField<string>('displayName', undefined, {
+  validateOnValueUpdate: false,
+})
+const { value: email, errorMessage: emailError } = useField<string>('email', undefined, {
+  validateOnValueUpdate: false,
+})
+const { value: phone, errorMessage: phoneError } = useField<string>('phone', undefined, {
+  validateOnValueUpdate: false,
+})
 const { value: accompanying } = useField<number>('accompanying')
+
+watch(displayName, () => {
+  setFieldError('displayName', undefined)
+})
+watch(email, () => {
+  setFieldError('email', undefined)
+})
+watch(phone, () => {
+  setFieldError('phone', undefined)
+})
 
 const buzzEnabled = ref(
   typeof localStorage === 'undefined'
@@ -78,6 +97,7 @@ const buzzEnabled = ref(
 )
 
 const showSetupGuide = ref(false)
+const nameInput = ref<HTMLInputElement | null>(null)
 
 const isIOS = ref(false)
 const isMac = ref(false)
@@ -135,6 +155,8 @@ onMounted(() => {
       // Ignore unsupported browsers
     }
   }
+
+  nameInput.value?.focus()
 })
 
 async function retriggerPermissionRequest() {
@@ -198,7 +220,6 @@ watch(buzzEnabled, async (val) => {
     }
   }
 })
-const isEmailExpanded = ref(false)
 const isGuestsOpen = ref(false)
 
 const showGeoPromptModal = ref(false)
@@ -217,10 +238,6 @@ const {
   refreshMyLocation,
   captureLocation,
 } = useLocation()
-
-function toggleEmail() {
-  isEmailExpanded.value = !isEmailExpanded.value
-}
 
 /**
  * Handle Notification Permission
@@ -250,7 +267,7 @@ async function prepareFCMToken(): Promise<string | null> {
   updatePermission()
   if (notificationPermission.value === 'unsupported') {
     showToast(
-      'Notifications are not supported in this browser. Please turn off "Buzz me when ready" to join.',
+      'Notifications are not supported in this browser. Please turn off "Buzz me when ready".',
       { type: 'error' },
     )
     return null
@@ -267,10 +284,9 @@ async function prepareFCMToken(): Promise<string | null> {
 
   const hasPermission = await ensureNotificationPermission()
   if (!hasPermission) {
-    showToast(
-      'Please allow notifications to receive buzz alerts, or turn off "Buzz me when ready" to join.',
-      { type: 'error' },
-    )
+    showToast('Please allow notifications to receive alerts, or turn off "Buzz me when ready".', {
+      type: 'error',
+    })
     showSetupGuide.value = true
     return null
   }
@@ -316,12 +332,16 @@ async function captureLocationAndJoin() {
     if (!fcmToken) return
   }
 
+  // Normalize phone number to digits only before submitting
+  const formattedPhone = normalizePhone(phone.value)
+
   const payload = {
     name: displayName.value?.trim() || 'Guest',
     partySize: (accompanying.value || 0) + 1,
     notificationEnabled,
     fcmToken,
     email: email.value?.trim() || undefined,
+    phone: formattedPhone,
     latitude: pos.latitude,
     longitude: pos.longitude,
   }
@@ -343,12 +363,16 @@ const handleJoin = handleSubmit(async (values) => {
     if (!fcmToken) return
   }
 
+  // Normalize phone number to digits only before submitting
+  const formattedPhone = normalizePhone(values.phone)
+
   const payload = {
     name: values.displayName?.trim() || 'Guest',
     partySize: (values.accompanying || 0) + 1,
     notificationEnabled,
     fcmToken,
     email: values.email?.trim() || undefined,
+    phone: formattedPhone,
     latitude: latitude.value || undefined,
     longitude: longitude.value || undefined,
   }
@@ -408,7 +432,7 @@ onUnmounted(() => {
     <!-- Name input card -->
     <div
       :class="[
-        'mt-6 flex items-start gap-4 rounded-3xl border p-4 transition-colors',
+        'mt-6 flex items-center gap-4 rounded-3xl border p-4 transition-colors',
         nameError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-white',
       ]"
     >
@@ -423,13 +447,13 @@ onUnmounted(() => {
       <div class="flex-1">
         <input
           id="guest-name"
+          ref="nameInput"
           v-model="displayName"
           type="text"
-          placeholder="What should we call you?"
+          placeholder="What should we call you? (optional)"
           class="w-full border-none bg-transparent font-body text-[17px] text-plum placeholder:text-plum-muted/40 focus:outline-none"
         />
         <p v-if="nameError" class="mt-1 font-body text-sm text-danger">{{ nameError }}</p>
-        <p v-else class="mt-1 font-body text-sm text-plum-muted">Appears as Guest if skipped</p>
       </div>
     </div>
 
@@ -542,79 +566,64 @@ onUnmounted(() => {
       @buzz-off="buzzEnabled = false"
     />
 
-    <!-- Email input card (Prominent if mandatory, accordion if optional) -->
-    <div v-if="collectEmails" class="mt-6 flex flex-col gap-4">
-      <div
-        :class="[
-          'flex items-start gap-4 rounded-3xl border p-4 transition-colors',
-          emailError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-white',
-        ]"
-      >
-        <div
-          :class="[
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-full',
-            emailError ? 'bg-danger/10' : 'bg-plum-faint',
-          ]"
-        >
-          <AtSign :class="['h-4 w-4', emailError ? 'text-danger' : 'text-plum-muted']" />
+    <!-- Contact & Recovery Section -->
+    <div class="mt-6 flex flex-col gap-4">
+      <div class="rounded-3xl border border-plum-faint bg-white overflow-hidden">
+        <!-- Email Input Row -->
+        <div class="flex items-center gap-4 px-4 py-3">
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-plum-faint">
+            <AtSign class="h-4 w-4 text-plum-muted" />
+          </div>
+          <div class="flex-1">
+            <input
+              v-model="email"
+              type="email"
+              placeholder="Email (optional, for recovery)"
+              class="w-full border-none bg-transparent font-body text-base text-plum placeholder:text-plum-muted/40 focus:outline-none"
+            />
+          </div>
         </div>
-        <div class="flex-1">
-          <input
-            v-model="email"
-            type="email"
-            placeholder="What's your email?"
-            class="w-full border-none bg-transparent font-body text-[17px] text-plum placeholder:text-plum-muted/40 focus:outline-none"
-          />
-          <p v-if="emailError" class="mt-1 font-body text-sm text-danger">{{ emailError }}</p>
-          <p v-else class="mt-1 font-body text-sm text-plum-muted">
-            For updates &amp; spot recovery
-          </p>
+        <p v-if="emailError" class="px-4 pb-2 font-body text-xs text-danger">{{ emailError }}</p>
+
+        <!-- Divider -->
+        <div class="border-t border-plum-faint" />
+
+        <!-- Phone Input Row -->
+        <div class="flex items-center gap-4 px-4 py-3">
+          <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-plum-faint">
+            <svg
+              class="h-4 w-4 text-plum-muted"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+              />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <input
+              v-model="phone"
+              type="tel"
+              placeholder="Phone number (optional, for updates)"
+              class="w-full border-none bg-transparent font-body text-base text-plum placeholder:text-plum-muted/40 focus:outline-none"
+              @input="phone = phone.replace(/[^0-9+\-\s()]/g, '')"
+            />
+          </div>
         </div>
+        <p v-if="phoneError" class="px-4 pb-2 font-body text-xs text-danger">{{ phoneError }}</p>
       </div>
-    </div>
 
-    <!-- Email recovery accordion (Only if optional) -->
-    <div v-else class="mt-6">
-      <!-- Header row -->
-      <button
-        class="flex w-full min-h-[48px] cursor-pointer items-center gap-4 py-3"
-        @click="toggleEmail"
-      >
-        <AtSign class="h-4 w-4 shrink-0 text-plum-muted" />
-        <span class="flex-1 text-left font-body text-sm font-medium text-plum-muted"
-          >Add email for recovery</span
-        >
-        <ChevronDown
-          :class="[
-            'h-3 w-3 text-plum-muted transition-transform duration-200',
-            isEmailExpanded ? 'rotate-180' : '',
-          ]"
-        />
-      </button>
-
-      <!-- Expanded panel -->
-      <div
-        v-show="isEmailExpanded"
-        :class="[
-          'rounded-2xl border p-4 transition-colors',
-          emailError ? 'border-danger bg-danger/5' : 'border-plum-faint bg-plum-faint/30',
-        ]"
-      >
-        <div class="bg-white p-3.5 rounded-xl">
-          <input
-            v-model="email"
-            type="email"
-            placeholder="your@email.com"
-            class="w-full border-none bg-transparent font-body text-sm text-plum placeholder:text-plum-muted/60 focus:outline-none min-h-[32px]"
-          />
-        </div>
-        <p v-if="emailError" class="mt-1 font-body text-sm text-danger">{{ emailError }}</p>
-        <div class="mt-3 flex items-start gap-2">
-          <Info class="mt-0.5 h-3 w-3 shrink-0 text-plum-muted/80" />
-          <p class="font-body text-sm leading-relaxed text-plum-muted/80">
-            Receive updates &amp; recover your spot if you close the browser.
-          </p>
-        </div>
+      <!-- Info/Recovery Notice under Card -->
+      <div class="flex items-start gap-2 px-1">
+        <Info class="mt-0.5 h-3.5 w-3.5 shrink-0 text-plum-muted/80" />
+        <p class="font-body text-xs leading-relaxed text-plum-muted/80">
+          Email is used to recover your spot if you close the browser.
+        </p>
       </div>
     </div>
 

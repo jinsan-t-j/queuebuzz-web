@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
+import {
+  computed,
+  defineAsyncComponent,
+  onBeforeMount,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+} from 'vue'
 import { useRouter } from 'vue-router'
 
 import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
@@ -21,6 +29,10 @@ import WaitingStats from '@/modules/customer/components/WaitingStats.vue'
 import { useQueueStore } from '@/stores/queue.store'
 
 import { useCustomer } from '../composables/useCustomer'
+
+const ConnectionLostBanner = defineAsyncComponent(
+  () => import('../components/ConnectionLostBanner.vue'),
+)
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -112,11 +124,27 @@ watch(
   { immediate: true },
 )
 
+// Safety net: if entry is cleared externally (queue ended, session invalidated),
+// redirect to the ended view so the customer isn't stuck on a stale screen.
+watch(
+  () => entry.value,
+  (current, previous) => {
+    if (previous && !current) {
+      router.replace({
+        name: 'customer-ended',
+        params: router.currentRoute.value.params,
+        query: { reason: 'terminated' },
+      })
+    }
+  },
+)
+
 onBeforeMount(async () => {
   // Always fetch entry to validate active session on mount
   await fetchEntry()
 
   if (!isJoined.value || !entry.value) {
+    sessionStorage.setItem('qb_toast', 'You are not joined to any queue')
     showToast('You are not joined to any queue', { type: 'error' })
     router.push('/')
     return
@@ -130,6 +158,7 @@ onBeforeMount(async () => {
   }
 
   if (!queueValid || !queueStore.activeQueue) {
+    sessionStorage.setItem('qb_toast', 'This queue is no longer available')
     showToast('This queue is no longer available', { type: 'error' })
     router.push('/')
     return
@@ -192,6 +221,8 @@ onUnmounted(() => {
     <!-- Populated state -->
     <div v-else-if="entry" class="flex flex-col gap-5 px-5 py-4 animate-in fade-in duration-500">
       <PWABanner />
+
+      <ConnectionLostBanner />
 
       <!-- Heads-up / almost up notification banner -->
       <HeadsUpBanner :position="position" />

@@ -161,26 +161,48 @@ export function formatComparisonValue(item: ComparisonItem, plan: DisplayPlan): 
   return formatter ? formatter(val) : val
 }
 
+// Shared module-level state for caching and deduplication
+const globalFetchedPlans = ref<BillingPlan[]>([])
+const hasLoadedPlans = ref(false)
+const plansPromise = ref<Promise<BillingPlan[]> | null>(null)
+
 export function useBilling() {
   const router = useRouter()
   const authStore = useAuthStore()
 
-  const isLoading = ref(false)
+  const isLoading = ref(!hasLoadedPlans.value)
   const error = ref<string | null>(null)
-  const fetchedPlans = ref<BillingPlan[]>([])
+  const fetchedPlans = globalFetchedPlans
   const billingCycle = ref<'monthly' | 'yearly'>('monthly')
   const checkoutLoadingPlan = ref<string | null>(null)
   const checkoutError = ref<string | null>(null)
 
   async function fetchPlans(country?: string) {
+    if (hasLoadedPlans.value && globalFetchedPlans.value.length > 0) {
+      isLoading.value = false
+      return globalFetchedPlans.value
+    }
+
+    if (plansPromise.value !== null) {
+      isLoading.value = true
+      try {
+        return await plansPromise.value
+      } finally {
+        isLoading.value = false
+      }
+    }
+
     isLoading.value = true
     error.value = null
+    plansPromise.value = billingActions.fetchPlans(country)
     try {
-      const plans = await billingActions.fetchPlans(country)
-      fetchedPlans.value = plans || []
+      const plans = await plansPromise.value
+      globalFetchedPlans.value = plans || []
+      hasLoadedPlans.value = true
       return plans
     } catch (e) {
       error.value = (e as Error).message
+      plansPromise.value = null
       return []
     } finally {
       isLoading.value = false

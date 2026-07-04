@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { User, Layers, Bell, AlertCircle, CreditCard, Settings, ChevronDown } from 'lucide-vue-next'
-import { ref, defineAsyncComponent } from 'vue'
+import { AlertCircle, ChevronDown, CreditCard, Layers, Settings, User } from 'lucide-vue-next'
+import { defineAsyncComponent, ref } from 'vue'
 
 const props = defineProps({
   activeSection: {
@@ -21,7 +21,6 @@ const navItems = [
   { id: 'profile', label: 'My Profile', icon: User },
   { id: 'branding', label: 'Business Branding', icon: Layers },
   { id: 'queue', label: 'Queue Configuration', icon: Settings },
-  { id: 'preferences', label: 'Preferences', icon: Bell },
   { id: 'subscription', label: 'Subscription', icon: CreditCard },
   { id: 'danger', label: 'Danger Zone', icon: AlertCircle },
 ]

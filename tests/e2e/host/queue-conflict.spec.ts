@@ -119,7 +119,7 @@ test.describe('Queue Conflict Resolution', () => {
 
     // Wait for Success Modal "Queue is open!"
     await expect(page.getByText('Queue is open!')).toBeVisible()
-    await page.getByRole('button', { name: 'CLOSE' }).click()
+    await page.getByRole('button', { name: 'OPEN QUEUE' }).click()
 
     // Should stay on dashboard queue
     await expect(page).toHaveURL(/\/dashboard\/queue/)

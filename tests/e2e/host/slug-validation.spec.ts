@@ -75,9 +75,9 @@ test.describe('Slug Validation', () => {
     // Create
     await page.getByRole('button', { name: /create queue/i }).click()
 
-    // Wait for success modal and click 'CLOSE'
+    // Wait for success modal and click 'OPEN QUEUE'
     await expect(page.getByText('Queue is open!')).toBeVisible()
-    await page.getByRole('button', { name: 'CLOSE' }).click()
+    await page.getByRole('button', { name: 'OPEN QUEUE' }).click()
 
     // Should stay on dashboard queue (now in live mode)
     await expect(page).toHaveURL(/\/dashboard\/queue/)
