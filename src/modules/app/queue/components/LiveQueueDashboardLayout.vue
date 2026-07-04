@@ -345,6 +345,7 @@ function openLiveScreen() {
             @serve-guest="handleServeGuest"
             @skip-guest="handleSkipGuest"
             @disable-strict-mode="showDisableStrictModal = true"
+            @upgrade-plan="showUpgradeModal = true"
           />
         </div>
 

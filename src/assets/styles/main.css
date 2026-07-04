@@ -83,6 +83,26 @@
     --shadow-2xl: none;
   }
 
+  /* Force light theme variables on offline image capture templates */
+  #capture-host-qr,
+  #capture-ticket {
+    --color-sand: #f9f8f6;
+    --color-white: #ffffff;
+    --color-plum: #1a0a2e;
+    --color-plum-deep: #1a0a2e;
+    --color-plum-soft: #2d1b4e;
+    --color-plum-soft-2: #3d2b5e;
+    --color-plum-muted: #64557b;
+    --color-plum-faint: #e8e2f0;
+    --color-mint: #00e5a0;
+    --color-mint-light: #d4fff1;
+    --color-mint-dark: #006b47;
+    --color-on-mint: #1a0a2e;
+    --color-ash-border: #e2e8f0;
+    --color-ash: #94a3b8;
+    color: var(--color-plum) !important;
+  }
+
   body {
     font-family: var(--font-body);
     color: var(--color-plum);

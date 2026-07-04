@@ -108,6 +108,49 @@ test.describe('UI Integrity Audit', () => {
     })
   })
 
+  test('QR Code Capture Template Visual Integrity', async ({ page, mockApi }) => {
+    await mockApi('/queue/dashboard', makeActiveQueueDashboard())
+    await mockApi('/queue/live', {
+      data: {
+        id: 'q-123',
+        public_id: 'p-q-123',
+        name: 'Morning Consultation',
+        status: 'active',
+        waiting: 3,
+        is_active: true,
+        joinCode: 'CLNC01',
+        startedAt: new Date().toISOString(),
+      },
+    })
+    await mockApi('/queue/manage/q-123/live', { data: [] })
+
+    await page.goto('/dashboard/queue')
+    await page.waitForLoadState('networkidle')
+
+    // Open the QR Modal
+    await page.getByRole('button', { name: 'Show QR' }).click()
+    await expect(page.locator('#capture-host-qr')).toBeAttached()
+
+    // Temporarily make the hidden template visible in the viewport so it renders/screenshots correctly
+    await page.evaluate(() => {
+      const container = document.querySelector('#capture-host-qr')?.parentElement
+      if (container) {
+        container.setAttribute(
+          'style',
+          'position: fixed; left: 20px; top: 20px; z-index: 99999; background: white;',
+        )
+      }
+    })
+
+    // Take screenshot and assert visual integrity
+    await expect(page.locator('#capture-host-qr')).toHaveScreenshot('host-qr-capture.png', {
+      mask: [
+        page.locator('#capture-host-qr img'), // Mask the dynamic QR code image itself since it contains dynamic URL
+      ],
+      maxDiffPixelRatio: 0.05,
+    })
+  })
+
   test('Z-Index Collision Check', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')

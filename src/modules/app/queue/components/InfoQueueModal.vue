@@ -7,26 +7,40 @@
 import { useShare } from '@vueuse/core'
 import QRCode from 'qrcode'
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 
 // Icons
 import CheckCircleIcon from '@/assets/icons/check-circle.svg?component'
 import CloseXIcon from '@/assets/icons/close-x.svg?component'
 import CopyIcon from '@/assets/icons/copy.svg?component'
 import DownloadIcon from '@/assets/icons/download-arrow.svg?component'
+import ShareIcon from '@/assets/icons/share.svg?component'
+import VerifiedCheckIcon from '@/assets/icons/verified-check.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseModal from '@/components/base/BaseModal.vue'
 import { useCapture } from '@/composables/useCapture'
 
 import HostQRCaptureTemplate from './HostQRCaptureTemplate.vue'
 
-const props = defineProps<{
-  isOpen: boolean
-  joinCode: string
-  queueUrl: string
-  queueName: string
-  slug?: string
-  variant?: 'success' | 'qr'
-}>()
+const props = withDefaults(
+  defineProps<{
+    isOpen: boolean
+    joinCode: string
+    queueUrl: string
+    queueName?: string
+    slug?: string
+    variant?: 'success' | 'qr'
+    redirectUrl?: string
+    showQr?: boolean
+  }>(),
+  {
+    queueName: '',
+    slug: '',
+    variant: 'qr',
+    redirectUrl: '',
+    showQr: true,
+  },
+)
 
 const emit = defineEmits<{
   (e: 'close'): void
@@ -34,14 +48,19 @@ const emit = defineEmits<{
   (e: 'share'): void
 }>()
 
+const router = useRouter()
 const { share } = useShare()
 const { isCapturing, captureElement } = useCapture()
 
 const qrDataUrl = ref('')
-const copied = ref(false)
+const copiedCode = ref(false)
+const copiedLink = ref(false)
 
 const isSuccess = computed(() => props.variant === 'success')
-const currentQueueUrl = computed(() => props.queueUrl)
+const currentQueueUrl = computed(() => {
+  const origin = globalThis.window === undefined ? '' : globalThis.location.origin
+  return props.queueUrl.startsWith('http') ? props.queueUrl : `${origin}${props.queueUrl}`
+})
 const currentJoinCode = computed(() => props.joinCode)
 
 async function generateQr() {
@@ -61,6 +80,17 @@ async function handleDownload() {
   emit('download')
 }
 
+async function handleCopyCode() {
+  try {
+    await navigator.clipboard.writeText(currentJoinCode.value)
+    copiedCode.value = true
+    setTimeout(() => (copiedCode.value = false), 2000)
+  } catch {
+    // eslint-disable-next-line no-console
+    console.log('Copy failed')
+  }
+}
+
 async function handleShare() {
   const shareData = {
     title: 'Join my queue on QueueBuzz',
@@ -78,18 +108,25 @@ async function handleShare() {
   } else {
     try {
       await navigator.clipboard.writeText(shareData.url)
-      copied.value = true
-      setTimeout(() => (copied.value = false), 2000)
+      copiedLink.value = true
+      setTimeout(() => (copiedLink.value = false), 2000)
     } catch {
       // Fallback failed
     }
   }
 }
 
+function handleConfirmRedirect() {
+  if (props.redirectUrl && router) {
+    router.push(props.redirectUrl)
+  }
+  emit('close')
+}
+
 watch(
   () => props.isOpen,
   (val) => {
-    if (val) generateQr()
+    if (val && props.showQr) generateQr()
   },
   { immediate: true },
 )
@@ -100,6 +137,7 @@ watch(
     <div class="relative w-full overflow-hidden p-8 text-center">
       <!-- Hidden Capture Template -->
       <HostQRCaptureTemplate
+        v-if="showQr"
         :queue-name="queueName"
         :join-code="joinCode"
         :queue-url="currentQueueUrl"
@@ -134,13 +172,16 @@ watch(
         <p class="mx-auto mb-4 max-w-[320px] font-body text-sm leading-relaxed text-plum/50">
           {{
             isSuccess
-              ? 'Customers can now join your queue using the code or QR below.'
+              ? showQr
+                ? 'Customers can now join your queue using the code or QR below.'
+                : 'Customers can now join your queue using the code below.'
               : 'Keep this QR handy for walk-in customers to join instantly.'
           }}
         </p>
 
         <!-- QR Display -->
         <div
+          v-if="showQr"
           class="group relative mx-auto mb-4 flex h-[240px] w-[240px] items-center justify-center overflow-hidden rounded-[32px] bg-white p-6 shadow-[0_12px_40px_rgba(26,10,46,0.08)] transition-all hover:shadow-[0_20px_60px_rgba(26,10,46,0.12)] dark:shadow-none"
         >
           <img
@@ -156,13 +197,13 @@ watch(
             class="absolute inset-0 flex items-center justify-center bg-white/20 dark:bg-black/20 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px] cursor-pointer"
           >
             <div
-              class="rounded-full bg-white p-3 shadow-lg dark:shadow-none"
+              class="rounded-full bg-white dark:bg-plum-soft p-3 shadow-lg dark:shadow-none"
               @click="handleDownload"
             >
-              <DownloadIcon v-if="!isCapturing" class="h-6 w-6 text-plum" />
+              <DownloadIcon v-if="!isCapturing" class="h-6 w-6 text-plum dark:text-mint" />
               <div
                 v-else
-                class="h-6 w-6 animate-spin rounded-full border-2 border-plum border-t-transparent"
+                class="h-6 w-6 animate-spin rounded-full border-2 border-plum dark:border-mint border-t-transparent"
               />
             </div>
           </div>
@@ -179,9 +220,9 @@ watch(
             </span>
             <button
               class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-plum/40 shadow-sm dark:shadow-none transition-all hover:bg-plum hover:text-white dark:hover:bg-plum-faint dark:hover:text-plum active:scale-95 cursor-pointer"
-              @click="handleShare"
+              @click="handleCopyCode"
             >
-              <CopyIcon v-if="!copied" class="h-3.5 w-3.5" />
+              <CopyIcon v-if="!copiedCode" class="h-3.5 w-3.5" />
               <CheckCircleIcon v-else class="h-3.5 w-3.5 text-mint" />
             </button>
           </div>
@@ -191,20 +232,21 @@ watch(
         <div class="flex flex-col gap-3">
           <BaseButton
             variant="primary"
-            :is-loading="isCapturing"
             class="w-full py-5 text-lg font-bold shadow-xl dark:shadow-none shadow-mint/20 active:scale-95 transition-all"
-            @click="handleShare"
+            @click="handleConfirmRedirect"
           >
-            {{ copied ? 'URL COPIED!' : 'SHARE JOIN LINK' }}
+            OPEN QUEUE
           </BaseButton>
 
-          <BaseButton
-            variant="ghost"
-            class="w-full h-14 text-plum/60 hover:text-plum font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-2"
-            @click="emit('close')"
+          <button
+            class="flex items-center justify-center gap-1.5 font-body text-sm font-bold transition-colors cursor-pointer mt-2"
+            :class="copiedLink ? 'text-mint' : 'text-plum/40 hover:text-plum'"
+            @click="handleShare"
           >
-            CLOSE
-          </BaseButton>
+            <VerifiedCheckIcon v-if="copiedLink" class="h-4 w-4 text-mint" />
+            <ShareIcon v-else class="h-4 w-4" />
+            <span>{{ copiedLink ? 'LINK COPIED!' : 'SHARE LINK INSTEAD' }}</span>
+          </button>
         </div>
       </div>
     </div>

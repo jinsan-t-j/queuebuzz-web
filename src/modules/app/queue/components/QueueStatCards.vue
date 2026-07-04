@@ -129,7 +129,7 @@ function formatDuration(totalMins: number): string {
         <span class="font-body text-[10px] font-bold uppercase tracking-wider text-plum-muted"
           >Push Delay</span
         >
-        <BaseTooltip text="Adds extra time to the displayed wait estimate during busy periods.">
+        <BaseTooltip text="Push extra wait time shown to each customers.">
           <Info class="h-3.5 w-3.5 text-plum-muted cursor-help" />
         </BaseTooltip>
       </div>
