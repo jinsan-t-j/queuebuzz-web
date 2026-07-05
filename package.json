@@ -60,7 +60,7 @@
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.61.1",
     "@sonar/scan": "^4.3.8",
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.1.0",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/eslint-config-typescript": "^14.9.0",
     "esbuild": "^0.28.1",
