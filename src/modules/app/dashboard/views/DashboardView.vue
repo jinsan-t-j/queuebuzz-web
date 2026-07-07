@@ -11,9 +11,13 @@ import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import BaseButton from '@/components/base/BaseButton.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 import { usePrefetch } from '@/composables/usePrefetch'
 import { useRefresh } from '@/composables/useRefresh'
 import { useToast } from '@/composables/useToast'
+import { updateUserSettings } from '@/modules/app/settings/actions/settings.actions'
+import { useAuthStore } from '@/stores/auth.store'
 import { useDashboardStore } from '@/stores/dashboard.store'
 
 import DashboardStatCard from '../components/DashboardStatCard.vue'
@@ -67,6 +71,30 @@ const router = useRouter()
 const route = useRoute()
 const dashboardStore = useDashboardStore()
 const { isLoading, isRefreshing, error, data: dashboardData } = storeToRefs(dashboardStore)
+
+const authStore = useAuthStore()
+const showTermsModal = ref(false)
+
+async function handleTermsAccept() {
+  try {
+    await updateUserSettings({ termsAccepted: true })
+    if (authStore.user) {
+      authStore.user.termsAccepted = true
+    }
+    showTermsModal.value = false
+    const { showToast } = useToast()
+    showToast('Thank you for accepting our Terms & Privacy Policy!', { type: 'success' })
+    router.replace({ query: { ...route.query, signup: undefined } })
+  } catch {
+    const { showToast } = useToast()
+    showToast('Failed to save your acceptance. Please try again.', { type: 'error' })
+  }
+}
+
+async function handleTermsDecline() {
+  await authStore.logout()
+  router.push('/login-or-signup')
+}
 
 const currentHour = ref(new Date().getHours())
 let greetingTimer = null
@@ -270,6 +298,9 @@ function handleVisibilityChange() {
 
 // 12. Lifecycle hooks
 onMounted(() => {
+  if (route.query.signup === 'true') {
+    showTermsModal.value = true
+  }
   scheduleGreetingUpdate()
   document.addEventListener('visibilitychange', handleVisibilityChange)
   loadDashboard()
@@ -438,5 +469,64 @@ onBeforeUnmount(() => {
         </div>
       </template>
     </template>
+
+    <!-- Terms & Privacy Acceptance Modal -->
+    <BaseModal :is-open="showTermsModal" @close="handleTermsDecline">
+      <div class="p-8 text-center bg-white rounded-3xl">
+        <!-- SVG Icon -->
+        <div
+          class="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-mint-light"
+        >
+          <svg
+            class="h-7 w-7 text-plum"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+        </div>
+
+        <h3 class="font-display text-xl font-extrabold text-plum mb-3">Terms & Privacy Update</h3>
+        <p class="font-body text-sm text-plum-muted leading-relaxed mb-8">
+          Please accept our
+          <router-link
+            to="/terms"
+            target="_blank"
+            class="font-semibold text-plum underline hover:text-plum-soft"
+            >Terms of Service</router-link
+          >
+          and
+          <router-link
+            to="/privacy"
+            target="_blank"
+            class="font-semibold text-plum underline hover:text-plum-soft"
+            >Privacy Policy</router-link
+          >
+          to activate your dashboard and start creating virtual queues.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+          <BaseButton
+            variant="ghost"
+            class="flex-1 w-full !rounded-pill font-body text-sm font-semibold border border-plum-faint text-plum hover:bg-plum-faint/30"
+            @click="handleTermsDecline"
+          >
+            Decline & Sign Out
+          </BaseButton>
+          <BaseButton
+            class="flex-1 w-full !rounded-pill font-body text-sm font-semibold !bg-mint !text-plum hover:!bg-mint-dark"
+            @click="handleTermsAccept"
+          >
+            Accept & Continue
+          </BaseButton>
+        </div>
+      </div>
+    </BaseModal>
   </div>
 </template>

@@ -13,6 +13,7 @@ export interface UserSettings {
   profileImageUrl: string | null
   bannerImageUrl: string | null
   slug?: string
+  termsAccepted?: boolean
   settings: {
     defaultQueueName: string
     avgServiceMins: number

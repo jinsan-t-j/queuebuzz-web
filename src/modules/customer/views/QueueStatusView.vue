@@ -85,26 +85,26 @@ function playChime() {
   }
 }
 
+let currentSpeechId = 0
+
 // Text-to-Speech (Voice-over) using Web Speech API
 function speakTicket(ticketNo: string) {
   if (!isSoundEnabled.value) return
   try {
     if (globalThis.window === undefined || !globalThis.speechSynthesis) return
 
-    // Cancel any ongoing speech so it speaks the new one immediately
+    currentSpeechId++
+    const mySpeechId = currentSpeechId
     globalThis.speechSynthesis.cancel()
 
-    // Clean and split ticket number characters to spell it out clearly (e.g., A - 1 - 2 - 3)
-    const spelledNo = ticketNo
-      .replace(/[^a-zA-Z0-9]/g, ' ')
-      .split('')
-      .filter((char) => char.trim() !== '')
-      .join(' ')
+    const text = `Ticket number ${ticketNo}`
+    const repeatText = `I repeat, ticket number ${ticketNo}`
 
-    const text = `Ticket number ${spelledNo}`
-    const utterance = new SpeechSynthesisUtterance(text)
+    // Set voice based on user's system locale and fallback preferences
+    const userLocale = typeof navigator === 'undefined' ? 'en-IN' : navigator.language
+    const [, regionPart] = userLocale.toLowerCase().split('-')
+    const targetRegionLang = regionPart ? `en-${regionPart}` : 'en-in'
 
-    // Set voice to a clear female voice (preferably Indian English, falling back to standard English female)
     const voices = globalThis.speechSynthesis.getVoices()
     const femaleVoicePatterns = [
       'veena', // macOS Indian English female
@@ -120,25 +120,66 @@ function speakTicket(ticketNo: string) {
       'google uk english female',
     ]
 
-    let selectedVoice = voices.find((v) => {
+    const getVoiceScore = (v: SpeechSynthesisVoice) => {
+      let score = 0
       const nameLower = v.name.toLowerCase()
-      return femaleVoicePatterns.some((pattern) => nameLower.includes(pattern))
-    })
+      const langLower = v.lang.toLowerCase().replace('_', '-')
 
-    // Fallback to any en-IN or English voice if no specific female voice matches
-    if (!selectedVoice) {
-      selectedVoice =
-        voices.find((v) => v.lang === 'en-IN') || voices.find((v) => v.lang.startsWith('en'))
+      if (langLower === targetRegionLang) {
+        score += 100
+      } else if (regionPart && langLower.startsWith(`en-${regionPart}`)) {
+        score += 80
+      }
+
+      if (langLower === 'en-in') {
+        score += 50
+      }
+
+      const isFemale = femaleVoicePatterns.some((pattern) => nameLower.includes(pattern))
+      if (isFemale) {
+        score += 30
+      }
+
+      if (langLower.startsWith('en')) {
+        score += 10
+      }
+
+      return score
     }
 
-    if (selectedVoice) {
-      utterance.voice = selectedVoice
+    const sortedVoices = [...voices]
+      .map((v) => ({ voice: v, score: getVoiceScore(v) }))
+      .sort((a, b) => b.score - a.score)
+
+    const selectedVoice =
+      sortedVoices.length > 0 && sortedVoices[0].score > 0 ? sortedVoices[0].voice : null
+
+    const speakIteration = (count: number) => {
+      if (count <= 0) return
+      if (mySpeechId !== currentSpeechId) return
+      if (globalThis.window === undefined || !globalThis.speechSynthesis) return
+
+      const speechText = count === 1 ? repeatText : text
+      const utterance = new SpeechSynthesisUtterance(speechText)
+      if (selectedVoice) {
+        utterance.voice = selectedVoice
+      }
+
+      utterance.rate = 0.7 // Slower speech rate for better comprehension over speaker systems
+      utterance.pitch = 1
+
+      utterance.onend = () => {
+        if (mySpeechId !== currentSpeechId) return
+        setTimeout(() => {
+          if (mySpeechId !== currentSpeechId) return
+          speakIteration(count - 1)
+        }, 800)
+      }
+
+      globalThis.speechSynthesis.speak(utterance)
     }
 
-    utterance.rate = 0.7 // Slower speech rate for better comprehension over speaker systems
-    utterance.pitch = 1
-
-    globalThis.speechSynthesis.speak(utterance)
+    speakIteration(2)
   } catch {
     // TTS fallback silent catch
   }
@@ -421,6 +462,19 @@ onUnmounted(() => {
                   }"
                 >
                   {{ currentServing.ticketNo }}
+                </div>
+
+                <!-- Repeat Button -->
+                <div class="mt-8 flex justify-center">
+                  <BaseButton
+                    variant="outline"
+                    size="sm"
+                    class="flex items-center gap-2"
+                    @click="speakTicket(String(currentServing.ticketNo))"
+                  >
+                    <Volume2 class="h-4 w-4 text-plum" />
+                    <span>Repeat Announcement</span>
+                  </BaseButton>
                 </div>
               </div>
 
