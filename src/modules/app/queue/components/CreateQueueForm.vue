@@ -13,7 +13,12 @@ import BaseToggle from '@/components/base/BaseToggle.vue'
 import LocationTroubleshooter from '@/components/common/LocationTroubleshooter.vue'
 import { useToast } from '@/composables/useToast'
 import { APP_BASE_URL } from '@/config/api.constants'
-import { fetchSubscription, type Subscription } from '@/modules/app/billing/actions/billing.actions'
+import {
+  fetchCurrentPlan,
+  fetchSubscription,
+  type BillingPlan,
+  type Subscription,
+} from '@/modules/app/billing/actions/billing.actions'
 import {
   checkSlugAvailability,
   createQueue,
@@ -22,6 +27,7 @@ import {
 import ActiveQueueConflictModal from '@/modules/app/queue/components/ActiveQueueConflictModal.vue'
 import LocationVerifiedCard from '@/modules/app/queue/components/LocationVerifiedCard.vue'
 import MapPreviewCard from '@/modules/app/queue/components/MapPreviewCard.vue'
+import PremiumUpgradeModal from '@/modules/app/queue/components/PremiumUpgradeModal.vue'
 import { SLUG_REGEX } from '@/modules/app/queue/utils/validation'
 import { useLocation } from '@/modules/customer/composables/useLocation'
 import { useAuthStore } from '@/stores/auth.store'
@@ -40,6 +46,8 @@ const props = defineProps({
 const emit = defineEmits(['queue-created'])
 
 const subscription = ref<Subscription | null>(null)
+const currentPlan = ref<BillingPlan | null>(null)
+const showUpgradeModal = ref(false)
 
 const hasActiveSubscription = computed(() => {
   return (
@@ -67,7 +75,15 @@ onMounted(async () => {
       subscription.value = sub
     })
 
-    await Promise.all([settingsPromise, subscriptionPromise])
+    const planPromise = fetchCurrentPlan()
+      .then((plan) => {
+        currentPlan.value = plan
+      })
+      .catch(() => {
+        currentPlan.value = null
+      })
+
+    await Promise.all([settingsPromise, subscriptionPromise, planPromise])
 
     if (userSettings.value) {
       queueName.value = userSettings.value.settings?.defaultQueueName || 'Main Queue'
@@ -352,8 +368,11 @@ async function handleForceCreate() {
 }
 
 const onSubmit = handleSubmit(async (values) => {
+  if (props.role === 'guest' && !acceptTerms.value) {
+    showToast('You must accept the Terms of Service & Privacy Policy', { type: 'warning' })
+    return
+  }
   if (errors.value.slug || isCheckingSlug.value || isSubmitting.value) return
-
   isSubmitting.value = true
   try {
     const queue = await submitQueueCreation(values as FormValues)
@@ -397,11 +416,100 @@ function copyCustomLink() {
 }
 
 const windowHost = globalThis.window === undefined ? '' : globalThis.location.host
+const acceptTerms = ref(false)
+
+const activeLimits = computed(() => {
+  if (currentPlan.value?.limits) {
+    return currentPlan.value.limits
+  }
+  return {
+    maxQueuesPerMonth: 1,
+    maxGuestsPerQueue: 25,
+    queueExpiryHours: 4,
+  }
+})
 </script>
 
 <template>
   <form @submit.prevent="onSubmit">
     <div class="mt-8 flex flex-col gap-5">
+      <!-- Plan Limits Indicator Card -->
+      <div
+        class="rounded-card border border-plum-faint bg-white p-4 sm:p-5 shadow-sm dark:shadow-none flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all"
+      >
+        <div class="flex items-start gap-4">
+          <!-- Icon -->
+          <div class="h-9 w-9 rounded-xl bg-mint-light flex items-center justify-center shrink-0">
+            <svg
+              class="h-5 w-5 text-plum"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <!-- Text details -->
+          <div class="flex-1 min-w-0">
+            <h4 class="font-body text-sm font-bold text-plum">
+              {{
+                role === 'guest'
+                  ? 'Guest Queue Session'
+                  : `${currentPlan?.name || 'Free'} Plan Limits`
+              }}
+            </h4>
+            <div class="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 font-body text-xs text-plum-muted">
+              <!-- Duration Limit -->
+              <span class="flex items-center gap-1">
+                <span class="h-1.5 w-1.5 rounded-full bg-mint" />
+                {{
+                  activeLimits.queueExpiryHours <= 0
+                    ? 'Unlimited duration'
+                    : `${activeLimits.queueExpiryHours}-hour session duration`
+                }}
+              </span>
+              <!-- Guest Limit -->
+              <span class="flex items-center gap-1">
+                <span class="h-1.5 w-1.5 rounded-full bg-mint" />
+                {{
+                  activeLimits.maxGuestsPerQueue <= 0
+                    ? 'Unlimited guests'
+                    : `Max ${activeLimits.maxGuestsPerQueue} guests`
+                }}
+              </span>
+              <!-- Queue Count Limit (Hosts only) -->
+              <span v-if="role === 'host'" class="flex items-center gap-1">
+                <span class="h-1.5 w-1.5 rounded-full bg-mint" />
+                {{
+                  activeLimits.maxQueuesPerMonth <= 0
+                    ? 'Unlimited queues'
+                    : `${activeLimits.maxQueuesPerMonth} queue${activeLimits.maxQueuesPerMonth > 1 ? 's' : ''} per month`
+                }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upgrade Action -->
+        <div
+          v-if="role === 'guest' || (currentPlan && currentPlan.tier === 'free')"
+          class="shrink-0"
+        >
+          <button
+            type="button"
+            class="inline-flex h-9 items-center justify-center rounded-xl bg-mint px-4 font-body text-xs font-bold text-plum transition-all hover:bg-mint-dark active:scale-95 cursor-pointer shadow-[0_4px_12px_rgba(0,229,160,0.15)]"
+            @click="showUpgradeModal = true"
+          >
+            {{ role === 'guest' ? 'Go Premium for more features' : 'Upgrade for more features' }}
+          </button>
+        </div>
+      </div>
+
       <!-- ═══ Card 1: Queue Name ═══ -->
       <div
         class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
@@ -497,7 +605,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
               Would you like to allow guests to book together as a group?
             </label>
             <p class="font-body text-xs text-plum-muted mt-1 leading-relaxed">
-              This would allow guests to reserve spots for themselves and their entire party.
+              Guests can join the queue for themselves or their entire group.
             </p>
             <div v-if="errors.allowPartyJoining" class="mt-1 font-body text-sm text-red-500">
               {{ errors.allowPartyJoining }}
@@ -566,8 +674,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
               Would you like to control each guest’s position in the queue?
             </label>
             <p class="font-body text-xs text-plum-muted mt-1 leading-relaxed">
-              This will disable automatic position assignment for guests while ensuring they only
-              see “You’re on the list” instead of a position number.
+              Guests won't see their place in line. Instead, they'll only see "You're on the list."
             </p>
           </div>
           <BaseToggle
@@ -752,6 +859,33 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
       </template>
 
       <template v-else />
+
+      <!-- Card: Terms & Conditions (Guest only) -->
+      <div
+        v-if="role === 'guest'"
+        class="rounded-card border border-plum-faint bg-white p-4 sm:p-6 shadow-sm dark:shadow-none"
+      >
+        <div class="flex items-start gap-4">
+          <input
+            id="acceptTerms"
+            v-model="acceptTerms"
+            type="checkbox"
+            class="mt-1 h-5 w-5 rounded border-plum-faint text-plum focus:ring-plum cursor-pointer accent-mint"
+          />
+          <label for="acceptTerms" class="flex-1">
+            <p class="font-body text-xs text-plum-muted mt-1 leading-relaxed">
+              I agree to the
+              <router-link target="_blank" to="/terms" class="underline hover:text-plum-soft"
+                >Terms of Service</router-link
+              >
+              and
+              <router-link target="_blank" to="/privacy" class="underline hover:text-plum-soft"
+                >Privacy Policy</router-link
+              >.
+            </p>
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- ═══ Action row ═══ -->
@@ -765,7 +899,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
       </button>
       <button
         type="submit"
-        :disabled="isSubmitting || isCheckingSlug"
+        :disabled="isSubmitting || isCheckingSlug || (role === 'guest' && !acceptTerms)"
         class="rounded-input bg-mint px-6 py-2.5 font-body text-base font-semibold text-on-mint shadow-[0_4px_12px_rgba(0,229,160,0.30)] transition-all hover:bg-mint-dark active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center sm:min-w-[140px] w-full sm:w-auto"
       >
         <SpinnerLoadingIcon v-if="isSubmitting" class="mr-2 h-4 w-4 animate-spin text-on-mint" />
@@ -793,4 +927,7 @@ const windowHost = globalThis.window === undefined ? '' : globalThis.location.ho
     @confirm-resume="handleResume"
     @confirm-terminate="handleForceCreate"
   />
+
+  <!-- Premium Upgrade Modal -->
+  <PremiumUpgradeModal :is-open="showUpgradeModal" @close="showUpgradeModal = false" />
 </template>

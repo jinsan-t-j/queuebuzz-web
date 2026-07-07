@@ -9,4 +9,5 @@ export interface AuthUser {
   tier: UserTier
   avatar: string | null
   profileImageUrl?: string | null
+  termsAccepted: boolean
 }

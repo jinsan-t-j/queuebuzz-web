@@ -28,8 +28,9 @@ function handleAction() {
     // Navigate to settings with billing tab
     router.push({ name: 'go-premium', query: { focus: 'plans' } })
   } else {
-    // Navigate to login/signup with claim queue query
-    router.push({ name: 'login', query: { claim_queue_id: props.queueId } })
+    // Navigate to login/signup with claim queue query if available
+    const query = props.queueId ? { claim_queue_id: props.queueId } : {}
+    router.push({ name: 'login', query })
   }
 }
 </script>
@@ -196,7 +197,13 @@ function handleAction() {
             class="w-full bg-plum text-sand hover:bg-plum-soft font-bold shadow-lg"
             @click="handleAction"
           >
-            {{ authStore.isAuthenticated ? 'Upgrade to Premium' : 'Claim Queue & Upgrade' }}
+            {{
+              authStore.isAuthenticated
+                ? 'Upgrade to Premium'
+                : queueId
+                  ? 'Claim Queue & Go Premium'
+                  : 'Login / Sign Up to Upgrade'
+            }}
           </BaseButton>
 
           <BaseButton
