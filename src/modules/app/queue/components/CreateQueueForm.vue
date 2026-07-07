@@ -66,6 +66,14 @@ const settingsStore = useSettingsStore()
 const { userSettings } = storeToRefs(settingsStore)
 
 onMounted(async () => {
+  const planPromise = fetchCurrentPlan()
+    .then((plan) => {
+      currentPlan.value = plan
+    })
+    .catch(() => {
+      currentPlan.value = null
+    })
+
   if (props.role === 'host') {
     // Fire subscription + settings in parallel — they're independent API calls.
     // Settings result is needed to pre-fill form defaults; subscription is read-only.
@@ -75,14 +83,6 @@ onMounted(async () => {
       subscription.value = sub
     })
 
-    const planPromise = fetchCurrentPlan()
-      .then((plan) => {
-        currentPlan.value = plan
-      })
-      .catch(() => {
-        currentPlan.value = null
-      })
-
     await Promise.all([settingsPromise, subscriptionPromise, planPromise])
 
     if (userSettings.value) {
@@ -90,6 +90,8 @@ onMounted(async () => {
       serviceTime.value = userSettings.value.settings?.avgServiceMins || 5
       slug.value = userSettings.value.slug || ''
     }
+  } else {
+    await planPromise
   }
 
   queueNameInput.value?.focus()
