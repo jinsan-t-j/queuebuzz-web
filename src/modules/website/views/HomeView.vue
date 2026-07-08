@@ -109,8 +109,14 @@ onMounted(async () => {
   }
 })
 
+const isQueueValid = computed(() => {
+  if (!activeQueue.value?.status) return false
+  const status = activeQueue.value.status.toUpperCase()
+  return status === 'ACTIVE' || status === 'PAUSED'
+})
+
 const formattedStartedAt = computed(() => {
-  if (!activeQueue.value?.createdAt) return null
+  if (!activeQueue.value?.createdAt || !isQueueValid.value) return null
   return new Date(activeQueue.value.createdAt).toLocaleTimeString([], {
     hour: 'numeric',
     minute: '2-digit',
@@ -118,7 +124,7 @@ const formattedStartedAt = computed(() => {
 })
 
 const resumeLink = computed(() => {
-  if (!activeQueue.value) return '/guest-host/queue/create'
+  if (!activeQueue.value || !isQueueValid.value) return '/guest-host/queue/create'
   return authStore.isAuthenticated
     ? '/dashboard'
     : `/guest-host/queue/${activeQueue.value.slug || activeQueue.value.id}/live`
@@ -150,7 +156,7 @@ const resumeLink = computed(() => {
     <!-- Active Queue Banner -->
     <!-- Active Queue Banner loaded asynchronously -->
     <ActiveQueueBanner
-      :active-queue="activeQueue"
+      :active-queue="isQueueValid ? activeQueue : null"
       :resume-link="resumeLink"
       :formatted-started-at="formattedStartedAt"
     />

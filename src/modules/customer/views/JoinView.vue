@@ -68,6 +68,7 @@ async function initializeQueue(queueId?: string, code?: string) {
       routeName = 'customer-idle'
     }
 
+    isNavigatingAway.value = true
     router.replace({ name: routeName, params: { queueId: queueStore.activeQueue.id } })
   }
 
@@ -145,8 +146,12 @@ const {
 } = storeToRefs(queueStore)
 
 const isJoining = ref(false)
+const isNavigatingAway = ref(false)
 
-useLeaveGuard('Are you sure you want to leave this page?', () => !isJoining.value)
+useLeaveGuard(
+  'Are you sure you want to leave this page?',
+  () => !isJoining.value && !isNavigatingAway.value,
+)
 
 const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
   const targetQueueId = queueId || resolvedQueueId.value || activeQueue.value?.id
@@ -159,6 +164,7 @@ const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
   try {
     const result = await customerStore.joinQueue(targetQueueId, joinPayload)
     if (result) {
+      isNavigatingAway.value = true
       router.replace({ name: 'customer-waiting', params: { queueId: targetQueueId } })
     } else {
       showToast(customerStore.error ?? 'Failed to join queue', { type: 'error' })
@@ -219,6 +225,15 @@ onBeforeMount(async () => {
 
 function handleJoinByCode() {
   isCodePromptOpen.value = true
+}
+
+function handleQueueNotFoundAction() {
+  if (queueStore.error === QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND) {
+    isNavigatingAway.value = true
+    router.push('/')
+  } else {
+    handleJoinByCode()
+  }
 }
 
 // Speculative prefetch of subsequent customer views in the background to guarantee instant transitions
@@ -323,11 +338,7 @@ onUnmounted(() => {
       :error-type="
         queueStore.error === QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND ? 'NOT_FOUND' : 'LOCKED'
       "
-      @action="
-        queueStore.error === QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND
-          ? router.push('/')
-          : handleJoinByCode()
-      "
+      @action="handleQueueNotFoundAction"
     />
 
     <JoinCodeModal
