@@ -91,7 +91,7 @@ function playChime() {
 let currentSpeechId = 0
 
 // Text-to-Speech (Voice-over) using Web Speech API
-function speakTicket(ticketNo: string) {
+async function speakTicket(ticketNo: string) {
   if (!isSoundEnabled.value) return
   try {
     if (globalThis.window === undefined || !globalThis.speechSynthesis) return
@@ -100,15 +100,56 @@ function speakTicket(ticketNo: string) {
     const mySpeechId = currentSpeechId
     globalThis.speechSynthesis.cancel()
 
-    const text = `Ticket number ${ticketNo}`
-    const repeatText = `I repeat, ticket number ${ticketNo}`
+    const digitWords: Record<string, string> = {
+      '0': 'zero',
+      '1': 'one',
+      '2': 'two',
+      '3': 'three',
+      '4': 'four',
+      '5': 'five',
+      '6': 'six',
+      '7': 'seven',
+      '8': 'eight',
+      '9': 'nine',
+    }
+    const spokenTicket = ticketNo
+      .split('')
+      .map((char) => {
+        const upper = char.toUpperCase()
+        return digitWords[upper] || upper
+      })
+      .join(', ')
+
+    const text = `Ticket number ${spokenTicket}`
+    const repeatText = `I repeat, ticket number ${spokenTicket}`
 
     // Set voice based on user's system locale and fallback preferences
     const userLocale = typeof navigator === 'undefined' ? 'en-IN' : navigator.language
     const [, regionPart] = userLocale.toLowerCase().split('-')
     const targetRegionLang = regionPart ? `en-${regionPart}` : 'en-in'
 
-    const voices = globalThis.speechSynthesis.getVoices()
+    // Chrome/Android load voices asynchronously — getVoices() returns [] on first call
+    const getLoadedVoices = (): Promise<SpeechSynthesisVoice[]> => {
+      const voices = globalThis.speechSynthesis.getVoices()
+      if (voices.length > 0) return Promise.resolve(voices)
+
+      return new Promise((resolve) => {
+        const onVoicesChanged = () => {
+          globalThis.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged)
+          resolve(globalThis.speechSynthesis.getVoices())
+        }
+        globalThis.speechSynthesis.addEventListener('voiceschanged', onVoicesChanged)
+        // Safety timeout — don't block forever if event never fires
+        setTimeout(() => {
+          globalThis.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged)
+          resolve(globalThis.speechSynthesis.getVoices())
+        }, 1500)
+      })
+    }
+
+    const voices = await getLoadedVoices()
+    if (mySpeechId !== currentSpeechId) return
+
     const femaleVoicePatterns = [
       'veena', // macOS Indian English female
       'heera', // Windows Indian English female
@@ -123,10 +164,26 @@ function speakTicket(ticketNo: string) {
       'google uk english female',
     ]
 
+    // Known low-quality / robotic voice patterns to deprioritize
+    const roboticPatterns = ['espeak', 'mbrola', 'pico', 'festival', 'flite']
+
     const getVoiceScore = (v: SpeechSynthesisVoice) => {
       let score = 0
       const nameLower = v.name.toLowerCase()
       const langLower = v.lang.toLowerCase().replace('_', '-')
+
+      // Reject non-English voices entirely
+      if (!langLower.startsWith('en')) return -1
+
+      // Deprioritize known robotic/low-quality voices
+      if (roboticPatterns.some((p) => nameLower.includes(p))) {
+        score -= 50
+      }
+
+      // Prefer premium/enhanced/natural tagged voices (available on newer OS builds)
+      if (/premium|enhanced|natural|neural|online/i.test(nameLower)) {
+        score += 40
+      }
 
       if (langLower === targetRegionLang) {
         score += 100
@@ -152,6 +209,7 @@ function speakTicket(ticketNo: string) {
 
     const sortedVoices = [...voices]
       .map((v) => ({ voice: v, score: getVoiceScore(v) }))
+      .filter((v) => v.score >= 0)
       .sort((a, b) => b.score - a.score)
 
     const selectedVoice =
