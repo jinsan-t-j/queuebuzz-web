@@ -23,7 +23,7 @@ const emit = defineEmits<{
 const router = useRouter()
 
 function goToActiveQueue(queueId: string) {
-  router.push({
+  router.replace({
     name: 'customer-waiting',
     params: { queueId },
   })

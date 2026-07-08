@@ -20,7 +20,7 @@ export function useCustomer() {
   async function handleJoinQueue(queueId: string, payload: JoinQueuePayload) {
     const result = await store.joinQueue(queueId, payload)
     if (result) {
-      router.push({ name: 'customer-waiting', params: { queueId } })
+      router.replace({ name: 'customer-waiting', params: { queueId } })
     } else {
       showToast(store.error ?? 'Failed to join queue', { type: 'error' })
     }
@@ -55,7 +55,7 @@ export function useCustomer() {
     const success = await store.leaveQueue()
     if (success) {
       showToast('You have left the queue.', { type: 'success' })
-      router.push({ name: 'customer-ended', params: { queueId }, query: { reason: 'left' } })
+      router.replace({ name: 'customer-ended', params: { queueId }, query: { reason: 'left' } })
     } else {
       showToast(store.error ?? 'Failed to leave queue', { type: 'error' })
     }
@@ -99,6 +99,25 @@ export function useCustomer() {
       title: 'My Queue Ticket',
       text: `I'm waiting at ${qName}. My ticket is #${entry.value.ticketNo}.`,
     })
+  }
+
+  function redirectForStatus(s: string) {
+    const params = router.currentRoute.value.params
+    if (s === 'CALLED' || s === 'ARRIVED') {
+      router.replace({ name: 'customer-called', params })
+    } else if (s === 'IDLE') {
+      router.replace({ name: 'customer-idle', params })
+    } else if (s === 'SERVED') {
+      router.replace({
+        name: 'customer-served',
+        params,
+        query: { t: store.getDisplayTicketNumber(entry.value) },
+      })
+    } else if (s === 'LEFT' || s === 'SKIPPED') {
+      router.replace({ name: 'customer-ended', params, query: { reason: s.toLowerCase() } })
+    } else if (s === 'WAITING') {
+      router.replace({ name: 'customer-waiting', params })
+    }
   }
 
   return {
@@ -158,5 +177,6 @@ export function useCustomer() {
     isSaving: isCapturing,
     isSaved: hasCaptured,
     saveTicketAsImage,
+    redirectForStatus,
   }
 }

@@ -23,11 +23,14 @@ import { useRoute } from 'vue-router'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
+import { useLeaveGuard } from '@/composables/useLeaveGuard'
 import { ENTRY_STATUS } from '@/modules/app/queue/constants'
 import { useQueueStore } from '@/stores/queue.store'
 
 const route = useRoute()
 const queueStore = useQueueStore()
+
+useLeaveGuard()
 const { activeQueue, entries, isLoading, error } = storeToRefs(queueStore)
 
 const queueId = computed(() => (route.params.queueId as string) || '')

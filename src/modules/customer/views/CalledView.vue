@@ -19,6 +19,7 @@ import { useRouter } from 'vue-router'
 
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
 import { useBackgroundKeepAlive } from '@/composables/useBackgroundKeepAlive'
+import { useLeaveGuard } from '@/composables/useLeaveGuard'
 import { useToast } from '@/composables/useToast'
 import { useWakeLock } from '@/composables/useWakeLock'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
@@ -37,6 +38,8 @@ const ConnectionLostBanner = defineAsyncComponent(
 
 const router = useRouter()
 const { showToast } = useToast()
+
+useLeaveGuard()
 const {
   entry,
   status,
@@ -51,6 +54,7 @@ const {
   getDisplayTicketNumber,
   connectEvents,
   disconnectEvents,
+  redirectForStatus,
 } = useCustomer()
 const queueStore = useQueueStore()
 const { activeQueue } = storeToRefs(queueStore)
@@ -66,19 +70,8 @@ const ticketDisplay = ref('')
 watch(
   () => status.value,
   (s) => {
-    const params = router.currentRoute.value.params
-    if (s === 'IDLE') {
-      router.push({ name: 'customer-idle', params })
-    } else if (s === 'SERVED') {
-      router.push({
-        name: 'customer-served',
-        params,
-        query: { t: ticketDisplay.value || ticketNumber.value },
-      })
-    } else if (s === 'ARRIVED') {
-      // Stay on this page but shows "Arrived" state
-    } else if (s === 'LEFT' || s === 'SKIPPED') {
-      router.push({ name: 'customer-ended', params, query: { reason: s.toLowerCase() } })
+    if (s && s !== 'CALLED' && s !== 'ARRIVED') {
+      redirectForStatus(s)
     }
   },
   { immediate: true },
@@ -149,7 +142,7 @@ onBeforeMount(async () => {
   // 2. If still not joined after validation attempt, redirect to home
   if (!isJoined.value || !entry.value) {
     showToast('You are not joined to any queue', { type: 'error' })
-    router.push('/')
+    router.replace('/')
     return
   }
 
@@ -162,7 +155,7 @@ onBeforeMount(async () => {
 
   if (!queueValid || !queueStore.activeQueue) {
     showToast('This queue is no longer available', { type: 'error' })
-    router.push('/')
+    router.replace('/')
     return
   }
 
@@ -178,6 +171,12 @@ onBeforeMount(async () => {
     }
 
     router.replace({ name: routeName, params: { queueId: entry.value.queueId } })
+    return
+  }
+
+  // Validate current status onload: must be CALLED or ARRIVED
+  if (status.value && status.value !== 'CALLED' && status.value !== 'ARRIVED') {
+    redirectForStatus(status.value)
     return
   }
 
@@ -357,7 +356,7 @@ const handleFinishService = async () => {
   isFinishing.value = false
   if (success) {
     isFinishModalOpen.value = false
-    router.push({
+    router.replace({
       name: 'customer-served',
       params: router.currentRoute.value.params,
       query: { t: tNumber },

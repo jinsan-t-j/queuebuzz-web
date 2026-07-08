@@ -70,6 +70,8 @@ export const API_ROUTES = {
     LEAVE_GUEST: '/customer/entry/leave',
     RECOVER_SESSION: '/customer/entry/recover-session',
     RECOVER_SESSION_BY_TOKEN: '/customer/entry/recover-by-token',
+    GET_RECOVERY_TOKEN: '/customer/entry/recovery-token',
+    SYNC_SESSION: '/customer/entry/sync',
     SUBMIT_RATING: () => `/customer/entry/rating`,
     UPDATE_ENTRY: '/customer/entry/update',
   },

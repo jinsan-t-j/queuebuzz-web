@@ -5,12 +5,11 @@
  * countdown with the ticket hero card above it.
  */
 
-// 1. Vue core imports
 import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onBeforeMount, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
-// 4. Composables
+import { useLeaveGuard } from '@/composables/useLeaveGuard'
 import { useToast } from '@/composables/useToast'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 import GracePeriodCard from '@/modules/customer/components/GracePeriodCard.vue'
@@ -27,6 +26,8 @@ const ConnectionLostBanner = defineAsyncComponent(
 
 const router = useRouter()
 const { showToast } = useToast()
+
+useLeaveGuard()
 const {
   entry,
   status,
@@ -34,10 +35,10 @@ const {
   isJoined,
   leaveQueue,
   fetchEntry,
-  getDisplayTicketNumber,
   connectEvents,
   disconnectEvents,
   saveTicketAsImage,
+  redirectForStatus,
 } = useCustomer()
 
 const queueStore = useQueueStore()
@@ -64,22 +65,11 @@ const isLeaveModalOpen = ref(false)
 watch(
   () => status.value,
   (s) => {
-    const params = router.currentRoute.value.params
-    // If recovered back to WAITING or ARRIVED (e.g. they confirmed), redirect back
-    if (s === 'WAITING') {
-      router.push({ name: 'customer-waiting', params })
-    } else if (s === 'CALLED' || s === 'ARRIVED') {
-      router.push({ name: 'customer-called', params })
-    } else if (s === 'LEFT' || s === 'SKIPPED') {
-      router.push({ name: 'customer-ended', params, query: { reason: s.toLowerCase() } })
-    } else if (s === 'SERVED') {
-      router.push({
-        name: 'customer-served',
-        params,
-        query: { t: getDisplayTicketNumber() },
-      })
+    if (s && s !== 'IDLE') {
+      redirectForStatus(s)
     }
   },
+  { immediate: true },
 )
 
 // Safety net: if entry is cleared externally (queue ended, session invalidated),
@@ -102,7 +92,7 @@ onBeforeMount(async () => {
   await fetchEntry()
   if (!isJoined.value || !entry.value) {
     showToast('Session expired', { type: 'error' })
-    router.push('/')
+    router.replace('/')
     return
   }
 
@@ -114,7 +104,7 @@ onBeforeMount(async () => {
 
   if (!queueValid || !queueStore.activeQueue) {
     showToast('This queue is no longer available', { type: 'error' })
-    router.push('/')
+    router.replace('/')
     return
   }
 
@@ -133,6 +123,12 @@ onBeforeMount(async () => {
     return
   }
 
+  // Validate current status onload: must be IDLE
+  if (status.value && status.value !== 'IDLE') {
+    redirectForStatus(status.value)
+    return
+  }
+
   connectEvents(entry.value.id)
 })
 
@@ -146,7 +142,7 @@ const handleLeave = () => {
 
 const handleGraceExpired = () => {
   showToast('Your session has timed out', { type: 'warning' })
-  router.push({
+  router.replace({
     name: 'customer-ended',
     params: router.currentRoute.value.params,
     query: { reason: 'skipped' },

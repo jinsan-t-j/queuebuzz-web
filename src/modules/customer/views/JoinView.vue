@@ -5,9 +5,10 @@
  */
 
 import { storeToRefs } from 'pinia'
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, onBeforeMount, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { useLeaveGuard } from '@/composables/useLeaveGuard'
 import { usePrefetch } from '@/composables/usePrefetch'
 import { useToast } from '@/composables/useToast'
 import { QUEUE_ERROR_REASONS } from '@/modules/app/queue/constants'
@@ -145,6 +146,8 @@ const {
 
 const isJoining = ref(false)
 
+useLeaveGuard('Are you sure you want to leave this page?', () => !isJoining.value)
+
 const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
   const targetQueueId = queueId || resolvedQueueId.value || activeQueue.value?.id
   if (!targetQueueId) return null
@@ -156,7 +159,7 @@ const joinQueue = async (queueId: string, payload: JoinQueueFormPayload) => {
   try {
     const result = await customerStore.joinQueue(targetQueueId, joinPayload)
     if (result) {
-      router.push({ name: 'customer-waiting', params: { queueId: targetQueueId } })
+      router.replace({ name: 'customer-waiting', params: { queueId: targetQueueId } })
     } else {
       showToast(customerStore.error ?? 'Failed to join queue', { type: 'error' })
     }
@@ -210,7 +213,9 @@ const initQueueState = async () => {
   isCodePromptOpen.value = true
 }
 
-initQueueState()
+onBeforeMount(async () => {
+  await initQueueState()
+})
 
 function handleJoinByCode() {
   isCodePromptOpen.value = true

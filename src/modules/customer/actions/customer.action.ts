@@ -134,3 +134,19 @@ export async function updateEntry(payload: {
     return { success: false }
   }
 }
+
+export async function getRecoveryToken(stateless = false): Promise<string | null> {
+  const config = createApiRequestConfig(stateless ? { params: { stateless: 'true' } } : {}, {
+    withCredentials: true,
+    skipLogout: true,
+  })
+  try {
+    const response = (await apiClient.get<ApiSuccessResponse<{ token: string }>>(
+      API_ROUTES.CUSTOMER.GET_RECOVERY_TOKEN,
+      config,
+    )) as unknown as ApiSuccessResponse<{ token: string }>
+    return response.data?.token || null
+  } catch {
+    return null
+  }
+}
