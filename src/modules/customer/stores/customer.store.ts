@@ -484,7 +484,54 @@ export const useCustomerStore = defineStore('customer', {
       this.isLoading = true
       this.error = null
       try {
-        const result = await CustomerActions.recoverGuestSession()
+        let result = null
+        let queryToken: string | null = null
+
+        // 1. Check if there is a recovery token in the URL query params
+        if (typeof globalThis !== 'undefined' && globalThis.location) {
+          const urlParams = new URLSearchParams(globalThis.location.search)
+          queryToken = urlParams.get('recovery_token') || urlParams.get('token')
+        }
+
+        // 2. Check CacheStorage as a shared storage fallback (specifically for iOS Safari -> PWA transfer)
+        if (!queryToken && typeof globalThis !== 'undefined' && 'caches' in globalThis) {
+          try {
+            const cache = await globalThis.caches.open('queuebuzz-session')
+            const response = await cache.match('/pwa-recovery-session-token')
+            if (response) {
+              const data = await response.json()
+              queryToken = data.token || null
+            }
+          } catch {
+            // Fail silently
+          }
+        }
+
+        if (queryToken) {
+          result = await CustomerActions.recoverGuestSessionByToken(queryToken)
+          // Clean up query parameters & CacheStorage immediately after successful recovery
+          if (result) {
+            if (typeof globalThis !== 'undefined' && globalThis.location) {
+              const url = new URL(globalThis.location.href)
+              url.searchParams.delete('recovery_token')
+              url.searchParams.delete('token')
+              globalThis.history.replaceState({}, '', url.toString())
+            }
+            if (typeof globalThis !== 'undefined' && 'caches' in globalThis) {
+              try {
+                const cache = await globalThis.caches.open('queuebuzz-session')
+                await cache.delete('/pwa-recovery-session-token')
+              } catch {
+                // Fail silently
+              }
+            }
+          }
+        }
+
+        if (!result) {
+          result = await CustomerActions.recoverGuestSession()
+        }
+
         if (result) {
           this.setEntry(result)
           await this.syncPushToken()
@@ -493,6 +540,26 @@ export const useCustomerStore = defineStore('customer', {
         }
         return false
       } catch {
+        return false
+      } finally {
+        this.isLoading = false
+      }
+    },
+    async recoverGuestSessionByToken(token: string): Promise<boolean> {
+      this.isLoading = true
+      this.error = null
+      try {
+        const result = await CustomerActions.recoverGuestSessionByToken(token)
+        if (result) {
+          this.setEntry(result)
+          await this.syncPushToken()
+          this.connectToEvents(result.id)
+          return true
+        }
+        return false
+      } catch (e: unknown) {
+        const err = e as ApiError
+        this.error = err?.response?.data?.message || 'Failed to recover guest session'
         return false
       } finally {
         this.isLoading = false
@@ -560,7 +627,7 @@ export const useCustomerStore = defineStore('customer', {
       if (!this.entry) return
       const queueId = useQueueStore().activeQueue?.id || ''
       this.clearEntry()
-      router.push({
+      router.replace({
         name: 'customer-ended',
         params: { queueId },
         query: { reason: 'terminated' },

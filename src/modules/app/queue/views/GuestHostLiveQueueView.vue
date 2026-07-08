@@ -4,7 +4,7 @@
  * @description Anonymous guest host live queue dashboard.
  * Focuses on session lifecycle and specialized guest redirections.
  */
-import { onBeforeMount, onUnmounted, watch, ref } from 'vue'
+import { onBeforeMount, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { useLiveQueue } from '@/modules/app/queue/composables/useLiveQueue'

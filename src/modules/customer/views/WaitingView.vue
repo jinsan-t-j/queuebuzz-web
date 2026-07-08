@@ -14,8 +14,10 @@ import { useRouter } from 'vue-router'
 import SettingsIcon from '@/assets/icons/nav-settings.svg?component'
 import BaseCard from '@/components/base/BaseCard.vue'
 import { useBackgroundKeepAlive } from '@/composables/useBackgroundKeepAlive'
+import { useLeaveGuard } from '@/composables/useLeaveGuard'
 import { useToast } from '@/composables/useToast'
 import { useWakeLock } from '@/composables/useWakeLock'
+import { getRecoveryToken } from '@/modules/customer/actions/customer.action'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
 import CustomerSettingsModal from '@/modules/customer/components/CustomerSettingsModal.vue'
 import HeadsUpBanner from '@/modules/customer/components/HeadsUpBanner.vue'
@@ -37,6 +39,8 @@ const ConnectionLostBanner = defineAsyncComponent(
 const router = useRouter()
 const { showToast } = useToast()
 
+useLeaveGuard()
+
 const {
   entry,
   isLoading,
@@ -50,9 +54,9 @@ const {
   saveTicketAsImage,
   leaveQueue,
   fetchEntry,
-  getDisplayTicketNumber,
   connectEvents,
   disconnectEvents,
+  redirectForStatus,
 } = useCustomer()
 const queueStore = useQueueStore()
 const { activeQueue } = storeToRefs(queueStore)
@@ -90,35 +94,33 @@ watch(isSettingsModalOpen, (isOpen) => {
   if (isOpen) showEmailHighlight.value = false
 })
 
-function handleShareCode() {
+async function handleShareCode() {
   if (!entry.value) return
+  const token = await getRecoveryToken(true) // Get a stateless token
+  const queueId = router.currentRoute.value.params.queueId as string
+  const origin = globalThis.location.origin
+  const shareUrl = token
+    ? `${origin}/q/${queueId}/recover?token=${encodeURIComponent(token)}`
+    : `${origin}/q/${queueId}` // fallback to join if token fails
+
   const data = {
     title: 'Join my queue on QueueBuzz',
     text: `I'm waiting at ${queueName.value}. My ticket is #${entry.value.ticketNo}.`,
-    url: globalThis.location.href,
+    url: shareUrl,
   }
   if (navigator.share) {
     navigator.share(data).catch(() => {})
   } else {
     navigator.clipboard.writeText(data.url)
-    showToast('Link copied!', { type: 'success' })
+    showToast('Recovery link copied to clipboard!', { type: 'success' })
   }
 }
 
 watch(
   () => status.value,
   (s) => {
-    const params = router.currentRoute.value.params
-    if (s === 'CALLED' || s === 'ARRIVED') router.push({ name: 'customer-called', params })
-    else if (s === 'IDLE') router.push({ name: 'customer-idle', params })
-    else if (s === 'SERVED') {
-      router.push({
-        name: 'customer-served',
-        params,
-        query: { t: getDisplayTicketNumber() },
-      })
-    } else if (s === 'LEFT' || s === 'SKIPPED') {
-      router.push({ name: 'customer-ended', params, query: { reason: s.toLowerCase() } })
+    if (s && s !== 'WAITING') {
+      redirectForStatus(s)
     }
   },
   { immediate: true },
@@ -146,7 +148,7 @@ onBeforeMount(async () => {
   if (!isJoined.value || !entry.value) {
     sessionStorage.setItem('qb_toast', 'You are not joined to any queue')
     showToast('You are not joined to any queue', { type: 'error' })
-    router.push('/')
+    router.replace('/')
     return
   }
 
@@ -160,7 +162,7 @@ onBeforeMount(async () => {
   if (!queueValid || !queueStore.activeQueue) {
     sessionStorage.setItem('qb_toast', 'This queue is no longer available')
     showToast('This queue is no longer available', { type: 'error' })
-    router.push('/')
+    router.replace('/')
     return
   }
 
@@ -176,6 +178,12 @@ onBeforeMount(async () => {
     }
 
     router.replace({ name: routeName, params: { queueId: entry.value.queueId } })
+    return
+  }
+
+  // Validate current status onload: must be WAITING
+  if (status.value && status.value !== 'WAITING') {
+    redirectForStatus(status.value)
     return
   }
 

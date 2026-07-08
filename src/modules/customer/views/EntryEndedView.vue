@@ -14,6 +14,7 @@ import ErrorCircleIcon from '@/assets/icons/error-circle.svg?component'
 import WarningTriangleIcon from '@/assets/icons/warning-triangle.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
 import CustomerHeader from '@/modules/customer/components/CustomerHeader.vue'
+import { useCustomer } from '@/modules/customer/composables/useCustomer'
 import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { useQueueStore } from '@/stores/queue.store'
 
@@ -29,8 +30,20 @@ const route = useRoute()
 const queueStore = useQueueStore()
 const customerStore = useCustomerStore()
 const { activeQueue } = storeToRefs(queueStore)
+const { redirectForStatus } = useCustomer()
 
 onBeforeMount(async () => {
+  if (customerStore.entry) {
+    await customerStore.fetchEntry()
+    if (customerStore.entry) {
+      const s = customerStore.entry.status
+      if (s === 'WAITING' || s === 'CALLED' || s === 'ARRIVED' || s === 'IDLE') {
+        redirectForStatus(s)
+        return
+      }
+    }
+  }
+
   const queueId = route.params.queueId as string
   if (queueId) {
     await queueStore.IntializeQueueByIdOrCode(queueId)
@@ -80,7 +93,7 @@ const config = computed(() => {
 })
 
 function handleGoHome() {
-  router.push('/')
+  router.replace('/')
 }
 </script>
 

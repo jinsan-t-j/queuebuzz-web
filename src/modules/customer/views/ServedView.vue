@@ -17,7 +17,8 @@ import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { useQueueStore } from '@/stores/queue.store'
 
 const { resetCustomerSession } = useCustomerStore()
-const { entry, disconnectEvents, getDisplayTicketNumber } = useCustomer()
+const { entry, disconnectEvents, getDisplayTicketNumber, fetchEntry, redirectForStatus } =
+  useCustomer()
 const queueStore = useQueueStore()
 const { activeQueue } = storeToRefs(queueStore)
 const router = useRouter()
@@ -28,6 +29,14 @@ const queueName = computed(() => activeQueue.value?.name || 'Your Queue')
 const ticketNumber = ref('....')
 
 onBeforeMount(async () => {
+  if (entry.value) {
+    await fetchEntry()
+    if (entry.value && entry.value.status !== 'SERVED') {
+      redirectForStatus(entry.value.status)
+      return
+    }
+  }
+
   const queryTicket = router.currentRoute.value.query.t
   if (typeof queryTicket === 'string' && queryTicket) {
     ticketNumber.value = queryTicket
@@ -51,7 +60,7 @@ const handleFeedback = () => {
 }
 
 function handleDone() {
-  router.push('/')
+  router.replace('/')
 }
 </script>
 

@@ -277,8 +277,16 @@ onUnmounted(() => {
                     /{{ billingCycle === 'monthly' ? 'mo' : 'yr' }}
                   </span>
                   <span
+                    :class="[
+                      'text-[9px] font-bold uppercase tracking-wider mt-0.5',
+                      isEliteTier(plan) ? 'text-on-mint/70' : 'text-plum-muted',
+                    ]"
+                  >
+                    + GST / taxes
+                  </span>
+                  <span
                     v-if="billingCycle === 'yearly' && plan.discountPercent > 0"
-                    class="text-mint-dark text-[11px] font-black uppercase"
+                    class="text-mint-dark text-[11px] font-black uppercase mt-0.5"
                   >
                     Save {{ plan.discountPercent }}%
                   </span>

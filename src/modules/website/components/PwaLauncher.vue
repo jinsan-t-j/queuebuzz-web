@@ -4,11 +4,193 @@
  * @description Beautiful app launcher for users running QueueBuzz in PWA mode,
  * matching the Holi-inspired gradient aesthetic and premium visual styling of HomeView.
  */
-import { ArrowRight, LogIn, Sparkles, Users } from 'lucide-vue-next'
+import { ArrowRight, Key, LogIn, Sparkles, Users } from 'lucide-vue-next'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import Logo from '@/assets/icons/logo.svg?component'
 import BaseButton from '@/components/base/BaseButton.vue'
+import BaseInput from '@/components/base/BaseInput.vue'
+import BaseModal from '@/components/base/BaseModal.vue'
 import ActiveWaitingBanner from '@/modules/customer/components/ActiveWaitingBanner.vue'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
+import { useAuthStore } from '@/stores/auth.store'
+import { useQueueStore } from '@/stores/queue.store'
+
+const router = useRouter()
+const authStore = useAuthStore()
+const queueStore = useQueueStore()
+const customerStore = useCustomerStore()
+
+const showSyncModal = ref(false)
+const recoveryInput = ref('')
+const isSyncing = ref(false)
+const syncError = ref('')
+
+function parseToken(input: string): string {
+  const trimmed = input.trim()
+  if (!trimmed) return ''
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.includes('/q/')) {
+    try {
+      const url = new URL(trimmed)
+      return url.searchParams.get('token') || url.searchParams.get('recovery_token') || ''
+    } catch {
+      const tokenMatch = trimmed.match(/[?&](?:token|recovery_token)=([^&]+)/)
+      return tokenMatch ? decodeURIComponent(tokenMatch[1]) : ''
+    }
+  }
+
+  return trimmed
+}
+
+async function performRecoveryAndRedirect(token: string): Promise<boolean> {
+  const success = await customerStore.recoverGuestSessionByToken(token)
+  if (success && customerStore.entry?.queueId) {
+    const status = customerStore.entry.status
+    let routeName = 'customer-waiting'
+    if (status === 'CALLED' || status === 'ARRIVED') {
+      routeName = 'customer-called'
+    } else if (status === 'IDLE') {
+      routeName = 'customer-idle'
+    }
+    router.replace({ name: routeName, params: { queueId: customerStore.entry.queueId } })
+    return true
+  }
+  return false
+}
+
+async function handleSync() {
+  const input = recoveryInput.value.trim()
+  if (!input) return
+  isSyncing.value = true
+  syncError.value = ''
+  try {
+    const token = parseToken(input)
+    if (!token) {
+      syncError.value = 'Invalid recovery token or link. Please copy the full link or token.'
+      return
+    }
+
+    const success = await performRecoveryAndRedirect(token)
+    if (success) {
+      showSyncModal.value = false
+    } else {
+      syncError.value = customerStore.error || 'Active ticket not found or link has expired'
+    }
+  } catch (err: unknown) {
+    const error = err as Error
+    syncError.value = error?.message || 'Sync failed. Please check the code and try again.'
+  } finally {
+    isSyncing.value = false
+  }
+}
+
+async function checkClipboardForRecovery(isUserGesture = false) {
+  try {
+    if (typeof navigator === 'undefined' || !navigator.clipboard?.readText) return false
+
+    // If not a user gesture, check permission first to prevent showing permission prompts on page load
+    if (!isUserGesture && navigator.permissions?.query) {
+      try {
+        const status = await navigator.permissions.query({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          name: 'clipboard-read' as any,
+        })
+        if (status.state !== 'granted') {
+          return false
+        }
+      } catch {
+        return false
+      }
+    }
+
+    const text = await navigator.clipboard.readText()
+    if (!text) return false
+
+    const token = parseToken(text)
+    if (token) {
+      isSyncing.value = true
+      const redirected = await performRecoveryAndRedirect(token)
+      if (redirected) {
+        return true
+      }
+    }
+  } catch {
+    // Fail silently (e.g. clipboard permission denied)
+  } finally {
+    isSyncing.value = false
+  }
+  return false
+}
+
+async function handleSyncButtonClick() {
+  isSyncing.value = true
+  syncError.value = ''
+  try {
+    // Attempt auto-read from clipboard (with user gesture context active)
+    const success = await checkClipboardForRecovery(true)
+    if (success) return
+  } catch {
+    // Ignore and fallback
+  } finally {
+    isSyncing.value = false
+  }
+  // Open manual sync modal fallback if clipboard auto-read didn't redirect
+  showSyncModal.value = true
+}
+
+onMounted(async () => {
+  // 1. Recover customer session if active
+  let hasActiveCustomerSession = false
+  if (customerStore.isJoined) {
+    try {
+      await customerStore.fetchEntry()
+      hasActiveCustomerSession = customerStore.isJoined
+    } catch {
+      // Ignore recovery validation error
+    }
+  } else {
+    hasActiveCustomerSession = await customerStore.attemptSessionRecovery()
+  }
+
+  // 2. Redirect active customer session
+  if (hasActiveCustomerSession && customerStore.isJoined && customerStore.entry?.queueId) {
+    const status = customerStore.entry.status
+    let routeName = 'customer-waiting'
+    if (status === 'CALLED' || status === 'ARRIVED') {
+      routeName = 'customer-called'
+    } else if (status === 'IDLE') {
+      routeName = 'customer-idle'
+    }
+    router.replace({ name: routeName, params: { queueId: customerStore.entry.queueId } })
+    return
+  }
+
+  // 3. Check for active host session
+  if (authStore.user || authStore.anonymousQueueId) {
+    try {
+      await queueStore.fetchActiveQueue({ skipLogout: true })
+    } catch {
+      // Ignore active queue fetch error
+    }
+  }
+
+  if (authStore.isAuthenticated) {
+    router.replace('/dashboard')
+    return
+  }
+
+  if (authStore.anonymousQueueId && queueStore.activeQueue) {
+    router.replace(
+      `/guest-host/queue/${queueStore.activeQueue.slug || queueStore.activeQueue.id}/live`,
+    )
+    return
+  }
+
+  // 4. Auto-sync if valid recovery link/token is in the clipboard
+  await checkClipboardForRecovery()
+})
 </script>
 
 <template>
@@ -86,6 +268,17 @@ import ActiveWaitingBanner from '@/modules/customer/components/ActiveWaitingBann
           </BaseButton>
         </router-link>
 
+        <!-- Sync Safari Ticket (PWA bridge fallback) -->
+        <BaseButton
+          variant="outline"
+          size="lg"
+          class="h-14 w-full text-base bg-white/80 backdrop-blur-sm !rounded-2xl border border-plum/10 hover:bg-white hover:border-plum/20 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300"
+          @click="handleSyncButtonClick"
+        >
+          <Key class="mr-2 h-5 w-5 text-warning" />
+          Sync Safari Ticket
+        </BaseButton>
+
         <!-- Divider Line with soft styling -->
         <div class="flex items-center my-4 w-full">
           <div class="flex-grow h-px bg-plum-faint" />
@@ -106,6 +299,42 @@ import ActiveWaitingBanner from '@/modules/customer/components/ActiveWaitingBann
         </router-link>
       </div>
     </div>
+
+    <!-- Sync Safari Ticket Modal -->
+    <BaseModal :is-open="showSyncModal" @close="showSyncModal = false">
+      <div class="relative p-6 md:p-8 text-center max-w-sm w-full mx-auto">
+        <div
+          class="mx-auto mb-4 w-12 h-12 rounded-full bg-mint-light flex items-center justify-center"
+        >
+          <Key class="w-6 h-6 text-plum" />
+        </div>
+        <h2 class="font-display font-bold text-xl text-plum mb-2">Sync Safari Ticket</h2>
+        <p class="font-body text-sm text-plum-muted mb-6 leading-relaxed">
+          Paste the recovery link or token copied from your browser ticket page to transfer your
+          session.
+        </p>
+
+        <form class="flex flex-col gap-4 text-left" @submit.prevent="handleSync">
+          <BaseInput
+            v-model="recoveryInput"
+            label="Recovery Link or Token"
+            placeholder="Paste recovery link or token..."
+            required
+          />
+
+          <div v-if="syncError" class="text-danger text-sm font-body font-semibold mt-1">
+            {{ syncError }}
+          </div>
+
+          <div class="flex gap-3 justify-end mt-4">
+            <BaseButton variant="ghost" type="button" @click="showSyncModal = false"
+              >Cancel</BaseButton
+            >
+            <BaseButton type="submit" :loading="isSyncing">Sync Now</BaseButton>
+          </div>
+        </form>
+      </div>
+    </BaseModal>
   </div>
 </template>
 

@@ -54,7 +54,7 @@ const emit = defineEmits(['share-code', 'save'])
         class="flex-1 rounded-2xl bg-plum font-body text-sm font-bold text-white transition-all hover:bg-plum-soft active:scale-[0.98]"
         @click="emit('share-code')"
       >
-        Share Code
+        Share Link
       </button>
     </div>
   </div>
