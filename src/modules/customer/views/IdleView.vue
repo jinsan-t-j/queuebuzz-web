@@ -27,19 +27,30 @@ const ConnectionLostBanner = defineAsyncComponent(
 const router = useRouter()
 const { showToast } = useToast()
 
-useLeaveGuard()
+const isNavigatingAway = ref(false)
+
+useLeaveGuard('Are you sure you want to leave this page?', () => !isNavigatingAway.value)
+
 const {
   entry,
   status,
   isLoading,
   isJoined,
-  leaveQueue,
+  leaveQueue: baseLeaveQueue,
   fetchEntry,
   connectEvents,
   disconnectEvents,
   saveTicketAsImage,
   redirectForStatus,
 } = useCustomer()
+
+async function handleLeaveQueue() {
+  isNavigatingAway.value = true
+  const success = await baseLeaveQueue()
+  if (!success) {
+    isNavigatingAway.value = false
+  }
+}
 
 const queueStore = useQueueStore()
 const { activeQueue } = storeToRefs(queueStore)
@@ -66,6 +77,7 @@ watch(
   () => status.value,
   (s) => {
     if (s && s !== 'IDLE') {
+      isNavigatingAway.value = true
       redirectForStatus(s)
     }
   },
@@ -78,6 +90,7 @@ watch(
   () => entry.value,
   (current, previous) => {
     if (previous && !current) {
+      isNavigatingAway.value = true
       router.replace({
         name: 'customer-ended',
         params: router.currentRoute.value.params,
@@ -92,6 +105,7 @@ onBeforeMount(async () => {
   await fetchEntry()
   if (!isJoined.value || !entry.value) {
     showToast('Session expired', { type: 'error' })
+    isNavigatingAway.value = true
     router.replace('/')
     return
   }
@@ -104,6 +118,7 @@ onBeforeMount(async () => {
 
   if (!queueValid || !queueStore.activeQueue) {
     showToast('This queue is no longer available', { type: 'error' })
+    isNavigatingAway.value = true
     router.replace('/')
     return
   }
@@ -119,12 +134,14 @@ onBeforeMount(async () => {
       routeName = 'customer-served'
     }
 
+    isNavigatingAway.value = true
     router.replace({ name: routeName, params: { queueId: entry.value.queueId } })
     return
   }
 
   // Validate current status onload: must be IDLE
   if (status.value && status.value !== 'IDLE') {
+    isNavigatingAway.value = true
     redirectForStatus(status.value)
     return
   }
@@ -142,6 +159,7 @@ const handleLeave = () => {
 
 const handleGraceExpired = () => {
   showToast('Your session has timed out', { type: 'warning' })
+  isNavigatingAway.value = true
   router.replace({
     name: 'customer-ended',
     params: router.currentRoute.value.params,
@@ -201,7 +219,7 @@ const handleGraceExpired = () => {
     <LeaveConfirmationModal
       :is-open="isLeaveModalOpen"
       @close="isLeaveModalOpen = false"
-      @confirm="leaveQueue"
+      @confirm="handleLeaveQueue"
     />
 
     <!-- Premium Ticket Template for Capture (Off-screen) -->

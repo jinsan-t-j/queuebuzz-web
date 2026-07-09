@@ -22,23 +22,13 @@ defineProps({
 <template>
   <div>
     <template v-if="manualPositioning">
-      <div class="flex gap-2.5">
-        <div
-          class="flex flex-[2] flex-col items-center justify-center rounded-[18px] border border-white bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-        >
-          <span class="font-display text-lg font-bold text-plum">You're on the list!</span>
-          <span class="mt-1 font-body text-xs text-plum-muted text-center leading-relaxed">
-            Seating depends on availability — you'll be called when a spot opens for your group.
-          </span>
-        </div>
-        <div
-          class="flex flex-1 flex-col items-center justify-center rounded-[18px] border border-white bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
-        >
-          <span class="font-mono text-[28px] text-mint-dark">~{{ estWaitMin }}m</span>
-          <span class="mt-1 font-body text-sm font-bold uppercase tracking-tight text-plum-muted"
-            >Est. Wait</span
-          >
-        </div>
+      <div
+        class="flex flex-[2] flex-col items-center justify-center rounded-[18px] border border-white bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+      >
+        <span class="font-display text-lg font-bold text-plum">You're on the list!</span>
+        <span class="mt-1 font-body text-xs text-plum-muted text-center leading-relaxed">
+          Seating depends on availability — you'll be called when a spot opens for your group.
+        </span>
       </div>
     </template>
 
