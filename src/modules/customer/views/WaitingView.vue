@@ -39,7 +39,9 @@ const ConnectionLostBanner = defineAsyncComponent(
 const router = useRouter()
 const { showToast } = useToast()
 
-useLeaveGuard()
+const isNavigatingAway = ref(false)
+
+useLeaveGuard('Are you sure you want to leave this page?', () => !isNavigatingAway.value)
 
 const {
   entry,
@@ -52,12 +54,20 @@ const {
   isSaving,
   isSaved,
   saveTicketAsImage,
-  leaveQueue,
+  leaveQueue: baseLeaveQueue,
   fetchEntry,
   connectEvents,
   disconnectEvents,
   redirectForStatus,
 } = useCustomer()
+
+async function handleLeaveQueue() {
+  isNavigatingAway.value = true
+  const success = await baseLeaveQueue()
+  if (!success) {
+    isNavigatingAway.value = false
+  }
+}
 const queueStore = useQueueStore()
 const { activeQueue } = storeToRefs(queueStore)
 
@@ -120,6 +130,7 @@ watch(
   () => status.value,
   (s) => {
     if (s && s !== 'WAITING') {
+      isNavigatingAway.value = true
       redirectForStatus(s)
     }
   },
@@ -132,6 +143,7 @@ watch(
   () => entry.value,
   (current, previous) => {
     if (previous && !current) {
+      isNavigatingAway.value = true
       router.replace({
         name: 'customer-ended',
         params: router.currentRoute.value.params,
@@ -148,6 +160,7 @@ onBeforeMount(async () => {
   if (!isJoined.value || !entry.value) {
     sessionStorage.setItem('qb_toast', 'You are not joined to any queue')
     showToast('You are not joined to any queue', { type: 'error' })
+    isNavigatingAway.value = true
     router.replace('/')
     return
   }
@@ -162,6 +175,7 @@ onBeforeMount(async () => {
   if (!queueValid || !queueStore.activeQueue) {
     sessionStorage.setItem('qb_toast', 'This queue is no longer available')
     showToast('This queue is no longer available', { type: 'error' })
+    isNavigatingAway.value = true
     router.replace('/')
     return
   }
@@ -177,12 +191,14 @@ onBeforeMount(async () => {
       routeName = 'customer-served'
     }
 
+    isNavigatingAway.value = true
     router.replace({ name: routeName, params: { queueId: entry.value.queueId } })
     return
   }
 
   // Validate current status onload: must be WAITING
   if (status.value && status.value !== 'WAITING') {
+    isNavigatingAway.value = true
     redirectForStatus(status.value)
     return
   }
@@ -249,7 +265,7 @@ onUnmounted(() => {
             :ticket-number="String(entry.ticketNo)"
             :queue-name="queueName"
             :show-leave-button="true"
-            @leave-queue="leaveQueue"
+            @leave-queue="handleLeaveQueue"
             @save-ticket="saveTicketAsImage"
           />
 

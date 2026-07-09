@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { useSeoMeta } from '@unhead/vue'
-import { Mail, MessageSquare, ShieldCheck, Sparkles, Send } from 'lucide-vue-next'
+import { Mail, MessageSquare, ShieldCheck, Send } from 'lucide-vue-next'
 import { ref, onMounted, onUnmounted } from 'vue'
 
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
+import { useToast } from '@/composables/useToast'
 import seoConfig from '@/config/seo.constants.json'
+
+import { useSupportApi } from '../composables/useSupportApi'
 
 useSeoMeta(seoConfig['/support'])
 
@@ -17,18 +20,17 @@ const formData = ref({
   message: '',
 })
 
-const isSubmitting = ref(false)
-const isSuccess = ref(false)
+const { isSubmitting, error, submitSupport } = useSupportApi()
+const { showToast } = useToast()
 
 const handleSubmit = async () => {
-  isSubmitting.value = true
-  await new Promise((resolve) => setTimeout(resolve, 1500))
-  isSubmitting.value = false
-  isSuccess.value = true
-  formData.value = { name: '', email: '', subject: '', message: '' }
-  setTimeout(() => {
-    isSuccess.value = false
-  }, 5000)
+  const success = await submitSupport(formData.value)
+  if (success) {
+    showToast("Thanks for reaching out! We'll get back to you shortly.", { type: 'success' })
+    formData.value = { name: '', email: '', subject: '', message: '' }
+  } else {
+    showToast(error.value || 'Failed to submit support request', { type: 'error' })
+  }
 }
 
 const scrollY = ref(0)
@@ -184,20 +186,6 @@ onUnmounted(() => {
               <span v-else>Send Message</span>
             </BaseButton>
           </div>
-
-          <Transition
-            enter-active-class="transition duration-500 ease-out"
-            enter-from-class="opacity-0 translate-y-4"
-            leave-to-class="opacity-0 -translate-y-4"
-          >
-            <div
-              v-if="isSuccess"
-              class="p-6 rounded-3xl bg-mint-light/50 border border-mint text-plum font-body text-sm text-center flex items-center justify-center gap-3"
-            >
-              <Sparkles class="h-5 w-5 text-mint-dark" />
-              <span>Thanks for reaching out! We'll get back to you shortly.</span>
-            </div>
-          </Transition>
         </form>
       </BaseCard>
 

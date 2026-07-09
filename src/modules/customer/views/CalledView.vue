@@ -39,7 +39,10 @@ const ConnectionLostBanner = defineAsyncComponent(
 const router = useRouter()
 const { showToast } = useToast()
 
-useLeaveGuard()
+const isNavigatingAway = ref(false)
+
+useLeaveGuard('Are you sure you want to leave this page?', () => !isNavigatingAway.value)
+
 const {
   entry,
   status,
@@ -49,13 +52,21 @@ const {
   saveTicketAsImage,
   confirmArrival,
   finishService,
-  leaveQueue,
+  leaveQueue: baseLeaveQueue,
   fetchEntry,
   getDisplayTicketNumber,
   connectEvents,
   disconnectEvents,
   redirectForStatus,
 } = useCustomer()
+
+async function handleLeaveQueue() {
+  isNavigatingAway.value = true
+  const success = await baseLeaveQueue()
+  if (!success) {
+    isNavigatingAway.value = false
+  }
+}
 const queueStore = useQueueStore()
 const { activeQueue } = storeToRefs(queueStore)
 
@@ -71,6 +82,7 @@ watch(
   () => status.value,
   (s) => {
     if (s && s !== 'CALLED' && s !== 'ARRIVED') {
+      isNavigatingAway.value = true
       redirectForStatus(s)
     }
   },
@@ -94,6 +106,7 @@ watch(
   () => entry.value,
   (current, previous) => {
     if (previous && !current) {
+      isNavigatingAway.value = true
       router.replace({
         name: 'customer-ended',
         params: router.currentRoute.value.params,
@@ -142,6 +155,7 @@ onBeforeMount(async () => {
   // 2. If still not joined after validation attempt, redirect to home
   if (!isJoined.value || !entry.value) {
     showToast('You are not joined to any queue', { type: 'error' })
+    isNavigatingAway.value = true
     router.replace('/')
     return
   }
@@ -155,6 +169,7 @@ onBeforeMount(async () => {
 
   if (!queueValid || !queueStore.activeQueue) {
     showToast('This queue is no longer available', { type: 'error' })
+    isNavigatingAway.value = true
     router.replace('/')
     return
   }
@@ -170,12 +185,14 @@ onBeforeMount(async () => {
       routeName = 'customer-served'
     }
 
+    isNavigatingAway.value = true
     router.replace({ name: routeName, params: { queueId: entry.value.queueId } })
     return
   }
 
   // Validate current status onload: must be CALLED or ARRIVED
   if (status.value && status.value !== 'CALLED' && status.value !== 'ARRIVED') {
+    isNavigatingAway.value = true
     redirectForStatus(status.value)
     return
   }
@@ -356,6 +373,7 @@ const handleFinishService = async () => {
   isFinishing.value = false
   if (success) {
     isFinishModalOpen.value = false
+    isNavigatingAway.value = true
     router.replace({
       name: 'customer-served',
       params: router.currentRoute.value.params,
@@ -501,7 +519,7 @@ const handleFinishService = async () => {
       <LeaveConfirmationModal
         :is-open="isLeaveModalOpen"
         @close="isLeaveModalOpen = false"
-        @confirm="leaveQueue"
+        @confirm="handleLeaveQueue"
       />
 
       <!-- Finish Service Confirmation Modal -->
