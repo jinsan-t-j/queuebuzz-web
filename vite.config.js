@@ -146,19 +146,6 @@ export default defineConfig(({ mode }) => {
                   injectTo: 'head-prepend',
                 })
               }
-
-              // CSS Preloading (to reduce render-blocking perception)
-              if (fileName.endsWith('.css') && base.startsWith('main-')) {
-                preloads.push({
-                  tag: 'link',
-                  attrs: {
-                    rel: 'preload',
-                    href: `/${fileName}`,
-                    as: 'style',
-                  },
-                  injectTo: 'head-prepend',
-                })
-              }
             }
             return preloads
           },
