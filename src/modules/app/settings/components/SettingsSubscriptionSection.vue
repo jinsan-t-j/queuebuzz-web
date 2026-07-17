@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 import {
   cancelSubscription,
+  fetchCurrentPlan,
   getPaymentMethodUpdateLink,
+  type BillingPlan,
   type Subscription,
 } from '@/modules/app/billing/actions/billing.actions'
+import PlanLimitsCard from '@/modules/app/queue/components/PlanLimitsCard.vue'
+import { useAuthStore } from '@/stores/auth.store'
 
 const props = defineProps<{
   subscription: Subscription | null
@@ -24,9 +29,27 @@ const CancelSubscriptionConfirmModal = defineAsyncComponent(
 
 const SettingsFreeTierCard = defineAsyncComponent(() => import('./SettingsFreeTierCard.vue'))
 
+const router = useRouter()
+const currentPlan = ref<BillingPlan | null>(null)
+const isFetchingPlan = ref(false)
+
 const isCancelling = ref(false)
 const isUpdatingPayment = ref(false)
 const showCancelSubModal = ref(false)
+
+onMounted(async () => {
+  const authStore = useAuthStore()
+  if (authStore.isAuthenticated) {
+    isFetchingPlan.value = true
+    try {
+      currentPlan.value = await fetchCurrentPlan()
+    } catch {
+      currentPlan.value = null
+    } finally {
+      isFetchingPlan.value = false
+    }
+  }
+})
 
 const subscriptionStatusLabel = computed(() => {
   if (!props.subscription) return ''
@@ -180,5 +203,14 @@ async function handleUpdatePaymentMethod() {
       @cancel="showCancelSubModal = false"
       @confirm="confirmCancelSubscription"
     />
+
+    <!-- Plan Limits Indicator -->
+    <div v-if="!isLoading && !isFetchingPlan" class="mt-6">
+      <PlanLimitsCard
+        :role="'host'"
+        :current-plan="currentPlan"
+        @upgrade="router.push('/pricing')"
+      />
+    </div>
   </div>
 </template>
