@@ -253,93 +253,95 @@ onUnmounted(() => {
   <div class="relative flex flex-col min-h-[80vh]">
     <!-- Blob decorations — Join screen specific -->
     <div
-      class="pointer-events-none absolute -right-16 -top-16 h-[250px] w-[250px] rounded-[125px] bg-mint-light/70 blur-[40px]"
+      class="pointer-events-none absolute -right-16 -top-16 z-0 h-[250px] w-[250px] rounded-[125px] bg-mint-light/70 blur-[40px]"
     />
     <div
-      class="pointer-events-none absolute -bottom-16 -left-28 h-[238px] w-full rounded-[100px] bg-warning/35 blur-[40px]"
+      class="pointer-events-none absolute -bottom-16 -left-28 z-0 h-[238px] w-full rounded-[100px] bg-warning/35 blur-[40px]"
     />
 
-    <div
-      v-if="(isLoading || queueIsLoading) && !isJoining"
-      class="flex flex-col items-center flex-1 animate-in fade-in"
-    >
-      <!-- Skeleton Header (LCP Target) using CustomerHeader's built-in Shimmer -->
-      <CustomerHeader :is-loading="true" />
-
-      <!-- Skeleton Form Container -->
+    <div class="relative z-10 flex flex-col flex-1">
       <div
-        v-once
-        class="mt-10 mx-6 w-[calc(100%-48px)] max-w-sm rounded-[40px] border border-plum-faint bg-white p-8 shadow-sm"
+        v-if="(isLoading || queueIsLoading) && !isJoining"
+        class="flex flex-col items-center flex-1 animate-in fade-in"
       >
-        <div class="h-8 w-40 bg-plum-faint rounded-lg animate-pulse mb-8" />
-        <div class="h-24 w-full bg-sand rounded-3xl animate-pulse mb-6" />
-        <div class="h-[60px] w-full bg-plum-faint rounded-2xl animate-pulse" />
+        <!-- Skeleton Header (LCP Target) using CustomerHeader's built-in Shimmer -->
+        <CustomerHeader :is-loading="true" />
+
+        <!-- Skeleton Form Container -->
+        <div
+          v-once
+          class="mt-10 mx-6 w-[calc(100%-48px)] max-w-sm rounded-[40px] border border-plum-faint bg-white p-8 shadow-sm"
+        >
+          <div class="h-8 w-40 bg-plum-faint rounded-lg animate-pulse mb-8" />
+          <div class="h-24 w-full bg-sand rounded-3xl animate-pulse mb-6" />
+          <div class="h-[60px] w-full bg-plum-faint rounded-2xl animate-pulse" />
+        </div>
+
+        <p
+          class="mt-8 pb-12 font-body text-sm text-plum-muted uppercase tracking-widest animate-pulse"
+        >
+          Connecting to queue...
+        </p>
       </div>
 
-      <p
-        class="mt-8 pb-12 font-body text-sm text-plum-muted uppercase tracking-widest animate-pulse"
-      >
-        Connecting to queue...
-      </p>
-    </div>
+      <template v-else-if="activeQueue">
+        <CustomerHeader
+          :name="activeQueue.name"
+          :profile-url="activeQueue.hostProfileImageUrl"
+          :banner-url="activeQueue.hostBannerImageUrl"
+        />
 
-    <template v-else-if="activeQueue">
-      <CustomerHeader
-        :name="activeQueue.name"
-        :profile-url="activeQueue.hostProfileImageUrl"
-        :banner-url="activeQueue.hostBannerImageUrl"
-      />
+        <PWABanner v-if="!isAndroid" />
 
-      <PWABanner v-if="!isAndroid" />
+        <!-- Already in another queue warning -->
+        <ActiveSessionWarning
+          v-if="customerStore.isJoined && customerEntry?.queueId !== activeQueue.id"
+          class="px-6 mt-8"
+          :active-queue-id="customerEntry?.queueId"
+          :target-queue-name="activeQueue.name"
+          :is-loading="isLoading"
+          @leave="handleLeaveQueue"
+        />
 
-      <!-- Already in another queue warning -->
-      <ActiveSessionWarning
-        v-if="customerStore.isJoined && customerEntry?.queueId !== activeQueue.id"
-        class="px-6 mt-8"
-        :active-queue-id="customerEntry?.queueId"
-        :target-queue-name="activeQueue.name"
-        :is-loading="isLoading"
-        @leave="handleLeaveQueue"
-      />
+        <QueueStateOverlay
+          v-else-if="customerStore.errorCode === 'QUEUE_FULL'"
+          error-type="FULL"
+          :error-message="customerStore.error || ''"
+          @action="handleRecheck"
+        />
+
+        <QueueStateOverlay
+          v-else-if="customerStore.errorCode === 'QUEUE_PAUSED' || activeQueue.status === 'PAUSED'"
+          error-type="DENIED"
+          :error-message="customerStore.error || ''"
+          @action="handleRecheck"
+        />
+
+        <JoinQueueForm
+          v-else
+          :queue-name="activeQueue.name"
+          :people-in-queue="waitingCount"
+          :est-wait-min="avgWaitTime"
+          :can-join-with-party="activeQueue.allowPartyJoining"
+          :max-allowed-party-size="activeQueue.maxPartySize"
+          :is-loading="isLoading"
+          :is-geo-locked="activeQueue.isGeoLocked"
+          :venue-latitude="activeQueue.latitude"
+          :venue-longitude="activeQueue.longitude"
+          :geo-radius-meters="activeQueue.geoRadiusMeters"
+          @join-queue="(payload) => joinQueue(activeQueue.id, payload)"
+          @go-to-join-by-code="handleJoinByCode"
+        />
+      </template>
 
       <QueueStateOverlay
-        v-else-if="customerStore.errorCode === 'QUEUE_FULL'"
-        error-type="FULL"
-        :error-message="customerStore.error || ''"
-        @action="handleRecheck"
-      />
-
-      <QueueStateOverlay
-        v-else-if="customerStore.errorCode === 'QUEUE_PAUSED' || activeQueue.status === 'PAUSED'"
-        error-type="DENIED"
-        :error-message="customerStore.error || ''"
-        @action="handleRecheck"
-      />
-
-      <JoinQueueForm
         v-else
-        :queue-name="activeQueue.name"
-        :people-in-queue="waitingCount"
-        :est-wait-min="avgWaitTime"
-        :can-join-with-party="activeQueue.allowPartyJoining"
-        :max-allowed-party-size="activeQueue.maxPartySize"
-        :is-loading="isLoading"
-        :is-geo-locked="activeQueue.isGeoLocked"
-        :venue-latitude="activeQueue.latitude"
-        :venue-longitude="activeQueue.longitude"
-        :geo-radius-meters="activeQueue.geoRadiusMeters"
-        @join-queue="(payload) => joinQueue(activeQueue.id, payload)"
-        @go-to-join-by-code="handleJoinByCode"
+        :error-type="
+          queueStore.error === QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND ? 'NOT_FOUND' : 'LOCKED'
+        "
+        @action="handleQueueNotFoundAction"
       />
-    </template>
-
-    <QueueStateOverlay
-      v-else
-      :error-type="
-        queueStore.error === QUEUE_ERROR_REASONS.QUEUE_NOT_FOUND ? 'NOT_FOUND' : 'LOCKED'
-      "
-      @action="handleQueueNotFoundAction"
-    />
+    </div>
 
     <JoinCodeModal
       :is-open="isCodePromptOpen"
