@@ -257,7 +257,7 @@ onUnmounted(() => {
           class="pointer-events-none absolute -right-10 -top-10 h-[250px] w-[250px] rounded-full bg-mint-light blur-[40px] z-0"
         />
         <div
-          class="pointer-events-none absolute -bottom-24 -left-12 h-[320px] w-[320px] rounded-full bg-warning/45 blur-[70px] z-0"
+          class="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 h-[320px] w-[320px] rounded-full bg-warning/45 blur-[70px] z-0"
         />
 
         <div class="relative z-10 flex flex-col gap-5 p-1">
