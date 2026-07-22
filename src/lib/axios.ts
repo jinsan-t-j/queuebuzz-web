@@ -13,11 +13,10 @@ export function createApiRequestConfig(
   config: AxiosRequestConfig = {},
   options: { withCredentials?: boolean; skipLogout?: boolean } = {},
 ) {
-  return {
-    ...config,
+  return Object.assign(Object.create(null), config, {
     withCredentials: options.withCredentials ?? false,
     _skipLogout: options.skipLogout ?? false,
-  } as AxiosRequestConfig & { _skipLogout?: boolean }
+  }) as AxiosRequestConfig & { _skipLogout?: boolean }
 }
 
 export interface CustomInternalAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -73,9 +72,7 @@ apiClient.interceptors.request.use(
         const resolvedAdapter = axios.getAdapter(
           config.adapter || apiClient.defaults.adapter || 'xhr',
         )
-        const adapterConfig = {
-          ...config,
-        }
+        const adapterConfig = Object.assign(Object.create(null), config)
         if (adapterConfig.transformRequest) {
           const transforms = Array.isArray(adapterConfig.transformRequest)
             ? adapterConfig.transformRequest
