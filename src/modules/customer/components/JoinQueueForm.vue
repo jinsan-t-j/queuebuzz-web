@@ -183,34 +183,13 @@ watch(buzzEnabled, async (val) => {
 
   if (val) {
     updatePermission()
-    if (notificationPermission.value === 'unsupported') {
-      showToast('Notifications are not supported in this browser.', { type: 'error' })
-      buzzEnabled.value = false
-      return
-    }
-
     if (notificationPermission.value === 'denied') {
-      showToast(
-        'Notifications are blocked. Please enable them in your browser settings to receive Buzz alerts.',
-        { type: 'error' },
-      )
       showSetupGuide.value = true
     } else if (notificationPermission.value === 'default') {
       try {
         const permission = await Notification.requestPermission()
         notificationPermission.value = permission as 'default' | 'granted' | 'denied'
         if (permission === 'denied') {
-          showToast(
-            'Notifications are blocked. Please enable them in your browser settings to receive Buzz alerts.',
-            { type: 'error' },
-          )
-          showSetupGuide.value = true
-        } else if (permission !== 'granted') {
-          showToast(
-            'Notification permission denied. Please allow permissions to receive live buzz alerts, or toggle off "Buzz me when ready".',
-            { type: 'error' },
-          )
-          buzzEnabled.value = false
           showSetupGuide.value = true
         }
       } catch (err) {
@@ -265,29 +244,12 @@ async function ensureNotificationPermission() {
  */
 async function prepareFCMToken(): Promise<string | null> {
   updatePermission()
-  if (notificationPermission.value === 'unsupported') {
-    showToast(
-      'Notifications are not supported in this browser. Please turn off "Buzz me when ready".',
-      { type: 'error' },
-    )
-    return null
-  }
-
-  if (notificationPermission.value === 'denied') {
-    showToast(
-      'Please allow notifications in your browser settings or turn off "Buzz me when ready".',
-      { type: 'error' },
-    )
-    showSetupGuide.value = true
+  if (notificationPermission.value === 'unsupported' || notificationPermission.value === 'denied') {
     return null
   }
 
   const hasPermission = await ensureNotificationPermission()
   if (!hasPermission) {
-    showToast('Please allow notifications to receive alerts, or turn off "Buzz me when ready".', {
-      type: 'error',
-    })
-    showSetupGuide.value = true
     return null
   }
 
@@ -295,22 +257,10 @@ async function prepareFCMToken(): Promise<string | null> {
   try {
     const { getFCMTokenDetails } = await import('@/lib/firebase')
     const tokenResult = await getFCMTokenDetails()
-    const token = tokenResult.token
-    if (!token) {
-      showToast(
-        'Failed to initialize push notifications. Please try again or disable "Buzz me when ready".',
-        { type: 'error' },
-      )
-      return null
-    }
-    return token
+    return tokenResult.token || null
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Failed to import or fetch FCM token:', err)
-    showToast(
-      'Failed to initialize push notifications. Please try again or disable "Buzz me when ready".',
-      { type: 'error' },
-    )
     return null
   }
 }
@@ -329,7 +279,6 @@ async function captureLocationAndJoin() {
 
   if (notificationEnabled) {
     fcmToken = await prepareFCMToken()
-    if (!fcmToken) return
   }
 
   // Normalize phone number to digits only before submitting
@@ -360,7 +309,6 @@ const handleJoin = handleSubmit(async (values) => {
 
   if (notificationEnabled) {
     fcmToken = await prepareFCMToken()
-    if (!fcmToken) return
   }
 
   // Normalize phone number to digits only before submitting
