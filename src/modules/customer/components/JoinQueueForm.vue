@@ -12,15 +12,13 @@
 
 import { AtSign, ChevronDown, Info, User } from 'lucide-vue-next'
 import { useField, useForm } from 'vee-validate'
-import { defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import * as yup from 'yup'
 
 import ArrowRightBoldIcon from '@/assets/icons/arrow-right-bold.svg?component'
 import ClockFilledIcon from '@/assets/icons/clock-filled.svg?component'
 import BaseToggle from '@/components/base/BaseToggle.vue'
-import { useToast } from '@/composables/useToast'
 import GeoPromptModal from '@/modules/customer/components/GeoPromptModal.vue'
-import NotificationBlockedWarning from '@/modules/customer/components/NotificationBlockedWarning.vue'
 import { useLocation } from '@/modules/customer/composables/useLocation'
 import { phoneValidationSchema, normalizePhone } from '@/utils/validation'
 
@@ -38,12 +36,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['join-queue', 'go-to-join-by-code'])
-
-const NotificationSetupGuide = defineAsyncComponent(
-  () => import('@/modules/customer/components/NotificationSetupGuide.vue'),
-)
-
-const { showToast } = useToast()
 
 const schema = yup.object({
   displayName: yup.string().max(30, 'Name too long').optional(),
@@ -158,23 +150,6 @@ onMounted(() => {
 
   nameInput.value?.focus()
 })
-
-async function retriggerPermissionRequest() {
-  if (typeof Notification === 'undefined') return
-  try {
-    const permission = await Notification.requestPermission()
-    notificationPermission.value = permission as 'default' | 'granted' | 'denied'
-    if (permission === 'granted') {
-      buzzEnabled.value = true
-      showToast('Notifications enabled successfully!', { type: 'success' })
-    } else if (permission === 'denied') {
-      showToast('Permission still denied. Please check your browser settings.', { type: 'error' })
-    }
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Error re-requesting notification permission:', err)
-  }
-}
 
 watch(buzzEnabled, async (val) => {
   if (typeof localStorage !== 'undefined') {
@@ -503,17 +478,6 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Notifications Blocked Warning Card Component -->
-    <NotificationBlockedWarning
-      v-if="buzzEnabled && notificationPermission === 'denied'"
-      :is-i-o-s="isIOS"
-      :is-mac="isMac"
-      :is-android="isAndroid"
-      :is-safari="isSafari"
-      @retrigger="retriggerPermissionRequest"
-      @buzz-off="buzzEnabled = false"
-    />
-
     <!-- Contact & Recovery Section -->
     <div class="mt-6 flex flex-col gap-4">
       <div class="rounded-3xl border border-plum-faint bg-white overflow-hidden">
@@ -612,16 +576,6 @@ onUnmounted(() => {
         </p>
       </div>
     </div>
-    <!-- Compact Device-Specific Alerts Setup Guide (Before Submit) -->
-    <NotificationSetupGuide
-      v-if="showSetupGuide && buzzEnabled && notificationPermission !== 'granted'"
-      :is-i-o-s="isIOS"
-      :is-android="isAndroid"
-      :is-mac="isMac"
-      :is-safari="isSafari"
-      :is-firefox="isFirefox"
-      :is-chrome="isChrome"
-    />
 
     <!-- Join CTA -->
     <button

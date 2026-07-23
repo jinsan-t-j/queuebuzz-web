@@ -79,9 +79,18 @@ const isAvatarEnlarged = ref(false)
               class="h-10 w-10 shrink-0 ring-2 ring-white/80 shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95"
               @click="isAvatarEnlarged = true"
             />
-            <h1 class="font-display text-lg font-bold text-white drop-shadow-md">
-              {{ name }}
-            </h1>
+            <div class="flex items-center gap-2">
+              <h1 class="font-display text-lg font-bold text-white drop-shadow-md">
+                {{ name }}
+              </h1>
+              <!-- Live Beep Status Indicator -->
+              <span class="relative flex h-2.5 w-2.5 shrink-0" title="Live status active">
+                <span
+                  class="absolute inline-flex h-full w-full animate-ping rounded-full bg-mint opacity-75"
+                />
+                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-mint" />
+              </span>
+            </div>
           </div>
         </div>
 
@@ -95,9 +104,18 @@ const isAvatarEnlarged = ref(false)
             class="h-10 w-10 shrink-0 ring-2 ring-plum-faint cursor-pointer transition-transform hover:scale-105 active:scale-95"
             @click="isAvatarEnlarged = true"
           />
-          <h1 class="text-center font-display text-lg font-bold text-plum">
-            {{ name }}
-          </h1>
+          <div class="flex items-center gap-2">
+            <h1 class="text-center font-display text-lg font-bold text-plum">
+              {{ name }}
+            </h1>
+            <!-- Live Beep Status Indicator -->
+            <span class="relative flex h-2.5 w-2.5 shrink-0" title="Live status active">
+              <span
+                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-mint opacity-75"
+              />
+              <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-mint" />
+            </span>
+          </div>
         </div>
       </template>
     </div>

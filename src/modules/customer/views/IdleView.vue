@@ -6,7 +6,7 @@
  */
 
 import { storeToRefs } from 'pinia'
-import { computed, defineAsyncComponent, onBeforeMount, onUnmounted, ref, watch } from 'vue'
+import { computed, onBeforeMount, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { useLeaveGuard } from '@/composables/useLeaveGuard'
@@ -19,10 +19,6 @@ import { useQueueStore } from '@/stores/queue.store'
 
 import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
-
-const ConnectionLostBanner = defineAsyncComponent(
-  () => import('../components/ConnectionLostBanner.vue'),
-)
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -203,8 +199,6 @@ const handleGraceExpired = () => {
         :show-leave-button="false"
         @save-ticket="saveTicketAsImage"
       />
-
-      <ConnectionLostBanner />
 
       <!-- Grace period countdown -->
       <GracePeriodCard
