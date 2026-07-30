@@ -91,7 +91,7 @@ const router = useRouter()
 
       <div
         class="group p-6 rounded-3xl bg-white border border-plum-faint hover:border-mint transition-all cursor-pointer shadow-none"
-        @click="router.push('/billing')"
+        @click="router.push('/pricing')"
       >
         <div
           class="w-12 h-12 rounded-2xl bg-sand flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"

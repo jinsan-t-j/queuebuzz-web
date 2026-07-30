@@ -405,15 +405,15 @@ function handleQrClose() {
         <div
           v-for="entry in sortedActiveEntries"
           :key="entry.id"
-          class="group flex cursor-pointer items-center rounded-2xl border px-3 py-3 sm:px-4 sm:py-4 transition-all duration-300 hover:shadow-md dark:hover:shadow-none"
+          class="group flex cursor-pointer items-center rounded-2xl border px-3 py-3 sm:px-4 sm:py-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.98] dark:hover:shadow-none"
           :class="[
             entry.status === ENTRY_STATUS.CALLED
-              ? 'border-2 border-mint shadow-[0_8px_32px_-8px_rgba(0,229,160,0.4)] dark:shadow-none bg-mint/5 dark:bg-mint/10 animate-status-pulse'
+              ? 'border-2 border-mint shadow-[0_8px_32px_-8px_rgba(0,229,160,0.4)] dark:shadow-none bg-mint/5 dark:bg-mint/10 animate-status-pulse hover:bg-mint/10'
               : entry.status === ENTRY_STATUS.ARRIVED
-                ? 'border-mint/20 bg-mint/5 dark:bg-mint/10 shadow-sm dark:shadow-none'
+                ? 'border-mint/30 bg-mint/5 dark:bg-mint/10 shadow-sm dark:shadow-none hover:border-mint/50 hover:bg-mint/10'
                 : entry.status === ENTRY_STATUS.IDLE
-                  ? 'border-warning/30 bg-warning/5 dark:bg-warning/10 opacity-80'
-                  : 'border-plum-faint shadow-sm dark:shadow-none bg-white dark:bg-plum-faint/30 hover:border-plum-faint/80',
+                  ? 'border-warning/30 bg-warning/5 dark:bg-warning/10 opacity-80 hover:opacity-100 hover:border-warning/50 hover:bg-warning/10'
+                  : 'border-plum-faint shadow-sm dark:shadow-none bg-white dark:bg-plum-faint/30 hover:border-plum/30 hover:bg-plum-faint/20',
             recoveredIds.has(entry.id)
               ? '!border-mint !bg-mint/10 !scale-[1.02] ring-2 ring-mint ring-offset-1 z-10'
               : '',

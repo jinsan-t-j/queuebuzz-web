@@ -34,7 +34,7 @@ const queueUrl = computed(() => {
 })
 
 function goToSignup() {
-  router.push('/login')
+  router.push({ name: 'login' })
 }
 </script>
 

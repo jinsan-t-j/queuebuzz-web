@@ -274,6 +274,7 @@ function openLiveScreen() {
           :ping-ms="pingMs"
           :strict-mode="activeQueue?.strictQueueMode"
           :show-notifications="showNotifications"
+          :is-paused="isPaused"
         />
 
         <!-- Premium Expiry Banner -->
