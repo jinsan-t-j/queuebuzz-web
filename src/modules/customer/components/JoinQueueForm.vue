@@ -18,6 +18,7 @@ import * as yup from 'yup'
 import ArrowRightBoldIcon from '@/assets/icons/arrow-right-bold.svg?component'
 import ClockFilledIcon from '@/assets/icons/clock-filled.svg?component'
 import BaseToggle from '@/components/base/BaseToggle.vue'
+import { useToast } from '@/composables/useToast'
 import GeoPromptModal from '@/modules/customer/components/GeoPromptModal.vue'
 import { useLocation } from '@/modules/customer/composables/useLocation'
 import { phoneValidationSchema, normalizePhone } from '@/utils/validation'
@@ -273,6 +274,8 @@ async function captureLocationAndJoin() {
   emit('join-queue', payload)
 }
 
+const { showToast } = useToast()
+
 const handleJoin = handleSubmit(async (values) => {
   if (props.isGeoLocked && (latitude.value === null || longitude.value === null)) {
     showGeoPromptModal.value = true
@@ -283,7 +286,18 @@ const handleJoin = handleSubmit(async (values) => {
   let fcmToken: string | null = null
 
   if (notificationEnabled) {
+    if (
+      notificationPermission.value === 'denied' ||
+      (typeof Notification !== 'undefined' && Notification.permission === 'denied')
+    ) {
+      showToast('Notifications are blocked in browser settings', { type: 'error' })
+      return
+    }
     fcmToken = await prepareFCMToken()
+    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+      showToast('Notifications are blocked in browser settings', { type: 'error' })
+      return
+    }
   }
 
   // Normalize phone number to digits only before submitting

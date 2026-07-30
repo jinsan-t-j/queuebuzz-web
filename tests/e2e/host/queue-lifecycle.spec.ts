@@ -90,7 +90,7 @@ test.describe('Queue Lifecycle', () => {
     await expect(page.getByText('CLNC01').first()).toBeVisible()
     await expect(page.getByRole('button', { name: 'SHARE LINK INSTEAD' })).toBeVisible()
 
-    await page.locator('.absolute.right-6.top-6').click()
+    await page.locator('button.absolute.right-5.top-5').click()
 
     await expect(page.getByRole('heading', { name: 'Your Queue Code' })).not.toBeVisible()
   })
