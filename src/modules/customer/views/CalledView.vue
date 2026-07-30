@@ -532,7 +532,7 @@ const handleFinishService = async () => {
       <!-- Hidden Capture Template -->
       <TicketCaptureTemplate
         v-if="entry"
-        :ticket-number="String(entry.ticketNo)"
+        :ticket-number="entry.verifyCode || String(entry.ticketNo)"
         :queue-name="queueName"
         :join-date="formattedJoinDate"
       />

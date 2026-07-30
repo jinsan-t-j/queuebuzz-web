@@ -48,14 +48,14 @@ const { isRefreshing, triggerRefresh, hasRefreshHandler } = useRefresh()
 </script>
 
 <template>
-  <div class="flex flex-col h-screen overflow-hidden bg-sand">
+  <div class="flex flex-col h-screen overflow-hidden main-bg">
     <SystemAlertBanner v-if="showMaintenanceBanner" />
     <div class="flex flex-1 overflow-hidden relative">
       <HostNotifications />
       <DashboardSidebar :is-mobile-open="isMobileMenuOpen" @close="isMobileMenuOpen = false" />
       <div class="flex flex-1 flex-col overflow-hidden">
         <DashboardTopbar @toggle-menu="toggleMobileMenu" />
-        <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-sand">
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 main-bg">
           <BasePullToRefresh
             :is-refreshing="isRefreshing"
             :disabled="!hasRefreshHandler"

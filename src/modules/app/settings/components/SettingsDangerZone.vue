@@ -34,7 +34,7 @@ async function confirmDeleteAccount() {
   try {
     await settingsStore.deleteHostAccount()
     showDeleteAccountModal.value = false
-    router.push('/login')
+    router.push({ name: 'login' })
   } finally {
     isLoading.value = false
   }

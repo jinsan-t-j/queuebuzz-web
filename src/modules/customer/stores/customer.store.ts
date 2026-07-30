@@ -64,14 +64,21 @@ export const useCustomerStore = defineStore('customer', {
       })
     },
 
-    setEntry(e: Entry) {
+    setEntry(e: Partial<Entry>) {
+      const eObj = e as Record<string, unknown>
+      const verifyCode = (e.verifyCode || eObj.verify_code || this.entry?.verifyCode) as
+        string | undefined
       this.entry = {
+        ...this.entry,
         ...e,
-        ticketNumber: e.ticketNo || e.id?.substring(0, 4).toUpperCase(),
-        position: e.position ?? this.position ?? undefined,
-      }
+        verifyCode,
+        ticketNumber:
+          ((e.ticketNo || eObj.ticket_no || this.entry?.ticketNo) as number)?.toString() ||
+          this.entry?.ticketNumber,
+        position: (e.position ?? this.position ?? undefined) as number | undefined,
+      } as Entry
       if (e.position != null) {
-        this.position = e.position
+        this.position = e.position as number
       }
     },
 
@@ -284,22 +291,7 @@ export const useCustomerStore = defineStore('customer', {
         events: {
           [CUSTOMER_EVENTS.ENTRY_INIT]: (payload: Record<string, unknown>) => {
             if (payload) {
-              this.setEntry({
-                id: payload.id,
-                queueId: payload.queueId,
-                ticketNo: payload.ticketNo,
-                verifyCode: payload.verifyCode,
-                position: payload.position,
-                name: payload.name,
-                email: payload.email,
-                phone: payload.phone,
-                partySize: payload.partySize,
-                status: payload.status,
-                servedAt: payload.servedAt,
-                finishedAt: payload.finishedAt,
-                createdAt: payload.createdAt,
-                updatedAt: payload.updatedAt,
-              })
+              this.setEntry(payload)
             }
           },
           [CUSTOMER_EVENTS.POSITION_UPDATE]: (payload: { data?: { position?: number } }) => {
@@ -638,7 +630,6 @@ export const useCustomerStore = defineStore('customer', {
       const entryId = this.entry?.id
       this.disconnectLiveUpdates()
       this.clearRememberedPushToken(entryId)
-      useQueueStore().clearQueue()
       useNotificationStore().clearNotifications()
       this.entry = null
       this.position = null

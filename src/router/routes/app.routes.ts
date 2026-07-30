@@ -10,6 +10,7 @@ import type { RouteRecordRaw } from 'vue-router'
 export const appRoutes: RouteRecordRaw[] = [
   {
     path: '/login-or-signup',
+    alias: ['/login', '/signup'],
     component: () => import('@/layouts/BlankLayout.vue'),
     children: [
       {

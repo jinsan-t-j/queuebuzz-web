@@ -172,15 +172,17 @@ const shouldRender = computed(() => isVisible.value)
     leave-from-class="translate-y-0 opacity-100"
     leave-to-class="-translate-y-full opacity-0"
   >
-    <div v-if="shouldRender" class="sticky top-4 z-[60] mx-4 mb-6">
+    <div v-if="shouldRender" class="w-full">
       <!-- Minimalist inline card -->
       <div
-        class="relative overflow-hidden rounded-[20px] border border-plum-faint bg-white py-3 pl-4 pr-12 shadow-[0_8px_30px_rgba(26,10,46,0.06)]"
+        class="relative overflow-hidden rounded-3xl border border-plum-faint bg-white p-4 shadow-[0_4px_24px_rgba(26,10,46,0.06)]"
       >
-        <div class="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
-          <div class="flex items-center gap-3">
+        <div class="flex items-center justify-between gap-3 pr-8 flex-wrap sm:flex-nowrap">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
             <!-- Icon -->
-            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-mint-light">
+            <div
+              class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-mint-light"
+            >
               <BellRing class="h-4.5 w-4.5 text-plum" />
             </div>
 
@@ -193,7 +195,7 @@ const shouldRender = computed(() => isVisible.value)
 
           <!-- Install Action Button -->
           <button
-            class="rounded-xl bg-plum px-3 py-1.5 font-body text-[11px] font-semibold text-sand hover:bg-plum-soft active:scale-95 transition-all cursor-pointer whitespace-nowrap"
+            class="rounded-xl bg-plum px-3 py-1.5 font-body text-xs font-semibold text-sand hover:bg-plum-soft active:scale-95 transition-all cursor-pointer whitespace-nowrap shrink-0"
             @click="triggerInstall"
           >
             Install App
@@ -202,7 +204,7 @@ const shouldRender = computed(() => isVisible.value)
 
         <!-- Close button -->
         <button
-          class="absolute right-2 top-1/2 -translate-y-1/2 rounded-full h-8 w-8 flex items-center justify-center text-plum-muted transition-colors hover:bg-sand active:scale-90"
+          class="absolute right-3 top-3.5 flex h-7 w-7 items-center justify-center rounded-xl text-plum-muted hover:bg-plum-faint hover:text-plum transition-colors cursor-pointer"
           aria-label="Close banner"
           @click="dismiss"
         >
