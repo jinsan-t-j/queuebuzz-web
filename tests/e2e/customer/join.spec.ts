@@ -336,15 +336,23 @@ test.describe('Customer Join', () => {
     await codeInput.fill('CLNC01')
     await page.getByRole('button', { name: /Verify code/i }).click()
 
-    await page.fill('#guest-name', 'John Doe')
+    await mockApi(`/customer/entry/join/${ACTIVE_QUEUE_ID}`, {
+      id: 'e1',
+      ticketNo: 48,
+      status: 'WAITING',
+    })
 
     // Keep "Buzz me" checked (which is checked by default)
-    // Click join, which should trigger validation and block the join, showing toast
-    await page.click('button:has-text("Join the Queue")')
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().includes('/customer/entry/join') && response.request().method() === 'POST',
+      ),
+      page.click('button:has-text("Join the Queue")'),
+    ])
 
-    // Verify error toast or prompt is shown, and we remain on the join page
-    await expect(page.getByText(/Notifications are blocked/i).first()).toBeVisible()
-    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}`))
+    // Verify submission succeeds with fcmToken null when notifications are denied
+    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/waiting`))
   })
 
   test('should validate phone number length', async ({ page, mockApi }) => {
