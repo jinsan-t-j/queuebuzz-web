@@ -41,6 +41,9 @@ const HomeImpactSection = defineAsyncComponent(
 const HomeFaqSection = defineAsyncComponent(
   () => import('@/modules/website/components/HomeFaqSection.vue'),
 )
+const HomeRoiCalculator = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeRoiCalculator.vue'),
+)
 const HomeTestimonials = defineAsyncComponent(
   () => import('@/modules/website/components/HomeTestimonials.vue'),
 )
@@ -188,7 +191,6 @@ const resumeLink = computed(() => {
       />
     </div>
 
-    <!-- Sections -->
     <HomeHeroSection
       id="hero"
       :hero-badge="HERO_DATA.badge"
@@ -202,6 +204,8 @@ const resumeLink = computed(() => {
     <HomeFeaturesSection id="features" :is-visible="isVisible('features')" :scroll-y="scrollY" />
 
     <HomeHowItWorksSection id="how-it-works" :is-visible="isVisible('how-it-works')" />
+
+    <HomeRoiCalculator />
 
     <HomeDemoSection
       v-model:active-tab="activeTab"

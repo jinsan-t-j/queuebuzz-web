@@ -12,7 +12,7 @@
 
 import { AtSign, ChevronDown, Info, User } from 'lucide-vue-next'
 import { useField, useForm } from 'vee-validate'
-import { defineAsyncComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import * as yup from 'yup'
 
 import ArrowRightBoldIcon from '@/assets/icons/arrow-right-bold.svg?component'
@@ -20,7 +20,6 @@ import ClockFilledIcon from '@/assets/icons/clock-filled.svg?component'
 import BaseToggle from '@/components/base/BaseToggle.vue'
 import { useToast } from '@/composables/useToast'
 import GeoPromptModal from '@/modules/customer/components/GeoPromptModal.vue'
-import NotificationBlockedWarning from '@/modules/customer/components/NotificationBlockedWarning.vue'
 import { useLocation } from '@/modules/customer/composables/useLocation'
 import { phoneValidationSchema, normalizePhone } from '@/utils/validation'
 
@@ -38,12 +37,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['join-queue', 'go-to-join-by-code'])
-
-const NotificationSetupGuide = defineAsyncComponent(
-  () => import('@/modules/customer/components/NotificationSetupGuide.vue'),
-)
-
-const { showToast } = useToast()
 
 const schema = yup.object({
   displayName: yup.string().max(30, 'Name too long').optional(),
@@ -159,23 +152,6 @@ onMounted(() => {
   nameInput.value?.focus()
 })
 
-async function retriggerPermissionRequest() {
-  if (typeof Notification === 'undefined') return
-  try {
-    const permission = await Notification.requestPermission()
-    notificationPermission.value = permission as 'default' | 'granted' | 'denied'
-    if (permission === 'granted') {
-      buzzEnabled.value = true
-      showToast('Notifications enabled successfully!', { type: 'success' })
-    } else if (permission === 'denied') {
-      showToast('Permission still denied. Please check your browser settings.', { type: 'error' })
-    }
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Error re-requesting notification permission:', err)
-  }
-}
-
 watch(buzzEnabled, async (val) => {
   if (typeof localStorage !== 'undefined') {
     localStorage.setItem('queuebuzz_buzz_enabled', String(val))
@@ -183,34 +159,13 @@ watch(buzzEnabled, async (val) => {
 
   if (val) {
     updatePermission()
-    if (notificationPermission.value === 'unsupported') {
-      showToast('Notifications are not supported in this browser.', { type: 'error' })
-      buzzEnabled.value = false
-      return
-    }
-
     if (notificationPermission.value === 'denied') {
-      showToast(
-        'Notifications are blocked. Please enable them in your browser settings to receive Buzz alerts.',
-        { type: 'error' },
-      )
       showSetupGuide.value = true
     } else if (notificationPermission.value === 'default') {
       try {
         const permission = await Notification.requestPermission()
         notificationPermission.value = permission as 'default' | 'granted' | 'denied'
         if (permission === 'denied') {
-          showToast(
-            'Notifications are blocked. Please enable them in your browser settings to receive Buzz alerts.',
-            { type: 'error' },
-          )
-          showSetupGuide.value = true
-        } else if (permission !== 'granted') {
-          showToast(
-            'Notification permission denied. Please allow permissions to receive live buzz alerts, or toggle off "Buzz me when ready".',
-            { type: 'error' },
-          )
-          buzzEnabled.value = false
           showSetupGuide.value = true
         }
       } catch (err) {
@@ -265,29 +220,12 @@ async function ensureNotificationPermission() {
  */
 async function prepareFCMToken(): Promise<string | null> {
   updatePermission()
-  if (notificationPermission.value === 'unsupported') {
-    showToast(
-      'Notifications are not supported in this browser. Please turn off "Buzz me when ready".',
-      { type: 'error' },
-    )
-    return null
-  }
-
-  if (notificationPermission.value === 'denied') {
-    showToast(
-      'Please allow notifications in your browser settings or turn off "Buzz me when ready".',
-      { type: 'error' },
-    )
-    showSetupGuide.value = true
+  if (notificationPermission.value === 'unsupported' || notificationPermission.value === 'denied') {
     return null
   }
 
   const hasPermission = await ensureNotificationPermission()
   if (!hasPermission) {
-    showToast('Please allow notifications to receive alerts, or turn off "Buzz me when ready".', {
-      type: 'error',
-    })
-    showSetupGuide.value = true
     return null
   }
 
@@ -295,22 +233,10 @@ async function prepareFCMToken(): Promise<string | null> {
   try {
     const { getFCMTokenDetails } = await import('@/lib/firebase')
     const tokenResult = await getFCMTokenDetails()
-    const token = tokenResult.token
-    if (!token) {
-      showToast(
-        'Failed to initialize push notifications. Please try again or disable "Buzz me when ready".',
-        { type: 'error' },
-      )
-      return null
-    }
-    return token
+    return tokenResult.token || null
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Failed to import or fetch FCM token:', err)
-    showToast(
-      'Failed to initialize push notifications. Please try again or disable "Buzz me when ready".',
-      { type: 'error' },
-    )
     return null
   }
 }
@@ -329,7 +255,6 @@ async function captureLocationAndJoin() {
 
   if (notificationEnabled) {
     fcmToken = await prepareFCMToken()
-    if (!fcmToken) return
   }
 
   // Normalize phone number to digits only before submitting
@@ -349,6 +274,8 @@ async function captureLocationAndJoin() {
   emit('join-queue', payload)
 }
 
+const { showToast } = useToast()
+
 const handleJoin = handleSubmit(async (values) => {
   if (props.isGeoLocked && (latitude.value === null || longitude.value === null)) {
     showGeoPromptModal.value = true
@@ -359,8 +286,18 @@ const handleJoin = handleSubmit(async (values) => {
   let fcmToken: string | null = null
 
   if (notificationEnabled) {
+    if (
+      notificationPermission.value === 'denied' ||
+      (typeof Notification !== 'undefined' && Notification.permission === 'denied')
+    ) {
+      showToast('Notifications are blocked in browser settings', { type: 'error' })
+      return
+    }
     fcmToken = await prepareFCMToken()
-    if (!fcmToken) return
+    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+      showToast('Notifications are blocked in browser settings', { type: 'error' })
+      return
+    }
   }
 
   // Normalize phone number to digits only before submitting
@@ -555,17 +492,6 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Notifications Blocked Warning Card Component -->
-    <NotificationBlockedWarning
-      v-if="buzzEnabled && notificationPermission === 'denied'"
-      :is-i-o-s="isIOS"
-      :is-mac="isMac"
-      :is-android="isAndroid"
-      :is-safari="isSafari"
-      @retrigger="retriggerPermissionRequest"
-      @buzz-off="buzzEnabled = false"
-    />
-
     <!-- Contact & Recovery Section -->
     <div class="mt-6 flex flex-col gap-4">
       <div class="rounded-3xl border border-plum-faint bg-white overflow-hidden">
@@ -664,16 +590,6 @@ onUnmounted(() => {
         </p>
       </div>
     </div>
-    <!-- Compact Device-Specific Alerts Setup Guide (Before Submit) -->
-    <NotificationSetupGuide
-      v-if="showSetupGuide && buzzEnabled && notificationPermission !== 'granted'"
-      :is-i-o-s="isIOS"
-      :is-android="isAndroid"
-      :is-mac="isMac"
-      :is-safari="isSafari"
-      :is-firefox="isFirefox"
-      :is-chrome="isChrome"
-    />
 
     <!-- Join CTA -->
     <button

@@ -59,22 +59,35 @@ function handleTerminateClick() {
       </button>
 
       <button
-        class="flex flex-col items-center justify-center gap-2 rounded-2xl bg-sand dark:bg-plum-faint/30 p-4 transition-all hover:bg-plum/5 dark:hover:bg-plum-faint/60 group cursor-pointer"
+        class="flex flex-col items-center justify-center gap-2 rounded-2xl p-4 transition-all group cursor-pointer"
+        :class="
+          isPaused
+            ? 'bg-warning/15 dark:bg-warning/20 border border-warning/40 hover:bg-warning/25'
+            : 'bg-sand dark:bg-plum-faint/30 hover:bg-plum/5 dark:hover:bg-plum-faint/60'
+        "
         @click="handlePauseClick"
       >
         <div
-          class="rounded-full bg-white dark:bg-plum-faint p-2 shadow-sm dark:shadow-none group-hover:bg-warning transition-colors"
+          class="rounded-full p-2 shadow-sm dark:shadow-none transition-colors"
+          :class="
+            isPaused
+              ? 'bg-warning text-white shadow-sm'
+              : 'bg-white dark:bg-plum-faint text-plum group-hover:bg-warning'
+          "
         >
           <template v-if="isPaused">
-            <PlayIcon class="h-5 w-5 text-plum group-hover:text-white transition-colors" />
+            <PlayIcon class="h-5 w-5 text-white transition-colors" />
           </template>
           <template v-else>
             <PauseCircleIcon class="h-5 w-5 text-plum group-hover:text-white transition-colors" />
           </template>
         </div>
-        <span class="font-body text-xs font-bold text-plum">{{
-          isPaused ? 'Resume Entries' : 'Pause Entries'
-        }}</span>
+        <span
+          class="font-body text-xs font-bold transition-colors"
+          :class="isPaused ? 'text-warning-dark dark:text-warning' : 'text-plum'"
+        >
+          {{ isPaused ? 'Resume Entries' : 'Pause Entries' }}
+        </span>
       </button>
 
       <button

@@ -4,6 +4,7 @@ import { onMounted, ref, watch } from 'vue'
 
 const props = defineProps<{
   ticketNumber: string
+  verifyCode: string
   queueName: string
   joinTime: string
   joinDate: string
@@ -71,7 +72,11 @@ watch(
     <div v-if="qrDataUrl" class="flex flex-col items-center my-1">
       <img :src="qrDataUrl" class="w-2/5 max-w-[120px] min-w-[80px] aspect-square" alt="QR" />
       <p class="text-[9px] uppercase tracking-widest text-gray-500 mt-1 max-w-[200px]">
-        Scan to check live position
+        Scan to verify
+      </p>
+      <p class="text-[9px] uppercase tracking-widest text-gray-500 mt-1 max-w-[200px]">Or</p>
+      <p class="text-[9px] uppercase tracking-widest text-gray-500 mt-1 max-w-[200px]">
+        Share the code <strong>{{ verifyCode }}</strong>
       </p>
     </div>
 

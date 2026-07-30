@@ -1,10 +1,10 @@
 <script setup lang="ts">
 /**
  * @component HomeHeroSection
- * @description Redesigned centered modern landing hero section for QueueBuzz.
+ * @description Modernized hero section for QueueBuzz with embedded product demo and clean visual hierarchy.
  */
 import { ArrowRight } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 
 import BaseButton from '@/components/base/BaseButton.vue'
 
@@ -17,7 +17,11 @@ const props = defineProps<{
   industryCategories: { name: string; icon: Component }[][]
 }>()
 
-// Map categories and custom telemetry nodes into 3 detailed bands to match the reference
+const HomeVideoDemoSection = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeVideoDemoSection.vue'),
+)
+
+// Industry category bands for marquee ticker
 const marqueeRows = computed(() => {
   const catList1 = props.industryCategories?.[0] || []
   const catList2 = props.industryCategories?.[1] || []
@@ -69,112 +73,45 @@ const marqueeRows = computed(() => {
 </script>
 
 <template>
-  <section id="hero" class="relative pt-20 pb-20 lg:pt-28 lg:pb-32 z-10 overflow-hidden bg-sand">
-    <!-- Ambient Radial Background Glows -->
-    <div
-      aria-hidden="true"
-      class="pointer-events-none absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-mint/10 rounded-full blur-[140px]"
-      style="will-change: transform"
-      :style="{
-        transform: `translate(-50%, ${scrollY * 0.1}px)`,
-      }"
-    />
-    <div
-      aria-hidden="true"
-      class="pointer-events-none absolute top-[30%] left-[20%] w-[300px] h-[300px] bg-pink-500/5 rounded-full blur-[100px]"
-      style="will-change: transform"
-      :style="{
-        transform: `translateY(${scrollY * -0.05}px)`,
-      }"
-    />
-
+  <section id="hero" class="relative pt-16 pb-16 lg:pt-24 lg:pb-20 z-10 overflow-hidden bg-sand">
     <div
       class="container mx-auto px-6 relative text-center flex flex-col items-center transition-all duration-1000 transform"
       :class="[isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0']"
     >
-      <!-- Centered Modern Heading -->
+      <!-- Core Headline -->
       <h1
-        class="mt-8 font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-plum tracking-tight leading-[0.95] max-w-5xl mx-auto uppercase"
+        class="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-plum tracking-tight leading-[0.95] max-w-5xl mx-auto uppercase"
       >
         ZERO LINES. <br />
         <span
           class="bg-gradient-to-r from-mint-dark to-emerald-700 dark:to-emerald-400 bg-clip-text text-transparent"
-          >BETTER BUSINESS.</span
         >
+          BETTER BUSINESS.
+        </span>
       </h1>
 
-      <!-- Description Text -->
+      <!-- Supporting Copy -->
       <p
-        class="mt-8 font-body text-base sm:text-lg md:text-xl text-plum-soft max-w-2xl mx-auto leading-relaxed"
+        class="mt-6 font-body text-base sm:text-lg md:text-xl text-plum-soft max-w-2xl mx-auto leading-relaxed"
       >
-        Ditch the physical line. Let your customers wait on their own terms. Scan, join, and track
-        your turn in real time, keeping your lobby calm and your business moving with absolute
-        precision.
+        Ditch physical waiting lines. Scan, join, and track your turn in real time — keeping your
+        lobby calm and operations fast.
       </p>
 
-      <!-- Key Benefits List -->
+      <!-- Simple Scannable Proof Line -->
       <div
-        class="mt-10 flex flex-col md:flex-row items-center justify-center gap-x-8 gap-y-3.5 max-w-4xl mx-auto"
+        class="mt-4 font-body text-xs sm:text-sm font-semibold text-plum-muted flex items-center justify-center flex-wrap gap-2 sm:gap-3"
       >
-        <div class="flex items-center gap-2.5">
-          <div
-            class="w-5.5 h-5.5 rounded-full bg-mint-light flex items-center justify-center shrink-0"
-          >
-            <svg
-              class="w-3.5 h-3.5 text-emerald-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="3"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <span class="font-body text-sm font-semibold text-plum-soft"
-            >No app install required for customers</span
-          >
-        </div>
-        <div class="flex items-center gap-2.5">
-          <div
-            class="w-5.5 h-5.5 rounded-full bg-mint-light flex items-center justify-center shrink-0"
-          >
-            <svg
-              class="w-3.5 h-3.5 text-emerald-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="3"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <span class="font-body text-sm font-semibold text-plum-soft"
-            >Real-time dashboard & notifications</span
-          >
-        </div>
-        <div class="flex items-center gap-2.5">
-          <div
-            class="w-5.5 h-5.5 rounded-full bg-mint-light flex items-center justify-center shrink-0"
-          >
-            <svg
-              class="w-3.5 h-3.5 text-emerald-600"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="3"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <span class="font-body text-sm font-semibold text-plum-soft"
-            >Calm lobby, happier staff & peak insights</span
-          >
-        </div>
+        <span>No app required</span>
+        <span class="text-plum-faint font-normal">•</span>
+        <span>QR-based joining</span>
+        <span class="text-plum-faint font-normal">•</span>
+        <span>Real-time updates</span>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Primary Action Buttons -->
       <div
-        class="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md"
+        class="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full max-w-md"
       >
         <router-link to="/guest-host/queue/create" class="w-full sm:w-auto">
           <BaseButton
@@ -196,15 +133,30 @@ const marqueeRows = computed(() => {
         </router-link>
       </div>
 
-      <!-- Industry Marquee -->
-      <div class="mt-28 w-full text-center">
+      <!-- Integrated Product Demo Container (Immediately below primary CTAs) -->
+      <div class="mt-10 sm:mt-14 w-full max-w-5xl">
+        <HomeVideoDemoSection
+          id="demo-video"
+          youtube-url="https://youtu.be/BaNQZgFbSS4"
+          :is-embedded="true"
+        />
+      </div>
+
+      <!-- Contextual Industry Ticker Section -->
+      <div class="mt-20 sm:mt-24 w-full text-center">
+        <p
+          class="font-display text-xs sm:text-sm font-bold uppercase tracking-widest text-plum-muted mb-6"
+        >
+          Built for businesses where waiting matters
+        </p>
+
         <!-- Tilted Marquee Strip Container -->
         <div
-          class="relative overflow-hidden w-full py-8 rotate-[-1.5deg] scale-[1.03] origin-center flex flex-col gap-5 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]"
+          class="relative overflow-hidden w-full py-6 rotate-[-1.5deg] scale-[1.02] origin-center flex flex-col gap-4 [mask-image:linear-gradient(to_right,transparent,black_15%,black_85%,transparent)]"
         >
           <!-- Row 1: Orange Band -->
           <div
-            class="flex overflow-x-hidden select-none bg-warning-dark py-4 shadow-[0_4px_12px_rgba(194,65,12,0.15)]"
+            class="flex overflow-x-hidden select-none bg-warning-dark py-3.5 shadow-[0_4px_12px_rgba(194,65,12,0.12)]"
           >
             <div
               class="flex gap-16 shrink-0 animate-marquee items-center whitespace-nowrap"
@@ -218,23 +170,23 @@ const marqueeRows = computed(() => {
                 >
                   <span
                     v-if="item.type === 'pill'"
-                    class="bg-plum text-white font-mono text-[9px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-md"
+                    class="bg-plum text-white font-mono text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm"
                   >
                     {{ item.label }}
                   </span>
 
                   <div
                     v-else-if="item.type === 'avatar'"
-                    class="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 shadow-inner"
+                    class="w-6.5 h-6.5 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 shadow-inner"
                   >
                     {{ item.initials }}
                   </div>
 
                   <div v-else-if="item.type === 'category'" class="flex items-center gap-3">
                     <div
-                      class="w-7.5 h-7.5 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0"
+                      class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0"
                     >
-                      <component :is="item.icon" class="w-4 h-4 text-warning-dark" />
+                      <component :is="item.icon" class="w-3.5 h-3.5 text-warning-dark" />
                     </div>
                     <span class="font-body text-sm font-bold text-white tracking-wide">{{
                       item.name
@@ -251,7 +203,7 @@ const marqueeRows = computed(() => {
 
           <!-- Row 2: Vibrant Blue Band -->
           <div
-            class="flex overflow-x-hidden select-none bg-blue-700 py-4 shadow-[0_4px_12px_rgba(29,78,216,0.15)]"
+            class="flex overflow-x-hidden select-none bg-blue-700 py-3.5 shadow-[0_4px_12px_rgba(29,78,216,0.12)]"
           >
             <div
               class="flex gap-16 shrink-0 animate-marquee-reverse items-center whitespace-nowrap"
@@ -265,23 +217,23 @@ const marqueeRows = computed(() => {
                 >
                   <span
                     v-if="item.type === 'pill'"
-                    class="bg-plum text-white font-mono text-[9px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-md"
+                    class="bg-plum text-white font-mono text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm"
                   >
                     {{ item.label }}
                   </span>
 
                   <div
                     v-else-if="item.type === 'avatar'"
-                    class="w-7 h-7 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 shadow-inner"
+                    class="w-6.5 h-6.5 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-[10px] font-extrabold text-white shrink-0 shadow-inner"
                   >
                     {{ item.initials }}
                   </div>
 
                   <div v-else-if="item.type === 'category'" class="flex items-center gap-3">
                     <div
-                      class="w-7.5 h-7.5 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0"
+                      class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0"
                     >
-                      <component :is="item.icon" class="w-4 h-4 text-blue-700" />
+                      <component :is="item.icon" class="w-3.5 h-3.5 text-blue-700" />
                     </div>
                     <span class="font-body text-sm font-bold text-white tracking-wide">{{
                       item.name
@@ -298,7 +250,7 @@ const marqueeRows = computed(() => {
 
           <!-- Row 3: Mint Band -->
           <div
-            class="flex overflow-x-hidden select-none bg-[#00E5A0] py-4 shadow-[0_4px_12px_rgba(0,229,160,0.15)]"
+            class="flex overflow-x-hidden select-none bg-[#00E5A0] py-3.5 shadow-[0_4px_12px_rgba(0,229,160,0.12)]"
           >
             <div
               class="flex gap-16 shrink-0 animate-marquee items-center whitespace-nowrap"
@@ -312,23 +264,23 @@ const marqueeRows = computed(() => {
                 >
                   <span
                     v-if="item.type === 'pill'"
-                    class="bg-plum text-white font-mono text-[9px] font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-md"
+                    class="bg-plum text-white font-mono text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm"
                   >
                     {{ item.label }}
                   </span>
 
                   <div
                     v-else-if="item.type === 'avatar'"
-                    class="w-7 h-7 rounded-full bg-plum/10 border border-plum/20 flex items-center justify-center text-[10px] font-extrabold text-plum shrink-0 shadow-inner"
+                    class="w-6.5 h-6.5 rounded-full bg-plum/10 border border-plum/20 flex items-center justify-center text-[10px] font-extrabold text-plum shrink-0 shadow-inner"
                   >
                     {{ item.initials }}
                   </div>
 
                   <div v-else-if="item.type === 'category'" class="flex items-center gap-3">
                     <div
-                      class="w-7.5 h-7.5 rounded-full bg-[#1A0A2E] flex items-center justify-center shadow-sm shrink-0"
+                      class="w-7 h-7 rounded-full bg-[#1A0A2E] flex items-center justify-center shadow-sm shrink-0"
                     >
-                      <component :is="item.icon" class="w-4 h-4 text-mint" />
+                      <component :is="item.icon" class="w-3.5 h-3.5 text-mint" />
                     </div>
                     <span class="font-body text-sm font-bold text-[#1A0A2E] tracking-wide">{{
                       item.name

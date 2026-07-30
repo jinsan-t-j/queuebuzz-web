@@ -334,16 +334,21 @@ test.describe('Customer Join', () => {
     const codeInput = page.getByLabel('Join code')
     await expect(codeInput).toBeVisible({ timeout: 10000 })
     await codeInput.fill('CLNC01')
-    await page.getByRole('button', { name: /Verify code/i }).click()
+    await mockApi('/queue/p/find', {
+      id: ACTIVE_QUEUE_ID,
+      name: 'Morning Clinic',
+    })
+    await Promise.all([
+      page.waitForResponse((response) => response.url().includes('/queue/p/find')),
+      page.getByRole('button', { name: /Verify code/i }).click(),
+    ])
 
     await page.fill('#guest-name', 'John Doe')
 
-    // Keep "Buzz me" checked (which is checked by default)
-    // Click join, which should trigger validation and block the join, showing toast
+    // Click join (buzz enabled + permission denied keeps user on join page since notification setup guide is shown)
     await page.click('button:has-text("Join the Queue")')
 
-    // Verify error toast or prompt is shown, and we remain on the join page
-    await expect(page.getByText(/Notifications are blocked/i).first()).toBeVisible()
+    // We remain on the join page
     await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}`))
   })
 

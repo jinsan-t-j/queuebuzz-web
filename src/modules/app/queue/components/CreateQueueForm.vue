@@ -44,7 +44,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['queue-created'])
+const emit = defineEmits(['queue-created', 'create-account'])
 
 const subscription = ref<Subscription | null>(null)
 const currentPlan = ref<BillingPlan | null>(null)
@@ -833,8 +833,9 @@ const acceptTerms = ref(false)
     <p v-if="role === 'guest'" class="mt-6 text-center font-body text-sm text-plum-muted">
       Secure your queue & customize your URL.
       <router-link
-        to="/login"
+        :to="{ name: 'login' }"
         class="font-semibold text-plum underline transition-colors hover:text-plum-soft"
+        @click="emit('create-account')"
       >
         Create a free account
       </router-link>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import BaseBadge from '@/components/base/BaseBadge.vue'
 import HostNotificationCenter from '@/components/layout/HostNotificationCenter.vue'
 import type { SseConnectionState } from '@/lib/sse'
 
@@ -9,6 +10,7 @@ defineProps<{
   pingMs?: number
   showNotifications?: boolean
   strictMode?: boolean
+  isPaused?: boolean
 }>()
 </script>
 
@@ -18,17 +20,19 @@ defineProps<{
       <div class="flex items-center gap-3">
         <div class="relative flex h-3 w-3 items-center justify-center shrink-0">
           <span
-            v-if="streamState === 'connecting'"
+            v-if="isPaused || streamState === 'connecting'"
             class="absolute inline-flex h-full w-full animate-ping rounded-full bg-warning opacity-75"
           />
           <span
             class="relative inline-flex h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full transition-colors duration-300"
             :class="
-              streamState === 'open'
-                ? 'bg-mint'
-                : streamState === 'connecting'
-                  ? 'bg-warning'
-                  : 'bg-danger'
+              isPaused
+                ? 'bg-warning'
+                : streamState === 'open'
+                  ? 'bg-mint'
+                  : streamState === 'connecting'
+                    ? 'bg-warning'
+                    : 'bg-danger'
             "
           />
         </div>
@@ -37,6 +41,14 @@ defineProps<{
         >
           {{ queueName }}
         </h1>
+
+        <BaseBadge v-if="isPaused" variant="warning" class="shrink-0"> Paused </BaseBadge>
+        <BaseBadge v-else-if="streamState === 'connecting'" variant="warning" class="shrink-0">
+          Connecting
+        </BaseBadge>
+        <BaseBadge v-else-if="streamState === 'error'" variant="danger" class="shrink-0">
+          Offline
+        </BaseBadge>
       </div>
     </div>
 

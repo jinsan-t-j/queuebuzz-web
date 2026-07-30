@@ -17,7 +17,7 @@ defineProps<{
 
 <template>
   <div
-    class="mt-6 rounded-3xl border border-plum-faint bg-white/60 p-4 text-left shadow-xs transition-all animate-in fade-in slide-in-from-top-2"
+    class="rounded-3xl border border-plum-faint bg-white/60 p-4 text-left shadow-xs transition-all animate-in fade-in slide-in-from-top-2"
   >
     <div class="flex gap-3">
       <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-mint-light">

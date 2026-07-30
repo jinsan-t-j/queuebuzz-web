@@ -28,16 +28,18 @@ import TicketSaveBar from '@/modules/customer/components/TicketSaveBar.vue'
 import WaitingAdUnit from '@/modules/customer/components/WaitingAdUnit.vue'
 import WaitingProgress from '@/modules/customer/components/WaitingProgress.vue'
 import WaitingStats from '@/modules/customer/components/WaitingStats.vue'
+import { useCustomerStore } from '@/modules/customer/stores/customer.store'
 import { useQueueStore } from '@/stores/queue.store'
 
 import { useCustomer } from '../composables/useCustomer'
 
-const ConnectionLostBanner = defineAsyncComponent(
-  () => import('../components/ConnectionLostBanner.vue'),
+const NotificationBanner = defineAsyncComponent(
+  () => import('../components/NotificationBanner.vue'),
 )
 
 const router = useRouter()
 const { showToast } = useToast()
+const customerStore = useCustomerStore()
 
 const isNavigatingAway = ref(false)
 
@@ -75,6 +77,41 @@ const isSettingsModalOpen = ref(false)
 const showEmailHighlight = ref(false)
 const queueName = computed(() => activeQueue.value?.name || '')
 
+const notificationPermission = ref<'default' | 'granted' | 'denied' | 'unsupported'>(
+  typeof Notification === 'undefined'
+    ? 'unsupported'
+    : (Notification.permission as 'default' | 'granted' | 'denied'),
+)
+const isIOS = ref(false)
+const isMac = ref(false)
+const isAndroid = ref(false)
+const isSafari = ref(false)
+const isFirefox = ref(false)
+const isChrome = ref(false)
+
+const updatePermission = () => {
+  if (typeof Notification === 'undefined') {
+    notificationPermission.value = 'unsupported'
+  } else {
+    notificationPermission.value = Notification.permission as 'default' | 'granted' | 'denied'
+  }
+}
+
+async function requestNotificationPermission() {
+  if (typeof Notification === 'undefined') return
+  try {
+    const permission = await Notification.requestPermission()
+    notificationPermission.value = permission as 'default' | 'granted' | 'denied'
+    if (permission === 'granted') {
+      showToast('Notifications enabled successfully!', { type: 'success' })
+      await customerStore.syncPushToken()
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Error requesting notification permission:', err)
+  }
+}
+
 const formattedJoinDate = computed(() => {
   if (!entry.value?.createdAt) return ''
   try {
@@ -93,6 +130,40 @@ useWakeLock()
 useBackgroundKeepAlive()
 
 onMounted(() => {
+  const ua = globalThis.navigator?.userAgent || ''
+  const isAppleMobile =
+    /iPad|iPhone|iPod/.test(ua) ||
+    (/Macintosh/.test(ua) && globalThis.navigator?.maxTouchPoints > 1)
+  const isMacOs = /Macintosh|Mac OS X/.test(ua) && !isAppleMobile
+  const isAndroidOs = /Android/i.test(ua)
+  const isSafariBrowser = /Safari/.test(ua) && !/Chrome|CriOS|Android/.test(ua)
+  const isFirefoxBrowser = /Firefox|FxiOS/.test(ua)
+  const isChromeBrowser = /Chrome|CriOS/.test(ua)
+
+  isIOS.value = isAppleMobile
+  isMac.value = isMacOs
+  isAndroid.value = isAndroidOs
+  isSafari.value = isSafariBrowser
+  isFirefox.value = isFirefoxBrowser
+  isChrome.value = isChromeBrowser
+
+  updatePermission()
+
+  if (typeof navigator !== 'undefined' && navigator.permissions && navigator.permissions.query) {
+    try {
+      navigator.permissions.query({ name: 'notifications' }).then((status) => {
+        status.onchange = () => {
+          updatePermission()
+          if (notificationPermission.value === 'granted') {
+            customerStore.syncPushToken()
+          }
+        }
+      })
+    } catch {
+      // Ignore unsupported browsers
+    }
+  }
+
   setTimeout(() => {
     if (entry.value && !entry.value.email) {
       showEmailHighlight.value = true
@@ -222,12 +293,19 @@ onUnmounted(() => {
       :profile-url="activeQueue.hostProfileImageUrl"
       :banner-url="activeQueue.hostBannerImageUrl"
     />
-    <h1
+    <div
       v-else
-      class="px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum transition-all duration-300"
+      class="flex items-center justify-center gap-2 px-5 pb-2 pt-6 text-center font-display text-lg font-bold text-plum transition-all duration-300"
     >
-      {{ queueName }}
-    </h1>
+      <span>{{ queueName }}</span>
+      <!-- Live Beep Status Indicator -->
+      <span class="relative flex h-2.5 w-2.5 shrink-0" title="Live status active">
+        <span
+          class="absolute inline-flex h-full w-full animate-ping rounded-full bg-mint opacity-75"
+        />
+        <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-mint" />
+      </span>
+    </div>
 
     <!-- Loading skeleton -->
     <div v-if="isLoading && !entry" class="flex flex-col gap-4 px-5 py-4">
@@ -246,10 +324,20 @@ onUnmounted(() => {
     <div v-else-if="entry" class="flex flex-col gap-5 px-5 py-4 animate-in fade-in duration-500">
       <PWABanner />
 
-      <ConnectionLostBanner />
-
       <!-- Heads-up / almost up notification banner -->
       <HeadsUpBanner :position="position" />
+
+      <!-- Notification Reminder Banner -->
+      <NotificationBanner
+        :notification-permission="notificationPermission"
+        :is-i-o-s="isIOS"
+        :is-mac="isMac"
+        :is-android="isAndroid"
+        :is-safari="isSafari"
+        :is-firefox="isFirefox"
+        :is-chrome="isChrome"
+        @request-permission="requestNotificationPermission"
+      />
 
       <div ref="ticketRef" class="relative">
         <!-- Blob decorations behind ticket & stats -->
@@ -278,7 +366,10 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <WaitingProgress :position="position" />
+      <WaitingProgress
+        :position="position"
+        :permission-granted="notificationPermission === 'granted'"
+      />
 
       <WaitingAdUnit :est-wait-min="estWaitMin" />
 

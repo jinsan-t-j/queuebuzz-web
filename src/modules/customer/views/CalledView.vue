@@ -6,15 +6,7 @@
  */
 
 import { storeToRefs } from 'pinia'
-import {
-  computed,
-  defineAsyncComponent,
-  onBeforeMount,
-  onMounted,
-  onUnmounted,
-  ref,
-  watch,
-} from 'vue'
+import { computed, onBeforeMount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import QrScanIcon from '@/assets/icons/qr-scan.svg?component'
@@ -31,10 +23,6 @@ import LeaveConfirmationModal from '../components/LeaveConfirmationModal.vue'
 import TicketCaptureTemplate from '../components/TicketCaptureTemplate.vue'
 
 defineEmits(['arrival-confirmed', 'leave-queue', 'show-qr', 'service-finished'])
-
-const ConnectionLostBanner = defineAsyncComponent(
-  () => import('../components/ConnectionLostBanner.vue'),
-)
 
 const router = useRouter()
 const { showToast } = useToast()
@@ -410,8 +398,6 @@ const handleFinishService = async () => {
         <p class="mt-2 font-body text-base font-medium text-plum/60">Your turn has arrived.</p>
       </div>
 
-      <ConnectionLostBanner />
-
       <!-- Chime Alert Banner -->
       <div
         class="mt-4 flex items-center justify-between rounded-2xl bg-mint-light/40 border border-mint/20 px-4 py-3 animate-pulse"
@@ -546,7 +532,7 @@ const handleFinishService = async () => {
       <!-- Hidden Capture Template -->
       <TicketCaptureTemplate
         v-if="entry"
-        :ticket-number="String(entry.ticketNo)"
+        :ticket-number="entry.verifyCode || String(entry.ticketNo)"
         :queue-name="queueName"
         :join-date="formattedJoinDate"
       />

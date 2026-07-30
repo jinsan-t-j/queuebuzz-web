@@ -67,7 +67,7 @@ async function generateQr() {
   try {
     qrDataUrl.value = await QRCode.toDataURL(currentQueueUrl.value, {
       width: 400,
-      margin: 2,
+      margin: 1,
       color: { dark: '#1A0A2E', light: '#FFFFFF' },
     })
   } catch {
@@ -134,7 +134,7 @@ watch(
 
 <template>
   <BaseModal :is-open="isOpen" @close="emit('close')">
-    <div class="relative w-full overflow-hidden p-8 text-center">
+    <div class="relative w-full overflow-hidden p-8 sm:p-9 text-center bg-white">
       <!-- Hidden Capture Template -->
       <HostQRCaptureTemplate
         v-if="showQr"
@@ -144,32 +144,36 @@ watch(
       />
 
       <!-- Gradient background glow -->
-      <div class="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-mint/5 blur-[100px]" />
-      <div class="absolute -bottom-40 -right-40 h-80 w-80 rounded-full bg-plum/5 blur-[100px]" />
+      <div
+        class="absolute -top-40 -left-40 h-80 w-80 rounded-full bg-mint/10 blur-[100px] pointer-events-none"
+      />
+      <div
+        class="absolute -bottom-40 -right-40 h-80 w-80 rounded-full bg-plum/10 blur-[100px] pointer-events-none"
+      />
 
       <!-- Close button -->
       <button
-        class="absolute right-6 top-6 z-20 flex h-10 w-10 items-center justify-center rounded-2xl text-plum/20 transition-all hover:bg-plum/5 hover:text-plum active:scale-95 cursor-pointer"
+        class="absolute right-5 top-5 z-20 flex h-9 w-9 items-center justify-center rounded-2xl text-plum-muted/40 transition-all hover:bg-plum/5 hover:text-plum active:scale-95 cursor-pointer"
         @click="emit('close')"
       >
         <CloseXIcon class="h-4 w-4" />
       </button>
 
       <div class="relative z-10">
-        <!-- Success/Heading -->
+        <!-- Success Checkmark Badge -->
         <div v-if="isSuccess" class="mb-4 flex justify-center">
           <div
-            class="flex h-16 w-16 items-center justify-center rounded-full bg-mint-light/50 dark:bg-mint/20 text-mint shadow-[0_0_20px_rgba(0,229,160,0.2)] dark:shadow-none"
+            class="flex h-16 w-16 items-center justify-center rounded-full bg-mint-light text-mint shadow-[0_0_20px_rgba(0,229,160,0.25)]"
           >
-            <CheckCircleIcon class="h-8 w-8" />
+            <CheckCircleIcon class="h-8 w-8 text-mint" />
           </div>
         </div>
 
-        <h2 class="mb-4 font-display text-[32px] font-bold leading-tight tracking-tight text-plum">
+        <h2 class="mb-2 font-display text-[30px] font-bold leading-tight tracking-tight text-plum">
           {{ isSuccess ? 'Queue is open!' : 'Your Queue Code' }}
         </h2>
 
-        <p class="mx-auto mb-4 max-w-[320px] font-body text-sm leading-relaxed text-plum/50">
+        <p class="mx-auto mb-5 max-w-[320px] font-body text-sm leading-relaxed text-plum-muted">
           {{
             isSuccess
               ? showQr
@@ -179,47 +183,46 @@ watch(
           }}
         </p>
 
-        <!-- QR Display -->
+        <!-- QR Display Container -->
         <div
           v-if="showQr"
-          class="group relative mx-auto mb-4 flex h-[240px] w-[240px] items-center justify-center overflow-hidden rounded-[32px] bg-white p-6 shadow-[0_12px_40px_rgba(26,10,46,0.08)] transition-all hover:shadow-[0_20px_60px_rgba(26,10,46,0.12)] dark:shadow-none"
+          class="group relative mx-auto mb-5 flex h-[210px] w-[210px] items-center justify-center overflow-hidden rounded-3xl bg-white p-5 shadow-[0_12px_36px_rgba(26,10,46,0.08)] border border-plum-faint transition-all hover:shadow-[0_20px_50px_rgba(26,10,46,0.12)]"
         >
           <img
             v-if="qrDataUrl"
             :src="qrDataUrl"
             alt="Queue QR code"
-            class="h-full w-full rounded-xl transition-transform duration-500 group-hover:scale-110"
+            class="h-full w-full object-contain rounded-xl transition-transform duration-500 group-hover:scale-105"
           />
           <div v-else class="h-full w-full animate-pulse rounded-xl bg-plum-faint" />
 
           <!-- Subtle icon overlay on hover -->
           <div
-            class="absolute inset-0 flex items-center justify-center bg-white/20 dark:bg-black/20 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px] cursor-pointer"
+            class="absolute inset-0 flex items-center justify-center bg-plum/10 opacity-0 transition-opacity group-hover:opacity-100 backdrop-blur-[2px] cursor-pointer"
           >
-            <div
-              class="rounded-full bg-white dark:bg-plum-soft p-3 shadow-lg dark:shadow-none"
-              @click="handleDownload"
-            >
-              <DownloadIcon v-if="!isCapturing" class="h-6 w-6 text-plum dark:text-mint" />
+            <div class="rounded-full bg-white p-3 shadow-lg" @click="handleDownload">
+              <DownloadIcon v-if="!isCapturing" class="h-6 w-6 text-plum" />
               <div
                 v-else
-                class="h-6 w-6 animate-spin rounded-full border-2 border-plum dark:border-mint border-t-transparent"
+                class="h-6 w-6 animate-spin rounded-full border-2 border-plum border-t-transparent"
               />
             </div>
           </div>
         </div>
 
-        <!-- Join Code Display -->
-        <div class="mb-4 rounded-3xl bg-sand/50 dark:bg-plum-faint/10 p-6 border border-plum-faint">
-          <p class="font-body text-sm font-bold uppercase tracking-[0.2em] text-plum/30 mb-2">
+        <!-- Join Code Display Container -->
+        <div class="mb-5 rounded-2xl bg-sand/70 p-4 border border-plum-faint text-center">
+          <p
+            class="font-body text-[11px] font-bold uppercase tracking-[0.2em] text-plum-muted/60 mb-1"
+          >
             JOIN CODE
           </p>
-          <div class="flex items-center justify-center gap-4">
-            <span class="font-mono text-3xl font-bold tracking-[0.2em] text-plum">
+          <div class="flex items-center justify-center gap-3">
+            <span class="font-mono text-2xl sm:text-3xl font-bold tracking-[0.2em] text-plum">
               {{ currentJoinCode }}
             </span>
             <button
-              class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-plum/40 shadow-sm dark:shadow-none transition-all hover:bg-plum hover:text-white dark:hover:bg-plum-faint dark:hover:text-plum active:scale-95 cursor-pointer"
+              class="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-plum-muted border border-plum-faint shadow-sm transition-all hover:bg-plum hover:text-white active:scale-95 cursor-pointer"
               @click="handleCopyCode"
             >
               <CopyIcon v-if="!copiedCode" class="h-3.5 w-3.5" />
@@ -232,15 +235,15 @@ watch(
         <div class="flex flex-col gap-3">
           <BaseButton
             variant="primary"
-            class="w-full py-5 text-lg font-bold shadow-xl dark:shadow-none shadow-mint/20 active:scale-95 transition-all"
+            class="w-full h-13 py-3.5 text-base font-bold shadow-[0_8px_24px_rgba(0,229,160,0.3)] hover:brightness-105 active:scale-95 transition-all rounded-2xl"
             @click="handleConfirmRedirect"
           >
             OPEN QUEUE
           </BaseButton>
 
           <button
-            class="flex items-center justify-center gap-1.5 font-body text-sm font-bold transition-colors cursor-pointer mt-2"
-            :class="copiedLink ? 'text-mint' : 'text-plum/40 hover:text-plum'"
+            class="flex items-center justify-center gap-1.5 font-body text-xs font-bold transition-colors cursor-pointer mt-0.5"
+            :class="copiedLink ? 'text-mint' : 'text-plum-muted/70 hover:text-plum'"
             @click="handleShare"
           >
             <VerifiedCheckIcon v-if="copiedLink" class="h-4 w-4 text-mint" />
