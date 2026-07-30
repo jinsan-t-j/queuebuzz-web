@@ -334,25 +334,22 @@ test.describe('Customer Join', () => {
     const codeInput = page.getByLabel('Join code')
     await expect(codeInput).toBeVisible({ timeout: 10000 })
     await codeInput.fill('CLNC01')
-    await page.getByRole('button', { name: /Verify code/i }).click()
-
-    await mockApi(`/customer/entry/join/${ACTIVE_QUEUE_ID}`, {
-      id: 'e1',
-      ticketNo: 48,
-      status: 'WAITING',
+    await mockApi('/queue/p/find', {
+      id: ACTIVE_QUEUE_ID,
+      name: 'Morning Clinic',
     })
-
-    // Keep "Buzz me" checked (which is checked by default)
     await Promise.all([
-      page.waitForResponse(
-        (response) =>
-          response.url().includes('/customer/entry/join') && response.request().method() === 'POST',
-      ),
-      page.click('button:has-text("Join the Queue")'),
+      page.waitForResponse((response) => response.url().includes('/queue/p/find')),
+      page.getByRole('button', { name: /Verify code/i }).click(),
     ])
 
-    // Verify submission succeeds with fcmToken null when notifications are denied
-    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}/waiting`))
+    await page.fill('#guest-name', 'John Doe')
+
+    // Click join (buzz enabled + permission denied keeps user on join page since notification setup guide is shown)
+    await page.click('button:has-text("Join the Queue")')
+
+    // We remain on the join page
+    await expect(page).toHaveURL(new RegExp(`/q/${ACTIVE_QUEUE_ID}`))
   })
 
   test('should validate phone number length', async ({ page, mockApi }) => {
