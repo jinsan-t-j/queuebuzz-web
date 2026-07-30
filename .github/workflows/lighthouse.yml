@@ -88,7 +88,7 @@ jobs:
           path: |
             playwright-report/
             test-results/
-          retention-days: 14
+          retention-days: 1
 
       - name: Post Visual Diff to PR
         if: failure()
@@ -146,6 +146,6 @@ jobs:
       - name: Lighthouse CI Audit
         uses: treosh/lighthouse-ci-action@v12
         with:
-          uploadArtifacts: true
+          uploadArtifacts: false
           temporaryPublicStorage: true
           configPath: ./.lighthouserc.json
