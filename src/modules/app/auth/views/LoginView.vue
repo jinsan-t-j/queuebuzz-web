@@ -16,6 +16,7 @@ const claimQueueId = computed(() => route.query.claim_queue_id as string | undef
 const hasClaimParam = computed(() => !!claimQueueId.value)
 
 const dismissedQueue = ref<{ id: string; name: string } | null>(null)
+const dismissedQueueName = ref<string | null>(null)
 
 const ClaimContextChip = defineAsyncComponent(
   () => import('@/modules/app/auth/components/ClaimContextChip.vue'),
@@ -23,12 +24,14 @@ const ClaimContextChip = defineAsyncComponent(
 
 function handleDismissClaim(queueInfo: { id: string; name: string }) {
   dismissedQueue.value = queueInfo
+  dismissedQueueName.value = queueInfo.name
   router.replace({ query: { ...route.query, claim_queue_id: undefined } })
 }
 
 function handleRestoreClaim() {
   if (dismissedQueue.value) {
-    router.replace({ query: { ...route.query, claim_queue_id: dismissedQueue.value.id } })
+    const queueId = dismissedQueue.value.id
+    router.replace({ query: { ...route.query, claim_queue_id: queueId } })
     dismissedQueue.value = null
   }
 }
@@ -44,7 +47,11 @@ function handleRestoreClaim() {
       </span>
     </router-link>
 
-    <ClaimContextChip v-if="hasClaimParam" @close="handleDismissClaim" />
+    <ClaimContextChip
+      v-if="hasClaimParam"
+      :initial-name="dismissedQueueName || undefined"
+      @close="handleDismissClaim"
+    />
 
     <div
       class="w-full max-w-[440px] bg-white rounded-[24px] sm:rounded-[32px] p-6 sm:p-10 shadow-[0_8px_40px_rgba(26,10,46,0.06)]"

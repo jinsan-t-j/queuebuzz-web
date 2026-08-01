@@ -4,6 +4,7 @@
  * @description Modal for updating active queue settings.
  * Includes Queue Name and Avg. Service Time.
  */
+import { toTypedSchema } from '@vee-validate/yup'
 import { useField, useForm } from 'vee-validate'
 import { computed, onUnmounted, ref, watch } from 'vue'
 import * as yup from 'yup'
@@ -92,7 +93,7 @@ const schema = yup.object({
 })
 
 const { handleSubmit, errors, resetForm, meta } = useForm({
-  validationSchema: schema,
+  validationSchema: toTypedSchema(schema),
   initialValues: {
     queueName: props.queue?.name || '',
     avgServiceMins: props.queue?.avgServiceMins || 5,

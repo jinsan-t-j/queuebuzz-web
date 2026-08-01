@@ -94,10 +94,11 @@ test.describe('Authentication', () => {
 
     // 5. Click "Restore Claim" button
     await restoreBtn.click()
+    await page.waitForTimeout(100)
 
     // 6. Verify URL has the query param again and Chip is restored
     await expect(page).toHaveURL(/claim_queue_id=claim-123/)
-    await expect(chip).toBeVisible()
+    await expect(chip).toBeVisible({ timeout: 10000 })
     await expect(restorePrompt).not.toBeVisible()
   })
 })

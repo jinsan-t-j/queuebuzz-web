@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { toTypedSchema } from '@vee-validate/yup'
 import { useForm } from 'vee-validate'
 import { onMounted, watch } from 'vue'
 import * as yup from 'yup'
@@ -35,7 +36,7 @@ const schema = yup.object({
 })
 
 const { errors, defineField, handleSubmit, resetForm, isSubmitting } = useForm({
-  validationSchema: schema,
+  validationSchema: toTypedSchema(schema),
   initialValues: {
     name: entry.value?.name || '',
     email: entry.value?.email || '',

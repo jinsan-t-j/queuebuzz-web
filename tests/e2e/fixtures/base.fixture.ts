@@ -19,24 +19,25 @@ import {
 
 type MockApiFn = (route: string, data: unknown, status?: number) => Promise<void>
 
+const customMocks = new Map<string, { data: unknown; status: number }>()
+
 export const test = base.extend<{
   mockApi: MockApiFn
 }>({
-  mockApi: async ({ page }, use) => {
-    const mockFunc: MockApiFn = async (route, data, status = 200) => {
-      await page.route(
-        (url) => url.pathname.includes(route) || url.href.includes(route),
-        async (routeObj) => {
-          const origin = routeObj.request().headers().origin || '*'
-
-          await fulfillJson(routeObj, data, origin, status)
-        },
-      )
+  mockApi: async ({ context }, use) => {
+    const mockFunc: MockApiFn = async (routePath, data, status = 200) => {
+      customMocks.set(routePath, { data, status })
+      const pattern = `**/*${routePath}*`
+      await context.route(pattern, async (routeObj) => {
+        const origin = routeObj.request().headers().origin || '*'
+        await fulfillJson(routeObj, data, origin, status)
+      })
     }
     await use(mockFunc)
+    customMocks.clear()
   },
 
-  page: async ({ page }, use) => {
+  page: async ({ context, page }, use) => {
     // Log browser console errors for debugging
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
@@ -77,84 +78,108 @@ export const test = base.extend<{
       globalThis.sessionStorage.clear()
 
       // Inject mock session
+      const authState = {
+        user: {
+          id: 'host-1',
+          publicId: 'host-pub-1',
+          name: 'Dr. Rajan',
+          email: 'rajan@example.com',
+          tier: 'free',
+          avatar: null,
+        },
+        anonymousQueueId: null,
+      }
+      globalThis.localStorage.setItem('auth', JSON.stringify(authState))
       globalThis.localStorage.setItem('auth_token', 'mock-token-123')
       globalThis.localStorage.setItem('user_role', 'host')
       globalThis.localStorage.setItem('has_seen_onboarding', 'true')
     })
 
-    // Global API interceptor for bootstrap endpoints
-    await page.route('**/api/v1/**', async (route) => {
-      const url = route.request().url()
-      const origin = route.request().headers().origin || '*'
+    // Global API interceptor for bootstrap endpoints on context level
+    await context.route('**/api/v1/**', async (route) => {
+      try {
+        const url = route.request().url()
+        const origin = route.request().headers().origin || '*'
 
-      // Preflight
-      if (route.request().method() === 'OPTIONS') {
-        return route.fulfill({
-          status: 204,
-          headers: corsHeaders(origin),
-        })
+        // Preflight
+        if (route.request().method() === 'OPTIONS') {
+          return route.fulfill({
+            status: 204,
+            headers: corsHeaders(origin),
+          })
+        }
+
+        // Check test-specific mocks registered via mockApi Map first
+        for (const [routePath, mock] of customMocks.entries()) {
+          if (url.includes(routePath)) {
+            return await fulfillJson(route, mock.data, origin, mock.status)
+          }
+        }
+
+        // SSE streams — fulfill immediately to prevent hanging
+        if (url.includes('/events')) {
+          return await route.fulfill({
+            status: 200,
+            contentType: 'text/event-stream',
+            body: '',
+          })
+        }
+
+        // Bootstrap: host profile
+        if (url.includes('/host/me')) {
+          return await fulfillJson(route, makeHostProfile(), origin)
+        }
+
+        // Bootstrap: billing plan
+        if (url.includes('/billing/current-plan')) {
+          return await fulfillJson(route, makeBillingPlan(), origin)
+        }
+
+        // Bootstrap: billing plans (pricing page)
+        if (url.includes('/billing/plans')) {
+          return await fulfillJson(route, makeBillingPlans(), origin)
+        }
+
+        // Bootstrap: billing subscription
+        if (url.includes('/billing/subscription')) {
+          return await fulfillJson(
+            route,
+            { status: 'active', canViewHistory: true, canExportData: true },
+            origin,
+          )
+        }
+
+        // Bootstrap: queue dashboard
+        if (url.includes('/queue/dashboard')) {
+          return await fulfillJson(route, makeDashboardResponse(), origin)
+        }
+
+        // Catch queue endpoints (legacy only, use exact anchors where possible)
+        if (url.endsWith('/queue/active') || url.endsWith('/queue/live')) {
+          return await fulfillJson(route, null, origin)
+        }
+
+        // Customer entry (exact path only)
+        if (url.endsWith('/customer/entry')) {
+          return await fulfillJson(route, null, origin)
+        }
+
+        // Auth logout
+        if (url.includes('/auth/logout')) {
+          return await fulfillJson(route, { message: 'OK' }, origin)
+        }
+
+        // Auth refresh
+        if (url.includes('/auth/refresh/token')) {
+          return await fulfillJson(route, { message: 'OK' }, origin)
+        }
+
+        // Safe fallback for unhandled test API requests to avoid WebKit connection refused
+        return await fulfillJson(route, null, origin)
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log('[Route Interceptor Error]:', err)
       }
-
-      // SSE streams — fulfill immediately to prevent hanging
-      if (url.includes('/events')) {
-        return route.fulfill({
-          status: 200,
-          contentType: 'text/event-stream',
-          body: '',
-        })
-      }
-
-      // Bootstrap: host profile
-      if (url.includes('/host/me')) {
-        return fulfillJson(route, makeHostProfile(), origin)
-      }
-
-      // Bootstrap: billing plan
-      if (url.includes('/billing/current-plan')) {
-        return fulfillJson(route, makeBillingPlan(), origin)
-      }
-
-      // Bootstrap: billing plans (pricing page)
-      if (url.includes('/billing/plans')) {
-        return fulfillJson(route, makeBillingPlans(), origin)
-      }
-
-      // Bootstrap: billing subscription
-      if (url.includes('/billing/subscription')) {
-        return fulfillJson(
-          route,
-          { status: 'active', canViewHistory: true, canExportData: true },
-          origin,
-        )
-      }
-
-      // Bootstrap: queue dashboard
-      if (url.includes('/queue/dashboard')) {
-        return fulfillJson(route, makeDashboardResponse(), origin)
-      }
-
-      // Catch queue endpoints (legacy only, use exact anchors where possible)
-      if (url.endsWith('/queue/active') || url.endsWith('/queue/live')) {
-        return fulfillJson(route, null, origin)
-      }
-
-      // Customer entry (exact path only)
-      if (url.endsWith('/customer/entry')) {
-        return fulfillJson(route, null, origin)
-      }
-
-      // Auth logout
-      if (url.includes('/auth/logout')) {
-        return fulfillJson(route, { message: 'OK' }, origin)
-      }
-
-      // Auth refresh
-      if (url.includes('/auth/refresh/token')) {
-        return fulfillJson(route, { message: 'OK' }, origin)
-      }
-
-      // Let test-specific mocks take precedence
-      await route.continue()
     })
 
     await use(page)
@@ -167,6 +192,9 @@ function corsHeaders(origin: string): Record<string, string> {
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
   }
 }
 

@@ -13,7 +13,6 @@ test.describe('Dashboard', () => {
     await mockApi('/queue/dashboard', makeDashboardResponse())
 
     await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
 
     // Onboarding hero should show for accounts with no history
     const startBtn = page.getByRole('button', { name: /Start Your First Session|Start Now/i })
@@ -24,7 +23,6 @@ test.describe('Dashboard', () => {
     await mockApi('/queue/dashboard', makeActiveQueueDashboard())
 
     await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
 
     // Greeting — wait for the specific greeting text
     await expect(page.getByText(/Good .*, Dr\. Rajan/).first()).toBeVisible({ timeout: 8000 })
@@ -38,7 +36,6 @@ test.describe('Dashboard', () => {
     await mockApi('/queue/dashboard', makeActiveQueueDashboard())
 
     await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
 
     // Queue name
     await expect(page.getByText('Morning Consultation').first()).toBeVisible({ timeout: 8000 })
@@ -80,7 +77,6 @@ test.describe('Dashboard', () => {
     })
 
     await page.goto('/dashboard')
-    await page.waitForLoadState('networkidle')
 
     // Error state or retry should render
     const errorIndicator = page.getByRole('button', { name: /Retry|Try Again/i })
