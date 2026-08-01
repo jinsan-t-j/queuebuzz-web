@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 
 import { useToast } from '@/composables/useToast'
-import { shareOrDownloadFile } from '@/utils/file.util'
+import { downloadFile, shareOrDownloadFile } from '@/utils/file.util'
 
 /**
  * Composable for capturing a DOM element as an image.
@@ -54,7 +54,6 @@ export function useCapture() {
           showToast('Download started', { type: 'success' })
         }
       } else {
-        const { downloadFile } = await import('@/utils/file.util')
         downloadFile(dataUrl, filename)
         showToast('Download started', { type: 'success' })
       }
@@ -72,7 +71,6 @@ export function useCapture() {
             pixelRatio: 1,
             skipFonts: true,
           })
-          const { downloadFile } = await import('@/utils/file.util')
           downloadFile(dataUrlFallback, filename)
           hasCaptured.value = true
           showToast('Download started (fallback)', { type: 'success' })

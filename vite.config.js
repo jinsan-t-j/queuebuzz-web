@@ -178,10 +178,13 @@ export default defineConfig(({ mode }) => {
               if (id.includes('@tanstack/vue-query')) return 'query'
               if (id.includes('radix-vue') || id.includes('reka-ui') || id.includes('@vueuse'))
                 return 'radix'
-              if (id.includes('vee-validate') || id.includes('yup')) return 'form-validation'
-              if (id.includes('html-to-image')) return 'capture'
-              if (id.includes('date-fns') || id.includes('dompurify')) return 'utils'
-              if (id.includes('vue') || id.includes('pinia')) return 'vendor'
+              if (
+                id.includes('/node_modules/vue/') ||
+                id.includes('/node_modules/@vue/') ||
+                id.includes('/node_modules/vue-router/') ||
+                id.includes('/node_modules/pinia/')
+              )
+                return 'vendor'
             }
           },
           entryFileNames: 'assets/[name]-[hash].js',

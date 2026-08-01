@@ -10,6 +10,7 @@
  * @emits {join-queue} - Emitted with { name, buzzEnabled, email } payload.
  */
 
+import { toTypedSchema } from '@vee-validate/yup'
 import { AtSign, ChevronDown, Info, User } from 'lucide-vue-next'
 import { useField, useForm } from 'vee-validate'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
@@ -53,7 +54,7 @@ const schema = yup.object({
 })
 
 const { handleSubmit, isSubmitting, setFieldError } = useForm({
-  validationSchema: schema,
+  validationSchema: toTypedSchema(schema),
   initialValues: {
     displayName: '',
     email: '',

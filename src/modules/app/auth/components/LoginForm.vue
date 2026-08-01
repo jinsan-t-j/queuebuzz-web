@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useMutation } from '@tanstack/vue-query'
+import { toTypedSchema } from '@vee-validate/yup'
 import { useForm, useField } from 'vee-validate'
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -29,7 +30,7 @@ const schema = yup.object({
 })
 
 const { handleSubmit } = useForm({
-  validationSchema: schema,
+  validationSchema: toTypedSchema(schema),
 })
 
 const { value: email, errorMessage: emailError } = useField<string>('email')

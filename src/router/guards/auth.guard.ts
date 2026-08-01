@@ -8,6 +8,8 @@
  * @returns {RouteLocationRaw | undefined}
  */
 
+import { useToast } from '@/composables/useToast'
+
 import type { NavigationGuardWithThis } from 'vue-router'
 
 export const authGuard: NavigationGuardWithThis<undefined> = async (to) => {
@@ -15,7 +17,6 @@ export const authGuard: NavigationGuardWithThis<undefined> = async (to) => {
   const auth = useAuthStore()
 
   if (!auth.isHydrated) {
-    const { useToast } = await import('@/composables/useToast')
     const { showToast } = useToast()
 
     await auth.initializeSession({ skipLogout: true })

@@ -9,6 +9,10 @@ import { useRoute } from 'vue-router'
 
 import { getLiveQueueById } from '@/modules/app/queue/actions/queue.action'
 
+const props = defineProps<{
+  initialName?: string
+}>()
+
 const emit = defineEmits<{
   (e: 'close', payload: { id: string; name: string }): void
 }>()
@@ -16,7 +20,7 @@ const emit = defineEmits<{
 const route = useRoute()
 
 const claimQueueId = computed(() => route.query.claim_queue_id as string | undefined)
-const claimQueueName = ref<string | null>(null)
+const claimQueueName = ref<string | null>(props.initialName || null)
 
 function handleClose() {
   if (claimQueueId.value && claimQueueName.value) {
@@ -25,7 +29,7 @@ function handleClose() {
 }
 
 onMounted(async () => {
-  if (claimQueueId.value) {
+  if (claimQueueId.value && !claimQueueName.value) {
     try {
       const queue = await getLiveQueueById(claimQueueId.value)
       claimQueueName.value = queue.name
