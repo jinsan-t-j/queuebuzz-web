@@ -20,9 +20,13 @@ import { useRoute, useRouter } from 'vue-router'
 
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
+import { useSchemaOrg } from '@/composables/useSchemaOrg'
 import { useToast } from '@/composables/useToast'
 import { useBilling } from '@/modules/app/billing/composables/useBilling'
 import { useAuthStore } from '@/stores/auth.store'
+
+const { injectPremiumSchema } = useSchemaOrg()
+injectPremiumSchema()
 
 const {
   isLoading,

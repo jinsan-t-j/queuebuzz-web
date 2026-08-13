@@ -1,0 +1,42 @@
+# QueueBuzz
+
+> This legacy path is retained for compatibility. For the standard AI-readable index, use [llms.txt](https://queuebuzz.com/llms.txt).
+
+> Virtual queue management for physical businesses. No app download, no sign-up for customers. Just scan and join.
+
+QueueBuzz eliminates physical lines by enabling businesses (Hosts) to set up and manage virtual waitlists, and customers (Guests) to join them using a simple QR code scan, shared URL, or a 6-character join code.
+
+## Quick Info
+
+- **Domain**: https://queuebuzz.com
+- **Product Type**: SaaS, Progressive Web App (PWA)
+- **Primary Use Cases**: Clinics, High-Traffic Retail, Restaurants, Salons, Public Events, DMV/Service Hubs.
+- **Tech Stack**: Vue 3, TypeScript, Tailwind CSS, Go (Fiber), MongoDB, Redis, Firebase Cloud Messaging (FCM).
+
+## Core Capabilities
+
+1. **Frictionless Guest Experience**: Customers do not need to download an app or register an account. They join in 60 seconds from any modern mobile browser.
+2. **Real-time Status Sync**: Live wait times and positions updates. Audio chimes and device haptic vibration feedback alert guests as their turn approaches.
+3. **Custom Branding**: Hosts can upload profile photos and background banner images, and apply custom brand colors to the customer-facing interface.
+4. **Smart Controls**: Configure average service minutes, party size limits, geo-locking (restricting sign-ups to a geographical radius), and strict/relaxed queue mode.
+5. **Business Insights**: Command center for hosts to manage multiple service categories, view real-time visitor stats, and export history as CSV.
+
+## FAQs
+
+### How do customers join without an app?
+Customers simply scan a QR code at your entrance or visit a short URL (e.g., `/q/{slug}`). Their browser acts as their live ticket, keeping them updated in real-time.
+
+### Is it secure?
+Privacy is a core principle. We do not track customer identities or require phone numbers/emails unless explicitly enabled by the Host (e.g. for SMS/Email alerts). All queue sessions are ephemeral.
+
+### What hardware is required?
+None. QueueBuzz runs on any device with a modern web browser—laptops, tablets, or smartphones. No ticket printers or custom screens are required.
+
+## Resources & Documentation
+
+- [Pricing & Subscriptions](https://queuebuzz.com/pricing)
+- [Go Premium Elite Features](https://queuebuzz.com/premium)
+- [Contact Support](https://queuebuzz.com/support)
+- [Terms & Conditions](https://queuebuzz.com/terms)
+- [Privacy Policy](https://queuebuzz.com/privacy)
+- [Full Contextual Documentation](https://queuebuzz.com/llms-full.txt)

@@ -15,6 +15,7 @@ const emit = defineEmits<{
 }>()
 
 const modalRef = ref<HTMLElement | null>(null)
+const isClient = typeof window !== 'undefined'
 const isLocked = useScrollLock(typeof document === 'undefined' ? null : document.body)
 
 const handleKeyDown = (e: KeyboardEvent) => {
@@ -49,9 +50,11 @@ const handleKeyDown = (e: KeyboardEvent) => {
 watch(
   () => props.isOpen,
   async (open) => {
+    if (!isClient) return
+
     isLocked.value = open
     if (open) {
-      globalThis.addEventListener('keydown', handleKeyDown)
+      window.addEventListener('keydown', handleKeyDown)
       await nextTick()
       // Set initial focus to the first focusable element
       const first = modalRef.value?.querySelectorAll<HTMLElement>(
@@ -59,15 +62,17 @@ watch(
       )[0]
       first?.focus()
     } else {
-      globalThis.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keydown', handleKeyDown)
     }
   },
   { immediate: true },
 )
 
 onUnmounted(() => {
+  if (!isClient) return
+
   isLocked.value = false
-  globalThis.removeEventListener('keydown', handleKeyDown)
+  window.removeEventListener('keydown', handleKeyDown)
 })
 </script>
 

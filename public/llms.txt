@@ -1,0 +1,19 @@
+# QueueBuzz
+
+> QueueBuzz is a virtual queue management platform for physical businesses. Customers join a digital waitlist from a QR code, shared link, or join code without downloading an app or creating an account.
+
+## Product
+
+- [Homepage](https://queuebuzz.com/): Product overview, core capabilities, use cases, and FAQs.
+- [Pricing](https://queuebuzz.com/pricing): Current subscription plans and included features.
+- [Premium](https://queuebuzz.com/premium): Advanced queue-management capabilities.
+
+## Company
+
+- [Support](https://queuebuzz.com/support): Customer support and security contact information.
+- [Privacy Policy](https://queuebuzz.com/privacy): Data handling and privacy practices.
+- [Terms & Conditions](https://queuebuzz.com/terms): Terms governing use of QueueBuzz.
+
+## Optional
+
+- [Full product context](https://queuebuzz.com/llms-full.txt): Detailed product, feature, pricing, privacy, and support documentation.

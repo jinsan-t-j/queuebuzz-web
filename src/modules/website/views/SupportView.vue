@@ -6,12 +6,16 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
+import { useSchemaOrg } from '@/composables/useSchemaOrg'
 import { useToast } from '@/composables/useToast'
 import seoConfig from '@/config/seo.constants.json'
 
 import { useSupportApi } from '../composables/useSupportApi'
 
 useSeoMeta(seoConfig['/support'])
+
+const { injectSupportSchema } = useSchemaOrg()
+injectSupportSchema()
 
 const formData = ref({
   name: '',

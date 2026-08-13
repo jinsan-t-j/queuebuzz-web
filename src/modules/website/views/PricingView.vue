@@ -12,11 +12,12 @@ import {
   Users,
   ZapOff,
 } from 'lucide-vue-next'
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
+import { useSchemaOrg } from '@/composables/useSchemaOrg'
 import { useToast } from '@/composables/useToast'
 import {
   comparisonFeatures,
@@ -39,6 +40,23 @@ const {
 
 const route = useRoute()
 const router = useRouter()
+
+const { injectPricingSchema } = useSchemaOrg()
+
+watch(
+  gridPlans,
+  (newPlans) => {
+    const plansData = newPlans.map((p) => ({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      isFree: p.isFree,
+      currency: p.currencySymbol === '₹' ? 'INR' : 'USD',
+    }))
+    injectPricingSchema(plansData)
+  },
+  { immediate: true },
+)
 
 const scrollY = ref(0)
 

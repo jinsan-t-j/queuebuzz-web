@@ -123,11 +123,7 @@ export default defineConfig(({ mode }) => {
             if (!bundle) return []
 
             const preloads = []
-            const criticalFonts = [
-              'comfortaa-latin-wght-normal',
-              'dm-sans-latin-400-normal',
-              'dm-sans-latin-700-normal',
-            ]
+            const criticalFonts = ['comfortaa-latin-wght-normal']
 
             for (const fileName of Object.keys(bundle)) {
               const base = path.basename(fileName)
@@ -207,7 +203,16 @@ export default defineConfig(({ mode }) => {
         }
 
         // Pre-render the core landing pages
-        return ['/', '/support', '/login-or-signup']
+        return [
+          '/',
+          '/support',
+          '/login-or-signup',
+          '/pricing',
+          '/premium',
+          '/terms',
+          '/privacy',
+          '/launch',
+        ]
       },
       async onPageRendered(route, html) {
         const fs = await import('node:fs')
@@ -218,6 +223,38 @@ export default defineConfig(({ mode }) => {
 
         const normalizedRoute = '/' + route.replaceAll(/^\/|\/$/g, '')
         const config = seoConfig[normalizedRoute] || seoConfig['/']
+        const canonicalUrl = `https://queuebuzz.com${normalizedRoute === '/' ? '/' : normalizedRoute}`
+        const robots = config.robots || 'noindex,nofollow'
+        const pageType = normalizedRoute === '/support' ? 'ContactPage' : 'WebPage'
+        const pageSchema = {
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'Organization',
+              '@id': 'https://queuebuzz.com/#organization',
+              name: 'QueueBuzz',
+              url: 'https://queuebuzz.com',
+              logo: 'https://queuebuzz.com/favicon.svg',
+            },
+            {
+              '@type': 'WebSite',
+              '@id': 'https://queuebuzz.com/#website',
+              name: 'QueueBuzz',
+              url: 'https://queuebuzz.com',
+              publisher: { '@id': 'https://queuebuzz.com/#organization' },
+            },
+            {
+              '@type': pageType,
+              '@id': `${canonicalUrl}#webpage`,
+              url: canonicalUrl,
+              name: config.title,
+              description: config.description,
+              isPartOf: { '@id': 'https://queuebuzz.com/#website' },
+              about: { '@id': 'https://queuebuzz.com/#organization' },
+            },
+          ],
+        }
+        const schemaJson = JSON.stringify(pageSchema).replaceAll('<', '\\u003c')
 
         return html
           .replace(/<title>.*?<\/title>/, `<title>${config.title}</title>`)
@@ -234,12 +271,29 @@ export default defineConfig(({ mode }) => {
             `<meta property="og:description" content="${config.description}">`,
           )
           .replace(
-            /<meta property="twitter:title" content=".*?">/,
-            `<meta property="twitter:title" content="${config.title}">`,
+            /<meta property="og:url" content=".*?">/,
+            `<meta property="og:url" content="${canonicalUrl}">`,
           )
           .replace(
-            /<meta property="twitter:description" content=".*?">/,
-            `<meta property="twitter:description" content="${config.description}">`,
+            /<meta name="twitter:url" content=".*?">/,
+            `<meta name="twitter:url" content="${canonicalUrl}">`,
+          )
+          .replace(
+            /<meta name="twitter:title" content=".*?">/,
+            `<meta name="twitter:title" content="${config.title}">`,
+          )
+          .replace(
+            /<meta name="twitter:description" content=".*?">/,
+            `<meta name="twitter:description" content="${config.description}">`,
+          )
+          .replace(/<meta name="robots" content=".*?">/, `<meta name="robots" content="${robots}">`)
+          .replace(
+            /<link rel="canonical" href=".*?">/,
+            `<link rel="canonical" href="${canonicalUrl}">`,
+          )
+          .replace(
+            '</head>',
+            `<script type="application/ld+json" id="queuebuzz-page-schema">${schemaJson}</script></head>`,
           )
       },
     },
