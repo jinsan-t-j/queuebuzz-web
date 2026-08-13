@@ -1,30 +1,62 @@
 {
   "/": {
     "title": "QueueBuzz — Zero Lines. Better Business.",
-    "description": "Stop managing crowds and start managing your business. Ditch the physical line and let your customers wander freely while you orchestrate the flow with absolute precision."
+    "description": "Stop managing crowds and start managing your business. Ditch the physical line and let your customers wander freely while you orchestrate the flow with absolute precision.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/pricing": {
+    "title": "Pricing Plans — QueueBuzz",
+    "description": "Transparent pricing for businesses of all sizes. Choose between our Free Forever, Pro, Business Elite, or Enterprise packages for advanced virtual queuing.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/premium": {
+    "title": "Go Premium — QueueBuzz Business Elite",
+    "description": "Unlock advanced virtual queue management features. Get SMS alerts, priority queue routing, custom branding, and real-time business insights.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
   },
   "/support": {
     "title": "Support | QueueBuzz — Zero Lines, Better Business",
-    "description": "Get help with QueueBuzz. Contact our support team for any questions or issues with our queue management platform."
+    "description": "Get help with QueueBuzz. Contact our support team for any questions or issues with our queue management platform.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/terms": {
+    "title": "Terms & Conditions — QueueBuzz",
+    "description": "Read the Terms of Service for QueueBuzz virtual queue management platform. Understand your rights and responsibilities as a Host or Customer.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/privacy": {
+    "title": "Privacy Policy — QueueBuzz",
+    "description": "Learn how QueueBuzz protects your privacy. We prioritize data minimalization, security, and do not track customer identities unnecessarily.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/launch": {
+    "title": "Launch PWA — QueueBuzz",
+    "description": "Open the QueueBuzz Progressive Web App launcher. Install the virtual waitlist manager directly on your mobile home screen.",
+    "robots": "noindex,nofollow"
   },
   "/login-or-signup": {
     "title": "Log in or sign up | QueueBuzz",
-    "description": "Access your QueueBuzz dashboard to manage your virtual queues and see business insights."
+    "description": "Access your QueueBuzz dashboard to manage your virtual queues and see business insights.",
+    "robots": "noindex,nofollow"
   },
   "/dashboard": {
     "title": "Dashboard | QueueBuzz",
-    "description": "Manage your business queues in real-time."
+    "description": "Manage your business queues in real-time.",
+    "robots": "noindex,nofollow"
   },
   "/dashboard/queue": {
     "title": "Queue Management | QueueBuzz",
-    "description": "Create and manage your live virtual queues."
+    "description": "Create and manage your live virtual queues.",
+    "robots": "noindex,nofollow"
   },
   "/dashboard/queue/history": {
     "title": "Queue History | QueueBuzz",
-    "description": "View and export your past queue performance."
+    "description": "View and export your past queue performance.",
+    "robots": "noindex,nofollow"
   },
   "/dashboard/settings": {
     "title": "Account Settings | QueueBuzz",
-    "description": "Configure your profile and notification preferences."
+    "description": "Configure your profile and notification preferences.",
+    "robots": "noindex,nofollow"
   }
 }

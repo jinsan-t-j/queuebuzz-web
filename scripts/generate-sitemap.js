@@ -6,7 +6,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const DOMAIN = 'https://queuebuzz.com'
-const CURRENT_DATE = new Date().toISOString().split('T')[0]
 
 // Define public marketing and legal pages to be crawled
 const routes = [
@@ -25,7 +24,6 @@ function generateSitemap() {
       const url = `${DOMAIN}${route.path}`
       return `  <url>
     <loc>${url}</loc>
-    <lastmod>${CURRENT_DATE}</lastmod>
     <changefreq>${route.changefreq}</changefreq>
     <priority>${route.priority}</priority>
   </url>`

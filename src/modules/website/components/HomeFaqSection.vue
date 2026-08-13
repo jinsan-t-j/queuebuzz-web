@@ -30,16 +30,19 @@ defineEmits<{ (e: 'toggle-faq', idx: number): void }>()
           class="rounded-[32px] border border-plum-faint bg-white overflow-hidden transition-all duration-300"
           :class="openFaqIdx === i ? 'shadow-2xl border-plum/10' : ''"
         >
-          <button
-            class="w-full flex items-center justify-between px-8 py-6 text-left hover:bg-sand/30"
-            @click="$emit('toggle-faq', i)"
-          >
-            <span class="font-body font-bold text-lg text-plum">{{ f.question }}</span>
-            <ChevronDown
-              class="h-5 w-5 text-plum-muted transition-transform"
-              :class="openFaqIdx === i ? 'rotate-180' : ''"
-            />
-          </button>
+          <h3>
+            <button
+              type="button"
+              class="w-full flex items-center justify-between px-8 py-6 text-left hover:bg-sand/30 font-body font-bold text-lg text-plum"
+              @click="$emit('toggle-faq', i)"
+            >
+              <span>{{ f.question }}</span>
+              <ChevronDown
+                class="h-5 w-5 text-plum-muted transition-transform"
+                :class="openFaqIdx === i ? 'rotate-180' : ''"
+              />
+            </button>
+          </h3>
           <Transition
             enter-active-class="transition-all duration-300 ease-out"
             enter-from-class="max-h-0 opacity-0"

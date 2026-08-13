@@ -1,0 +1,110 @@
+# QueueBuzz — Comprehensive Product & Platform Documentation
+
+This document contains full details on QueueBuzz's virtual waitlist features, platform architecture, pricing structures, support policies, privacy specifications, and legal terms of service.
+
+---
+
+## 1. About QueueBuzz
+
+QueueBuzz is a cloud-based, mobile-friendly virtual queue management platform designed to eliminate physical waiting lines for businesses of all sizes, with a primary focus on physical stores in India and globally.
+
+### Platform Concept
+Customers join queues without downloading a mobile app or creating an account. By scanning a QR code or visiting a URL (e.g. `https://queuebuzz.com/q/clinic-abc`), their mobile browser transforms into a live digital ticket. They can wander freely while waiting, viewing their real-time queue position and estimated wait time, while the business hosts call next customers with a single click.
+
+---
+
+## 2. Core Features & Capabilities
+
+### Command Center for Hosts
+- **Real-Time Queue Console**: View a list of current guests waiting, their positions, ticket numbers, party sizes, and timestamps.
+- **Service Categories**: Route guests to appropriate staff members or departments (e.g., "Consultation" vs. "Diagnostics").
+- **Manual Positioning**: Reorder guests manually or insert priority walk-ins.
+- **Analytics & History**: Track average wait times, active hours, serving throughput, and guest drop-off/skip rates.
+
+### Frictionless Guest Experience
+- **Progressive Web App (PWA)**: The platform is installable on iOS and Android homescreens.
+- **Real-time Status Sync**: Instant updates via WebSockets and SSE.
+- **Audio Chimes & Push Alerts**: Audible notifications when a user is called, plus Firebase Cloud Messaging push alerts.
+- **Device Haptic Vibration**: Haptic feedback on mobile devices to grab the user's attention in noisy environments.
+
+### Smart Admin Controls
+- **Average Service Time**: Calculate and display realistic wait times based on historical queue progress.
+- **Geo-Locking**: Enforce location checking (using GPS) so customers can only join the queue if they are within a specific radius of the store (e.g. 50 meters).
+- **Party Size Limits**: Cap the number of people that can join under a single ticket.
+- **Custom Branding**: Upload store logos, banner images, and set custom color palettes matching store branding.
+
+---
+
+## 3. Subscription & Pricing Tiers
+
+QueueBuzz offers multiple plans tailored for businesses of all sizes, available on a monthly or yearly cycle:
+
+### Free Forever
+- **Cost**: $0 USD / ₹0 INR
+- **Queues per Month**: 1
+- **Max Guests per Queue**: 25
+- **History Retention**: 3 days
+- **Queue Expiry**: 3 hours
+- **Features Included**: Live dashboard, browser alerts, standard QR code.
+- **Support**: Community support.
+
+### Pro
+- **Cost**:
+  - **Global (USD)**: $14.99/month (or $134.99/year)
+  - **India (INR)**: ₹899/month (or ₹9,999/year)
+- **Queues per Month**: 50
+- **Max Guests per Queue**: 500
+- **History Retention**: 90 days
+- **Queue Expiry**: 72 hours (3 days)
+- **Features Included**: History access, view guest data, location check (geo-locking), and data export.
+- **Support**: Standard email support.
+
+### Business Elite
+- **Cost**:
+  - **Global (USD)**: $39.99/month (or $449.99/year)
+  - **India (INR)**: ₹2,499/month (or ₹27,999/year)
+- **Queues per Month**: 200
+- **Max Guests per Queue**: Unlimited
+- **History Retention**: Unlimited
+- **Queue Expiry**: 168 hours (7 days)
+- **Features Included**: Full Custom Branding, history access, view guest data, location check (geo-locking), and data export.
+- **Support**: Priority email support.
+
+### Enterprise
+- **Cost**: Custom Pricing
+- **Queues per Month**: Unlimited
+- **Max Guests per Queue**: Unlimited
+- **History Retention**: Unlimited
+- **Queue Expiry**: 720 hours (30 days)
+- **Features Included**: Custom limits, dedicated support, full Custom Branding, history access, view guest data, location check (geo-locking), and data export.
+- **Support**: Dedicated support.
+
+---
+
+## 4. Privacy & Data Minimalization
+
+QueueBuzz is designed around privacy-first principles:
+- **No Identity Tracking**: Guests join by providing a display name. Phone numbers and emails are optional and only collected if the Host configures SMS or Email notification methods.
+- **Ephemeral Sessions**: Customer session cookies are deleted upon leaving the queue or when the queue expires.
+- **Data Safety**: We do not sell user data to advertising networks. Business data remains secure and private.
+
+---
+
+## 5. Contact & Support Info
+
+- **General Inquiries & Customer Support**: support@queuebuzz.com
+- **Security & Data Vulnerability Reporting**: security@queuebuzz.com
+- **Address**: Mumbai & Bangalore, India
+- **Socials**: 
+  - Reddit: https://reddit.com/r/queuebuzz/
+  - Instagram: https://instagram.com/queuebuzz
+  - X (Twitter): https://x.com/queuebuzz
+
+---
+
+## 6. Condensed Terms of Service
+
+1. **Acceptance of Terms**: Users (Hosts and Guests) agree to these terms when using the platform.
+2. **Service Access**: We provide the virtual queuing SaaS "as is". Hosts are responsible for their client interactions, and we do not guarantee uptime under the Free tier.
+3. **Usage Limitations**: Under no circumstances should the service be used to coordinate illegal actions. Spamming the platform with artificial entries will lead to account termination.
+4. **Subscription Cancellations**: Subscriptions can be canceled at any time from the account settings. No refunds are offered for partial months.

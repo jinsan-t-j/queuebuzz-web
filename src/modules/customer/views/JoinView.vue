@@ -4,6 +4,7 @@
  * @description Customer-facing queue join page.
  */
 
+import { useSeoMeta } from '@unhead/vue'
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeMount, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -144,6 +145,18 @@ const {
   avgWaitTime,
   isLoading: queueIsLoading,
 } = storeToRefs(queueStore)
+
+useSeoMeta({
+  title: 'Join Queue — QueueBuzz',
+  description:
+    'Join the virtual waitlist on QueueBuzz. Check live positions, get instant notifications, and skip the wait.',
+  ogTitle: 'Join Queue — QueueBuzz',
+  ogDescription:
+    'Join the virtual waitlist on QueueBuzz. Check live positions, get instant notifications, and skip the wait.',
+  twitterTitle: 'Join Queue — QueueBuzz',
+  twitterDescription:
+    'Join the virtual waitlist on QueueBuzz. Check live positions, get instant notifications, and skip the wait.',
+})
 
 const isJoining = ref(false)
 const isNavigatingAway = ref(false)

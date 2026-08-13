@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { CalendarIcon } from 'lucide-vue-next'
+
+import { useSchemaOrg } from '@/composables/useSchemaOrg'
+
+const { injectLegalSchema } = useSchemaOrg()
+injectLegalSchema('terms')
 </script>
 
 <template>

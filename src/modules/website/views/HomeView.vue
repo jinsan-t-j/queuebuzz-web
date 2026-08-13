@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia'
 import { computed, defineAsyncComponent, onMounted } from 'vue'
 
 import { usePrefetch } from '@/composables/usePrefetch'
+import { useSchemaOrg } from '@/composables/useSchemaOrg'
 import seoConfig from '@/config/seo.constants.json'
 import ActiveWaitingBanner from '@/modules/customer/components/ActiveWaitingBanner.vue'
 import HomeHeroSection from '@/modules/website/components/HomeHeroSection.vue'
@@ -101,6 +102,9 @@ const {
   isVisible,
   toggleFaq,
 } = useWebsiteData()
+
+const { injectHomeSchema } = useSchemaOrg()
+injectHomeSchema(FAQ_LIST)
 
 onMounted(async () => {
   if (authStore.user || authStore.anonymousQueueId) {

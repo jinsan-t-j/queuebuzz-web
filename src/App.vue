@@ -30,8 +30,27 @@ const currentSeo = computed(() => {
   return seoConfig[path as keyof typeof seoConfig] || seoConfig['/']
 })
 
+const canonicalUrl = computed(() => {
+  const cleanPath = route.path.replace(/\/$/, '')
+  return `https://queuebuzz.com${cleanPath || '/'}`
+})
+
+const robotsDirective = computed(() => currentSeo.value.robots || 'noindex,nofollow')
+
 useHead({
   htmlAttrs: { lang: 'en' },
+  link: [
+    {
+      rel: 'canonical',
+      href: () => canonicalUrl.value,
+    },
+  ],
+  meta: [
+    {
+      name: 'twitter:url',
+      content: () => canonicalUrl.value,
+    },
+  ],
 })
 
 useSeoMeta({
@@ -39,6 +58,16 @@ useSeoMeta({
   description: () => currentSeo.value.description,
   ogTitle: () => currentSeo.value.title,
   ogDescription: () => currentSeo.value.description,
+  ogUrl: () => canonicalUrl.value,
+  ogType: 'website',
+  ogSiteName: 'QueueBuzz',
+  ogLocale: 'en_IN',
+  ogImage: 'https://queuebuzz.com/og-image.png',
+  robots: () => robotsDirective.value,
+  twitterCard: 'summary_large_image',
+  twitterTitle: () => currentSeo.value.title,
+  twitterDescription: () => currentSeo.value.description,
+  twitterImage: 'https://queuebuzz.com/og-image.png',
 })
 
 const GlobalToast = defineAsyncComponent(() => import('@/components/common/GlobalToast.vue'))
