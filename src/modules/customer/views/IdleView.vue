@@ -166,14 +166,6 @@ const handleGraceExpired = () => {
 
 <template>
   <div class="relative flex flex-col">
-    <!-- Blob decorations — Idle screen specific (teal top-right, orange bottom-left) -->
-    <div
-      class="pointer-events-none absolute -right-16 -top-24 h-[300px] w-[300px] rounded-[150px] bg-[rgba(45,212,191,0.40)] blur-[40px]"
-    />
-    <div
-      class="pointer-events-none absolute -bottom-16 -left-12 h-[250px] w-[250px] rounded-[100px_200px_213px_163px] bg-warning/40 blur-[40px]"
-    />
-
     <CustomerHeader
       v-if="activeQueue"
       :name="activeQueue.name"

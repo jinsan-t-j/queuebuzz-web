@@ -16,7 +16,7 @@
 
 // 1. Vue core imports
 import DOMPurify from 'dompurify'
-import { CopyIcon, CheckIcon } from 'lucide-vue-next'
+import { CheckIcon, CopyIcon } from 'lucide-vue-next'
 import { ref } from 'vue'
 
 import ArrowRightMutedIcon from '@/assets/icons/arrow-right-muted.svg?component'
@@ -108,14 +108,6 @@ function handleSendLink() {
 
 <template>
   <div class="relative min-h-screen overflow-hidden">
-    <!-- Blob decorations -->
-    <div
-      class="absolute -right-16 -top-16 h-72 w-72 rounded-[60%_40%_55%_45%/50%_60%_40%_50%] bg-mint-light opacity-50 blur-[80px]"
-    />
-    <div
-      class="absolute -bottom-16 -left-16 h-64 w-64 rounded-[45%_55%_40%_60%/60%_40%_55%_45%] bg-plum-faint opacity-40 blur-[80px]"
-    />
-
     <!-- ═══ Main Content ═══ -->
     <div
       :class="[

@@ -11,7 +11,7 @@
  */
 
 import { toTypedSchema } from '@vee-validate/yup'
-import { AtSign, ChevronDown, Info, User } from 'lucide-vue-next'
+import { AtSign, Info, User } from 'lucide-vue-next'
 import { useField, useForm } from 'vee-validate'
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import * as yup from 'yup'
@@ -176,7 +176,6 @@ watch(buzzEnabled, async (val) => {
     }
   }
 })
-const isGuestsOpen = ref(false)
 
 const showGeoPromptModal = ref(false)
 
@@ -395,13 +394,12 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Smart Progressive Disclosure Row: Party Joining -->
-    <div v-if="canJoinWithParty" class="mt-6 flex flex-col gap-4">
-      <button
-        type="button"
-        class="flex items-center gap-3 rounded-3xl border border-plum-faint bg-white p-4 transition-colors hover:border-plum/20"
-        @click="isGuestsOpen = !isGuestsOpen"
-      >
+    <!-- Party Joining Row -->
+    <div
+      v-if="canJoinWithParty"
+      class="mt-6 flex min-h-[56px] items-center justify-between rounded-3xl border border-plum-faint bg-white p-4"
+    >
+      <div class="flex items-center gap-3">
         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-warning/10">
           <svg
             class="h-5 w-5 text-warning"
@@ -417,58 +415,35 @@ onUnmounted(() => {
             />
           </svg>
         </div>
-        <div class="flex-1 text-left">
+        <div>
           <p class="font-body text-[15px] font-semibold text-plum">Joining with others?</p>
           <p class="font-body text-sm text-plum-muted">Add companions to your spot</p>
         </div>
-        <ChevronDown
-          :class="[
-            'h-4 w-4 text-plum-muted transition-transform duration-200',
-            isGuestsOpen ? 'rotate-180' : '',
-          ]"
-        />
-      </button>
+      </div>
 
-      <!-- Expandable Stepper -->
-      <transition
-        enter-active-class="transition duration-200 ease-out"
-        enter-from-class="translate-y-1 opacity-0"
-        enter-to-class="translate-y-0 opacity-100"
-        leave-active-class="transition duration-150 ease-in"
-        leave-from-class="translate-y-0 opacity-100"
-        leave-to-class="translate-y-1 opacity-0"
-      >
-        <div
-          v-if="isGuestsOpen"
-          class="flex items-center justify-between rounded-3xl border border-plum-faint bg-plum-faint/30 p-4"
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-plum-faint text-xl font-bold text-plum transition-opacity disabled:opacity-30"
+          :disabled="accompanying <= 0"
+          aria-label="Decrease party size"
+          @click="accompanying--"
         >
-          <p class="font-body text-sm font-semibold text-plum">How many people with you?</p>
-
-          <div class="flex items-center gap-4">
-            <button
-              type="button"
-              class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
-              :disabled="accompanying <= 0"
-              aria-label="Decrease party size"
-              @click="accompanying--"
-            >
-              −
-            </button>
-            <span class="min-w-[24px] text-center font-mono text-lg font-bold text-plum">
-              {{ accompanying }}
-            </span>
-            <button
-              type="button"
-              class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-xl font-bold text-plum shadow-sm disabled:opacity-30"
-              :disabled="accompanying >= props.maxAllowedPartySize - 1"
-              aria-label="Increase party size"
-              @click="accompanying++"
-            >
-              +
-            </button>
-          </div>
-        </div>
-      </transition>
+          −
+        </button>
+        <span class="min-w-[20px] text-center font-mono text-base font-bold text-plum">
+          {{ accompanying }}
+        </span>
+        <button
+          type="button"
+          class="flex h-10 w-10 items-center justify-center rounded-full bg-plum-faint text-xl font-bold text-plum transition-opacity disabled:opacity-30"
+          :disabled="accompanying >= props.maxAllowedPartySize - 1"
+          aria-label="Increase party size"
+          @click="accompanying++"
+        >
+          +
+        </button>
+      </div>
     </div>
 
     <!-- Buzz toggle card -->
