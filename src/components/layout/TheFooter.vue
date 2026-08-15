@@ -44,9 +44,9 @@ onUnmounted(() => {
 <template>
   <footer class="border-t border-plum-faint bg-white py-12 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
-      <div class="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-8">
+      <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12">
         <!-- Brand Content -->
-        <div class="md:col-span-5 lg:col-span-4">
+        <div class="lg:col-span-4 xl:col-span-3">
           <router-link
             to="/"
             class="font-editorial text-2xl font-bold text-plum block mb-4 py-3 px-1"
@@ -61,7 +61,7 @@ onUnmounted(() => {
 
         <!-- Links Container -->
         <div
-          class="grid grid-cols-2 gap-8 sm:grid-cols-4 md:col-span-7 md:col-start-6 lg:col-span-6 lg:col-start-7"
+          class="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-2 md:grid-cols-4 lg:col-span-8 lg:gap-8 xl:col-span-9 xl:gap-10"
         >
           <!-- Product -->
           <div>
@@ -148,7 +148,7 @@ onUnmounted(() => {
                   :to="{ name: 'alternative', params: { slug: alt.slug } }"
                   class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
                 >
-                  vs {{ alt.name }}
+                  {{ alt.name }} comparison
                 </router-link>
               </li>
             </ul>
