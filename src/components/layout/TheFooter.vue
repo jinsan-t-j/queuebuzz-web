@@ -48,7 +48,7 @@ onUnmounted(() => {
         <div class="md:col-span-5 lg:col-span-4">
           <router-link
             to="/"
-            class="font-display text-2xl font-bold text-plum block mb-4 py-3 px-1"
+            class="font-editorial text-2xl font-bold text-plum block mb-4 py-3 px-1"
           >
             QueueBuzz
           </router-link>
@@ -64,7 +64,7 @@ onUnmounted(() => {
         >
           <!-- Product -->
           <div>
-            <h2 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+            <h2 class="font-editorial font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Product
             </h2>
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
@@ -94,7 +94,7 @@ onUnmounted(() => {
 
           <!-- Support -->
           <div>
-            <h2 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+            <h2 class="font-editorial font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Support
             </h2>
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
@@ -117,7 +117,7 @@ onUnmounted(() => {
 
           <!-- Legal -->
           <div class="col-span-2 sm:col-span-1">
-            <h2 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+            <h2 class="font-editorial font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Legal
             </h2>
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
@@ -180,54 +180,21 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Huge Animated Branding -->
+      <!-- Closing wordmark: quiet, static, single tone -->
       <div
         ref="footerBrandingRef"
-        class="mt-12 md:mt-20 flex justify-center overflow-visible py-8 md:py-16"
+        class="mt-12 md:mt-16 flex justify-center py-6 md:py-10 transition-opacity duration-700"
+        :class="isVisible ? 'opacity-100' : 'opacity-0'"
       >
-        <div class="flex gap-3 sm:gap-4 md:gap-6 flex-nowrap items-center justify-center">
-          <Logo
-            :class="[
-              'h-12 w-12 sm:h-[72px] sm:w-[72px] md:h-[96px] md:w-[96px] lg:h-[128px] lg:w-[128px] xl:h-[160px] xl:w-[160px] transition-transform duration-500 hover:rotate-12 cursor-pointer',
-              isVisible ? 'animate-pop' : 'opacity-0',
-            ]"
-            :style="{ animationDelay: '0ms' }"
-          />
-          <div class="flex gap-1 sm:gap-2 md:gap-4 flex-nowrap items-center">
-            <span
-              v-for="(char, i) in 'ueueBuzz'.split('')"
-              :key="i"
-              :class="[
-                'font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-black transition-all duration-500 cursor-default inline-block leading-none',
-                isVisible ? 'animate-pop' : 'opacity-0',
-                i === 1 || i === 2 || i >= 5
-                  ? 'text-mint-dark hover:text-plum'
-                  : 'text-plum hover:text-mint-dark',
-              ]"
-              :style="{ animationDelay: `${(i + 1) * 100}ms` }"
-            >
-              {{ char }}
-            </span>
-          </div>
+        <div class="flex items-center gap-3 sm:gap-4">
+          <Logo class="h-10 w-10 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <span
+            class="font-editorial text-4xl sm:text-6xl md:text-7xl font-bold text-plum leading-none"
+          >
+            ueueBuzz
+          </span>
         </div>
       </div>
     </div>
   </footer>
 </template>
-
-<style scoped>
-@keyframes wave {
-  0%,
-  60%,
-  100% {
-    transform: translateY(0);
-  }
-  30% {
-    transform: translateY(-24px);
-  }
-}
-
-.animate-pop {
-  animation: wave 1s ease-in-out infinite;
-}
-</style>

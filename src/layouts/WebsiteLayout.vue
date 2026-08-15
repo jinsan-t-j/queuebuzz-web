@@ -21,7 +21,7 @@ const showMaintenanceBanner = import.meta.env.VITE_SHOW_MAINTENANCE_BANNER === '
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col main-bg">
+  <div class="flex min-h-screen flex-col bg-sand">
     <SystemAlertBanner v-if="showMaintenanceBanner" />
     <TheNavbar />
     <main class="flex-1">
