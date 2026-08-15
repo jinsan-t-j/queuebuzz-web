@@ -8,6 +8,7 @@ import { ViteSSG } from 'vite-ssg'
 import '@/assets/styles/main.css'
 
 import '@fontsource-variable/comfortaa/index.css'
+import '@fontsource-variable/schibsted-grotesk/index.css'
 import '@fontsource/dm-sans/400.css'
 import '@fontsource/dm-sans/500.css'
 import '@fontsource/dm-sans/600.css'
