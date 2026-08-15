@@ -131,6 +131,13 @@ onUnmounted(() => {
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
               <li>
                 <router-link
+                  to="/about"
+                  class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
+                  >About</router-link
+                >
+              </li>
+              <li>
+                <router-link
                   to="/alternatives"
                   class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
                   >Alternatives</router-link

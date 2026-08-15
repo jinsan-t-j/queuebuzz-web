@@ -356,6 +356,23 @@ export function useSchemaOrg() {
     injectSchema(`alternative-${alt.slug}`, [webpage, faqSchema, breadcrumb])
   }
 
+  function injectAboutSchema() {
+    const pageId = 'https://queuebuzz.com/about/#webpage'
+    const webpage = {
+      '@context': 'https://schema.org',
+      '@type': 'AboutPage',
+      '@id': pageId,
+      url: 'https://queuebuzz.com/about',
+      name: 'About — QueueBuzz',
+      description:
+        'QueueBuzz replaces the physical line with a virtual one, so customers can wander freely and businesses can manage the flow with precision.',
+      isPartOf: { '@id': websiteId },
+      about: { '@id': orgId },
+    }
+
+    injectSchema('about', [organization, webpage])
+  }
+
   function injectLegalSchema(type: 'terms' | 'privacy') {
     const isTerms = type === 'terms'
     const path = isTerms ? 'terms' : 'privacy'
@@ -387,6 +404,7 @@ export function useSchemaOrg() {
     injectPricingSchema,
     injectPremiumSchema,
     injectSupportSchema,
+    injectAboutSchema,
     injectLegalSchema,
     injectHelpCenterSchema,
     injectHelpArticleSchema,

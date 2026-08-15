@@ -16,6 +16,12 @@ export const websiteRoutes: RouteRecordRaw[] = [
         meta: { title: 'QueueBuzz — Zero Lines. Better Business.' },
       },
       {
+        path: 'about',
+        name: 'about',
+        component: () => import('@/modules/website/views/AboutView.vue'),
+        meta: { title: 'About — QueueBuzz' },
+      },
+      {
         path: 'pricing',
         name: 'pricing',
         component: () => import('@/modules/website/views/PricingView.vue'),

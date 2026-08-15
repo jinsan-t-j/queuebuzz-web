@@ -10,6 +10,7 @@ const DOMAIN = 'https://queuebuzz.com'
 // Define public marketing and legal pages to be crawled
 const routes = [
   { path: '/', priority: '1.0', changefreq: 'daily' },
+  { path: '/about', priority: '0.6', changefreq: 'monthly' },
   { path: '/pricing', priority: '0.8', changefreq: 'weekly' },
   { path: '/premium', priority: '0.8', changefreq: 'weekly' },
   { path: '/launch', priority: '0.7', changefreq: 'monthly' },

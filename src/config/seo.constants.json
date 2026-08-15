@@ -4,6 +4,11 @@
     "description": "Stop managing crowds and start managing your business. Ditch the physical line and let your customers wander freely while you orchestrate the flow with absolute precision.",
     "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
   },
+  "/about": {
+    "title": "About — QueueBuzz",
+    "description": "QueueBuzz replaces the physical line with a virtual one, so customers can wander freely and businesses can manage the flow with precision — no app download required.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
   "/pricing": {
     "title": "Pricing Plans — QueueBuzz",
     "description": "Transparent pricing for businesses of all sizes. Choose between our Free Forever, Pro, Business Elite, or Enterprise packages for advanced virtual queuing.",
