@@ -11,7 +11,7 @@ defineProps<{
 <template>
   <section
     id="final-cta"
-    class="py-24 lg:py-40 relative overflow-hidden transition-all duration-1000 transform"
+    class="py-20 lg:py-28 relative overflow-hidden transition-all duration-1000 transform"
     :class="[isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0']"
   >
     <div class="container mx-auto px-6 relative z-10">

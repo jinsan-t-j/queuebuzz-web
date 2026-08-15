@@ -62,7 +62,7 @@ function stopDragging() {
 </script>
 
 <template>
-  <section id="cases" class="bg-plum-deep py-16 lg:py-24 relative overflow-hidden">
+  <section id="cases" class="bg-plum-deep py-16 lg:py-20 relative overflow-hidden">
     <div class="container mx-auto px-6 relative z-10">
       <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
         <div class="text-left">
