@@ -29,6 +29,76 @@
     "description": "Learn how QueueBuzz protects your privacy. We prioritize data minimalization, security, and do not track customer identities unnecessarily.",
     "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
   },
+  "/help": {
+    "title": "Help Center — QueueBuzz",
+    "description": "Guides and answers for getting the most out of QueueBuzz — setting up your queue, sharing it with customers, notifications, and more.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/help/getting-started": {
+    "title": "Getting started with QueueBuzz — QueueBuzz Help",
+    "description": "Set up your first queue in under five minutes.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/help/sharing-your-queue": {
+    "title": "Sharing your queue with customers — QueueBuzz Help",
+    "description": "Join codes, QR codes, and direct links customers can use to get in line.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/help/live-queue-dashboard": {
+    "title": "Managing your live queue — QueueBuzz Help",
+    "description": "Call, seat, and track customers from your live dashboard.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/help/location-verification": {
+    "title": "Location verification for customers — QueueBuzz Help",
+    "description": "How QueueBuzz confirms a customer is actually near your business before they join.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/help/notifications": {
+    "title": "Customizing customer notifications — QueueBuzz Help",
+    "description": "Control what customers see when their turn is coming up.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/help/queue-history": {
+    "title": "Queue history and stats — QueueBuzz Help",
+    "description": "Reviewing past sessions, wait times, and no-shows.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/help/billing-and-plans": {
+    "title": "Billing, plans, and upgrading — QueueBuzz Help",
+    "description": "Plan limits, upgrading to Premium, and managing your subscription.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/help/account-settings": {
+    "title": "Account and business settings — QueueBuzz Help",
+    "description": "Updating your business profile and managing account data.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/help/joining-a-queue-as-a-customer": {
+    "title": "Joining a queue as a customer — QueueBuzz Help",
+    "description": "What customers see when they join, wait, and get called.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/alternatives": {
+    "title": "QueueBuzz vs. the Alternatives — Virtual Queue Comparisons",
+    "description": "See how QueueBuzz compares to other virtual queue and waitlist tools like Waitwhile, Qminder, and Tablelist.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/alternatives/waitwhile": {
+    "title": "QueueBuzz vs Waitwhile — Which Virtual Queue Tool Is Right for You?",
+    "description": "Compare QueueBuzz and Waitwhile for virtual queue and waitlist management.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/alternatives/qminder": {
+    "title": "QueueBuzz vs Qminder — Which Virtual Queue Tool Is Right for You?",
+    "description": "Compare QueueBuzz and Qminder for virtual queue and waitlist management.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
+  "/alternatives/tablelist-yelp-waitlist": {
+    "title": "QueueBuzz vs Tablelist & Yelp Waitlist — Which Virtual Queue Tool Is Right for You?",
+    "description": "Compare QueueBuzz to restaurant waitlist tools like Tablelist and Yelp Waitlist.",
+    "robots": "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"
+  },
   "/launch": {
     "title": "Launch PWA — QueueBuzz",
     "description": "Open the QueueBuzz Progressive Web App launcher. Install the virtual waitlist manager directly on your mobile home screen.",

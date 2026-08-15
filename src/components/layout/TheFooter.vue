@@ -10,6 +10,7 @@ import InstagramIcon from '@/assets/icons/instagram.svg?component'
 import Logo from '@/assets/icons/logo.svg?component'
 import RedditIcon from '@/assets/icons/reddit.svg?component'
 import XIcon from '@/assets/icons/x.svg?component'
+import { ALTERNATIVES } from '@/modules/website/content/alternatives'
 
 const currentYear = computed(() => new Date().getFullYear())
 
@@ -60,7 +61,7 @@ onUnmounted(() => {
 
         <!-- Links Container -->
         <div
-          class="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7 md:col-start-6 lg:col-span-6 lg:col-start-7"
+          class="grid grid-cols-2 gap-8 sm:grid-cols-4 md:col-span-7 md:col-start-6 lg:col-span-6 lg:col-start-7"
         >
           <!-- Product -->
           <div>
@@ -100,6 +101,13 @@ onUnmounted(() => {
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
               <li>
                 <router-link
+                  to="/help"
+                  class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
+                  >Help Center</router-link
+                >
+              </li>
+              <li>
+                <router-link
                   to="/support"
                   class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
                   >Contact Us</router-link
@@ -115,8 +123,32 @@ onUnmounted(() => {
             </ul>
           </div>
 
+          <!-- Resources -->
+          <div>
+            <h2 class="font-editorial font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+              Resources
+            </h2>
+            <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
+              <li>
+                <router-link
+                  to="/alternatives"
+                  class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
+                  >Alternatives</router-link
+                >
+              </li>
+              <li v-for="alt in ALTERNATIVES" :key="alt.slug">
+                <router-link
+                  :to="{ name: 'alternative', params: { slug: alt.slug } }"
+                  class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
+                >
+                  vs {{ alt.name }}
+                </router-link>
+              </li>
+            </ul>
+          </div>
+
           <!-- Legal -->
-          <div class="col-span-2 sm:col-span-1">
+          <div>
             <h2 class="font-editorial font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Legal
             </h2>

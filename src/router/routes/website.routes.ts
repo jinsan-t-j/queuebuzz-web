@@ -45,6 +45,30 @@ export const websiteRoutes: RouteRecordRaw[] = [
         component: () => import('@/modules/website/views/SupportView.vue'),
         meta: { title: 'Support | QueueBuzz — Zero Lines, Better Business' },
       },
+      {
+        path: 'help',
+        name: 'help-center',
+        component: () => import('@/modules/website/views/HelpCenterView.vue'),
+        meta: { title: 'Help Center — QueueBuzz' },
+      },
+      {
+        path: 'help/:slug',
+        name: 'help-article',
+        component: () => import('@/modules/website/views/HelpArticleView.vue'),
+        meta: { title: 'Help — QueueBuzz' },
+      },
+      {
+        path: 'alternatives',
+        name: 'alternatives',
+        component: () => import('@/modules/website/views/AlternativesView.vue'),
+        meta: { title: 'QueueBuzz vs. the Alternatives — Virtual Queue Comparisons' },
+      },
+      {
+        path: 'alternatives/:slug',
+        name: 'alternative',
+        component: () => import('@/modules/website/views/AlternativeDetailView.vue'),
+        meta: { title: 'QueueBuzz Comparison' },
+      },
     ],
   },
   {
