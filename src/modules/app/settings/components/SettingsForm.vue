@@ -218,6 +218,13 @@ function handleCroppedImage(dataUrl: string) {
   pendingImageSrc.value = null
 }
 
+function dataUrlToBlob(dataUrl: string): Blob {
+  const [header, base64] = dataUrl.split(',')
+  const mime = header.match(/data:(.*?);base64/)?.[1] || 'application/octet-stream'
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
+  return new Blob([bytes], { type: mime })
+}
+
 async function handleSave() {
   saveAttempted.value = true
   if (slugError.value || localPhoneError.value) return
@@ -258,8 +265,7 @@ async function handleSave() {
   // Profile Image
   if (profileImageUrl.value) {
     if (profileImageUrl.value.startsWith('data:')) {
-      const response = await fetch(profileImageUrl.value)
-      const blob = await response.blob()
+      const blob = dataUrlToBlob(profileImageUrl.value)
       formData.append('profile_image', blob, 'profile.jpg')
     }
   } else {
@@ -270,8 +276,7 @@ async function handleSave() {
   // Banner Image
   if (bannerImageUrl.value) {
     if (bannerImageUrl.value.startsWith('data:')) {
-      const response = await fetch(bannerImageUrl.value)
-      const blob = await response.blob()
+      const blob = dataUrlToBlob(bannerImageUrl.value)
       formData.append('banner_image', blob, 'banner.jpg')
     }
   } else {
