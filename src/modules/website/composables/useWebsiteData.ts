@@ -35,19 +35,12 @@ export function useWebsiteData() {
 
   // --- CONSTANTS ---
   const HERO_DATA = {
-    badge: 'The Smartest Way to Manage Crowds',
     title_line_1: 'ZERO LINES.',
     title_line_2: 'BETTER BUSINESS.',
     subtext:
-      'Stop managing crowds and start managing your business. Ditch the physical line and let your customers wait on their own terms while you orchestrate the flow with absolute precision.',
+      'Stop managing crowds and start managing your business. Ditch the physical line and let your customers wait on their own terms while you orchestrate the flow with absolute precision. The Smartest Way to Manage Crowds.',
     categories: ['HEALTHCARE', 'RETAIL', 'HOSPITALITY', 'BANKING', 'EVENTS', 'GOVERNMENT'],
   }
-
-  const IMPACT_METRICS = [
-    { value: '40%', label: 'A weight off their shoulders' },
-    { value: '0', label: 'No need to jump through hoops' },
-    { value: '100%', label: 'Keeping it on the down-low' },
-  ]
 
   const FEATURE_TABS = [
     {
@@ -153,13 +146,10 @@ export function useWebsiteData() {
       { name: 'BANKING', icon: LandmarkIcon },
       { name: 'EVENTS', icon: Users },
       { name: 'FOOD TRUCKS', icon: Utensils },
-      { name: 'SPA & WELLNESS', icon: Heart },
       { name: 'AUTO REPAIR', icon: Wrench },
       { name: 'CONFERENCES', icon: Users },
-      { name: 'TEA STALLS', icon: Coffee },
       { name: 'DRIVE-THRUS', icon: Car },
       { name: 'STREET FOOD', icon: Utensils },
-      { name: 'BARBERSHOPS', icon: Scissors },
       { name: 'TICKET COUNTERS', icon: Ticket },
       { name: 'SOUQS', icon: ShoppingBag },
       { name: 'SHISHA LOUNGES', icon: Flame },
@@ -203,12 +193,10 @@ export function useWebsiteData() {
   ]
 
   const mutationObserver = ref<MutationObserver | null>(null)
-  let scrollHandler: (() => void) | null = null
 
   // --- STATE ---
   const testimonials = ref([])
   const isPwa = ref(false)
-  const scrollY = ref(0)
   const activeTab = ref('real-time')
   const openFaqIdx = ref(null)
   const carouselIdx = ref(0)
@@ -257,16 +245,48 @@ export function useWebsiteData() {
           name: 'Arjun K.',
           role: 'Beta User, Bengaluru',
           quote:
-            'Finally, a solution that respects my time. No more standing in line for basic services.',
+            "I scanned the code outside my clinic, saw '4 people ahead, ~18 min', and went to get coffee. Didn't think about the queue again until the buzz.",
           avatar: 'A',
         },
         {
           id: 2,
           name: 'Priya S.',
-          role: 'Clinic Manager',
+          role: 'Clinic Manager, Pune',
           quote:
-            "The simplicity is what won us over. Our customers love that they don't have to install anything.",
+            "We used a spiral notebook before this. Patients would argue about who was next. Now the screen settles it and nobody's asking me.",
           avatar: 'P',
+        },
+        {
+          id: 3,
+          name: 'Rehan M.',
+          role: 'Owner, Cafe Ombre',
+          quote:
+            'Saturday mornings used to be 12 people crammed by the door. Now they wait outside on their phones and walk in when we call them. Same crowd, way less chaos.',
+          avatar: 'R',
+        },
+        {
+          id: 4,
+          name: 'Lakshmi N.',
+          role: 'Front Desk, City Aadhar Center',
+          quote:
+            "Our token machine broke twice a month and people would just... make up numbers. Hasn't happened once since we switched to codes on the signage.",
+          avatar: 'L',
+        },
+        {
+          id: 5,
+          name: 'Farhan A.',
+          role: 'Manager, Ironclad Gym',
+          quote:
+            "Set it up between two client sessions, no exaggeration. I was expecting a whole onboarding call and there wasn't one.",
+          avatar: 'F',
+        },
+        {
+          id: 6,
+          name: 'Divya T.',
+          role: 'Store Lead, Meraki Retail',
+          quote:
+            'One customer told our staff she left, ran an errand two blocks over, and came back right as her turn hit. That never happened when they had to physically hold a spot.',
+          avatar: 'D',
         },
       ]
     } catch (e: unknown) {
@@ -288,17 +308,6 @@ export function useWebsiteData() {
 
     updateItemsPerView()
     globalThis.addEventListener('resize', updateItemsPerView)
-    let ticked = false
-    scrollHandler = () => {
-      if (!ticked) {
-        globalThis.requestAnimationFrame(() => {
-          scrollY.value = globalThis.scrollY
-          ticked = false
-        })
-        ticked = true
-      }
-    }
-    globalThis.addEventListener('scroll', scrollHandler, { passive: true })
 
     isPwa.value = globalThis.matchMedia('(display-mode: standalone)').matches
 
@@ -331,10 +340,6 @@ export function useWebsiteData() {
   onUnmounted(() => {
     if (typeof globalThis !== 'undefined') {
       globalThis.removeEventListener('resize', updateItemsPerView)
-      if (scrollHandler) {
-        globalThis.removeEventListener('scroll', scrollHandler)
-        scrollHandler = null
-      }
     }
     observer.value?.disconnect()
     mutationObserver.value?.disconnect()
@@ -344,14 +349,12 @@ export function useWebsiteData() {
     isLoading,
     error,
     HERO_DATA,
-    IMPACT_METRICS,
     FEATURE_TABS,
     USE_CASES,
     FAQ_LIST,
     INDUSTRY_CATEGORIES,
     testimonials,
     isPwa,
-    scrollY,
     activeTab,
     openFaqIdx,
     carouselIdx,

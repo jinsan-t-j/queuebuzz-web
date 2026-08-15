@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { useSeoMeta } from '@unhead/vue'
-import { Mail, MessageSquare, ShieldCheck, Send } from 'lucide-vue-next'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { Mail, MessageSquare, Send, ShieldCheck } from 'lucide-vue-next'
+import { onMounted, onUnmounted, ref } from 'vue'
 
-import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 import { useSchemaOrg } from '@/composables/useSchemaOrg'
@@ -52,40 +51,9 @@ onUnmounted(() => {
 
 <template>
   <div class="relative min-h-screen overflow-hidden bg-sand pb-24">
-    <!-- Floating Orbs Background -->
-    <div class="fixed inset-0 pointer-events-none z-0">
-      <div
-        class="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-mint/5 rounded-full blur-[120px] animate-blob transition-transform duration-1000 ease-out"
-        :style="{ transform: `translateY(${scrollY * 0.04}px)` }"
-      />
-      <div
-        class="absolute bottom-[-5%] left-[-5%] w-[600px] h-[600px] bg-plum/5 rounded-full blur-[120px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
-        :style="{ transform: `translateY(${scrollY * -0.06}px)` }"
-      />
-    </div>
-
-    <!-- Holi Background Atmosphere -->
-    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-      <div
-        class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob transition-transform duration-700 ease-out"
-        :style="{
-          clipPath: 'polygon(15% 0, 100% 10%, 85% 95%, 0 80%)',
-          transform: `translateY(${scrollY * 0.08}px)`,
-        }"
-      />
-      <div
-        class="absolute bottom-[-5%] right-[-10%] w-[60%] h-[50%] bg-blue-500/5 blur-[140px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
-        :style="{
-          clipPath: 'polygon(25% 15%, 90% 0, 100% 85%, 10% 100%)',
-          transform: `translateY(${scrollY * -0.12}px)`,
-        }"
-      />
-    </div>
-
     <!-- Hero Section -->
-    <section class="relative z-10 px-6 pt-24 pb-16 lg:pt-32 lg:pb-24 text-center">
+    <section class="relative z-10 px-6 pt-24 pb-16 text-center">
       <div class="mx-auto max-w-4xl">
-        <BaseBadge class="mb-6">CONTACT & SUPPORT</BaseBadge>
         <h1
           class="font-display text-5xl font-black text-plum md:text-7xl tracking-tight leading-none mb-8"
         >
@@ -219,28 +187,3 @@ onUnmounted(() => {
     </section>
   </div>
 </template>
-
-<style scoped>
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-</style>

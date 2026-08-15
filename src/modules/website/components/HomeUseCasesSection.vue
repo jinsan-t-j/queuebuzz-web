@@ -66,7 +66,7 @@ function stopDragging() {
     <div class="container mx-auto px-6 relative z-10">
       <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
         <div class="text-left">
-          <h2 class="font-display text-4xl font-bold text-pure-white md:text-5xl tracking-tight">
+          <h2 class="font-editorial text-4xl font-bold text-pure-white md:text-5xl tracking-tight">
             Standardized for
             <span class="text-mint underline decoration-white/20 underline-offset-[12px]"
               >any industry.</span
@@ -120,7 +120,7 @@ function stopDragging() {
               >
                 <component :is="uc.icon" class="h-8 w-8 text-mint" />
               </div>
-              <h3 class="font-display text-2xl font-bold text-pure-white mb-4">{{ uc.title }}</h3>
+              <h3 class="font-editorial text-2xl font-bold text-pure-white mb-4">{{ uc.title }}</h3>
               <p class="font-body text-plum-faint text-base leading-relaxed">
                 {{ uc.description }}
               </p>

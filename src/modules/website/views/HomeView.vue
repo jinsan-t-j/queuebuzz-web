@@ -18,14 +18,14 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useQueueStore } from '@/stores/queue.store'
 
 // Lazy-load below-the-fold non-critical components to optimize initial bundle size & LCP
-const HomeOsStrip = defineAsyncComponent(
-  () => import('@/modules/website/components/HomeOsStrip.vue'),
-)
 const HomeFeaturesSection = defineAsyncComponent(
   () => import('@/modules/website/components/HomeFeaturesSection.vue'),
 )
 const HomeHowItWorksSection = defineAsyncComponent(
   () => import('@/modules/website/components/HomeHowItWorksSection.vue'),
+)
+const HomeJoinShowcase = defineAsyncComponent(
+  () => import('@/modules/website/components/HomeJoinShowcase.vue'),
 )
 const HomeDemoSection = defineAsyncComponent(
   () => import('@/modules/website/components/HomeDemoSection.vue'),
@@ -36,14 +36,8 @@ const HomeUseCasesSection = defineAsyncComponent(
 const HomeTransformationSection = defineAsyncComponent(
   () => import('@/modules/website/components/HomeTransformationSection.vue'),
 )
-const HomeImpactSection = defineAsyncComponent(
-  () => import('@/modules/website/components/HomeImpactSection.vue'),
-)
 const HomeFaqSection = defineAsyncComponent(
   () => import('@/modules/website/components/HomeFaqSection.vue'),
-)
-const HomeRoiCalculator = defineAsyncComponent(
-  () => import('@/modules/website/components/HomeRoiCalculator.vue'),
 )
 const HomeTestimonials = defineAsyncComponent(
   () => import('@/modules/website/components/HomeTestimonials.vue'),
@@ -83,14 +77,12 @@ const authStore = useAuthStore()
 const { activeQueue } = storeToRefs(queueStore)
 
 const {
-  HERO_DATA,
-  IMPACT_METRICS,
   FEATURE_TABS,
   USE_CASES,
   FAQ_LIST,
   INDUSTRY_CATEGORIES,
+  testimonials,
   isPwa,
-  scrollY,
   activeTab,
   openFaqIdx,
   carouselIdx,
@@ -141,25 +133,7 @@ const resumeLink = computed(() => {
 <template>
   <PwaLauncher v-if="isPwa" />
 
-  <div v-else class="min-h-screen bg-sand text-plum selection:bg-mint/30 overflow-x-hidden">
-    <!-- Floating Orbs Background (Global Interactive Parallax) -->
-    <div
-      class="fixed inset-0 pointer-events-none z-0"
-      style="overflow-anchor: none"
-      aria-hidden="true"
-    >
-      <div
-        class="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-mint/5 rounded-full blur-[120px] animate-blob"
-        style="will-change: transform"
-        :style="{ transform: `translateY(${scrollY * 0.04}px)` }"
-      />
-      <div
-        class="absolute bottom-[-5%] left-[-5%] w-[600px] h-[600px] bg-plum/5 rounded-full blur-[120px] animate-blob animation-delay-2000"
-        style="will-change: transform"
-        :style="{ transform: `translateY(${scrollY * -0.06}px)` }"
-      />
-    </div>
-
+  <div v-else class="min-h-screen bg-sand text-plum selection:bg-mint/30">
     <!-- Active Queue Banner -->
     <!-- Active Queue Banner loaded asynchronously -->
     <ActiveQueueBanner
@@ -171,45 +145,17 @@ const resumeLink = computed(() => {
     <!-- Active Waiting Banner for Customers -->
     <ActiveWaitingBanner :is-floating="true" />
 
-    <!-- Holi Background Atmosphere (Fixed Interactive Parallax) -->
-    <div
-      class="pointer-events-none fixed inset-0 z-0 overflow-hidden"
-      style="overflow-anchor: none"
-      aria-hidden="true"
-    >
-      <div
-        class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob"
-        style="will-change: transform"
-        :style="{
-          clipPath: 'polygon(15% 0, 100% 10%, 85% 95%, 0 80%)',
-          transform: `translateY(${scrollY * 0.08}px)`,
-        }"
-      />
-      <div
-        class="absolute bottom-[-5%] right-[-10%] w-[60%] h-[50%] bg-blue-500/5 blur-[140px] animate-blob animation-delay-2000"
-        style="will-change: transform"
-        :style="{
-          clipPath: 'polygon(25% 15%, 90% 0, 100% 85%, 10% 100%)',
-          transform: `translateY(${scrollY * -0.12}px)`,
-        }"
-      />
-    </div>
-
     <HomeHeroSection
       id="hero"
-      :hero-badge="HERO_DATA.badge"
-      :scroll-y="scrollY"
       :is-visible="isVisible('hero')"
       :industry-categories="INDUSTRY_CATEGORIES"
     />
 
-    <HomeOsStrip :scroll-y="scrollY" />
-
-    <HomeFeaturesSection id="features" :is-visible="isVisible('features')" :scroll-y="scrollY" />
+    <HomeFeaturesSection id="features" :is-visible="isVisible('features')" />
 
     <HomeHowItWorksSection id="how-it-works" :is-visible="isVisible('how-it-works')" />
 
-    <HomeRoiCalculator />
+    <HomeJoinShowcase :is-visible="isVisible('join-showcase')" />
 
     <HomeDemoSection
       v-model:active-tab="activeTab"
@@ -229,45 +175,17 @@ const resumeLink = computed(() => {
       id="comparison"
       :upgrade-data="UPGRADE_DATA"
       :is-visible="isVisible('comparison')"
-      :scroll-y="scrollY"
     />
 
-    <HomeImpactSection :metrics="IMPACT_METRICS" />
+    <HomeFaqSection :faq-list="FAQ_LIST" :open-faq-idx="openFaqIdx" @toggle-faq="toggleFaq" />
 
-    <HomeFaqSection
-      :faq-list="FAQ_LIST"
-      :open-faq-idx="openFaqIdx"
-      :scroll-y="scrollY"
-      @toggle-faq="toggleFaq"
-    />
+    <HomeTestimonials :testimonials="testimonials" :is-visible="isVisible('testimonials')" />
 
-    <HomeTestimonials />
-
-    <HomeCTA />
+    <HomeCTA :is-visible="isVisible('final-cta')" />
   </div>
 </template>
 
 <style>
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-.animate-blob {
-  animation: blob 7s infinite;
-}
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
 @keyframes float {
   0%,
   100% {
