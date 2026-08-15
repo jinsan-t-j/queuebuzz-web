@@ -12,7 +12,7 @@ import {
   Users,
   ZapOff,
 } from 'lucide-vue-next'
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import BaseButton from '@/components/base/BaseButton.vue'
@@ -43,20 +43,17 @@ const router = useRouter()
 
 const { injectPricingSchema } = useSchemaOrg()
 
-watch(
-  gridPlans,
-  (newPlans) => {
-    const plansData = newPlans.map((p) => ({
-      name: p.name,
-      description: p.description,
-      price: p.price,
-      isFree: p.isFree,
-      currency: p.currencySymbol === '₹' ? 'INR' : 'USD',
-    }))
-    injectPricingSchema(plansData)
-  },
-  { immediate: true },
+const pricingPlansData = computed(() =>
+  gridPlans.value.map((p) => ({
+    name: p.name,
+    description: p.description,
+    price: p.price,
+    isFree: p.isFree,
+    currency: p.currencySymbol === '₹' ? 'INR' : 'USD',
+  })),
 )
+
+injectPricingSchema(pricingPlansData)
 
 const scrollY = ref(0)
 
