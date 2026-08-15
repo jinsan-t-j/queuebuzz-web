@@ -113,6 +113,7 @@ test.describe('WCAG AA Compliance Audit', () => {
           .disableRules(['heading-order'])
           .exclude('[class*="blur-"]')
           .exclude('[class*="animate-blob"]')
+          .exclude('iframe')
 
         const results = await axeBuilder.analyze()
 

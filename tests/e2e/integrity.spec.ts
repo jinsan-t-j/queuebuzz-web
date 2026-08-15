@@ -21,11 +21,11 @@ test.describe('SSG Integrity (JS Disabled)', () => {
 
     // Primary Content (should exist without JS)
     const h1 = page.locator('h1')
-    await expect(h1).toContainText(/ZERO LINES/i)
-    await expect(h1).toContainText(/BETTER BUSINESS/i)
+    await expect(h1).toContainText(/Replace physical lines/i)
+    await expect(h1).toContainText(/instant QR queues/i)
 
     // CTA should be present
-    const cta = page.getByRole('link', { name: /Start for Free|Get Started/i }).first()
+    const cta = page.getByRole('link', { name: /Start Free Queue|Get Started/i }).first()
     await expect(cta).toBeVisible()
   })
 
@@ -37,7 +37,7 @@ test.describe('SSG Integrity (JS Disabled)', () => {
     await expect(h1).toContainText(/How can we help/i)
 
     // Check for some static text in the support module
-    await expect(page.locator('body')).toContainText(/CONTACT & SUPPORT/i)
+    await expect(page.locator('body')).toContainText(/Send a Message/i)
   })
 
   test('Dashboard should fallback to index (Home) when JS is disabled', async ({ page }) => {
@@ -49,7 +49,7 @@ test.describe('SSG Integrity (JS Disabled)', () => {
 
     // It will show the Home page pre-rendered content (fallback behavior)
     const homeH1 = page.locator('h1')
-    await expect(homeH1).toContainText(/ZERO LINES/i)
+    await expect(homeH1).toContainText(/Replace physical lines/i)
   })
 })
 

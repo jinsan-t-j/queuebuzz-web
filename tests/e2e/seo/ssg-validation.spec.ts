@@ -28,7 +28,7 @@ test.describe('SSG & SEO Validation', () => {
     expect(ogTitle).toBe(seo['/'].title)
 
     // Validate UI Content (Raw HTML)
-    const heroHeading = page.getByRole('heading', { name: /ZERO LINES/ })
+    const heroHeading = page.getByRole('heading', { name: /Replace physical lines/i })
     await expect(heroHeading).toBeVisible()
 
     await context.close()

@@ -15,11 +15,11 @@ test.describe('SSG & SEO Validation (No JS)', () => {
 
     // Validate Primary UI Content (Static)
     const h1 = page.locator('h1')
-    await expect(h1).toContainText('ZERO LINES.')
+    await expect(h1).toContainText(/Replace physical lines/i)
 
     // Target hero section buttons specifically to avoid footer duplicates
     await expect(
-      page.getByRole('link', { name: /Start for Free|Get Started/i }).first(),
+      page.getByRole('link', { name: /Start Free Queue|Get Started/i }).first(),
     ).toBeVisible()
     await expect(page.getByRole('link', { name: /Join a Queue/i }).first()).toBeVisible()
   })
@@ -33,7 +33,6 @@ test.describe('SSG & SEO Validation (No JS)', () => {
     // Validate Primary UI Content (Static)
     const h1 = page.locator('h1')
     await expect(h1).toContainText('How can we help?')
-    await expect(page.getByText('CONTACT & SUPPORT')).toBeVisible()
     await expect(page.getByText('Send a Message')).toBeVisible()
   })
 })
