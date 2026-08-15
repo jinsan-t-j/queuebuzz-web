@@ -6,7 +6,7 @@ This document contains full details on QueueBuzz's virtual waitlist features, pl
 
 ## 1. About QueueBuzz
 
-QueueBuzz is a cloud-based, mobile-friendly virtual queue management platform designed to eliminate physical waiting lines for businesses of all sizes, with a primary focus on physical stores in India and globally.
+QueueBuzz is a cloud-based, mobile-friendly virtual queue management platform designed to eliminate physical waiting lines for businesses of all sizes, with a primary focus on physical stores globally.
 
 ### Platform Concept
 Customers join queues without downloading a mobile app or creating an account. By scanning a QR code or visiting a URL (e.g. `https://queuebuzz.com/q/clinic-abc`), their mobile browser transforms into a live digital ticket. They can wander freely while waiting, viewing their real-time queue position and estimated wait time, while the business hosts call next customers with a single click.
@@ -94,7 +94,6 @@ QueueBuzz is designed around privacy-first principles:
 
 - **General Inquiries & Customer Support**: support@queuebuzz.com
 - **Security & Data Vulnerability Reporting**: security@queuebuzz.com
-- **Address**: Mumbai & Bangalore, India
 - **Socials**: 
   - Reddit: https://reddit.com/r/queuebuzz/
   - Instagram: https://instagram.com/queuebuzz
