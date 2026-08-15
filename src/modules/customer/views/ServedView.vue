@@ -66,14 +66,6 @@ function handleDone() {
 
 <template>
   <div class="relative flex flex-col min-h-[80vh]">
-    <!-- Blob decorations — Served screen specific (soft mint gradient blobs) -->
-    <div
-      class="pointer-events-none absolute -right-16 -top-16 h-[300px] w-[300px] rounded-full bg-mint-light/60 blur-[60px]"
-    />
-    <div
-      class="pointer-events-none absolute -bottom-20 -left-16 h-[280px] w-[280px] rounded-full bg-mint-light/40 blur-[60px]"
-    />
-
     <CustomerHeader
       v-if="activeQueue"
       :name="activeQueue.name"

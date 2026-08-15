@@ -373,14 +373,6 @@ const handleFinishService = async () => {
 
 <template>
   <div class="relative flex flex-col">
-    <!-- Blob decorations — Called screen specific (two large mint blobs) -->
-    <div
-      class="pointer-events-none absolute -top-20 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-mint/16 blur-[80px]"
-    />
-    <div
-      class="pointer-events-none absolute -bottom-16 -left-10 h-[350px] w-[350px] rounded-full bg-mint/16 blur-[80px]"
-    />
-
     <CustomerHeader
       v-if="activeQueue"
       :name="activeQueue.name"

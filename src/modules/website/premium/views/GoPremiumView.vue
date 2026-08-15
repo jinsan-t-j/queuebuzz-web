@@ -160,49 +160,14 @@ function handleEnterpriseContact() {
 
 <template>
   <div class="relative min-h-screen bg-sand text-plum selection:bg-mint/30 overflow-x-hidden">
-    <!-- Floating Orbs Background -->
-    <div class="fixed inset-0 pointer-events-none z-0">
-      <div
-        class="absolute top-[-5%] right-[-5%] w-[500px] h-[500px] bg-mint/5 rounded-full blur-[120px] animate-blob transition-transform duration-1000 ease-out"
-        :style="{ transform: `translateY(${scrollY * 0.04}px)` }"
-      />
-      <div
-        class="absolute bottom-[-5%] left-[-5%] w-[600px] h-[600px] bg-plum/5 rounded-full blur-[120px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
-        :style="{ transform: `translateY(${scrollY * -0.06}px)` }"
-      />
-    </div>
-
-    <!-- Holi Background Atmosphere -->
-    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-      <div
-        class="absolute top-[-5%] left-[-10%] w-[70%] h-[60%] bg-pink-500/5 blur-[160px] animate-blob transition-transform duration-700 ease-out"
-        :style="{
-          clipPath: 'polygon(15% 0, 100% 10%, 85% 95%, 0 80%)',
-          transform: `translateY(${scrollY * 0.08}px)`,
-        }"
-      />
-      <div
-        class="absolute bottom-[-5%] right-[-10%] w-[60%] h-[50%] bg-blue-500/5 blur-[140px] animate-blob animation-delay-2000 transition-transform duration-1000 ease-out"
-        :style="{
-          clipPath: 'polygon(25% 15%, 90% 0, 100% 85%, 10% 100%)',
-          transform: `translateY(${scrollY * -0.12}px)`,
-        }"
-      />
-    </div>
-
-    <div class="relative z-10 mx-auto max-w-7xl px-6 py-24 lg:py-32">
+    <div class="relative z-10 mx-auto max-w-7xl px-6 py-12">
       <!-- Header -->
-      <div class="text-center mb-16 lg:mb-24">
+      <div class="text-center mb-6 lg:mb-24">
         <h1
           class="font-display text-5xl font-black text-plum md:text-7xl lg:text-8xl tracking-tight leading-none mb-8"
         >
           Go <span class="text-mint-dark">Premium.</span>
         </h1>
-        <p
-          class="mx-auto max-w-2xl font-body text-lg md:text-xl text-plum-soft leading-relaxed opacity-80 mb-12"
-        >
-          Unlock the full power of QueueBuzz with advanced features and unlimited scale.
-        </p>
 
         <!-- Billing Toggle -->
         <div class="flex flex-col items-center gap-4">
@@ -462,28 +427,3 @@ function handleEnterpriseContact() {
     </div>
   </div>
 </template>
-
-<style scoped>
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-</style>

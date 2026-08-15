@@ -64,20 +64,20 @@ onUnmounted(() => {
 <template>
   <header
     :class="[
-      'sticky top-0 z-50 transition-all duration-500 border-b',
+      'sticky top-0 z-50 transition-[box-shadow,background-color,border-color] duration-300 border-b',
       isScrolled
-        ? 'bg-white/60 backdrop-blur-3xl shadow-[0_8px_32px_rgba(26,10,46,0.08)] border-white/40 py-2'
-        : 'bg-white/10 backdrop-blur-sm border-transparent py-4',
+        ? 'bg-white border-plum-faint shadow-[0_4px_16px_rgba(26,10,46,0.06)]'
+        : 'bg-transparent border-transparent',
     ]"
   >
     <nav class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-      <router-link to="/" class="group flex items-center gap-1.5 font-display text-2xl font-bold">
-        <Logo class="h-12 w-12 transition-transform duration-500 group-hover:rotate-12" />
+      <router-link to="/" class="group flex items-center gap-1.5 font-editorial text-2xl font-bold">
+        <Logo class="h-10 w-10 transition-transform duration-500 group-hover:rotate-12" />
         <div class="flex flex-col justify-center leading-none text-plum">
-          <span class="text-[26px] font-extrabold tracking-tight leading-none overflow-hidden"
+          <span class="text-[24px] font-bold tracking-tight leading-none overflow-hidden"
             >ueue</span
           >
-          <span class="text-[18px] font-bold tracking-tight leading-none mt-0.5 overflow-hidden"
+          <span class="text-[17px] font-bold tracking-tight leading-none mt-0.5 overflow-hidden"
             >Buzz</span
           >
         </div>
@@ -113,7 +113,7 @@ onUnmounted(() => {
 
         <router-link
           :to="ctaRoute"
-          class="rounded-full bg-plum px-6 py-3 font-body text-sm font-bold text-white transition-all duration-300 hover:bg-mint hover:text-plum hover:shadow-[0_0_20px_rgba(0,229,160,0.4)] hover:-translate-y-0.5 active:scale-95 inline-flex items-center"
+          class="rounded-lg bg-mint px-5 py-2.5 font-body text-sm font-bold text-plum transition-colors duration-200 hover:bg-mint-dark hover:text-white inline-flex items-center"
         >
           {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started Free' }}
         </router-link>
@@ -163,7 +163,7 @@ onUnmounted(() => {
 
         <router-link
           :to="ctaRoute"
-          class="rounded-pill bg-mint px-5 py-3.5 text-center font-body text-sm font-semibold text-on-mint min-h-[48px] flex items-center justify-center"
+          class="rounded-lg bg-mint px-5 py-3.5 text-center font-body text-sm font-bold text-plum min-h-[48px] flex items-center justify-center"
           @click="isMobileMenuOpen = false"
         >
           {{ isAuthenticated ? 'Go to Dashboard' : 'Get Started Free' }}

@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { ArrowDownToLine, BarChart3, CheckCircle2, Clock, Lock, Zap } from 'lucide-vue-next'
+import { ArrowDownToLine, BarChart3, CheckCircle2, Clock } from 'lucide-vue-next'
 import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
 
-import BaseBadge from '@/components/base/BaseBadge.vue'
 import BaseCard from '@/components/base/BaseCard.vue'
 import BasePillSelector from '@/components/base/BasePillSelector.vue'
 import JoinViewPreview from '@/modules/website/components/JoinViewPreview.vue'
@@ -71,29 +69,6 @@ const exportHovered = ref(false)
               <p class="font-body text-lg text-plum-soft leading-relaxed">
                 {{ activeFeature?.text }}
               </p>
-              <div class="mt-8 flex flex-col gap-4 items-start">
-                <BaseBadge variant="muted">Enterprise Ready</BaseBadge>
-
-                <!-- Minimized CTA nudge -->
-                <RouterLink
-                  v-if="activeTab === 'branding'"
-                  to="/login-or-signup"
-                  class="flex items-center gap-3 rounded-2xl border border-plum-faint bg-white px-3 py-2 shadow-sm hover:shadow-md hover:border-plum/30 transition-all duration-200 group w-full max-w-xs"
-                >
-                  <div
-                    class="h-6 w-6 rounded-lg bg-plum-faint flex items-center justify-center flex-shrink-0 group-hover:bg-mint-light transition-colors"
-                  >
-                    <Lock class="h-3 w-3 text-plum-muted group-hover:text-mint transition-colors" />
-                  </div>
-                  <p class="flex-1 text-left font-body text-[10px] text-plum-muted leading-tight">
-                    Create an account to
-                    <span class="font-semibold text-plum">enable custom branding</span>
-                  </p>
-                  <span class="font-body text-[10px] font-bold text-mint-dark whitespace-nowrap"
-                    >Sign Up →</span
-                  >
-                </RouterLink>
-              </div>
             </div>
 
             <!-- Right: Interactive demo card -->
@@ -120,6 +95,7 @@ const exportHovered = ref(false)
                 <button
                   v-for="(g, i) in guests"
                   :key="g.ticket"
+                  type="button"
                   :class="[
                     'relative flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-500 cursor-pointer select-none w-full text-left',
                     calledGuest === i
@@ -170,10 +146,6 @@ const exportHovered = ref(false)
                       class="h-5 w-5 text-mint flex-shrink-0"
                     />
                   </Transition>
-                  <Zap
-                    v-if="i === 0 && calledGuest !== 0"
-                    class="h-4 w-4 text-mint flex-shrink-0"
-                  />
                 </button>
                 <p class="text-center font-body text-[10px] text-plum-soft mt-3">
                   Tap a guest to call them ↑
@@ -221,6 +193,7 @@ const exportHovered = ref(false)
                   ><span>5 PM</span><span>7 PM</span>
                 </div>
                 <button
+                  type="button"
                   class="flex items-center justify-between w-full px-4 py-3 rounded-2xl border transition-all duration-200"
                   :class="
                     exportHovered

@@ -10,12 +10,27 @@ const DOMAIN = 'https://queuebuzz.com'
 // Define public marketing and legal pages to be crawled
 const routes = [
   { path: '/', priority: '1.0', changefreq: 'daily' },
+  { path: '/about', priority: '0.6', changefreq: 'monthly' },
   { path: '/pricing', priority: '0.8', changefreq: 'weekly' },
   { path: '/premium', priority: '0.8', changefreq: 'weekly' },
   { path: '/launch', priority: '0.7', changefreq: 'monthly' },
   { path: '/support', priority: '0.6', changefreq: 'monthly' },
   { path: '/terms', priority: '0.3', changefreq: 'monthly' },
   { path: '/privacy', priority: '0.3', changefreq: 'monthly' },
+  { path: '/help', priority: '0.7', changefreq: 'weekly' },
+  { path: '/help/getting-started', priority: '0.6', changefreq: 'monthly' },
+  { path: '/help/sharing-your-queue', priority: '0.6', changefreq: 'monthly' },
+  { path: '/help/live-queue-dashboard', priority: '0.6', changefreq: 'monthly' },
+  { path: '/help/location-verification', priority: '0.6', changefreq: 'monthly' },
+  { path: '/help/notifications', priority: '0.6', changefreq: 'monthly' },
+  { path: '/help/queue-history', priority: '0.6', changefreq: 'monthly' },
+  { path: '/help/billing-and-plans', priority: '0.6', changefreq: 'monthly' },
+  { path: '/help/account-settings', priority: '0.6', changefreq: 'monthly' },
+  { path: '/help/joining-a-queue-as-a-customer', priority: '0.6', changefreq: 'monthly' },
+  { path: '/alternatives', priority: '0.7', changefreq: 'monthly' },
+  { path: '/alternatives/waitwhile', priority: '0.6', changefreq: 'monthly' },
+  { path: '/alternatives/qminder', priority: '0.6', changefreq: 'monthly' },
+  { path: '/alternatives/tablelist-yelp-waitlist', priority: '0.6', changefreq: 'monthly' },
 ]
 
 function generateSitemap() {

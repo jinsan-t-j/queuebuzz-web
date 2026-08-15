@@ -16,6 +16,12 @@ export const websiteRoutes: RouteRecordRaw[] = [
         meta: { title: 'QueueBuzz — Zero Lines. Better Business.' },
       },
       {
+        path: 'about',
+        name: 'about',
+        component: () => import('@/modules/website/views/AboutView.vue'),
+        meta: { title: 'About — QueueBuzz' },
+      },
+      {
         path: 'pricing',
         name: 'pricing',
         component: () => import('@/modules/website/views/PricingView.vue'),
@@ -44,6 +50,30 @@ export const websiteRoutes: RouteRecordRaw[] = [
         name: 'support',
         component: () => import('@/modules/website/views/SupportView.vue'),
         meta: { title: 'Support | QueueBuzz — Zero Lines, Better Business' },
+      },
+      {
+        path: 'help',
+        name: 'help-center',
+        component: () => import('@/modules/website/views/HelpCenterView.vue'),
+        meta: { title: 'Help Center — QueueBuzz' },
+      },
+      {
+        path: 'help/:slug',
+        name: 'help-article',
+        component: () => import('@/modules/website/views/HelpArticleView.vue'),
+        meta: { title: 'Help — QueueBuzz' },
+      },
+      {
+        path: 'alternatives',
+        name: 'alternatives',
+        component: () => import('@/modules/website/views/AlternativesView.vue'),
+        meta: { title: 'QueueBuzz vs. the Alternatives — Virtual Queue Comparisons' },
+      },
+      {
+        path: 'alternatives/:slug',
+        name: 'alternative',
+        component: () => import('@/modules/website/views/AlternativeDetailView.vue'),
+        meta: { title: 'QueueBuzz Comparison' },
       },
     ],
   },

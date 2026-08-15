@@ -10,6 +10,7 @@ import InstagramIcon from '@/assets/icons/instagram.svg?component'
 import Logo from '@/assets/icons/logo.svg?component'
 import RedditIcon from '@/assets/icons/reddit.svg?component'
 import XIcon from '@/assets/icons/x.svg?component'
+import { ALTERNATIVES } from '@/modules/website/content/alternatives'
 
 const currentYear = computed(() => new Date().getFullYear())
 
@@ -43,12 +44,12 @@ onUnmounted(() => {
 <template>
   <footer class="border-t border-plum-faint bg-white py-12 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
-      <div class="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-8">
+      <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-8 xl:gap-12">
         <!-- Brand Content -->
-        <div class="md:col-span-5 lg:col-span-4">
+        <div class="lg:col-span-4 xl:col-span-3">
           <router-link
             to="/"
-            class="font-display text-2xl font-bold text-plum block mb-4 py-3 px-1"
+            class="font-editorial text-2xl font-bold text-plum block mb-4 py-3 px-1"
           >
             QueueBuzz
           </router-link>
@@ -60,11 +61,11 @@ onUnmounted(() => {
 
         <!-- Links Container -->
         <div
-          class="grid grid-cols-2 gap-8 sm:grid-cols-3 md:col-span-7 md:col-start-6 lg:col-span-6 lg:col-start-7"
+          class="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-2 md:grid-cols-4 lg:col-span-8 lg:gap-8 xl:col-span-9 xl:gap-10"
         >
           <!-- Product -->
           <div>
-            <h2 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+            <h2 class="font-editorial font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Product
             </h2>
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
@@ -94,10 +95,17 @@ onUnmounted(() => {
 
           <!-- Support -->
           <div>
-            <h2 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+            <h2 class="font-editorial font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Support
             </h2>
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
+              <li>
+                <router-link
+                  to="/help"
+                  class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
+                  >Help Center</router-link
+                >
+              </li>
               <li>
                 <router-link
                   to="/support"
@@ -115,9 +123,40 @@ onUnmounted(() => {
             </ul>
           </div>
 
+          <!-- Resources -->
+          <div>
+            <h2 class="font-editorial font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+              Resources
+            </h2>
+            <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
+              <li>
+                <router-link
+                  to="/about"
+                  class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
+                  >About</router-link
+                >
+              </li>
+              <li>
+                <router-link
+                  to="/alternatives"
+                  class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
+                  >Alternatives</router-link
+                >
+              </li>
+              <li v-for="alt in ALTERNATIVES" :key="alt.slug">
+                <router-link
+                  :to="{ name: 'alternative', params: { slug: alt.slug } }"
+                  class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
+                >
+                  {{ alt.name }} comparison
+                </router-link>
+              </li>
+            </ul>
+          </div>
+
           <!-- Legal -->
-          <div class="col-span-2 sm:col-span-1">
-            <h2 class="font-display font-bold text-plum mb-4 text-sm tracking-wide uppercase">
+          <div>
+            <h2 class="font-editorial font-bold text-plum mb-4 text-sm tracking-wide uppercase">
               Legal
             </h2>
             <ul class="space-y-1 font-body text-sm text-plum-soft flex flex-col items-start">
@@ -180,54 +219,21 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- Huge Animated Branding -->
+      <!-- Closing wordmark: quiet, static, single tone -->
       <div
         ref="footerBrandingRef"
-        class="mt-12 md:mt-20 flex justify-center overflow-visible py-8 md:py-16"
+        class="mt-12 md:mt-16 flex justify-center py-6 md:py-10 transition-opacity duration-700"
+        :class="isVisible ? 'opacity-100' : 'opacity-0'"
       >
-        <div class="flex gap-3 sm:gap-4 md:gap-6 flex-nowrap items-center justify-center">
-          <Logo
-            :class="[
-              'h-12 w-12 sm:h-[72px] sm:w-[72px] md:h-[96px] md:w-[96px] lg:h-[128px] lg:w-[128px] xl:h-[160px] xl:w-[160px] transition-transform duration-500 hover:rotate-12 cursor-pointer',
-              isVisible ? 'animate-pop' : 'opacity-0',
-            ]"
-            :style="{ animationDelay: '0ms' }"
-          />
-          <div class="flex gap-1 sm:gap-2 md:gap-4 flex-nowrap items-center">
-            <span
-              v-for="(char, i) in 'ueueBuzz'.split('')"
-              :key="i"
-              :class="[
-                'font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[10rem] font-black transition-all duration-500 cursor-default inline-block leading-none',
-                isVisible ? 'animate-pop' : 'opacity-0',
-                i === 1 || i === 2 || i >= 5
-                  ? 'text-mint-dark hover:text-plum'
-                  : 'text-plum hover:text-mint-dark',
-              ]"
-              :style="{ animationDelay: `${(i + 1) * 100}ms` }"
-            >
-              {{ char }}
-            </span>
-          </div>
+        <div class="flex items-center gap-3 sm:gap-4">
+          <Logo class="h-10 w-10 sm:h-14 sm:w-14 md:h-16 md:w-16" />
+          <span
+            class="font-editorial text-4xl sm:text-6xl md:text-7xl font-bold text-plum leading-none"
+          >
+            ueueBuzz
+          </span>
         </div>
       </div>
     </div>
   </footer>
 </template>
-
-<style scoped>
-@keyframes wave {
-  0%,
-  60%,
-  100% {
-    transform: translateY(0);
-  }
-  30% {
-    transform: translateY(-24px);
-  }
-}
-
-.animate-pop {
-  animation: wave 1s ease-in-out infinite;
-}
-</style>

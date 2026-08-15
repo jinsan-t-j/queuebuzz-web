@@ -15,6 +15,11 @@
   --font-body: 'DM Sans', system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Courier New', monospace;
 
+  /* Editorial headline font — marketing/website module only (src/modules/website).
+     Scoped separately from --font-display so the rest of the app (dashboard, auth,
+     customer flows) keeps its existing Comfortaa identity untouched. */
+  --font-editorial: 'Schibsted Grotesk Variable', system-ui, sans-serif;
+
   --color-sand: #f9f8f6;
   --color-sand-dark: #e8e2f0;
   --color-plum: #1a0a2e;
@@ -103,6 +108,10 @@
     color: var(--color-plum) !important;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     font-family: var(--font-body);
     color: var(--color-plum);
@@ -114,7 +123,6 @@
       color 0.3s ease;
     -webkit-text-size-adjust: 100%;
     touch-action: manipulation;
-    overflow-x: hidden;
   }
 
   /* Ensure all interactive elements have correct cursor */

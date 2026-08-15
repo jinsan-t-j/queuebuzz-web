@@ -1,6 +1,4 @@
 import { VueQueryPlugin } from '@tanstack/vue-query'
-import { createHead as createClientHead } from '@unhead/vue/client'
-import { createHead as createServerHead } from '@unhead/vue/server'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { ViteSSG } from 'vite-ssg'
@@ -8,6 +6,7 @@ import { ViteSSG } from 'vite-ssg'
 import '@/assets/styles/main.css'
 
 import '@fontsource-variable/comfortaa/index.css'
+import '@fontsource-variable/schibsted-grotesk/index.css'
 import '@fontsource/dm-sans/400.css'
 import '@fontsource/dm-sans/500.css'
 import '@fontsource/dm-sans/600.css'
@@ -27,17 +26,15 @@ export const createApp = ViteSSG(
       return { top: 0 }
     },
   },
-  ({ app }) => {
+  ({ app, head }) => {
     const pinia = createPinia()
     const isClient = !import.meta.env.SSR
-    const head = isClient ? createClientHead() : createServerHead()
 
     if (isClient) {
       pinia.use(piniaPluginPersistedstate)
     }
 
     app.use(pinia)
-    app.use(head)
     app.config.globalProperties.$unhead = head
     app.use(VueQueryPlugin, {
       queryClientConfig: {

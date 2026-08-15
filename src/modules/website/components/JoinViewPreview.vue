@@ -7,8 +7,10 @@
  *
  * Reusable: can be dropped into any context that needs a live brand preview.
  */
-import { Clock, Upload, UserCircle2 } from 'lucide-vue-next'
+import { AtSign, Clock, Info, Upload, UserCircle2 } from 'lucide-vue-next'
 import { defineAsyncComponent, ref } from 'vue'
+
+import BaseToggle from '@/components/base/BaseToggle.vue'
 
 const BaseImageCropper = defineAsyncComponent(
   () => import('@/components/base/BaseImageCropper.vue'),
@@ -19,6 +21,8 @@ const avatarPreview = ref<string | null>(null)
 const cropperOpen = ref<'banner' | 'avatar' | null>(null)
 const cropperSrc = ref<string | null>(null)
 const brandTitle = ref('Sakura Café')
+const mockBuzzEnabled = ref(true)
+const partySize = ref(4)
 
 function openFilePicker(type: 'banner' | 'avatar') {
   const input = document.createElement('input')
@@ -55,14 +59,6 @@ function closeCropper() {
     Not scrollable here — the parent decides height/scroll context.
   -->
   <div class="relative w-full bg-[#F7F3EE] rounded-[40px] overflow-hidden">
-    <!-- Blobs — mirrors JoinView decorations -->
-    <div
-      class="pointer-events-none absolute -right-10 -top-10 h-[160px] w-[160px] rounded-full bg-mint-light/70 blur-[40px] z-0"
-    />
-    <div
-      class="pointer-events-none absolute -bottom-10 -left-16 h-[150px] w-[150px] rounded-[100px] bg-warning/35 blur-[40px] z-0"
-    />
-
     <!-- Scrollable content — banner scrolls WITH the rest, not sticky -->
     <div class="relative z-10 overflow-y-auto max-h-[480px]">
       <!-- ── CustomerHeader ───────────────────────────────────────────────── -->
@@ -82,8 +78,11 @@ function closeCropper() {
             class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover/banner:scale-105"
           />
 
-          <!-- Gradient overlay — always so text stays legible -->
-          <div class="absolute inset-0 bg-gradient-to-t from-plum/60 via-plum/20 to-transparent" />
+          <!-- Gradient overlay — only when banner image exists so text stays legible -->
+          <div
+            v-if="bannerPreview"
+            class="absolute inset-0 bg-gradient-to-t from-plum/60 via-plum/20 to-transparent"
+          />
 
           <!-- Empty state -->
           <div
@@ -143,102 +142,189 @@ function closeCropper() {
       </div>
 
       <!-- ── JoinQueueForm mock ────────────────────────────────────────────── -->
-      <div class="flex flex-col gap-4 px-4 py-5">
+      <div class="flex flex-col gap-2.5 px-3.5 py-3">
         <!-- Stats card -->
-        <div class="rounded-3xl border border-plum-faint bg-white p-4 text-center">
-          <p class="font-body text-[9px] font-semibold uppercase tracking-[2.4px] text-plum-soft">
+        <div class="rounded-2xl border border-plum-faint bg-white p-3 text-center">
+          <p class="font-body text-[8px] font-semibold uppercase tracking-[2px] text-plum-soft">
             People in Queue
           </p>
-          <p class="font-display text-5xl font-normal leading-none text-plum mt-2">7</p>
+          <p class="font-display text-3xl font-normal leading-none text-plum mt-1">7</p>
           <div
-            class="mx-auto mt-2 flex w-fit items-center gap-1.5 rounded-full border border-plum-faint/50 bg-sand px-3 py-1"
+            class="mx-auto mt-1 flex w-fit items-center gap-1 rounded-full border border-plum-faint/50 bg-sand px-2.5 py-0.5"
           >
-            <Clock class="h-3 w-3 text-mint-dark" />
-            <span class="font-mono text-xs font-bold text-plum">~12 min</span>
-            <span class="font-body text-xs text-plum-soft">Wait</span>
+            <Clock class="h-2.5 w-2.5 text-mint-dark" />
+            <span class="font-mono text-[11px] font-bold text-plum">~12 min</span>
+            <span class="font-body text-[11px] text-plum-soft">Wait</span>
           </div>
-          <p class="mt-2 font-body text-[9px] leading-snug text-plum-muted">
+          <p class="mt-1 font-body text-[8px] leading-tight text-plum-muted">
             Your wait time is estimated,<br />it may slightly shift as the queue moves.
           </p>
         </div>
 
         <!-- Secure your spot -->
-        <p class="font-body text-sm font-bold text-plum mt-1">Secure your spot</p>
+        <p class="font-body text-xs font-bold text-plum mt-0.5">Secure your spot</p>
 
         <!-- Name input -->
-        <div class="flex items-start gap-3 rounded-3xl border border-plum-faint bg-white px-3 py-3">
-          <div
-            class="h-7 w-7 rounded-full bg-plum-faint flex items-center justify-center flex-shrink-0 mt-0.5"
-          >
-            <UserCircle2 class="h-3.5 w-3.5 text-plum-muted" />
+        <div
+          class="flex items-center gap-2.5 rounded-2xl border border-plum-faint bg-white px-3 py-2"
+        >
+          <div class="h-6 w-6 rounded-full bg-plum-faint flex items-center justify-center shrink-0">
+            <UserCircle2 class="h-3 w-3 text-plum-muted" />
           </div>
           <div>
-            <p class="font-body text-xs text-plum-muted/40">What should we call you?</p>
-            <p class="font-body text-[9px] text-plum-muted mt-0.5">Appears as Guest if skipped</p>
+            <p class="font-body text-[11px] text-plum-muted/60 leading-none">
+              What should we call you?
+            </p>
+            <p class="font-body text-[8px] text-plum-muted mt-0.5">Appears as Guest if skipped</p>
           </div>
         </div>
 
-        <!-- Buzz me toggle -->
+        <!-- Party Joining Row -->
         <div
-          class="flex items-center justify-between rounded-3xl border border-plum-faint bg-white px-3 py-2.5"
+          class="flex items-center justify-between rounded-2xl border border-plum-faint bg-white px-3 py-2"
         >
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2.5">
             <div
-              class="h-8 w-8 rounded-full bg-mint-light flex items-center justify-center flex-shrink-0"
+              class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-warning/10"
             >
-              <svg class="h-4 w-4 text-mint-dark" viewBox="0 0 24 24" fill="currentColor">
+              <svg
+                class="h-3.5 w-3.5 text-warning"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+            </div>
+            <div>
+              <p class="font-body text-xs font-semibold text-plum">Joining with others?</p>
+              <p class="font-body text-[9px] text-plum-muted">Add companions to your spot</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="flex h-6 w-6 items-center justify-center rounded-full bg-plum-faint text-xs font-bold text-plum transition-opacity disabled:opacity-30"
+              aria-label="Decrease party size"
+              @click="partySize = Math.max(1, partySize - 1)"
+            >
+              −
+            </button>
+            <span class="min-w-[14px] text-center font-mono text-xs font-bold text-plum">
+              {{ partySize }}
+            </span>
+            <button
+              type="button"
+              class="flex h-6 w-6 items-center justify-center rounded-full bg-plum-faint text-xs font-bold text-plum transition-opacity disabled:opacity-30"
+              aria-label="Increase party size"
+              @click="partySize++"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        <!-- Buzz toggle card -->
+        <div
+          class="flex items-center justify-between rounded-2xl border border-plum-faint bg-white px-3 py-2"
+        >
+          <div class="flex items-center gap-2.5">
+            <div
+              class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-mint-light"
+            >
+              <svg class="h-3.5 w-3.5 text-mint" viewBox="0 0 24 24" fill="currentColor">
                 <path
                   d="M12 2C10.9 2 10 2.9 10 4V4.29C7.12 5.15 5 7.82 5 11V17L3 19V20H21V19L19 17V11C19 7.82 16.88 5.15 14 4.29V4C14 2.9 13.1 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"
                 />
               </svg>
             </div>
             <div>
-              <p class="font-body text-[11px] font-semibold text-plum leading-none">
-                Buzz me when ready
-              </p>
-              <p class="font-body text-[9px] text-plum-muted mt-0.5">
-                Get notified when it's your turn
-              </p>
+              <p class="font-body text-xs font-semibold text-plum">Buzz me when ready</p>
+              <p class="font-body text-[9px] text-plum-muted">Get notified when it's your turn</p>
             </div>
           </div>
-          <div class="relative w-9 h-5 rounded-full bg-mint flex-shrink-0">
-            <span class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-white shadow" />
+          <div class="flex items-center shrink-0">
+            <BaseToggle
+              v-model="mockBuzzEnabled"
+              aria-label="Toggle haptic vibration buzz notifications"
+            />
           </div>
         </div>
 
-        <!-- Add email for recovery row -->
-        <div class="flex items-center gap-3 min-h-[40px] px-1">
-          <svg
-            class="h-3.5 w-3.5 text-plum-muted flex-shrink-0"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <circle cx="12" cy="12" r="4" />
-            <path d="M16 8v5a3 3 0 006 0v-1a10 10 0 10-3.92 7.94" />
-          </svg>
-          <span class="flex-1 font-body text-[11px] font-medium text-plum-muted"
-            >Add email for recovery</span
-          >
-          <svg
-            class="h-3 w-3 text-plum-muted"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M19 9l-7 7-7-7" />
-          </svg>
+        <!-- Contact & Recovery Section -->
+        <div class="flex flex-col gap-1">
+          <div class="rounded-2xl border border-plum-faint bg-white overflow-hidden">
+            <!-- Email Input Row -->
+            <div class="flex items-center gap-2.5 px-3 py-1.5">
+              <div
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-plum-faint"
+              >
+                <AtSign class="h-3 w-3 text-plum-muted" />
+              </div>
+              <div class="flex-1">
+                <input
+                  type="email"
+                  placeholder="Email (optional, for recovery)"
+                  class="w-full border-none bg-transparent font-body text-xs text-plum placeholder:text-plum-muted/40 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-t border-plum-faint" />
+
+            <!-- Phone Input Row -->
+            <div class="flex items-center gap-2.5 px-3 py-1.5">
+              <div
+                class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-plum-faint"
+              >
+                <svg
+                  class="h-3 w-3 text-plum-muted"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                  />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <input
+                  type="tel"
+                  placeholder="Phone number (optional, for updates)"
+                  class="w-full border-none bg-transparent font-body text-xs text-plum placeholder:text-plum-muted/40 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Info/Recovery Notice under Card -->
+          <div class="flex items-start gap-1 px-0.5 mt-0.5">
+            <Info class="mt-0.5 h-3 w-3 shrink-0 text-plum-muted/80" />
+            <p class="font-body text-[9px] leading-tight text-plum-muted/80">
+              Email is used to recover your spot if you close the browser.
+            </p>
+          </div>
         </div>
 
         <!-- Join CTA -->
         <button
-          class="w-full rounded-2xl bg-mint font-body text-sm font-semibold text-on-mint shadow-[0_8px_24px_rgba(0,229,160,0.50)] flex items-center justify-center gap-2 px-6 py-4"
+          type="button"
+          class="w-full rounded-xl bg-mint font-body text-xs font-semibold text-on-mint shadow-[0_4px_16px_rgba(0,229,160,0.40)] flex items-center justify-center gap-1.5 px-4 py-2.5"
         >
           Join the Queue
           <svg
-            class="h-4 w-4 text-on-mint"
+            class="h-3.5 w-3.5 text-on-mint"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -248,16 +334,10 @@ function closeCropper() {
           </svg>
         </button>
 
-        <!-- Already have a ticket -->
-        <p class="text-center font-body text-[10px] text-plum-muted pt-1">
-          Already have a ticket?
-          <span class="underline underline-offset-2">Enter your join code</span>
-        </p>
-
         <!-- Mini footer -->
-        <div class="border-t border-plum-faint/50 pt-3 text-center space-y-1.5 pb-2">
-          <p class="font-body text-[9px] text-plum-muted">© 2026 Queuebuzz. All Rights Reserved</p>
-          <p class="font-body text-[9px] text-plum-muted">
+        <div class="border-t border-plum-faint/50 pt-2 text-center space-y-0.5 pb-1">
+          <p class="font-body text-[8px] text-plum-muted">© 2026 Queuebuzz. All Rights Reserved</p>
+          <p class="font-body text-[8px] text-plum-muted">
             Terms &amp; Conditions &nbsp;|&nbsp; Privacy Policy
           </p>
         </div>

@@ -22,14 +22,6 @@ function goToHome() {
 
 <template>
   <div class="relative flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
-    <!-- Premium Blob Decorations -->
-    <div
-      class="pointer-events-none absolute -right-24 -top-24 h-[300px] w-[300px] rounded-full bg-mint-light/40 blur-[50px] animate-pulse"
-    />
-    <div
-      class="pointer-events-none absolute -bottom-32 -left-32 h-[350px] w-[350px] rounded-full bg-warning/20 blur-[60px]"
-    />
-
     <!-- Main Content Card -->
     <div class="z-10 flex w-full max-w-sm flex-col items-center">
       <!-- Icon/Illustration -->

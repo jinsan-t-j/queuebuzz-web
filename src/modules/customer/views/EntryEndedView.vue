@@ -107,14 +107,6 @@ function handleGoHome() {
     />
 
     <div class="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
-      <!-- Blob decorations -->
-      <div
-        class="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-mint-light/30 blur-[100px] z-0"
-      />
-      <div
-        class="absolute -bottom-20 -left-20 h-80 w-80 rounded-full bg-warning/20 blur-[100px] z-0"
-      />
-
       <div class="relative z-10 w-full max-w-sm">
         <!-- Status Icon -->
         <div

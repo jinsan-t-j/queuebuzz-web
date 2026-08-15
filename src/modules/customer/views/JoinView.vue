@@ -264,14 +264,6 @@ onUnmounted(() => {
 
 <template>
   <div class="relative flex flex-col min-h-[80vh]">
-    <!-- Blob decorations — Join screen specific -->
-    <div
-      class="pointer-events-none absolute -right-16 -top-16 z-0 h-[250px] w-[250px] rounded-[125px] bg-mint-light/70 blur-[40px]"
-    />
-    <div
-      class="pointer-events-none absolute -bottom-16 -left-28 z-0 h-[238px] w-full rounded-[100px] bg-warning/35 blur-[40px]"
-    />
-
     <div class="relative z-10 flex flex-col flex-1">
       <div
         v-if="(isLoading || queueIsLoading) && !isJoining"

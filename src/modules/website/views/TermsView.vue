@@ -136,9 +136,9 @@ injectLegalSchema('terms')
             Paid subscriptions are processed through our secure payment partner, Dodo Payments, and
             are billed in advance on a monthly or yearly recurring schedule. By selecting a paid
             plan, you authorize automatic billing at the applicable rate. Prices are displayed in
-            Indian Rupees (INR) or the equivalent local currency. We reserve the right to modify our
-            pricing with advance notice to active subscribers. Refunds are evaluated on a
-            case-by-case basis. Enterprise plan inquiries should be directed to
+            the equivalent local currency. We reserve the right to modify our pricing with advance
+            notice to active subscribers. Refunds are evaluated on a case-by-case basis. Enterprise
+            plan inquiries should be directed to
             <b>support@queuebuzz.com</b>.
           </p>
         </article>

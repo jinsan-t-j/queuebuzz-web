@@ -5,7 +5,7 @@
  * Only rendered after the auth guard confirms a valid session.
  */
 
-import { defineAsyncComponent, watchEffect, onUnmounted, ref } from 'vue'
+import { defineAsyncComponent, onUnmounted, ref, watchEffect } from 'vue'
 
 import BasePullToRefresh from '@/components/base/BasePullToRefresh.vue'
 import DashboardSidebar from '@/components/layout/app/DashboardSidebar.vue'
@@ -48,14 +48,14 @@ const { isRefreshing, triggerRefresh, hasRefreshHandler } = useRefresh()
 </script>
 
 <template>
-  <div class="flex flex-col h-screen overflow-hidden main-bg">
+  <div class="flex flex-col h-screen overflow-hidden bg-sand">
     <SystemAlertBanner v-if="showMaintenanceBanner" />
     <div class="flex flex-1 overflow-hidden relative">
       <HostNotifications />
       <DashboardSidebar :is-mobile-open="isMobileMenuOpen" @close="isMobileMenuOpen = false" />
       <div class="flex flex-1 flex-col overflow-hidden">
         <DashboardTopbar @toggle-menu="toggleMobileMenu" />
-        <main class="flex-1 overflow-y-auto p-4 md:p-8 main-bg">
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-sand">
           <BasePullToRefresh
             :is-refreshing="isRefreshing"
             :disabled="!hasRefreshHandler"

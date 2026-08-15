@@ -26,7 +26,6 @@ const showMaintenanceBanner = import.meta.env.VITE_SHOW_MAINTENANCE_BANNER === '
     <main
       class="relative mx-auto w-full max-w-[473px] flex-1 px-0 overflow-x-hidden flex flex-col justify-between"
     >
-      <!-- View content injected here — each view adds its own blobs -->
       <RouterView />
 
       <!-- Footer -->
