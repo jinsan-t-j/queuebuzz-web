@@ -198,3 +198,64 @@ export function makeBillingPlans() {
     },
   ]
 }
+
+/**
+ * Plans list with a "Business Elite" plan, for testing the hidden 3-day
+ * trial entry point. The trial CTA is driven entirely by a separate
+ * /billing/plans/trial-offer lookup (see makeTrialOfferResponse) — trial
+ * fields are never part of the public plans payload.
+ */
+export function makeBillingPlansWithEliteTrial(eliteOverrides: Record<string, unknown> = {}) {
+  return [
+    {
+      id: 'plan-free',
+      slug: 'free',
+      tier: 'free',
+      name: 'Free',
+      description: 'Perfect for solo operators and small experiments.',
+      monthly_price: 0,
+      yearly_price: 0,
+      currency: 'USD',
+      is_free: true,
+      limits: {
+        max_queues_per_month: 1,
+        max_guests_per_queue: 10,
+        queue_expiry_hours: 24,
+        history_access: false,
+        history_retention_days: 0,
+        can_export: false,
+        custom_branding: false,
+      },
+    },
+    {
+      id: 'plan-elite',
+      slug: 'business-elite-global',
+      tier: 'elite',
+      name: 'Business Elite',
+      description: 'Full-scale solution for high-traffic businesses and brands.',
+      monthly_price: 3900,
+      yearly_price: 37400,
+      currency: 'USD',
+      is_free: false,
+      limits: {
+        max_queues_per_month: 100,
+        max_guests_per_queue: 0,
+        queue_expiry_hours: 168,
+        history_access: true,
+        history_retention_days: 0,
+        can_export: true,
+        custom_branding: true,
+      },
+      ...eliteOverrides,
+    },
+  ]
+}
+
+/** Response for GET /billing/plans/trial-offer, resolving a token to plan-elite. */
+export function makeTrialOfferResponse(overrides: Record<string, unknown> = {}) {
+  return {
+    plan_id: 'plan-elite',
+    trial_duration_days: 3,
+    ...overrides,
+  }
+}

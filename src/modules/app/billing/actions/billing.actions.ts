@@ -30,6 +30,11 @@ export interface CheckoutResponse {
   url: string
 }
 
+export interface TrialOffer {
+  planId: string
+  trialDurationDays: number
+}
+
 export interface CurrentPlanResponse {
   plan: BillingPlan
 }
@@ -74,17 +79,36 @@ export async function fetchPlans(country?: string): Promise<BillingPlan[]> {
 }
 
 /**
+ * Resolve the hidden pricing-page trial token to the plan it unlocks.
+ * Returns null for any missing/invalid/unsupported token — the pricing page
+ * treats that identically to "no trial configured".
+ */
+export async function fetchTrialOffer(token: string): Promise<TrialOffer | null> {
+  const config = createApiRequestConfig({ params: { token } })
+  try {
+    const response = (await apiClient.get<ApiSuccessResponse<TrialOffer>>(
+      API_ROUTES.BILLING.TRIAL_OFFER,
+      config,
+    )) as unknown as ApiSuccessResponse<TrialOffer>
+    return response.data
+  } catch {
+    return null
+  }
+}
+
+/**
  * Get checkout URL for a specific plan.
  * Creates a hosted checkout session on the backend and returns the Dodo checkout URL.
  */
 export async function getCheckoutUrl(
   planId: string,
   billingCycle: 'monthly' | 'yearly',
+  isTrial = false,
 ): Promise<string> {
   const config = createApiRequestConfig({}, { withCredentials: true })
   const response = (await apiClient.post<ApiSuccessResponse<CheckoutResponse>>(
     API_ROUTES.BILLING.CHECKOUT,
-    { planId, billingCycle },
+    { planId, billingCycle, isTrial },
     config,
   )) as unknown as ApiSuccessResponse<CheckoutResponse>
 
