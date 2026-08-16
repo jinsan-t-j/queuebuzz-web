@@ -138,6 +138,13 @@ onUnmounted(() => {
               </li>
               <li>
                 <router-link
+                  to="/flyer"
+                  class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
+                  >Launch Flyer</router-link
+                >
+              </li>
+              <li>
+                <router-link
                   to="/alternatives"
                   class="transition-colors hover:text-mint-dark min-h-[48px] flex items-center"
                   >Alternatives</router-link

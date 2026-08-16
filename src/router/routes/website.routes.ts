@@ -83,4 +83,10 @@ export const websiteRoutes: RouteRecordRaw[] = [
     component: () => import('@/modules/website/views/LaunchView.vue'),
     meta: { title: 'Launch — QueueBuzz' },
   },
+  {
+    path: '/flyer',
+    name: 'flyer',
+    component: () => import('@/modules/website/views/FlyerView.vue'),
+    meta: { title: 'Official Launch Flyer — QueueBuzz' },
+  },
 ]

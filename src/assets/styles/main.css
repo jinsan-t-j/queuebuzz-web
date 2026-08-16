@@ -202,12 +202,12 @@
   body {
     background: #ffffff !important;
     color: #000000 !important;
-    padding: 0 !important;
-    display: flex !important;
-    justify-content: center !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
-  body > *:not(#print-ticket-container) {
+  /* Only hide #app when a standalone print ticket container is present */
+  body:has(#print-ticket-container) > *:not(#print-ticket-container) {
     display: none !important;
   }
 
