@@ -10,7 +10,7 @@ import { useAuthStore } from '@/stores/auth.store'
 
 import * as billingActions from '../actions/billing.actions'
 
-import type { BillingPlan } from '../actions/billing.actions'
+import type { BillingPlan, TrialOffer } from '../actions/billing.actions'
 
 export interface PlanLimits {
   maxQueuesPerMonth: number
@@ -176,6 +176,9 @@ export function useBilling() {
   const billingCycle = ref<'monthly' | 'yearly'>('monthly')
   const checkoutLoadingPlan = ref<string | null>(null)
   const checkoutError = ref<string | null>(null)
+  // Resolved server-side from the hidden "?trial=<token>" pricing-page param.
+  // Holds the token too, so it survives a login redirect round-trip.
+  const trialOffer = ref<(TrialOffer & { token: string }) | null>(null)
 
   async function fetchPlans(country?: string) {
     if (hasLoadedPlans.value && globalFetchedPlans.value.length > 0) {
@@ -209,11 +212,23 @@ export function useBilling() {
     }
   }
 
-  async function getCheckoutUrl(planId: string, cycle: 'monthly' | 'yearly') {
+  // Resolves the hidden trial token server-side. Never trust a client-side
+  // guess here — an invalid/unsupported token just leaves trialOffer null,
+  // which every trial-CTA check below treats as "no trial offered".
+  async function resolveTrialOffer(token: string) {
+    if (!token) {
+      trialOffer.value = null
+      return
+    }
+    const offer = await billingActions.fetchTrialOffer(token)
+    trialOffer.value = offer ? { ...offer, token } : null
+  }
+
+  async function getCheckoutUrl(planId: string, cycle: 'monthly' | 'yearly', isTrial = false) {
     isLoading.value = true
     error.value = null
     try {
-      return await billingActions.getCheckoutUrl(planId, cycle)
+      return await billingActions.getCheckoutUrl(planId, cycle, isTrial)
     } catch (e) {
       error.value = (e as Error).message
       return null
@@ -260,8 +275,11 @@ export function useBilling() {
    * - Enterprise → mailto sales
    * - Paid → check auth → create checkout session → redirect to Dodo
    */
-  async function handleChoosePlan(plan: DisplayPlan) {
+  async function handleChoosePlan(plan: DisplayPlan, isTrial = false) {
     checkoutError.value = null
+    // hasTrialOffer is still the source of truth — a click on the regular
+    // "Choose Plan" button must never be silently upgraded into a trial.
+    const wantsTrial = isTrial && hasTrialOffer(plan)
 
     if (plan.isFree) {
       if (authStore.isAuthenticated) {
@@ -278,14 +296,16 @@ export function useBilling() {
     }
 
     if (!authStore.isAuthenticated) {
-      const returnPath = `/pricing?plan=${plan.slug}&cycle=${billingCycle.value}`
+      const trialQuery =
+        wantsTrial && trialOffer.value ? `&trial=${encodeURIComponent(trialOffer.value.token)}` : ''
+      const returnPath = `/pricing?plan=${plan.slug}&cycle=${billingCycle.value}${trialQuery}`
       router.push({ name: 'login', query: { redirect: returnPath } })
       return
     }
 
     checkoutLoadingPlan.value = plan.id
     try {
-      const url = await getCheckoutUrl(plan.id, billingCycle.value)
+      const url = await getCheckoutUrl(plan.id, billingCycle.value, wantsTrial)
       if (url) {
         globalThis.location.href = url
       } else {
@@ -306,6 +326,12 @@ export function useBilling() {
     )
   }
 
+  // True only if the plan matches a token that was already verified
+  // server-side via resolveTrialOffer — no plan id is hardcoded here.
+  function hasTrialOffer(plan: DisplayPlan): boolean {
+    return trialOffer.value?.planId === plan.id
+  }
+
   return {
     isLoading,
     error,
@@ -313,13 +339,16 @@ export function useBilling() {
     billingCycle,
     checkoutLoadingPlan,
     checkoutError,
+    trialOffer,
     allPlans,
     gridPlans,
     maxDiscount,
     fetchPlans,
+    resolveTrialOffer,
     getCheckoutUrl,
     fetchCurrentPlan,
     handleChoosePlan,
     isEliteTier,
+    hasTrialOffer,
   }
 }
