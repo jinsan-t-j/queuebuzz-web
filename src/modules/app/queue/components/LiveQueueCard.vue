@@ -87,6 +87,39 @@ const qrVerifyEntryId = ref<string | null>(null)
 const hasActiveCalledEntry = computed(() =>
   (props.activeEntries || []).some((e) => e.status === ENTRY_STATUS.CALLED),
 )
+const activeCalledEntry = computed(() =>
+  (props.activeEntries || []).find((e) => e.status === ENTRY_STATUS.CALLED),
+)
+
+// Auto Pilot cue: nudge staff to call the next guest once the average
+// service time has elapsed since the current guest was called.
+const nowTick = ref(Date.now())
+let nowTickTimer: ReturnType<typeof setInterval> | null = null
+onBeforeMount(() => {
+  nowTickTimer = setInterval(() => {
+    nowTick.value = Date.now()
+  }, 1000)
+})
+onUnmounted(() => {
+  if (nowTickTimer) clearInterval(nowTickTimer)
+})
+
+const nextCallDueInSec = computed(() => {
+  const entry = activeCalledEntry.value
+  if (!entry?.updatedAt) return null
+  const calledAt = new Date(entry.updatedAt).getTime()
+  const serviceSecs = (props.avgServiceMins || 2) * 60
+  return Math.max(0, Math.round(serviceSecs - (nowTick.value - calledAt) / 1000))
+})
+
+const nextCallDueLabel = computed(() => {
+  const secs = nextCallDueInSec.value
+  if (secs === null) return null
+  if (secs <= 0) return 'Ready to call next'
+  const m = Math.floor(secs / 60)
+  const s = secs % 60
+  return `Recommended in ${m > 0 ? `${m}m ` : ''}${s}s`
+})
 const displayedServedEntries = computed(() => props.servedEntries || [])
 const totalCount = computed(
   () => (props.activeEntries?.length || 0) + (displayedServedEntries.value?.length || 0),
@@ -653,6 +686,12 @@ function handleQrClose() {
         <template v-if="strictQueueMode && hasActiveCalledEntry">
           Serve current guest first
         </template>
+      </p>
+      <p
+        v-else-if="nextCallDueLabel"
+        class="mt-3 text-center font-body text-xs font-medium uppercase tracking-wider text-plum-muted"
+      >
+        {{ nextCallDueLabel }}
       </p>
     </div>
 
