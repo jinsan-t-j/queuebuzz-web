@@ -212,11 +212,6 @@ const industries = [
 
             <!-- Context & Value Props -->
             <div class="flex-1 text-center sm:text-left">
-              <span
-                class="inline-block font-body text-xs font-bold uppercase tracking-wider text-plum-muted mb-1"
-              >
-                Ready in under 60 seconds
-              </span>
               <h2 class="font-editorial text-2xl sm:text-3xl font-bold text-plum leading-tight">
                 Scan & Start Your First Queue Free
               </h2>
@@ -230,11 +225,11 @@ const industries = [
               >
                 <div class="flex items-center gap-1.5">
                   <CheckCircle2 class="w-4 h-4 text-mint-dark" />
-                  <span>Free Guest Host Tier</span>
+                  <span>Try Free Tier</span>
                 </div>
                 <div class="flex items-center gap-1.5">
                   <CheckCircle2 class="w-4 h-4 text-mint-dark" />
-                  <span>No Credit Card</span>
+                  <span>No Credit Card Required</span>
                 </div>
               </div>
             </div>
