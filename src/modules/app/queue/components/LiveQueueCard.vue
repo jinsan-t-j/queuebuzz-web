@@ -296,7 +296,7 @@ function handleQrClose() {
 
 <template>
   <div
-    class="flex flex-1 flex-col rounded-card border border-plum-faint bg-white shadow-sm dark:shadow-none"
+    class="flex max-h-[70dvh] flex-1 flex-col rounded-card border border-plum-faint bg-white shadow-sm dark:shadow-none lg:max-h-none"
   >
     <!-- Header -->
     <div class="border-b border-plum-faint bg-plum-faint/10 px-4 py-3 sm:px-6 sm:py-4">
