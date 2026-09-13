@@ -40,7 +40,7 @@
     "firebase": "^12.18.0",
     "html-to-image": "^1.11.13",
     "html5-qrcode": "^2.3.8",
-    "js-yaml": "^5.4.1",
+    "js-yaml": "^5.4.2",
     "lucide-vue-next": "^1.0.0",
     "marked": "^18.0.11",
     "pinia": "^4.0.3",
